@@ -46,6 +46,7 @@ const i18n = {
     show_past: 'Show Past',
     search_placeholder: 'Search tournaments...',
     register_2: 'Register',
+    tournament_details: 'Tournament Details',
     empty_try_search: 'Try a different search term or clear the search',
     empty_try_filter: 'Try selecting a different organizer filter',
     countdown_live: 'Happening Now',
@@ -89,6 +90,7 @@ const i18n = {
     show_past: 'แสดงที่ผ่านแล้ว',
     search_placeholder: 'ค้นหาทัวร์นาเมนต์...',
     register_2: 'ลงทะเบียน',
+    tournament_details: 'รายละเอียดทัวร์นาเมนต์',
     empty_try_search: 'ลองค้นหาด้วยคำอื่น หรือล้างการค้นหา',
     empty_try_filter: 'ลองเลือกตัวกรองผู้จัดงานอื่น',
     countdown_live: 'กำลังแข่งขัน',
@@ -1395,8 +1397,8 @@ function createTournamentCard(ev) {
       </div>
       <div class="card-actions">
         ${igHtml}
-        ${!isPast && ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
-        ${!isPast && ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
+        ${ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${isPast ? t('tournament_details') : (ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register'))}</a>` : ''}
+        ${ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${isPast ? t('tournament_details') : (ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2'))}</a>` : ''}
       </div>
     </div>
   `;
@@ -1592,8 +1594,8 @@ function openModal(ev) {
       </div>` : ''}
     </div>
     <div class="modal-actions">
-      ${!isPast && ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
-      ${!isPast && ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
+      ${ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${isPast ? t('tournament_details') : (ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register'))}</a>` : ''}
+      ${ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${isPast ? t('tournament_details') : (ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2'))}</a>` : ''}
       <div class="modal-secondary-actions">
         ${gcalUrl ? `<a href="${gcalUrl}" target="_blank" rel="noopener" class="modal-action-btn">&#128197; ${t('add_gcal')}</a>` : ''}
         ${igAction}
