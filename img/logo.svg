@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 80" fill="none">
+  <!-- Blue Padel Ball -->
+  <circle cx="40" cy="40" r="38" fill="#1240AB"/>
+  <!-- Ball seam curves (white) - two S-curves like a padel ball -->
+  <path d="M16 12C30 30 30 50 16 68" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M32 6C46 26 46 54 32 74" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Text -->
+  <text x="94" y="55" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="42" letter-spacing="3">
+    <tspan fill="#1a1a1a" font-weight="400">PADEL </tspan><tspan fill="#1a1a1a" font-weight="700">THAILAND</tspan>
+  </text>
+</svg>
