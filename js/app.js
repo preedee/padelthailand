@@ -1348,12 +1348,13 @@ function createTournamentCard(ev) {
   card.addEventListener('click', () => openModal(ev));
 
   const today = stripTime(new Date());
+  let isPast = false;
   if (ev.dateTBC) {
     const monthEnd = new Date(ev.tbcYear, ev.tbcMonth + 1, 0);
-    if (monthEnd < today) card.classList.add('past-card');
+    if (monthEnd < today) { card.classList.add('past-card'); isPast = true; }
   } else {
     const end = ev.endDate ? stripTime(ev.endDate) : stripTime(ev.startDate);
-    if (end < today) card.classList.add('past-card');
+    if (end < today) { card.classList.add('past-card'); isPast = true; }
   }
 
   // Featured flag
@@ -1394,8 +1395,8 @@ function createTournamentCard(ev) {
       </div>
       <div class="card-actions">
         ${igHtml}
-        ${ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
-        ${ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
+        ${!isPast && ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
+        ${!isPast && ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="register-btn" onclick="event.stopPropagation()">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
       </div>
     </div>
   `;
@@ -1541,6 +1542,15 @@ function openModal(ev) {
   const gcalUrl = (ev.startDate && !ev.dateTBC) ? buildGoogleCalendarUrl(ev) : '';
   const shareUrl = buildShareUrl(ev);
 
+  const today = stripTime(new Date());
+  let isPast = false;
+  if (ev.dateTBC) {
+    isPast = new Date(ev.tbcYear, ev.tbcMonth + 1, 0) < today;
+  } else {
+    const end = ev.endDate ? stripTime(ev.endDate) : (ev.startDate ? stripTime(ev.startDate) : null);
+    isPast = end ? end < today : false;
+  }
+
   const meta = organizerMeta[ev.organizer] || {};
   const logoHtml = meta.logoUrl ? `<img class="modal-org-logo" src="${esc(meta.logoUrl)}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'">` : '';
   const igEmbedHtml = ev.instagramUrl
@@ -1582,8 +1592,8 @@ function openModal(ev) {
       </div>` : ''}
     </div>
     <div class="modal-actions">
-      ${ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
-      ${ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
+      ${!isPast && ev.regUrl ? `<a href="${esc(ev.regUrl)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register')}</a>` : ''}
+      ${!isPast && ev.regUrl2 ? `<a href="${esc(ev.regUrl2)}" target="_blank" rel="noopener" class="modal-register" style="background:${ev.color}">${ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2')}</a>` : ''}
       <div class="modal-secondary-actions">
         ${gcalUrl ? `<a href="${gcalUrl}" target="_blank" rel="noopener" class="modal-action-btn">&#128197; ${t('add_gcal')}</a>` : ''}
         ${igAction}
