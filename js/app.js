@@ -55,6 +55,9 @@ const i18n = {
     countdown_live: 'Happening Now',
     year_more: '+{n} more',
     filters_btn: 'Filters',
+    filter_type: 'Type',
+    type_league: 'League',
+    type_tournament: 'Tournament',
   },
   th: {
     nav_calendar: 'ปฏิทิน',
@@ -103,6 +106,9 @@ const i18n = {
     countdown_live: 'กำลังแข่งขัน',
     year_more: '+{n} เพิ่มเติม',
     filters_btn: 'ตัวกรอง',
+    filter_type: 'ประเภทงาน',
+    type_league: 'ลีก',
+    type_tournament: 'ทัวร์นาเมนต์',
   }
 };
 
@@ -114,6 +120,7 @@ let currentYear = new Date().getFullYear();
 let activeFilters = new Set();        // empty = all organizers
 let activeLocationFilters = new Set(); // empty = all locations
 let activeCategoryFilters = new Set(); // empty = all categories
+let activeTypeFilters = new Set();     // empty = all types
 let activeView = 'calendar';
 let currentYearView = new Date().getFullYear();
 function safeGetItem(key, fallback) {
@@ -150,6 +157,7 @@ async function fetchTournaments() {
     buildFilters();
     buildLocationFilters();
     buildCategoryFilters();
+    buildTypeFilters();
     render();
     checkDeepLink();
   } catch (err) {
@@ -214,6 +222,7 @@ function parseCSV(csv) {
       orgInstagram: obj['Organizer Instagram'] || '',
       orgWebsite: obj['Organizer Website'] || '',
       hidden: (obj['Hide'] || '').trim().toLowerCase() === 'yes',
+      type: (obj['Type'] || '').trim().toLowerCase() === 'league' ? 'league' : 'tournament',
     };
   });
 }
@@ -313,6 +322,7 @@ function toggleLang() {
     buildFilters();
     buildLocationFilters();
     buildCategoryFilters();
+    buildTypeFilters();
     // Restore organizer multi-select state after rebuild
     if (activeFilters.size > 0) {
       document.querySelector('#filters .filter-btn[data-organizer="all"]').classList.remove('active');
@@ -344,6 +354,17 @@ function toggleLang() {
       });
       document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
         b.style.opacity = activeCategoryFilters.has(b.dataset.category) ? '1' : '0.35';
+      });
+    }
+    // Restore type multi-select state
+    if (activeTypeFilters.size > 0) {
+      document.querySelector('#type-filters .filter-btn[data-type="all"]').classList.remove('active');
+      activeTypeFilters.forEach(tp => {
+        const btn = document.querySelector(`#type-filters .filter-btn[data-type="${tp}"]`);
+        if (btn) btn.classList.add('active');
+      });
+      document.querySelectorAll('#type-filters .filter-btn:not([data-type="all"])').forEach(b => {
+        b.style.opacity = activeTypeFilters.has(b.dataset.type) ? '1' : '0.35';
       });
     }
     render();
@@ -570,6 +591,63 @@ function setCategoryFilter(category, clickedBtn) {
   render();
 }
 
+// ---- Type Filters ----
+function buildTypeFilters() {
+  const container = document.getElementById('type-filters');
+  const visibleTournaments = tournaments.filter(t => !t.hidden);
+  const types = [...new Set(visibleTournaments.map(t => t.type).filter(Boolean))].sort();
+
+  const typeCounts = {};
+  visibleTournaments.forEach(t => {
+    if (t.type) typeCounts[t.type] = (typeCounts[t.type] || 0) + 1;
+  });
+  const totalCount = visibleTournaments.length;
+
+  container.innerHTML = `<button class="filter-btn active" data-type="all">${t('filter_all')}<span class="filter-btn-count">${totalCount}</span></button>`;
+  types.forEach(tp => {
+    const count = typeCounts[tp] || 0;
+    const label = tp === 'league' ? t('type_league') : t('type_tournament');
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.type = tp;
+    btn.appendChild(document.createTextNode(label));
+    const countSpan = document.createElement('span');
+    countSpan.className = 'filter-btn-count';
+    countSpan.textContent = count;
+    btn.appendChild(countSpan);
+    btn.addEventListener('click', () => setTypeFilter(tp, btn));
+    container.appendChild(btn);
+  });
+  container.querySelector('[data-type="all"]').addEventListener('click', () => setTypeFilter('all'));
+}
+
+function setTypeFilter(type, clickedBtn) {
+  if (type === 'all') {
+    activeTypeFilters.clear();
+  } else {
+    if (activeTypeFilters.has(type)) {
+      activeTypeFilters.delete(type);
+    } else {
+      activeTypeFilters.add(type);
+    }
+  }
+  const allBtn = document.querySelector('#type-filters .filter-btn[data-type="all"]');
+  if (activeTypeFilters.size === 0) {
+    document.querySelectorAll('#type-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+  } else {
+    allBtn.classList.remove('active');
+    document.querySelectorAll('#type-filters .filter-btn:not([data-type="all"])').forEach(b => {
+      b.classList.toggle('active', activeTypeFilters.has(b.dataset.type));
+    });
+  }
+  document.querySelectorAll('#type-filters .filter-btn:not([data-type="all"])').forEach(b => {
+    b.style.opacity = (activeTypeFilters.size === 0 || activeTypeFilters.has(b.dataset.type)) ? '1' : '0.35';
+  });
+  updateFilterBadge();
+  render();
+}
+
 // ---- Events ----
 function bindEvents() {
   // Month navigation
@@ -695,7 +773,7 @@ function updateFilterBadge() {
   const btn = document.getElementById('filter-toggle-btn');
   const badge = document.getElementById('filter-badge');
   if (!btn || !badge) return;
-  let count = activeFilters.size + activeLocationFilters.size + activeCategoryFilters.size;
+  let count = activeFilters.size + activeLocationFilters.size + activeCategoryFilters.size + activeTypeFilters.size;
   if (count > 0) {
     badge.textContent = count;
     badge.classList.remove('hidden');
@@ -808,6 +886,7 @@ function getFiltered() {
     if (activeFilters.size > 0 && !activeFilters.has(t.organizer)) return false;
     if (activeLocationFilters.size > 0 && !activeLocationFilters.has(t.city)) return false;
     if (activeCategoryFilters.size > 0 && !t.categories.some(c => activeCategoryFilters.has(c))) return false;
+    if (activeTypeFilters.size > 0 && !activeTypeFilters.has(t.type)) return false;
     if (hidePast && t.startDate) {
       const end = t.endDate ? stripTime(t.endDate) : stripTime(t.startDate);
       if (end < today) return false;
@@ -899,6 +978,13 @@ function renderCalendar() {
       cell.classList.add('has-events');
     }
 
+    // Sort: leagues first so they render underneath tournaments
+    eventsOnDay.sort((a, b) => {
+      if (a.type === 'league' && b.type !== 'league') return -1;
+      if (a.type !== 'league' && b.type === 'league') return 1;
+      return 0;
+    });
+
     eventsOnDay.forEach(ev => {
       const start = stripTime(ev.startDate);
       const end = ev.endDate ? stripTime(ev.endDate) : start;
@@ -922,10 +1008,16 @@ function renderCalendar() {
         barClass = 'bar-middle';
       }
 
+      const isLeague = ev.type === 'league';
       const bar = document.createElement('div');
-      bar.className = `cal-event-bar ${barClass}`;
+      bar.className = `cal-event-bar ${barClass}${isLeague ? ' cal-league-bar' : ''}`;
       bar.style.background = ev.color;
-      bar.innerHTML = (isStart || isWeekStart) ? (ev.featured ? `<span class="bar-star">${SVG_STAR}</span>` : '') + esc(ev.name) : '';
+
+      if (isStart || isWeekStart) {
+        const leagueBadge = isLeague ? `<span class="cal-league-badge">${t('type_league')}</span>` : '';
+        const starBadge = ev.featured ? `<span class="bar-star">${SVG_STAR}</span>` : '';
+        bar.innerHTML = leagueBadge + starBadge + esc(ev.name);
+      }
 
       // Past event dimming
       if (end < stripTime(today)) {
@@ -977,7 +1069,7 @@ function renderCalendar() {
     const emptyMsg = document.createElement('div');
     emptyMsg.className = 'cal-empty-month';
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0 || activeTypeFilters.size > 0;
     if (hasSearch || hasFilter) {
       const hint = hasSearch ? t('empty_try_search') : t('empty_try_filter');
       emptyMsg.innerHTML = `<span class="cal-empty-month-icon">&#127934;</span>${t('empty_list')}<br><span style="font-size:var(--text-sm);color:var(--text-muted)">${hint}</span>`;
@@ -1101,7 +1193,8 @@ function renderYear() {
 
         // Build background: split colors for multiple tournaments
         const uniqueColors = [...new Set(eventsOnDay.map(ev => ev.color))];
-        const alpha = 0.3;
+        const allLeagues = eventsOnDay.every(ev => ev.type === 'league');
+        const alpha = allLeagues ? 0.15 : 0.3;
 
         if (!isToday) {
           if (uniqueColors.length === 1) {
@@ -1197,7 +1290,7 @@ function renderYear() {
       const maxPills = 3;
       unique.slice(0, maxPills).forEach(ev => {
         const pill = document.createElement('div');
-        pill.className = 'year-event-pill' + (ev.dateTBC ? ' year-event-pill-tbc' : '');
+        pill.className = 'year-event-pill' + (ev.dateTBC ? ' year-event-pill-tbc' : '') + (ev.type === 'league' ? ' year-event-pill-league' : '');
         pill.style.background = ev.dateTBC ? hexToRgba(ev.color, 0.15) : ev.color;
         if (ev.dateTBC) pill.style.color = ev.color;
         pill.textContent = ev.dateTBC ? `${ev.name} (TBC)` : ev.name;
@@ -1224,7 +1317,7 @@ function renderYear() {
   // Year view empty state overlay
   if (dated.length === 0) {
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0 || activeTypeFilters.size > 0;
     const hint = (hasSearch || hasFilter)
       ? `<div class="empty-state-hint">${hasSearch ? t('empty_try_search') : t('empty_try_filter')}</div>`
       : '';
@@ -1374,7 +1467,7 @@ function renderList() {
   });
   if (dated.length === 0) {
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0 || activeTypeFilters.size > 0;
     let hint = '';
     if (hasSearch || hasFilter) {
       hint = `<div class="empty-state-hint">${hasSearch ? t('empty_try_search') : t('empty_try_filter')}</div>`;
@@ -1535,6 +1628,8 @@ function createTournamentCard(ev) {
 
   // Featured flag
   if (ev.featured) card.classList.add('featured-card');
+  // League flag
+  if (ev.type === 'league') card.classList.add('league-card');
 
   const dateRange = formatDateRange(ev);
   const countdown = getCountdownBadge(ev);
@@ -1557,7 +1652,7 @@ function createTournamentCard(ev) {
         : `<div class="card-org-dot" style="background:${ev.color}"></div>`}
     </div>
     <div class="card-info">
-      <span class="card-organizer-badge" style="background:${ev.color}">${esc(ev.organizer)}</span>
+      <span class="card-organizer-badge" style="background:${ev.color}">${esc(ev.organizer)}</span>${ev.type === 'league' ? `<span class="card-type-badge">${t('type_league')}</span>` : ''}
       <div class="card-title">${esc(ev.name)}${countdown}</div>
       <div class="card-meta">
         <span class="card-meta-item">${esc(dateRange)}</span>
@@ -1699,12 +1794,13 @@ function openModal(ev) {
     : '';
   const categoriesHtml = ev.categories.length > 0 ? `<div class="modal-tags">${ev.categories.map(c => `<span class="modal-tag">${esc(c)}</span>`).join('')}</div>` : '';
   const featuredBadge = ev.featured ? `<span class="modal-featured-badge">${SVG_STAR} ${t('featured')}</span>` : '';
+  const leagueBadge = ev.type === 'league' ? `<span class="modal-league-badge">${t('type_league')}</span>` : '';
   const igAction = ev.instagramUrl ? `<a href="${esc(ev.instagramUrl)}" target="_blank" rel="noopener" class="modal-action-btn">${SVG_INSTAGRAM} ${t('view_instagram')}</a>` : '';
 
   content.innerHTML = `
     <div class="modal-header-row">
       <span class="modal-organizer" style="background:${ev.color}">${logoHtml}${esc(ev.organizer)}</span>
-      ${featuredBadge}
+      ${leagueBadge}${featuredBadge}
     </div>
     <h2 class="modal-title">${esc(ev.name)}${countdown ? ` <span class="countdown-badge${getCountdownDays(ev) <= 3 ? ' imminent' : getCountdownDays(ev) <= 14 ? ' soon' : ''}">${countdown}</span>` : ''}</h2>
     ${categoriesHtml}

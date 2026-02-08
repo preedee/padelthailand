@@ -784,6 +784,39 @@ input:focus-visible {
   opacity: 0.4;
 }
 
+/* League bars — thinner with diagonal stripe pattern */
+.cal-league-bar {
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 500;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 3px,
+    rgba(255,255,255,0.2) 3px,
+    rgba(255,255,255,0.2) 6px
+  ) !important;
+  opacity: 0.75;
+}
+
+.cal-league-bar:hover {
+  opacity: 0.9;
+}
+
+.cal-league-badge {
+  display: inline-block;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.3);
+  padding: 0 3px;
+  border-radius: 2px;
+  margin-right: 3px;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+
 /* Month-TBC row at bottom of calendar */
 .cal-month-tbc-row {
   grid-column: 1 / -1;
@@ -1005,6 +1038,17 @@ input:focus-visible {
   font-weight: 500;
 }
 
+.year-event-pill-league {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.2) 2px,
+    rgba(255,255,255,0.2) 4px
+  );
+  font-weight: 500;
+}
+
 .year-event-count {
   font-size: 10px;
   color: var(--text-muted);
@@ -1180,6 +1224,23 @@ input:focus-visible {
 
 .tournament-card.past-card {
   opacity: 0.45;
+}
+
+.tournament-card.league-card {
+  border-left-style: dashed;
+}
+
+.card-type-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  margin-left: var(--space-2);
 }
 
 .card-date {
@@ -1837,6 +1898,18 @@ input:focus-visible {
   border-radius: 12px;
   background: #e0c040;
   color: #1a1a1a;
+}
+
+.modal-league-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 
 /* ---- Footer ---- */
