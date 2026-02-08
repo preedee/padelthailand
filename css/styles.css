@@ -476,10 +476,10 @@ input:focus-visible {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  padding: 8px 16px;
-  height: 40px;
-  border-radius: 20px;
-  font-size: var(--text-base);
+  padding: 6px 12px;
+  height: 30px;
+  border-radius: 15px;
+  font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition);
@@ -504,14 +504,14 @@ input:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 8px;
   background: rgba(255,255,255,0.25);
-  margin-left: 6px;
+  margin-left: 4px;
   line-height: 1;
 }
 
@@ -1645,10 +1645,10 @@ input:focus-visible {
 
 /* ---- Organizer Logos in Filter Buttons ---- */
 .filter-btn-logo {
-  height: 20px;
+  height: 15px;
   width: auto;
   vertical-align: middle;
-  margin-right: 6px;
+  margin-right: 4px;
   border-radius: 2px;
   object-fit: contain;
 }
@@ -2172,9 +2172,9 @@ input:focus-visible {
   }
 
   .filter-btn {
-    height: 36px;
-    padding: 6px 12px;
-    font-size: var(--text-sm);
+    height: 27px;
+    padding: 4px 9px;
+    font-size: var(--text-xs);
   }
 
   .view-btn {

@@ -111,9 +111,9 @@ let tournaments = [];
 let organizerMeta = {}; // { name: { color, logoUrl, instagram, facebook, website } }
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
-let activeFilter = 'all';
-let activeLocationFilter = 'all';
-let activeCategoryFilter = 'all';
+let activeFilters = new Set();        // empty = all organizers
+let activeLocationFilters = new Set(); // empty = all locations
+let activeCategoryFilters = new Set(); // empty = all categories
 let activeView = 'calendar';
 let currentYearView = new Date().getFullYear();
 function safeGetItem(key, fallback) {
@@ -313,38 +313,38 @@ function toggleLang() {
     buildFilters();
     buildLocationFilters();
     buildCategoryFilters();
-    // Restore organizer filter active state after rebuild
-    if (activeFilter !== 'all') {
-      const btn = document.querySelector(`#filters .filter-btn[data-organizer="${activeFilter}"]`);
-      if (btn) {
-        document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.filter-btn-org').forEach(b => {
-          b.style.opacity = b.dataset.organizer === activeFilter ? '1' : '0.35';
-        });
-      }
+    // Restore organizer multi-select state after rebuild
+    if (activeFilters.size > 0) {
+      document.querySelector('#filters .filter-btn[data-organizer="all"]').classList.remove('active');
+      activeFilters.forEach(org => {
+        const btn = document.querySelector(`#filters .filter-btn[data-organizer="${org}"]`);
+        if (btn) btn.classList.add('active');
+      });
+      document.querySelectorAll('.filter-btn-org').forEach(b => {
+        b.style.opacity = activeFilters.has(b.dataset.organizer) ? '1' : '0.35';
+      });
     }
-    // Restore location filter active state
-    if (activeLocationFilter !== 'all') {
-      const btn = document.querySelector(`#location-filters .filter-btn[data-location="${activeLocationFilter}"]`);
-      if (btn) {
-        document.querySelectorAll('#location-filters .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
-          b.style.opacity = b.dataset.location === activeLocationFilter ? '1' : '0.35';
-        });
-      }
+    // Restore location multi-select state
+    if (activeLocationFilters.size > 0) {
+      document.querySelector('#location-filters .filter-btn[data-location="all"]').classList.remove('active');
+      activeLocationFilters.forEach(loc => {
+        const btn = document.querySelector(`#location-filters .filter-btn[data-location="${loc}"]`);
+        if (btn) btn.classList.add('active');
+      });
+      document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
+        b.style.opacity = activeLocationFilters.has(b.dataset.location) ? '1' : '0.35';
+      });
     }
-    // Restore category filter active state
-    if (activeCategoryFilter !== 'all') {
-      const btn = document.querySelector(`#category-filters .filter-btn[data-category="${activeCategoryFilter}"]`);
-      if (btn) {
-        document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
-          b.style.opacity = b.dataset.category === activeCategoryFilter ? '1' : '0.35';
-        });
-      }
+    // Restore category multi-select state
+    if (activeCategoryFilters.size > 0) {
+      document.querySelector('#category-filters .filter-btn[data-category="all"]').classList.remove('active');
+      activeCategoryFilters.forEach(cat => {
+        const btn = document.querySelector(`#category-filters .filter-btn[data-category="${cat}"]`);
+        if (btn) btn.classList.add('active');
+      });
+      document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
+        b.style.opacity = activeCategoryFilters.has(b.dataset.category) ? '1' : '0.35';
+      });
     }
     render();
   }
@@ -427,22 +427,31 @@ function buildFilters() {
 }
 
 function setFilter(organizer, clickedBtn) {
-  activeFilter = organizer;
-  // Reset organizer buttons only
-  document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
+  if (organizer === 'all') {
+    activeFilters.clear();
+  } else {
+    // Toggle: add if not present, remove if present
+    if (activeFilters.has(organizer)) {
+      activeFilters.delete(organizer);
+    } else {
+      activeFilters.add(organizer);
+    }
+  }
+  // Update button states
+  const allBtn = document.querySelector('#filters .filter-btn[data-organizer="all"]');
+  if (activeFilters.size === 0) {
+    document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+  } else {
+    allBtn.classList.remove('active');
+    document.querySelectorAll('#filters .filter-btn-org').forEach(b => {
+      b.classList.toggle('active', activeFilters.has(b.dataset.organizer));
+    });
+  }
   // Dim non-active organizer buttons
   document.querySelectorAll('.filter-btn-org').forEach(b => {
-    if (organizer === 'all' || b.dataset.organizer === organizer) {
-      b.style.opacity = '1';
-    } else {
-      b.style.opacity = '0.35';
-    }
+    b.style.opacity = (activeFilters.size === 0 || activeFilters.has(b.dataset.organizer)) ? '1' : '0.35';
   });
-  if (organizer === 'all') {
-    document.querySelector('#filters .filter-btn[data-organizer="all"]').classList.add('active');
-  } else {
-    clickedBtn.classList.add('active');
-  }
   updateFilterBadge();
   render();
 }
@@ -477,15 +486,27 @@ function buildLocationFilters() {
 }
 
 function setLocationFilter(location, clickedBtn) {
-  activeLocationFilter = location;
-  document.querySelectorAll('#location-filters .filter-btn').forEach(b => b.classList.remove('active'));
   if (location === 'all') {
-    document.querySelector('#location-filters .filter-btn[data-location="all"]').classList.add('active');
+    activeLocationFilters.clear();
   } else {
-    clickedBtn.classList.add('active');
+    if (activeLocationFilters.has(location)) {
+      activeLocationFilters.delete(location);
+    } else {
+      activeLocationFilters.add(location);
+    }
+  }
+  const allBtn = document.querySelector('#location-filters .filter-btn[data-location="all"]');
+  if (activeLocationFilters.size === 0) {
+    document.querySelectorAll('#location-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+  } else {
+    allBtn.classList.remove('active');
+    document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
+      b.classList.toggle('active', activeLocationFilters.has(b.dataset.location));
+    });
   }
   document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
-    b.style.opacity = (location === 'all' || b.dataset.location === location) ? '1' : '0.35';
+    b.style.opacity = (activeLocationFilters.size === 0 || activeLocationFilters.has(b.dataset.location)) ? '1' : '0.35';
   });
   updateFilterBadge();
   render();
@@ -523,15 +544,27 @@ function buildCategoryFilters() {
 }
 
 function setCategoryFilter(category, clickedBtn) {
-  activeCategoryFilter = category;
-  document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
   if (category === 'all') {
-    document.querySelector('#category-filters .filter-btn[data-category="all"]').classList.add('active');
+    activeCategoryFilters.clear();
   } else {
-    clickedBtn.classList.add('active');
+    if (activeCategoryFilters.has(category)) {
+      activeCategoryFilters.delete(category);
+    } else {
+      activeCategoryFilters.add(category);
+    }
+  }
+  const allBtn = document.querySelector('#category-filters .filter-btn[data-category="all"]');
+  if (activeCategoryFilters.size === 0) {
+    document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+  } else {
+    allBtn.classList.remove('active');
+    document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
+      b.classList.toggle('active', activeCategoryFilters.has(b.dataset.category));
+    });
   }
   document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
-    b.style.opacity = (category === 'all' || b.dataset.category === category) ? '1' : '0.35';
+    b.style.opacity = (activeCategoryFilters.size === 0 || activeCategoryFilters.has(b.dataset.category)) ? '1' : '0.35';
   });
   updateFilterBadge();
   render();
@@ -662,10 +695,7 @@ function updateFilterBadge() {
   const btn = document.getElementById('filter-toggle-btn');
   const badge = document.getElementById('filter-badge');
   if (!btn || !badge) return;
-  let count = 0;
-  if (activeFilter !== 'all') count++;
-  if (activeLocationFilter !== 'all') count++;
-  if (activeCategoryFilter !== 'all') count++;
+  let count = activeFilters.size + activeLocationFilters.size + activeCategoryFilters.size;
   if (count > 0) {
     badge.textContent = count;
     badge.classList.remove('hidden');
@@ -775,9 +805,9 @@ function getFiltered() {
   const today = stripTime(new Date());
   return tournaments.filter(t => {
     if (t.hidden) return false;
-    if (activeFilter !== 'all' && t.organizer !== activeFilter) return false;
-    if (activeLocationFilter !== 'all' && t.city !== activeLocationFilter) return false;
-    if (activeCategoryFilter !== 'all' && !t.categories.includes(activeCategoryFilter)) return false;
+    if (activeFilters.size > 0 && !activeFilters.has(t.organizer)) return false;
+    if (activeLocationFilters.size > 0 && !activeLocationFilters.has(t.city)) return false;
+    if (activeCategoryFilters.size > 0 && !t.categories.some(c => activeCategoryFilters.has(c))) return false;
     if (hidePast && t.startDate) {
       const end = t.endDate ? stripTime(t.endDate) : stripTime(t.startDate);
       if (end < today) return false;
@@ -947,7 +977,7 @@ function renderCalendar() {
     const emptyMsg = document.createElement('div');
     emptyMsg.className = 'cal-empty-month';
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilter !== 'all';
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
     if (hasSearch || hasFilter) {
       const hint = hasSearch ? t('empty_try_search') : t('empty_try_filter');
       emptyMsg.innerHTML = `<span class="cal-empty-month-icon">&#127934;</span>${t('empty_list')}<br><span style="font-size:var(--text-sm);color:var(--text-muted)">${hint}</span>`;
@@ -1194,7 +1224,7 @@ function renderYear() {
   // Year view empty state overlay
   if (dated.length === 0) {
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilter !== 'all';
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
     const hint = (hasSearch || hasFilter)
       ? `<div class="empty-state-hint">${hasSearch ? t('empty_try_search') : t('empty_try_filter')}</div>`
       : '';
@@ -1344,7 +1374,7 @@ function renderList() {
   });
   if (dated.length === 0) {
     const hasSearch = searchQuery.length > 0;
-    const hasFilter = activeFilter !== 'all';
+    const hasFilter = activeFilters.size > 0 || activeLocationFilters.size > 0 || activeCategoryFilters.size > 0;
     let hint = '';
     if (hasSearch || hasFilter) {
       hint = `<div class="empty-state-hint">${hasSearch ? t('empty_try_search') : t('empty_try_filter')}</div>`;
