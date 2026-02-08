@@ -366,6 +366,31 @@ input:focus-visible {
   color: var(--border);
 }
 
+/* Filter Rows Container */
+.filter-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.filter-row-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 70px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Filters */
 .filters {
   display: flex;
@@ -2050,6 +2075,11 @@ input:focus-visible {
 
   .summary-bar {
     display: none;
+  }
+
+  .filter-row-label {
+    min-width: 55px;
+    font-size: 10px;
   }
 
   .filters {

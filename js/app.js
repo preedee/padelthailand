@@ -11,6 +11,9 @@ const i18n = {
   en: {
     nav_calendar: 'Calendar',
     filter_all: 'All',
+    filter_organizer: 'Organizer',
+    filter_location: 'Location',
+    filter_category: 'Category',
     today_btn: 'Today',
     tbc_title: 'Dates To Be Confirmed',
     days_short: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -55,6 +58,9 @@ const i18n = {
   th: {
     nav_calendar: 'ปฏิทิน',
     filter_all: 'ทั้งหมด',
+    filter_organizer: 'ผู้จัดงาน',
+    filter_location: 'สถานที่',
+    filter_category: 'ประเภท',
     today_btn: 'วันนี้',
     tbc_title: 'รอยืนยันวันที่',
     days_short: ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'],
@@ -104,6 +110,8 @@ let organizerMeta = {}; // { name: { color, logoUrl, instagram, facebook, websit
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let activeFilter = 'all';
+let activeLocationFilter = 'all';
+let activeCategoryFilter = 'all';
 let activeView = 'calendar';
 let currentYearView = new Date().getFullYear();
 function safeGetItem(key, fallback) {
@@ -137,6 +145,8 @@ async function fetchTournaments() {
     tournaments = parseCSV(csv);
     buildOrganizerMeta();
     buildFilters();
+    buildLocationFilters();
+    buildCategoryFilters();
     render();
     checkDeepLink();
   } catch (err) {
@@ -298,14 +308,38 @@ function toggleLang() {
   // then render() updates the active view, summary, TBC, legend, profiles
   if (tournaments.length) {
     buildFilters();
-    // Restore filter button active state after rebuild
+    buildLocationFilters();
+    buildCategoryFilters();
+    // Restore organizer filter active state after rebuild
     if (activeFilter !== 'all') {
-      const btn = document.querySelector(`.filter-btn[data-organizer="${activeFilter}"]`);
+      const btn = document.querySelector(`#filters .filter-btn[data-organizer="${activeFilter}"]`);
       if (btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.filter-btn-org').forEach(b => {
           b.style.opacity = b.dataset.organizer === activeFilter ? '1' : '0.35';
+        });
+      }
+    }
+    // Restore location filter active state
+    if (activeLocationFilter !== 'all') {
+      const btn = document.querySelector(`#location-filters .filter-btn[data-location="${activeLocationFilter}"]`);
+      if (btn) {
+        document.querySelectorAll('#location-filters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
+          b.style.opacity = b.dataset.location === activeLocationFilter ? '1' : '0.35';
+        });
+      }
+    }
+    // Restore category filter active state
+    if (activeCategoryFilter !== 'all') {
+      const btn = document.querySelector(`#category-filters .filter-btn[data-category="${activeCategoryFilter}"]`);
+      if (btn) {
+        document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
+          b.style.opacity = b.dataset.category === activeCategoryFilter ? '1' : '0.35';
         });
       }
     }
@@ -391,8 +425,8 @@ function buildFilters() {
 
 function setFilter(organizer, clickedBtn) {
   activeFilter = organizer;
-  // Reset all buttons
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  // Reset organizer buttons only
+  document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
   // Dim non-active organizer buttons
   document.querySelectorAll('.filter-btn-org').forEach(b => {
     if (organizer === 'all' || b.dataset.organizer === organizer) {
@@ -402,10 +436,98 @@ function setFilter(organizer, clickedBtn) {
     }
   });
   if (organizer === 'all') {
-    document.querySelector('.filter-btn[data-organizer="all"]').classList.add('active');
+    document.querySelector('#filters .filter-btn[data-organizer="all"]').classList.add('active');
   } else {
     clickedBtn.classList.add('active');
   }
+  render();
+}
+
+// ---- Location Filters ----
+function buildLocationFilters() {
+  const container = document.getElementById('location-filters');
+  const visibleTournaments = tournaments.filter(t => !t.hidden);
+  const cities = [...new Set(visibleTournaments.map(t => t.city).filter(Boolean))].sort();
+
+  const cityCounts = {};
+  visibleTournaments.forEach(t => {
+    if (t.city) cityCounts[t.city] = (cityCounts[t.city] || 0) + 1;
+  });
+  const totalCount = visibleTournaments.length;
+
+  container.innerHTML = `<button class="filter-btn active" data-location="all">${t('filter_all')}<span class="filter-btn-count">${totalCount}</span></button>`;
+  cities.forEach(city => {
+    const count = cityCounts[city] || 0;
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.location = city;
+    btn.appendChild(document.createTextNode(city));
+    const countSpan = document.createElement('span');
+    countSpan.className = 'filter-btn-count';
+    countSpan.textContent = count;
+    btn.appendChild(countSpan);
+    btn.addEventListener('click', () => setLocationFilter(city, btn));
+    container.appendChild(btn);
+  });
+  container.querySelector('[data-location="all"]').addEventListener('click', () => setLocationFilter('all'));
+}
+
+function setLocationFilter(location, clickedBtn) {
+  activeLocationFilter = location;
+  document.querySelectorAll('#location-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  if (location === 'all') {
+    document.querySelector('#location-filters .filter-btn[data-location="all"]').classList.add('active');
+  } else {
+    clickedBtn.classList.add('active');
+  }
+  document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
+    b.style.opacity = (location === 'all' || b.dataset.location === location) ? '1' : '0.35';
+  });
+  render();
+}
+
+// ---- Category Filters ----
+function buildCategoryFilters() {
+  const container = document.getElementById('category-filters');
+  const visibleTournaments = tournaments.filter(t => !t.hidden);
+  const allCategories = [...new Set(visibleTournaments.flatMap(t => t.categories))].filter(Boolean).sort();
+
+  const catCounts = {};
+  visibleTournaments.forEach(t => {
+    t.categories.forEach(cat => {
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+  });
+  const totalCount = visibleTournaments.length;
+
+  container.innerHTML = `<button class="filter-btn active" data-category="all">${t('filter_all')}<span class="filter-btn-count">${totalCount}</span></button>`;
+  allCategories.forEach(cat => {
+    const count = catCounts[cat] || 0;
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.category = cat;
+    btn.appendChild(document.createTextNode(cat));
+    const countSpan = document.createElement('span');
+    countSpan.className = 'filter-btn-count';
+    countSpan.textContent = count;
+    btn.appendChild(countSpan);
+    btn.addEventListener('click', () => setCategoryFilter(cat, btn));
+    container.appendChild(btn);
+  });
+  container.querySelector('[data-category="all"]').addEventListener('click', () => setCategoryFilter('all'));
+}
+
+function setCategoryFilter(category, clickedBtn) {
+  activeCategoryFilter = category;
+  document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  if (category === 'all') {
+    document.querySelector('#category-filters .filter-btn[data-category="all"]').classList.add('active');
+  } else {
+    clickedBtn.classList.add('active');
+  }
+  document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
+    b.style.opacity = (category === 'all' || b.dataset.category === category) ? '1' : '0.35';
+  });
   render();
 }
 
@@ -613,6 +735,8 @@ function getFiltered() {
   return tournaments.filter(t => {
     if (t.hidden) return false;
     if (activeFilter !== 'all' && t.organizer !== activeFilter) return false;
+    if (activeLocationFilter !== 'all' && t.city !== activeLocationFilter) return false;
+    if (activeCategoryFilter !== 'all' && !t.categories.includes(activeCategoryFilter)) return false;
     if (hidePast && t.startDate) {
       const end = t.endDate ? stripTime(t.endDate) : stripTime(t.startDate);
       if (end < today) return false;
