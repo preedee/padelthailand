@@ -1912,6 +1912,101 @@ input:focus-visible {
   border: 1px solid var(--border);
 }
 
+/* ---- Organizer Profiles Section ---- */
+.org-profiles-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+}
+
+.org-profiles-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.org-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.org-profile-card {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-4);
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.org-profile-card:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.org-profile-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.org-profile-logo {
+  height: 48px;
+  width: auto;
+  max-width: 120px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.org-profile-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.org-profile-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.org-social-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.org-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.org-social-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
+
 /* ---- Footer ---- */
 /* ---- Back to Top ---- */
 .back-to-top {

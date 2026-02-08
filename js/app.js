@@ -910,6 +910,7 @@ function render() {
     renderList();
   }
   renderTBC();
+  renderOrgProfiles();
   renderSummaryBar();
 }
 
@@ -1780,6 +1781,41 @@ function renderTBC() {
       <span class="card-organizer-badge" style="background:${ev.color}">${esc(ev.organizer)}</span>
     `;
     card.addEventListener('click', () => openModal(ev));
+    container.appendChild(card);
+  });
+}
+
+// ---- Organizer Profiles ----
+function renderOrgProfiles() {
+  const container = document.getElementById('org-profiles-grid');
+  if (!container) return;
+  const section = document.getElementById('organizer-profiles');
+  const organizers = Object.keys(organizerMeta);
+  if (organizers.length === 0) { section.classList.add('hidden'); return; }
+
+  section.classList.remove('hidden');
+  document.getElementById('org-profiles-title').textContent = t('organizers_title');
+  container.innerHTML = '';
+
+  organizers.forEach(org => {
+    const meta = organizerMeta[org];
+    const card = document.createElement('div');
+    card.className = 'org-profile-card';
+    card.style.border = `2px solid ${meta.color}`;
+
+    const logoHtml = meta.logoUrl
+      ? `<img class="org-profile-logo" src="${esc(meta.logoUrl)}" alt="${esc(org)}" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=\\'org-profile-dot\\' style=\\'background:${meta.color}\\'></span>'">`
+      : `<span class="org-profile-dot" style="background:${meta.color}"></span>`;
+
+    const socialLinks = [];
+    if (meta.instagram) socialLinks.push(`<a href="${esc(meta.instagram)}" target="_blank" rel="noopener" class="org-social-link" title="Instagram">${SVG_INSTAGRAM}</a>`);
+    if (meta.website) socialLinks.push(`<a href="${esc(meta.website)}" target="_blank" rel="noopener" class="org-social-link" title="Website">${SVG_GLOBE}</a>`);
+
+    card.innerHTML = `
+      <div class="org-profile-logo-wrap">${logoHtml}</div>
+      <span class="org-profile-name">${esc(org)}</span>
+      ${socialLinks.length > 0 ? `<div class="org-social-links">${socialLinks.join('')}</div>` : ''}
+    `;
     container.appendChild(card);
   });
 }
