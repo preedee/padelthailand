@@ -219,6 +219,8 @@ function parseCSV(csv) {
     headers.forEach((h, i) => {
       obj[h.trim()] = (cols[i] || '').trim();
     });
+    // Skip rows with no tournament/league name
+    if (!(obj['Tournament Name'] || '').trim()) return null;
     const tbcMonthData = parseTBCMonth(obj['Start Date']);
     const startDate = tbcMonthData
       ? new Date(tbcMonthData.year, tbcMonthData.month, 1)
@@ -256,7 +258,7 @@ function parseCSV(csv) {
       hidden: (obj['Hide'] || '').trim().toLowerCase() === 'yes',
       type: (obj['Type'] || '').trim().toLowerCase() === 'league' ? 'league' : 'tournament',
     };
-  });
+  }).filter(Boolean);
 }
 
 function parseCSVLine(line) {
