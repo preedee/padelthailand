@@ -5,6 +5,7 @@
 
 const SHEET_ID = '1uEk015Jv8tNGFYlQ7f5Q_DuO4FZbL8ls3cmZLPwsjsk';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const LEAGUES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leagues`;
 
 // ---- i18n ----
 const i18n = {
@@ -149,10 +150,29 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchTournaments() {
   showLoading();
   try {
-    const resp = await fetch(SHEET_URL);
-    if (!resp.ok) throw new Error('Failed to fetch');
-    const csv = await resp.text();
-    tournaments = parseCSV(csv);
+    // Fetch tournaments and leagues tabs in parallel
+    const [respTournaments, respLeagues] = await Promise.all([
+      fetch(SHEET_URL),
+      fetch(LEAGUES_URL)
+    ]);
+    if (!respTournaments.ok) throw new Error('Failed to fetch tournaments');
+
+    const csvTournaments = await respTournaments.text();
+    const tournamentData = parseCSV(csvTournaments);
+
+    // Leagues tab: map headers, parse, force type='league'
+    let leagueData = [];
+    if (respLeagues.ok) {
+      const csvLeagues = await respLeagues.text();
+      const mappedCsv = mapLeagueHeaders(csvLeagues);
+      leagueData = parseCSV(mappedCsv);
+      leagueData.forEach(l => { l.type = 'league'; });
+      // Re-assign IDs to avoid collisions
+      leagueData.forEach((l, i) => { l.id = tournamentData.length + i; });
+    }
+
+    tournaments = [...tournamentData, ...leagueData];
+
     buildOrganizerMeta();
     buildFilters();
     buildLocationFilters();
@@ -175,6 +195,18 @@ function toDirectImageUrl(url) {
     return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w400`;
   }
   return url;
+}
+
+// Map Leagues tab column headers to match Tournament column headers
+function mapLeagueHeaders(csv) {
+  const lines = csv.split('\n');
+  if (lines.length < 1) return csv;
+  lines[0] = lines[0]
+    .replace(/League Name/gi, 'Tournament Name')
+    .replace(/Organizer Name/gi, 'Organizer')
+    .replace(/Club\(s\)/gi, 'Club')
+    .replace(/League Instagram URL/gi, 'Tournament Instagram URL');
+  return lines.join('\n');
 }
 
 function parseCSV(csv) {
