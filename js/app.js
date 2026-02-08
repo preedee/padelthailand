@@ -59,6 +59,10 @@ const i18n = {
     filter_type: 'Type',
     type_league: 'League',
     type_tournament: 'Tournament',
+    org_upcoming: 'Upcoming Competitions',
+    org_past: 'Past Competitions',
+    org_back: '← Back',
+    org_no_events: 'No competitions found for this organizer.',
   },
   th: {
     nav_calendar: 'ปฏิทิน',
@@ -110,6 +114,10 @@ const i18n = {
     filter_type: 'ประเภทงาน',
     type_league: 'ลีก',
     type_tournament: 'ทัวร์นาเมนต์',
+    org_upcoming: 'การแข่งขันที่กำลังจะมาถึง',
+    org_past: 'การแข่งขันที่ผ่านมา',
+    org_back: '← กลับ',
+    org_no_events: 'ไม่พบการแข่งขันสำหรับผู้จัดงานนี้',
   }
 };
 
@@ -135,6 +143,8 @@ let currentTheme = safeGetItem('pt-theme', null) || 'dark';
 let searchQuery = '';
 let hidePast = safeGetItem('pt-hide-past', null) === 'true';
 let filtersExpanded = false;
+let selectedOrganizer = null;
+let previousView = 'calendar';
 let listShouldScroll = true;
 let modalScrollY = 0;
 
@@ -743,6 +753,17 @@ function bindEvents() {
   });
   updateHidePastBtn();
 
+  // Organizer detail back button
+  document.getElementById('org-detail-back').addEventListener('click', () => {
+    selectedOrganizer = null;
+    activeView = previousView;
+    // Restore view toggle button active state
+    document.querySelectorAll('.view-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === activeView);
+    });
+    render();
+  });
+
   // Back to top
   const backToTopBtn = document.getElementById('back-to-top');
   window.addEventListener('scroll', () => {
@@ -885,12 +906,22 @@ function goToToday() {
 
 // ---- Rendering ----
 function render() {
-  const views = ['calendar-view', 'year-view', 'list-view'];
+  const views = ['calendar-view', 'year-view', 'list-view', 'organizer-detail-view'];
   views.forEach(id => {
     const el = document.getElementById(id);
     el.classList.add('hidden');
     el.classList.remove('view-transition-enter');
   });
+
+  const isOrgDetail = activeView === 'organizer-detail';
+
+  // Hide/show controls, TBC, org profiles when in organizer detail view
+  const controls = document.querySelector('.controls');
+  const tbcSection = document.getElementById('tbc-section');
+  const orgSection = document.getElementById('organizer-profiles');
+  if (controls) controls.style.display = isOrgDetail ? 'none' : '';
+  if (tbcSection) tbcSection.style.display = isOrgDetail ? 'none' : '';
+  if (orgSection) orgSection.style.display = isOrgDetail ? 'none' : '';
 
   let activeEl;
   if (activeView === 'calendar') {
@@ -903,15 +934,23 @@ function render() {
     activeEl.classList.remove('hidden');
     activeEl.classList.add('view-transition-enter');
     renderYear();
+  } else if (activeView === 'organizer-detail') {
+    activeEl = document.getElementById('organizer-detail-view');
+    activeEl.classList.remove('hidden');
+    activeEl.classList.add('view-transition-enter');
+    renderOrganizerDetail();
   } else {
     activeEl = document.getElementById('list-view');
     activeEl.classList.remove('hidden');
     activeEl.classList.add('view-transition-enter');
     renderList();
   }
-  renderTBC();
-  renderOrgProfiles();
-  renderSummaryBar();
+
+  if (!isOrgDetail) {
+    renderTBC();
+    renderOrgProfiles();
+    renderSummaryBar();
+  }
 }
 
 function getFiltered() {
@@ -1680,6 +1719,7 @@ function createTournamentCard(ev) {
     <div class="card-date">
       <div class="card-date-day${ev.dateTBC ? ' card-date-tbc' : ''}">${ev.dateTBC ? t('date_tbc') : ev.startDate.getDate()}</div>
       <div class="card-date-month">${t('months_short')[ev.startDate.getMonth()]}</div>
+      <div class="card-date-year">${ev.startDate.getFullYear()}</div>
     </div>
     <div class="card-org-logo-col">
       ${meta.logoUrl
@@ -1816,8 +1856,133 @@ function renderOrgProfiles() {
       <span class="org-profile-name">${esc(org)}</span>
       ${socialLinks.length > 0 ? `<div class="org-social-links">${socialLinks.join('')}</div>` : ''}
     `;
+    card.addEventListener('click', (e) => {
+      // Don't navigate if clicking a social link
+      if (e.target.closest('.org-social-link')) return;
+      showOrganizerProfile(org);
+    });
     container.appendChild(card);
   });
+}
+
+// ---- Organizer Profile ----
+function showOrganizerProfile(orgName) {
+  selectedOrganizer = orgName;
+  previousView = activeView;
+  activeView = 'organizer-detail';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function renderOrganizerDetail() {
+  if (!selectedOrganizer) return;
+  const meta = organizerMeta[selectedOrganizer] || {};
+  const headerEl = document.getElementById('org-detail-header');
+  const titleEl = document.getElementById('org-detail-events-title');
+  const eventsEl = document.getElementById('org-detail-events');
+  const backBtn = document.getElementById('org-detail-back');
+
+  // Update back button text
+  backBtn.textContent = t('org_back');
+
+  // Build header
+  const logoHtml = meta.logoUrl
+    ? `<img class="org-detail-logo" src="${esc(meta.logoUrl)}" alt="${esc(selectedOrganizer)}" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=\\'org-detail-dot\\' style=\\'background:${meta.color}\\'></span>'">`
+    : `<span class="org-detail-dot" style="background:${meta.color}"></span>`;
+
+  // Social links
+  const links = [];
+  if (meta.instagram) links.push(`<a href="${esc(meta.instagram)}" target="_blank" rel="noopener" class="org-detail-link">${SVG_INSTAGRAM} Instagram</a>`);
+  if (meta.website) links.push(`<a href="${esc(meta.website)}" target="_blank" rel="noopener" class="org-detail-link">${SVG_GLOBE} Website</a>`);
+
+  // Count events
+  const allEvents = tournaments.filter(ev => !ev.hidden && ev.organizer === selectedOrganizer);
+  const tournamentCount = allEvents.filter(ev => ev.type !== 'league').length;
+  const leagueCount = allEvents.filter(ev => ev.type === 'league').length;
+  let statsText = `${tournamentCount} ${t('type_tournament')}${tournamentCount !== 1 ? 's' : ''}`;
+  if (leagueCount > 0) statsText += ` · ${leagueCount} ${t('type_league')}${leagueCount !== 1 ? 's' : ''}`;
+
+  headerEl.innerHTML = `
+    ${logoHtml}
+    <div class="org-detail-info">
+      <div class="org-detail-name">${esc(selectedOrganizer)}</div>
+      <div class="org-detail-stats">${statsText}</div>
+      ${links.length > 0 ? `<div class="org-detail-links">${links.join('')}</div>` : ''}
+    </div>
+  `;
+
+  // Build events list
+  const today = stripTime(new Date());
+  const upcoming = allEvents.filter(ev => {
+    if (!ev.startDate) return true; // TBC = upcoming
+    const end = ev.endDate ? stripTime(ev.endDate) : stripTime(ev.startDate);
+    return end >= today;
+  }).sort((a, b) => {
+    if (!a.startDate && !b.startDate) return 0;
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
+    return a.startDate - b.startDate;
+  });
+
+  const past = allEvents.filter(ev => {
+    if (!ev.startDate) return false;
+    const end = ev.endDate ? stripTime(ev.endDate) : stripTime(ev.startDate);
+    return end < today;
+  }).sort((a, b) => b.startDate - a.startDate);
+
+  eventsEl.innerHTML = '';
+
+  if (upcoming.length === 0 && past.length === 0) {
+    titleEl.textContent = '';
+    eventsEl.innerHTML = `<div class="org-detail-empty">${t('org_no_events')}</div>`;
+    return;
+  }
+
+  titleEl.textContent = '';
+
+  if (upcoming.length > 0) {
+    const group = document.createElement('div');
+    group.className = 'org-detail-group';
+
+    const header = document.createElement('div');
+    header.className = 'org-detail-group-header';
+    header.innerHTML = `<span class="org-detail-group-label">${t('org_upcoming')}</span>${LIST_CHEVRON_SVG}`;
+
+    const content = document.createElement('div');
+    content.className = 'org-detail-group-content';
+    upcoming.forEach(ev => content.appendChild(createTournamentCard(ev)));
+
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+    });
+
+    group.appendChild(header);
+    group.appendChild(content);
+    eventsEl.appendChild(group);
+  }
+
+  if (past.length > 0) {
+    const group = document.createElement('div');
+    group.className = 'org-detail-group';
+
+    const header = document.createElement('div');
+    header.className = 'org-detail-group-header collapsed';
+    header.innerHTML = `<span class="org-detail-group-label">${t('org_past')}</span>${LIST_CHEVRON_SVG}`;
+
+    const content = document.createElement('div');
+    content.className = 'org-detail-group-content collapsed';
+    past.forEach(ev => content.appendChild(createTournamentCard(ev)));
+
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+    });
+
+    group.appendChild(header);
+    group.appendChild(content);
+    eventsEl.appendChild(group);
+  }
 }
 
 // ---- Summary Bar ----
@@ -2037,6 +2202,20 @@ function showToast(msg) {
 // ---- Deep Link ----
 function checkDeepLink() {
   const params = new URLSearchParams(window.location.search);
+
+  // Organizer deep link
+  const orgParam = params.get('organizer');
+  if (orgParam) {
+    const org = Object.keys(organizerMeta).find(o =>
+      o.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === orgParam
+    );
+    if (org) {
+      showOrganizerProfile(org);
+      return;
+    }
+  }
+
+  // Tournament deep link
   const tid = params.get('tournament');
   if (tid !== null) {
     // Support both slug-based (new) and numeric id-based (legacy) deep links
