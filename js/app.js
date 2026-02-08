@@ -54,6 +54,7 @@ const i18n = {
     empty_try_filter: 'Try selecting a different organizer filter',
     countdown_live: 'Happening Now',
     year_more: '+{n} more',
+    filters_btn: 'Filters',
   },
   th: {
     nav_calendar: 'ปฏิทิน',
@@ -101,6 +102,7 @@ const i18n = {
     empty_try_filter: 'ลองเลือกตัวกรองผู้จัดงานอื่น',
     countdown_live: 'กำลังแข่งขัน',
     year_more: '+{n} เพิ่มเติม',
+    filters_btn: 'ตัวกรอง',
   }
 };
 
@@ -124,6 +126,7 @@ let currentLang = safeGetItem('pt-lang', null) || 'en';
 let currentTheme = safeGetItem('pt-theme', null) || 'dark';
 let searchQuery = '';
 let hidePast = safeGetItem('pt-hide-past', null) === 'true';
+let filtersExpanded = false;
 let listShouldScroll = true;
 let modalScrollY = 0;
 
@@ -440,6 +443,7 @@ function setFilter(organizer, clickedBtn) {
   } else {
     clickedBtn.classList.add('active');
   }
+  updateFilterBadge();
   render();
 }
 
@@ -483,6 +487,7 @@ function setLocationFilter(location, clickedBtn) {
   document.querySelectorAll('#location-filters .filter-btn:not([data-location="all"])').forEach(b => {
     b.style.opacity = (location === 'all' || b.dataset.location === location) ? '1' : '0.35';
   });
+  updateFilterBadge();
   render();
 }
 
@@ -528,6 +533,7 @@ function setCategoryFilter(category, clickedBtn) {
   document.querySelectorAll('#category-filters .filter-btn:not([data-category="all"])').forEach(b => {
     b.style.opacity = (category === 'all' || b.dataset.category === category) ? '1' : '0.35';
   });
+  updateFilterBadge();
   render();
 }
 
@@ -579,6 +585,9 @@ function bindEvents() {
     searchInput.focus();
     render();
   });
+
+  // Filter panel toggle
+  document.getElementById('filter-toggle-btn').addEventListener('click', toggleFilterPanel);
 
   // Hide past toggle
   document.getElementById('hide-past-btn').addEventListener('click', () => {
@@ -633,6 +642,38 @@ function updateHidePastBtn() {
     ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> <span class="hide-past-label">${t('show_past')}</span>`
     : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> <span class="hide-past-label">${t('hide_past')}</span>`;
   btn.title = hidePast ? t('show_past') : t('hide_past');
+}
+
+// ---- Filter Panel Toggle ----
+function toggleFilterPanel() {
+  filtersExpanded = !filtersExpanded;
+  const panel = document.getElementById('filter-panel');
+  const btn = document.getElementById('filter-toggle-btn');
+  if (filtersExpanded) {
+    panel.classList.remove('collapsed');
+    btn.setAttribute('aria-expanded', 'true');
+  } else {
+    panel.classList.add('collapsed');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+}
+
+function updateFilterBadge() {
+  const btn = document.getElementById('filter-toggle-btn');
+  const badge = document.getElementById('filter-badge');
+  if (!btn || !badge) return;
+  let count = 0;
+  if (activeFilter !== 'all') count++;
+  if (activeLocationFilter !== 'all') count++;
+  if (activeCategoryFilter !== 'all') count++;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+    btn.classList.add('has-active');
+  } else {
+    badge.classList.add('hidden');
+    btn.classList.remove('has-active');
+  }
 }
 
 function handleKeyboard(e) {

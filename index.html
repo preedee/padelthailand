@@ -75,6 +75,14 @@
             <!-- Hide Past Toggle -->
             <button class="hide-past-btn" id="hide-past-btn" title="Hide past events"></button>
 
+            <!-- Filter Toggle -->
+            <button class="filter-toggle-btn" id="filter-toggle-btn" title="Filters" aria-expanded="false" aria-controls="filter-panel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              <span data-i18n="filters_btn">Filters</span>
+              <span class="filter-badge hidden" id="filter-badge"></span>
+              <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+
             <!-- View Toggle -->
             <div class="view-toggle">
               <button class="view-btn active" data-view="calendar" title="Calendar view">
@@ -90,24 +98,26 @@
           </div>
         </div>
 
-        <!-- Filter Rows -->
-        <div class="filter-rows">
-          <div class="filter-row">
-            <span class="filter-row-label" data-i18n="filter_organizer">Organizer</span>
-            <div class="filters" id="filters">
-              <button class="filter-btn active" data-organizer="all" data-i18n="filter_all">All</button>
+        <!-- Collapsible Filter Panel -->
+        <div class="filter-panel collapsed" id="filter-panel">
+          <div class="filter-rows">
+            <div class="filter-row">
+              <span class="filter-row-label" data-i18n="filter_organizer">Organizer</span>
+              <div class="filters" id="filters">
+                <button class="filter-btn active" data-organizer="all" data-i18n="filter_all">All</button>
+              </div>
             </div>
-          </div>
-          <div class="filter-row">
-            <span class="filter-row-label" data-i18n="filter_location">Location</span>
-            <div class="filters" id="location-filters">
-              <button class="filter-btn active" data-location="all" data-i18n="filter_all">All</button>
+            <div class="filter-row">
+              <span class="filter-row-label" data-i18n="filter_location">Location</span>
+              <div class="filters" id="location-filters">
+                <button class="filter-btn active" data-location="all" data-i18n="filter_all">All</button>
+              </div>
             </div>
-          </div>
-          <div class="filter-row">
-            <span class="filter-row-label" data-i18n="filter_category">Category</span>
-            <div class="filters" id="category-filters">
-              <button class="filter-btn active" data-category="all" data-i18n="filter_all">All</button>
+            <div class="filter-row">
+              <span class="filter-row-label" data-i18n="filter_category">Category</span>
+              <div class="filters" id="category-filters">
+                <button class="filter-btn active" data-category="all" data-i18n="filter_all">All</button>
+              </div>
             </div>
           </div>
         </div>
