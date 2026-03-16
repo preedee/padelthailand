@@ -6,6 +6,8 @@
 const SHEET_ID = '1uEk015Jv8tNGFYlQ7f5Q_DuO4FZbL8ls3cmZLPwsjsk';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 const LEAGUES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leagues`;
+const DAILY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Daily%20Events`;
+const CLUBS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Clubs`;
 
 // ---- i18n ----
 const i18n = {
@@ -63,6 +65,14 @@ const i18n = {
     org_past: 'Past Competitions',
     org_back: '← Back',
     org_no_events: 'No competitions found for this organizer.',
+    type_daily: 'Daily Event',
+    modal_time: 'Time',
+    map_view: 'Map',
+    map_courts: 'courts',
+    map_upcoming_events: 'Upcoming Events',
+    map_directions: 'Directions',
+    map_website: 'Website',
+    map_no_clubs: 'No padel clubs found.',
   },
   th: {
     nav_calendar: 'ปฏิทิน',
@@ -118,6 +128,14 @@ const i18n = {
     org_past: 'การแข่งขันที่ผ่านมา',
     org_back: '← กลับ',
     org_no_events: 'ไม่พบการแข่งขันสำหรับผู้จัดงานนี้',
+    type_daily: 'อีเวนต์รายวัน',
+    modal_time: 'เวลา',
+    map_view: 'แผนที่',
+    map_courts: 'สนาม',
+    map_upcoming_events: 'การแข่งขันที่กำลังจะมาถึง',
+    map_directions: 'เส้นทาง',
+    map_website: 'เว็บไซต์',
+    map_no_clubs: 'ไม่พบสนามแพเดิล',
   }
 };
 
@@ -145,25 +163,51 @@ let hidePast = safeGetItem('pt-hide-past', null) === 'true';
 let filtersExpanded = false;
 let selectedOrganizer = null;
 let previousView = 'calendar';
+const IS_ORGANIZER_PAGE = !!document.getElementById('page-organizer');
+
+function toSlug(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
 let listShouldScroll = true;
 let modalScrollY = 0;
+let clubs = [];
+let mapInstance = null;
+let mapMarkerCluster = null;
+let mapTileLayer = null;
+
+const MAP_TILES = {
+  light: {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  },
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  }
+};
 
 // ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(currentTheme);
   applyLang(currentLang);
-  fetchTournaments();
-  bindEvents();
+  if (IS_ORGANIZER_PAGE) {
+    fetchAndRenderOrganizer();
+  } else {
+    fetchTournaments();
+    bindEvents();
+  }
 });
 
 // ---- Data Fetching ----
 async function fetchTournaments() {
   showLoading();
   try {
-    // Fetch tournaments and leagues tabs in parallel
-    const [respTournaments, respLeagues] = await Promise.all([
+    // Fetch tournaments, leagues, daily events, and clubs tabs in parallel
+    const [respTournaments, respLeagues, respDaily, respClubs] = await Promise.all([
       fetch(SHEET_URL),
-      fetch(LEAGUES_URL)
+      fetch(LEAGUES_URL),
+      fetch(DAILY_URL),
+      fetch(CLUBS_URL)
     ]);
     if (!respTournaments.ok) throw new Error('Failed to fetch tournaments');
 
@@ -177,11 +221,26 @@ async function fetchTournaments() {
       const mappedCsv = mapLeagueHeaders(csvLeagues);
       leagueData = parseCSV(mappedCsv);
       leagueData.forEach(l => { l.type = 'league'; });
-      // Re-assign IDs to avoid collisions
       leagueData.forEach((l, i) => { l.id = tournamentData.length + i; });
     }
 
-    tournaments = [...tournamentData, ...leagueData];
+    // Daily Events tab: map headers, parse, force type='daily'
+    let dailyData = [];
+    if (respDaily.ok) {
+      const csvDaily = await respDaily.text();
+      const mappedCsv = mapDailyHeaders(csvDaily);
+      dailyData = parseCSV(mappedCsv);
+      dailyData.forEach(d => { d.type = 'daily'; });
+      dailyData.forEach((d, i) => { d.id = tournamentData.length + leagueData.length + i; });
+    }
+
+    // Clubs tab: parse club data for map
+    if (respClubs.ok) {
+      const csvClubs = await respClubs.text();
+      clubs = parseClubs(csvClubs);
+    }
+
+    tournaments = [...tournamentData, ...leagueData, ...dailyData];
 
     buildOrganizerMeta();
     buildFilters();
@@ -193,6 +252,85 @@ async function fetchTournaments() {
   } catch (err) {
     console.error('Error loading tournaments:', err);
     showError();
+  }
+}
+
+// ---- Organizer Page Init ----
+async function fetchAndRenderOrganizer() {
+  const orgSlug = window.location.pathname.split('/').filter(Boolean).pop();
+  if (!orgSlug) { window.location.href = '/'; return; }
+
+  try {
+    const [respTournaments, respLeagues, respDaily] = await Promise.all([
+      fetch(SHEET_URL),
+      fetch(LEAGUES_URL),
+      fetch(DAILY_URL)
+    ]);
+    if (!respTournaments.ok) throw new Error('Failed to fetch tournaments');
+
+    const csvTournaments = await respTournaments.text();
+    const tournamentData = parseCSV(csvTournaments);
+
+    let leagueData = [];
+    if (respLeagues.ok) {
+      const csvLeagues = await respLeagues.text();
+      const mappedCsv = mapLeagueHeaders(csvLeagues);
+      leagueData = parseCSV(mappedCsv);
+      leagueData.forEach(l => { l.type = 'league'; });
+      leagueData.forEach((l, i) => { l.id = tournamentData.length + i; });
+    }
+
+    let dailyData = [];
+    if (respDaily.ok) {
+      const csvDaily = await respDaily.text();
+      const mappedCsv = mapDailyHeaders(csvDaily);
+      dailyData = parseCSV(mappedCsv);
+      dailyData.forEach(d => { d.type = 'daily'; });
+      dailyData.forEach((d, i) => { d.id = tournamentData.length + leagueData.length + i; });
+    }
+
+    tournaments = [...tournamentData, ...leagueData, ...dailyData];
+    buildOrganizerMeta();
+
+    // Find organizer by slug
+    const orgName = Object.keys(organizerMeta).find(o => toSlug(o) === orgSlug);
+    if (!orgName) { window.location.href = '/'; return; }
+
+    selectedOrganizer = orgName;
+    document.title = orgName + ' — Padel Thailand';
+    renderOrganizerDetail();
+
+    // Bind minimal events for organizer page
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) langToggle.addEventListener('click', () => {
+      toggleLang();
+      document.title = selectedOrganizer + ' — Padel Thailand';
+      renderOrganizerDetail();
+    });
+    document.addEventListener('keydown', handleKeyboard);
+
+    // Modal close
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalClose = document.getElementById('modal-close');
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Back to top
+    const backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('visible', window.scrollY > 300);
+      });
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+  } catch (err) {
+    console.error('Error loading organizer:', err);
+    const container = document.getElementById('org-detail-events');
+    if (container) container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Unable to load data. Please try again later.</p>';
   }
 }
 
@@ -219,6 +357,56 @@ function mapLeagueHeaders(csv) {
   return lines.join('\n');
 }
 
+// Map Daily Events tab column headers to match Tournament column headers
+function mapDailyHeaders(csv) {
+  const lines = csv.split('\n');
+  if (lines.length < 1) return csv;
+  lines[0] = lines[0]
+    .replace(/Event Name/gi, 'Tournament Name')
+    .replace(/Organizer Name/gi, 'Organizer')
+    .replace(/Registration URL Label/gi, 'Registration URL Label #1')
+    .replace(/Registration URL/gi, 'Tournament Registration URL #1')
+    .replace(/Instagram URL/gi, 'Tournament Instagram URL');
+  return lines.join('\n');
+}
+
+function parseClubs(csv) {
+  const lines = csv.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).map((line, idx) => {
+    const cols = parseCSVLine(line);
+    const obj = {};
+    headers.forEach((h, i) => {
+      obj[h.trim()] = (cols[i] || '').trim();
+    });
+    if (!(obj['Club Name'] || '').trim()) return null;
+    const lat = parseFloat(obj['Latitude']);
+    const lng = parseFloat(obj['Longitude']);
+    if (isNaN(lat) || isNaN(lng)) return null;
+    return {
+      id: idx,
+      name: obj['Club Name'] || '',
+      nameTh: obj['Club Name (TH)'] || '',
+      city: obj['City'] || '',
+      province: obj['Province'] || '',
+      lat,
+      lng,
+      courts: parseInt(obj['Courts'], 10) || 0,
+      surface: obj['Surface'] || '',
+      website: obj['Website'] || '',
+      instagram: obj['Instagram'] || '',
+      phone: obj['Phone'] || '',
+      googleMapsUrl: obj['Google Maps URL'] || '',
+      imageUrl: toDirectImageUrl(obj['Image URL'] || ''),
+      description: obj['Description'] || '',
+      descriptionTh: obj['Description (TH)'] || '',
+      indoorOutdoor: obj['Indoor/Outdoor'] || '',
+      hours: obj['Hours'] || '',
+    };
+  }).filter(Boolean);
+}
+
 function parseCSV(csv) {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
@@ -236,8 +424,7 @@ function parseCSV(csv) {
       ? new Date(tbcMonthData.year, tbcMonthData.month, 1)
       : parseDate(obj['Start Date']);
     // Build a stable slug from organizer + name for deep links
-    const slugBase = `${(obj['Organizer'] || '').trim()}-${(obj['Tournament Name'] || '').trim()}`
-      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slugBase = toSlug(`${(obj['Organizer'] || '').trim()}-${(obj['Tournament Name'] || '').trim()}`);
     return {
       id: idx,
       slug: slugBase || `t-${idx}`,
@@ -266,7 +453,10 @@ function parseCSV(csv) {
       orgInstagram: obj['Organizer Instagram'] || '',
       orgWebsite: obj['Organizer Website'] || '',
       hidden: (obj['Hide'] || '').trim().toLowerCase() === 'yes',
-      type: (obj['Type'] || '').trim().toLowerCase() === 'league' ? 'league' : 'tournament',
+      type: (obj['Type'] || '').trim().toLowerCase() === 'league' ? 'league'
+          : (obj['Type'] || '').trim().toLowerCase() === 'daily' ? 'daily'
+          : 'tournament',
+      timeSlot: (obj['Time Slot'] || '').trim(),
     };
   }).filter(Boolean);
 }
@@ -321,6 +511,11 @@ function applyTheme(theme) {
   currentTheme = theme;
   document.documentElement.setAttribute('data-theme', theme);
   safeSetItem('pt-theme', theme);
+  // Update map tiles if map is initialized
+  if (mapInstance && mapTileLayer) {
+    const tileConfig = MAP_TILES[theme] || MAP_TILES.dark;
+    mapTileLayer.setUrl(tileConfig.url);
+  }
 }
 
 function toggleTheme() {
@@ -360,6 +555,7 @@ function applyLang(lang) {
 
 function toggleLang() {
   applyLang(currentLang === 'en' ? 'th' : 'en');
+  if (IS_ORGANIZER_PAGE) return; // Organizer page handles re-render separately
   // Re-render content with new language — buildFilters rebuilds filter buttons,
   // then render() updates the active view, summary, TBC, legend, profiles
   if (tournaments.length) {
@@ -650,7 +846,7 @@ function buildTypeFilters() {
   container.innerHTML = `<button class="filter-btn active" data-type="all">${t('filter_all')}<span class="filter-btn-count">${totalCount}</span></button>`;
   types.forEach(tp => {
     const count = typeCounts[tp] || 0;
-    const label = tp === 'league' ? t('type_league') : t('type_tournament');
+    const label = tp === 'league' ? t('type_league') : tp === 'daily' ? t('type_daily') : t('type_tournament');
     const btn = document.createElement('button');
     btn.className = 'filter-btn';
     btn.dataset.type = tp;
@@ -753,17 +949,6 @@ function bindEvents() {
   });
   updateHidePastBtn();
 
-  // Organizer detail back button
-  document.getElementById('org-detail-back').addEventListener('click', () => {
-    selectedOrganizer = null;
-    activeView = previousView;
-    // Restore view toggle button active state
-    document.querySelectorAll('.view-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.view === activeView);
-    });
-    render();
-  });
-
   // Back to top
   const backToTopBtn = document.getElementById('back-to-top');
   window.addEventListener('scroll', () => {
@@ -843,10 +1028,10 @@ function handleKeyboard(e) {
   // Don't intercept if user is typing in an input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+  if (e.key === 'Escape') { closeModal(); return; }
+  if (IS_ORGANIZER_PAGE) return; // No keyboard nav on organizer page
+
   switch (e.key) {
-    case 'Escape':
-      closeModal();
-      break;
     case 'ArrowLeft':
       if (!isModalOpen()) {
         if (activeView === 'year') { currentYearView--; renderYear(); }
@@ -906,22 +1091,22 @@ function goToToday() {
 
 // ---- Rendering ----
 function render() {
-  const views = ['calendar-view', 'year-view', 'list-view', 'organizer-detail-view'];
+  const views = ['calendar-view', 'year-view', 'list-view', 'map-view'];
   views.forEach(id => {
     const el = document.getElementById(id);
-    el.classList.add('hidden');
-    el.classList.remove('view-transition-enter');
+    if (el) {
+      el.classList.add('hidden');
+      el.classList.remove('view-transition-enter');
+    }
   });
 
-  const isOrgDetail = activeView === 'organizer-detail';
+  const isMapView = activeView === 'map';
 
-  // Hide/show controls, TBC, org profiles when in organizer detail view
-  const controls = document.querySelector('.controls');
+  // Hide TBC and org profiles when in map view
   const tbcSection = document.getElementById('tbc-section');
   const orgSection = document.getElementById('organizer-profiles');
-  if (controls) controls.style.display = isOrgDetail ? 'none' : '';
-  if (tbcSection) tbcSection.style.display = isOrgDetail ? 'none' : '';
-  if (orgSection) orgSection.style.display = isOrgDetail ? 'none' : '';
+  if (tbcSection) tbcSection.style.display = isMapView ? 'none' : '';
+  if (orgSection) orgSection.style.display = isMapView ? 'none' : '';
 
   let activeEl;
   if (activeView === 'calendar') {
@@ -934,11 +1119,16 @@ function render() {
     activeEl.classList.remove('hidden');
     activeEl.classList.add('view-transition-enter');
     renderYear();
-  } else if (activeView === 'organizer-detail') {
-    activeEl = document.getElementById('organizer-detail-view');
+  } else if (activeView === 'map') {
+    activeEl = document.getElementById('map-view');
     activeEl.classList.remove('hidden');
     activeEl.classList.add('view-transition-enter');
-    renderOrganizerDetail();
+    if (!mapInstance) {
+      setTimeout(() => { initMap(); }, 50);
+    } else {
+      mapInstance.invalidateSize();
+      renderMapMarkers();
+    }
   } else {
     activeEl = document.getElementById('list-view');
     activeEl.classList.remove('hidden');
@@ -946,7 +1136,7 @@ function render() {
     renderList();
   }
 
-  if (!isOrgDetail) {
+  if (!isMapView) {
     renderTBC();
     renderOrgProfiles();
     renderSummaryBar();
@@ -1040,7 +1230,7 @@ function renderCalendar() {
     const isPast = dayDate < stripTime(today);
     const cell = createDayCell(d, false, isToday, isPast);
 
-    // Find tournaments on this day with bar position info (exclude month-TBC)
+    // Find events on this day (exclude month-TBC)
     const eventsOnDay = dated.filter(ev => {
       if (ev.dateTBC) return false;
       const start = stripTime(ev.startDate);
@@ -1048,18 +1238,23 @@ function renderCalendar() {
       return dayDate >= start && dayDate <= end;
     });
 
-    if (eventsOnDay.length > 0) {
+    // Separate daily events from bar events (tournaments/leagues)
+    const barEvents = eventsOnDay.filter(ev => ev.type !== 'daily');
+    const dailyEvents = eventsOnDay.filter(ev => ev.type === 'daily');
+
+    if (barEvents.length > 0 || dailyEvents.length > 0) {
       cell.classList.add('has-events');
     }
 
-    // Sort: leagues first so they render underneath tournaments
-    eventsOnDay.sort((a, b) => {
+    // Sort bar events: leagues first so they render underneath tournaments
+    barEvents.sort((a, b) => {
       if (a.type === 'league' && b.type !== 'league') return -1;
       if (a.type !== 'league' && b.type === 'league') return 1;
       return 0;
     });
 
-    eventsOnDay.forEach(ev => {
+    // Render bar events (tournaments + leagues)
+    barEvents.forEach(ev => {
       const start = stripTime(ev.startDate);
       const end = ev.endDate ? stripTime(ev.endDate) : start;
       const isStart = dayDate.getTime() === start.getTime();
@@ -1107,6 +1302,51 @@ function renderCalendar() {
 
       cell.appendChild(bar);
     });
+
+    // Render daily event dot indicators
+    if (dailyEvents.length > 0) {
+      const dotContainer = document.createElement('div');
+      dotContainer.className = 'cal-daily-dots';
+
+      if (dailyEvents.length === 1) {
+        const dot = document.createElement('span');
+        dot.className = 'cal-daily-dot';
+        dot.style.backgroundColor = dailyEvents[0].color;
+        dot.title = dailyEvents[0].name + (dailyEvents[0].timeSlot ? ` (${dailyEvents[0].timeSlot})` : '');
+        if (stripTime(dailyEvents[0].startDate) < stripTime(today)) dot.classList.add('past-event');
+        dot.addEventListener('click', (e) => { e.stopPropagation(); openModal(dailyEvents[0]); });
+        dot.addEventListener('mouseenter', (e) => showTooltip(e, dailyEvents[0]));
+        dot.addEventListener('mousemove', (e) => moveTooltip(e));
+        dot.addEventListener('mouseleave', hideTooltip);
+        dotContainer.appendChild(dot);
+      } else {
+        const badge = document.createElement('span');
+        badge.className = 'cal-daily-count';
+        badge.textContent = dailyEvents.length;
+        badge.style.backgroundColor = dailyEvents[0].color;
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showDailyEventsPopover(e, dailyEvents, cell);
+        });
+        badge.addEventListener('mouseenter', (e) => {
+          const tip = document.getElementById('tooltip');
+          tip.innerHTML = dailyEvents.map(ev =>
+            `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">` +
+            `<span style="width:6px;height:6px;border-radius:50%;background:${ev.color};flex-shrink:0;display:inline-block;"></span>` +
+            `<strong>${esc(ev.name)}</strong>` +
+            (ev.timeSlot ? `<span style="opacity:0.7;font-size:10px">${esc(ev.timeSlot)}</span>` : '') +
+            `</div>`
+          ).join('');
+          tip.classList.add('visible');
+          moveTooltip(e);
+        });
+        badge.addEventListener('mousemove', (e) => moveTooltip(e));
+        badge.addEventListener('mouseleave', hideTooltip);
+        dotContainer.appendChild(badge);
+      }
+
+      cell.appendChild(dotContainer);
+    }
 
     body.appendChild(cell);
   }
@@ -1250,7 +1490,19 @@ function renderYear() {
       if (eventsOnDay.length > 0) {
         dayEl.classList.add('has-event');
 
-        const primaryEvent = eventsOnDay[0];
+        // Separate daily events from bar events for year view display
+        const barEventsOnDay = eventsOnDay.filter(ev => ev.type !== 'daily');
+        const dailyEventsOnDay = eventsOnDay.filter(ev => ev.type === 'daily');
+
+        // If only daily events on this day, show a subtle dot instead of full coloring
+        if (barEventsOnDay.length === 0 && dailyEventsOnDay.length > 0) {
+          dayEl.classList.add('has-daily-only');
+          dayEl.style.setProperty('--daily-dot-color', dailyEventsOnDay[0].color);
+        }
+
+        // Use bar events for coloring, or fall back to all events if no bar events
+        const colorEvents = barEventsOnDay.length > 0 ? barEventsOnDay : eventsOnDay;
+        const primaryEvent = colorEvents[0];
         const primaryColor = primaryEvent.color;
         const start = stripTime(primaryEvent.startDate);
         const end = primaryEvent.endDate ? stripTime(primaryEvent.endDate) : start;
@@ -1265,12 +1517,15 @@ function renderYear() {
         const isFirstDayOfMonth = (d === 1);
         const isLastDayOfMonth = (d === daysInMonth);
 
-        // Build background: split colors for multiple tournaments
-        const uniqueColors = [...new Set(eventsOnDay.map(ev => ev.color))];
-        const allLeagues = eventsOnDay.every(ev => ev.type === 'league');
+        // Build background: split colors for multiple tournaments (skip for daily-only)
+        const uniqueColors = [...new Set(colorEvents.map(ev => ev.color))];
+        const allLeagues = colorEvents.every(ev => ev.type === 'league');
         const alpha = allLeagues ? 0.15 : 0.3;
+        const hasDailyOnly = barEventsOnDay.length === 0 && dailyEventsOnDay.length > 0;
 
-        if (!isToday) {
+        if (hasDailyOnly) {
+          // Daily-only days: no cell coloring, just the CSS ::after dot
+        } else if (!isToday) {
           if (uniqueColors.length === 1) {
             dayEl.style.backgroundColor = hexToRgba(uniqueColors[0], alpha);
           } else if (isSingleDay) {
@@ -1302,15 +1557,17 @@ function renderYear() {
           }
         }
 
-        if (isSingleDay) {
-          dayEl.classList.add('oval-single');
-        } else {
-          const hasLeftRound = isEventStart || isWeekStart || isFirstDayOfMonth;
-          const hasRightRound = isEventEnd || isWeekEnd || isLastDayOfMonth;
+        if (!hasDailyOnly) {
+          if (isSingleDay) {
+            dayEl.classList.add('oval-single');
+          } else {
+            const hasLeftRound = isEventStart || isWeekStart || isFirstDayOfMonth;
+            const hasRightRound = isEventEnd || isWeekEnd || isLastDayOfMonth;
 
-          if (hasLeftRound) dayEl.classList.add('oval-left');
-          if (hasRightRound) dayEl.classList.add('oval-right');
-          if (!hasLeftRound && !hasRightRound) dayEl.classList.add('oval-mid');
+            if (hasLeftRound) dayEl.classList.add('oval-left');
+            if (hasRightRound) dayEl.classList.add('oval-right');
+            if (!hasLeftRound && !hasRightRound) dayEl.classList.add('oval-mid');
+          }
         }
 
         // Tooltip on hover
@@ -1364,7 +1621,7 @@ function renderYear() {
       const maxPills = 3;
       unique.slice(0, maxPills).forEach(ev => {
         const pill = document.createElement('div');
-        pill.className = 'year-event-pill' + (ev.dateTBC ? ' year-event-pill-tbc' : '') + (ev.type === 'league' ? ' year-event-pill-league' : '');
+        pill.className = 'year-event-pill' + (ev.dateTBC ? ' year-event-pill-tbc' : '') + (ev.type === 'league' ? ' year-event-pill-league' : '') + (ev.type === 'daily' ? ' year-event-pill-daily' : '');
         pill.style.background = ev.dateTBC ? hexToRgba(ev.color, 0.15) : ev.color;
         if (ev.dateTBC) pill.style.color = ev.color;
         pill.textContent = ev.dateTBC ? `${ev.name} (TBC)` : ev.name;
@@ -1446,6 +1703,42 @@ function moveTooltip(e) {
 
 function hideTooltip() {
   document.getElementById('tooltip').classList.remove('visible');
+}
+
+// ---- Daily Events Popover ----
+function showDailyEventsPopover(e, dailyEvents, anchorCell) {
+  // Remove any existing popover
+  const existing = document.querySelector('.daily-popover');
+  if (existing) existing.remove();
+
+  const popover = document.createElement('div');
+  popover.className = 'daily-popover';
+
+  dailyEvents.forEach(ev => {
+    const item = document.createElement('div');
+    item.className = 'daily-popover-item';
+    item.innerHTML = `
+      <span class="daily-popover-dot" style="background:${ev.color}"></span>
+      <span class="daily-popover-name">${esc(ev.name)}</span>
+      ${ev.timeSlot ? `<span class="daily-popover-time">${esc(ev.timeSlot)}</span>` : ''}
+    `;
+    item.addEventListener('click', (evt) => { evt.stopPropagation(); popover.remove(); openModal(ev); });
+    popover.appendChild(item);
+  });
+
+  document.body.appendChild(popover);
+  const rect = anchorCell.getBoundingClientRect();
+  popover.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  popover.style.left = (rect.left + window.scrollX) + 'px';
+
+  // Close on click outside
+  const closeHandler = (evt) => {
+    if (!popover.contains(evt.target)) {
+      popover.remove();
+      document.removeEventListener('click', closeHandler);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeHandler), 0);
 }
 
 // ---- List Rendering ----
@@ -1704,6 +1997,7 @@ function createTournamentCard(ev) {
   if (ev.featured) card.classList.add('featured-card');
   // League flag
   if (ev.type === 'league') card.classList.add('league-card');
+  if (ev.type === 'daily') card.classList.add('daily-card');
 
   const dateRange = formatDateRange(ev);
   const countdown = getCountdownBadge(ev);
@@ -1727,10 +2021,11 @@ function createTournamentCard(ev) {
         : `<div class="card-org-dot" style="background:${ev.color}"></div>`}
     </div>
     <div class="card-info">
-      <span class="card-organizer-badge" style="background:${ev.color}">${esc(ev.organizer)}</span>${ev.type === 'league' ? `<span class="card-type-badge">${t('type_league')}</span>` : ''}
+      <span class="card-organizer-badge" style="background:${ev.color}">${esc(ev.organizer)}</span>${ev.type === 'league' ? `<span class="card-type-badge">${t('type_league')}</span>` : ''}${ev.type === 'daily' ? `<span class="card-type-badge card-type-badge-daily">${t('type_daily')}</span>` : ''}
       <div class="card-title">${esc(ev.name)}${countdown}</div>
       <div class="card-meta">
         <span class="card-meta-item">${esc(dateRange)}</span>
+        ${ev.timeSlot ? `<span class="card-meta-item">\u{1F554} ${esc(ev.timeSlot)}</span>` : ''}
       </div>
       ${categoriesHtml}
     </div>
@@ -1867,11 +2162,7 @@ function renderOrgProfiles() {
 
 // ---- Organizer Profile ----
 function showOrganizerProfile(orgName) {
-  selectedOrganizer = orgName;
-  previousView = activeView;
-  activeView = 'organizer-detail';
-  render();
-  window.scrollTo(0, 0);
+  window.location.href = '/organizer/' + toSlug(orgName);
 }
 
 function renderOrganizerDetail() {
@@ -1897,10 +2188,12 @@ function renderOrganizerDetail() {
 
   // Count events
   const allEvents = tournaments.filter(ev => !ev.hidden && ev.organizer === selectedOrganizer);
-  const tournamentCount = allEvents.filter(ev => ev.type !== 'league').length;
+  const tournamentCount = allEvents.filter(ev => ev.type === 'tournament').length;
   const leagueCount = allEvents.filter(ev => ev.type === 'league').length;
+  const dailyCount = allEvents.filter(ev => ev.type === 'daily').length;
   let statsText = `${tournamentCount} ${t('type_tournament')}${tournamentCount !== 1 ? 's' : ''}`;
   if (leagueCount > 0) statsText += ` · ${leagueCount} ${t('type_league')}${leagueCount !== 1 ? 's' : ''}`;
+  if (dailyCount > 0) statsText += ` · ${dailyCount} ${t('type_daily')}`;
 
   headerEl.innerHTML = `
     ${logoHtml}
@@ -2030,12 +2323,13 @@ function openModal(ev) {
   const categoriesHtml = ev.categories.length > 0 ? `<div class="modal-tags">${ev.categories.map(c => `<span class="modal-tag">${esc(c)}</span>`).join('')}</div>` : '';
   const featuredBadge = ev.featured ? `<span class="modal-featured-badge">${SVG_STAR} ${t('featured')}</span>` : '';
   const leagueBadge = ev.type === 'league' ? `<span class="modal-league-badge">${t('type_league')}</span>` : '';
+  const dailyBadge = ev.type === 'daily' ? `<span class="modal-daily-badge">${t('type_daily')}</span>` : '';
   const igAction = ev.instagramUrl ? `<a href="${esc(ev.instagramUrl)}" target="_blank" rel="noopener" class="modal-action-btn">${SVG_INSTAGRAM} ${t('view_instagram')}</a>` : '';
 
   content.innerHTML = `
     <div class="modal-header-row">
       <span class="modal-organizer" style="background:${ev.color}">${logoHtml}${esc(ev.organizer)}</span>
-      ${leagueBadge}${featuredBadge}
+      ${leagueBadge}${dailyBadge}${featuredBadge}
     </div>
     <h2 class="modal-title">${esc(ev.name)}${countdown ? ` <span class="countdown-badge${getCountdownDays(ev) <= 3 ? ' imminent' : getCountdownDays(ev) <= 14 ? ' soon' : ''}">${countdown}</span>` : ''}</h2>
     ${categoriesHtml}
@@ -2045,6 +2339,11 @@ function openModal(ev) {
         <span class="modal-detail-label">${t('modal_date')}</span>
         <span class="modal-detail-value">${esc(dateRange)}</span>
       </div>
+      ${ev.timeSlot ? `<div class="modal-detail">
+        <span class="modal-detail-icon">&#128340;</span>
+        <span class="modal-detail-label">${t('modal_time')}</span>
+        <span class="modal-detail-value">${esc(ev.timeSlot)}</span>
+      </div>` : ''}
       <div class="modal-detail">
         <span class="modal-detail-icon">&#128205;</span>
         <span class="modal-detail-label">${t('modal_city')}</span>
@@ -2143,7 +2442,33 @@ function modalFocusTrap(e) {
 // ---- Google Calendar ----
 function buildGoogleCalendarUrl(ev) {
   if (!ev.startDate) return '';
-  // Use date-only format for all-day events
+
+  // Daily events with time slot: use specific times
+  if (ev.timeSlot && ev.type === 'daily') {
+    const timeParts = ev.timeSlot.split('-').map(s => s.trim());
+    if (timeParts.length === 2 && timeParts[0].includes(':') && timeParts[1].includes(':')) {
+      const fmtDateTime = (d, time) => {
+        const [hh, mm] = time.split(':');
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}${m}${day}T${(hh || '00').padStart(2, '0')}${(mm || '00').padStart(2, '0')}00`;
+      };
+      const startStr = fmtDateTime(ev.startDate, timeParts[0]);
+      const endStr = fmtDateTime(ev.startDate, timeParts[1]);
+      const details = [ev.organizer, ev.club, ev.city].filter(Boolean).join(' - ');
+      const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: ev.name,
+        dates: `${startStr}/${endStr}`,
+        details: details,
+        location: [ev.club, ev.city, ev.country].filter(x => x && x !== 'TBC').join(', '),
+      });
+      return `https://calendar.google.com/calendar/render?${params.toString()}`;
+    }
+  }
+
+  // All-day events: use date-only format
   const fmtDate = (d) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -2206,11 +2531,10 @@ function checkDeepLink() {
   // Organizer deep link
   const orgParam = params.get('organizer');
   if (orgParam) {
-    const org = Object.keys(organizerMeta).find(o =>
-      o.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === orgParam
-    );
+    const org = Object.keys(organizerMeta).find(o => toSlug(o) === orgParam);
     if (org) {
-      showOrganizerProfile(org);
+      // Redirect to new organizer page
+      window.location.replace('/organizer/' + toSlug(org));
       return;
     }
   }
@@ -2252,7 +2576,9 @@ function formatDateRange(ev) {
   if (ev.dateTBC) return formatMonthTBC(ev);
   if (!ev.startDate) return 'TBC';
   const start = formatFullDate(ev.startDate);
-  if (!ev.endDate || ev.startDate.getTime() === ev.endDate.getTime()) return start;
+  if (!ev.endDate || ev.startDate.getTime() === ev.endDate.getTime()) {
+    return ev.timeSlot ? `${start}, ${ev.timeSlot}` : start;
+  }
   const end = formatFullDate(ev.endDate);
   return `${start} \u2013 ${end}`;
 }
@@ -2272,6 +2598,186 @@ function hexToRgba(hex, alpha) {
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// ---- Map View ----
+function initMap() {
+  if (mapInstance) return;
+
+  mapInstance = L.map('map-container', {
+    center: [13.7563, 100.5018],
+    zoom: 6,
+    zoomControl: true,
+    scrollWheelZoom: true,
+  });
+
+  const tileConfig = MAP_TILES[currentTheme] || MAP_TILES.dark;
+  mapTileLayer = L.tileLayer(tileConfig.url, {
+    attribution: tileConfig.attribution,
+    maxZoom: 19,
+  }).addTo(mapInstance);
+
+  mapMarkerCluster = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    iconCreateFunction: function(cluster) {
+      const count = cluster.getChildCount();
+      let size = 'small';
+      if (count >= 10) size = 'medium';
+      if (count >= 20) size = 'large';
+      return L.divIcon({
+        html: '<div class="map-cluster map-cluster-' + size + '"><span>' + count + '</span></div>',
+        className: 'map-cluster-icon',
+        iconSize: L.point(40, 40),
+      });
+    }
+  });
+
+  mapInstance.addLayer(mapMarkerCluster);
+  renderMapMarkers();
+}
+
+function createClubIcon() {
+  return L.divIcon({
+    html: '<div class="map-pin"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="var(--map-pin-fill, #e74c3c)"/><circle cx="12" cy="11" r="5" fill="white" opacity="0.9"/></svg></div>',
+    className: 'map-pin-icon',
+    iconSize: [24, 32],
+    iconAnchor: [12, 32],
+    popupAnchor: [0, -32],
+  });
+}
+
+function getFilteredClubs() {
+  let result = clubs;
+  if (activeLocationFilters.size > 0) {
+    result = result.filter(c => activeLocationFilters.has(c.city));
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    result = result.filter(c => {
+      const haystack = (c.name + ' ' + c.nameTh + ' ' + c.city + ' ' + c.province).toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+  return result;
+}
+
+function getClubUpcomingEvents(club) {
+  const today = stripTime(new Date());
+  return tournaments
+    .filter(t =>
+      !t.hidden &&
+      t.club &&
+      t.club.toLowerCase() === club.name.toLowerCase() &&
+      t.startDate &&
+      stripTime(t.startDate) >= today
+    )
+    .sort((a, b) => a.startDate - b.startDate);
+}
+
+function formatShortDate(d) {
+  if (!d) return '';
+  const months = t('months_short');
+  return d.getDate() + ' ' + months[d.getMonth()];
+}
+
+function renderMapMarkers() {
+  if (!mapMarkerCluster) return;
+  mapMarkerCluster.clearLayers();
+
+  const filtered = getFilteredClubs();
+
+  if (filtered.length === 0) {
+    // Show empty state
+    const container = document.getElementById('map-container');
+    let emptyMsg = container.querySelector('.map-empty');
+    if (!emptyMsg) {
+      emptyMsg = document.createElement('div');
+      emptyMsg.className = 'map-empty';
+      container.appendChild(emptyMsg);
+    }
+    emptyMsg.textContent = t('map_no_clubs');
+    emptyMsg.style.display = '';
+    return;
+  }
+
+  // Hide empty state if visible
+  const emptyMsg = document.getElementById('map-container').querySelector('.map-empty');
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  filtered.forEach(club => {
+    const marker = L.marker([club.lat, club.lng], {
+      icon: createClubIcon(),
+    });
+
+    const clubName = currentLang === 'th' && club.nameTh ? club.nameTh : club.name;
+    const clubDesc = currentLang === 'th' && club.descriptionTh ? club.descriptionTh : club.description;
+    const upcomingEvents = getClubUpcomingEvents(club);
+
+    const eventsHtml = upcomingEvents.length > 0
+      ? '<div class="map-popup-events">' +
+          '<strong>' + t('map_upcoming_events') + '</strong>' +
+          upcomingEvents.slice(0, 3).map(ev =>
+            '<div class="map-popup-event" data-event-id="' + ev.id + '">' +
+              '<span class="map-popup-event-dot" style="background:' + ev.color + '"></span>' +
+              '<span class="map-popup-event-name">' + esc(ev.name) + '</span>' +
+              '<span class="map-popup-event-date">' + formatShortDate(ev.startDate) + '</span>' +
+            '</div>'
+          ).join('') +
+          (upcomingEvents.length > 3 ? '<div class="map-popup-more">+' + (upcomingEvents.length - 3) + ' more</div>' : '') +
+        '</div>'
+      : '';
+
+    const popupContent =
+      '<div class="map-popup">' +
+        (club.imageUrl ? '<img class="map-popup-img" src="' + esc(club.imageUrl) + '" alt="' + esc(clubName) + '" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : '') +
+        '<h3 class="map-popup-title">' + esc(clubName) + '</h3>' +
+        '<div class="map-popup-meta">' +
+          (club.city ? '<span>&#128205; ' + esc(club.city) + (club.province ? ', ' + esc(club.province) : '') + '</span>' : '') +
+          (club.courts ? '<span>&#127934; ' + club.courts + ' ' + t('map_courts') + '</span>' : '') +
+          (club.surface ? '<span>' + esc(club.surface) + '</span>' : '') +
+          (club.indoorOutdoor ? '<span>' + esc(club.indoorOutdoor) + '</span>' : '') +
+          (club.hours ? '<span>&#128340; ' + esc(club.hours) + '</span>' : '') +
+        '</div>' +
+        (clubDesc ? '<p class="map-popup-desc">' + esc(clubDesc) + '</p>' : '') +
+        eventsHtml +
+        '<div class="map-popup-actions">' +
+          (club.googleMapsUrl ? '<a href="' + esc(club.googleMapsUrl) + '" target="_blank" rel="noopener" class="map-popup-btn">&#128204; ' + t('map_directions') + '</a>' : '') +
+          (club.website ? '<a href="' + esc(club.website) + '" target="_blank" rel="noopener" class="map-popup-btn">' + SVG_GLOBE + ' ' + t('map_website') + '</a>' : '') +
+          (club.instagram ? '<a href="' + esc(club.instagram) + '" target="_blank" rel="noopener" class="map-popup-btn">' + SVG_INSTAGRAM + '</a>' : '') +
+          (club.phone ? '<a href="tel:' + esc(club.phone) + '" class="map-popup-btn">&#128222; ' + esc(club.phone) + '</a>' : '') +
+        '</div>' +
+      '</div>';
+
+    marker.bindPopup(popupContent, {
+      maxWidth: 300,
+      minWidth: 240,
+      className: 'map-custom-popup',
+    });
+
+    marker.on('popupopen', () => {
+      const popupEl = marker.getPopup().getElement();
+      if (popupEl) {
+        popupEl.querySelectorAll('.map-popup-event').forEach(el => {
+          el.addEventListener('click', () => {
+            const evId = parseInt(el.dataset.eventId, 10);
+            const ev = tournaments.find(t => t.id === evId);
+            if (ev) openModal(ev);
+          });
+        });
+      }
+    });
+
+    mapMarkerCluster.addLayer(marker);
+  });
+
+  // Fit bounds to all markers
+  if (filtered.length > 0) {
+    const bounds = L.latLngBounds(filtered.map(c => [c.lat, c.lng]));
+    mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+  }
 }
 
 function esc(str) {
