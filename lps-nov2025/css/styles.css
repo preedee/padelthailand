@@ -358,8 +358,8 @@ html, body {
    ============================================ */
 .matches-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   height: 100%;
   align-content: start;
 }
@@ -386,10 +386,10 @@ html, body {
   background: var(--white);
   border: 1px solid rgba(8, 93, 60, 0.1);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .match-card--live {
@@ -476,8 +476,11 @@ html, body {
 .match-card__team-name {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 18px;
+  font-size: 15px;
   color: var(--green);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .match-card__team--winner .match-card__team-name {
@@ -496,9 +499,9 @@ html, body {
 .match-card__set-score {
   font-family: var(--font);
   font-weight: 400;
-  font-size: 24px;
+  font-size: 20px;
   color: var(--green);
-  min-width: 28px;
+  min-width: 24px;
   text-align: center;
 }
 
