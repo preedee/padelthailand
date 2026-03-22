@@ -73,8 +73,8 @@ html, body {
   align-items: center;
   justify-content: space-between;
   background: var(--white);
-  padding: 16px 48px;
-  height: 90px;
+  padding: 12px 48px;
+  height: 108px;
   border-bottom: 1px solid rgba(8, 93, 60, 0.1);
 }
 
@@ -86,7 +86,7 @@ html, body {
 
 .header__rpa-logo,
 .header__lps-logo {
-  height: 56px;
+  height: 84px;
   width: auto;
   border-radius: 4px;
 }
@@ -121,7 +121,7 @@ html, body {
 }
 
 .header__tps-logo {
-  height: 40px;
+  height: 60px;
   width: auto;
 }
 
@@ -216,9 +216,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--black);
+  background: var(--white);
   padding: 10px 48px;
   height: 44px;
+  border-top: 1px solid rgba(8, 93, 60, 0.1);
 }
 
 .footer__logos {
@@ -228,16 +229,16 @@ html, body {
 }
 
 .footer__logo {
-  height: 22px;
+  height: 28px;
   width: auto;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .footer__timestamp {
   font-family: var(--font);
   font-weight: 300;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--green-support);
   letter-spacing: 0.5px;
 }
 
