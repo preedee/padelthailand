@@ -85,10 +85,11 @@ const Bracket = (() => {
   }
 
   function renderBracketMatch(match) {
-    const isTeam1Winner = match.winner && match.team1 &&
-      match.winner.trim() === match.team1.trim();
-    const isTeam2Winner = match.winner && match.team2 &&
-      match.winner.trim() === match.team2.trim();
+    const winnerClean = cleanTeamName(match.winner || '');
+    const team1Clean = cleanTeamName(match.team1 || '');
+    const team2Clean = cleanTeamName(match.team2 || '');
+    const isTeam1Winner = winnerClean && team1Clean && winnerClean === team1Clean;
+    const isTeam2Winner = winnerClean && team2Clean && winnerClean === team2Clean;
 
     const team1Class = isTeam1Winner ? 'bracket-match__team--winner' :
                        isTeam2Winner ? 'bracket-match__team--loser' : '';
@@ -103,11 +104,11 @@ const Bracket = (() => {
     return `<div class="bracket-match">
       <div class="bracket-match__team ${team1Class} ${team1TBD}">
         <span class="bracket-match__team-name">${team1Name}</span>
-        <span class="bracket-match__score">${match.score1 || ''}</span>
+        <span class="bracket-match__score">${match.score1 != null ? match.score1 : ''}</span>
       </div>
       <div class="bracket-match__team ${team2Class} ${team2TBD}">
         <span class="bracket-match__team-name">${team2Name}</span>
-        <span class="bracket-match__score">${match.score2 || ''}</span>
+        <span class="bracket-match__score">${match.score2 != null ? match.score2 : ''}</span>
       </div>
     </div>`;
   }
