@@ -39,6 +39,13 @@ const Standings = (() => {
   }
 
   function renderGroup(name, teams) {
+    // Sort: Wins desc, Losses asc, then game difference (GW - GL) desc
+    teams.sort((a, b) =>
+      b.won - a.won ||
+      a.lost - b.lost ||
+      (b.gamesWon - b.gamesLost) - (a.gamesWon - a.gamesLost)
+    );
+
     // Top 2 teams are qualifiers
     const rows = teams.map((team, idx) => {
       const isQualifier = idx < 2;
