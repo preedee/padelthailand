@@ -83,9 +83,11 @@ html, body {
   gap: 20px;
 }
 
-.header__rpa-logo {
+.header__rpa-logo,
+.header__lps-logo {
   height: 56px;
   width: auto;
+  border-radius: 4px;
 }
 
 .header__title {
