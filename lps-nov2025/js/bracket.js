@@ -13,6 +13,17 @@ const Bracket = (() => {
     'Finals': 'Final'
   };
 
+  // Strip team codes like (PA3rd), (CB4th), (PD5th), (PC5th - no team) from names
+  function cleanTeamName(name) {
+    if (!name) return name;
+    return name.replace(/\s*\([A-Z]{2}\d*[a-z]*(?:\s*-\s*no team)?\)\s*$/, '').trim();
+  }
+
+  // Clean tier section title: "Power Tier 3 (3rd Place matches)" → "Tier 3"
+  function cleanTierTitle(title) {
+    return title.replace(/^(Power|Club)\s+/i, '').replace(/\s*\(.*\)\s*$/, '').trim();
+  }
+
   function renderPower(container) {
     const data = Data.getPowerKnockout();
     renderDivision(container, 'Power Play Knockout', data);
@@ -84,8 +95,8 @@ const Bracket = (() => {
     const team2Class = isTeam2Winner ? 'bracket-match__team--winner' :
                        isTeam1Winner ? 'bracket-match__team--loser' : '';
 
-    const team1Name = match.team1 || 'TBD';
-    const team2Name = match.team2 || 'TBD';
+    const team1Name = cleanTeamName(match.team1) || 'TBD';
+    const team2Name = cleanTeamName(match.team2) || 'TBD';
     const team1TBD = !match.team1 ? 'bracket-match__team--tbd' : '';
     const team2TBD = !match.team2 ? 'bracket-match__team--tbd' : '';
 
@@ -127,7 +138,7 @@ const Bracket = (() => {
     return `<div class="bracket-tiers">
       ${Object.entries(tiers).map(([section, matches]) => `
         <div class="bracket-tier">
-          <div class="bracket-tier__title">${section}</div>
+          <div class="bracket-tier__title">${cleanTierTitle(section)}</div>
           <div class="bracket-tier__matches">
             ${matches.map(m => renderBracketMatch(m)).join('')}
           </div>
