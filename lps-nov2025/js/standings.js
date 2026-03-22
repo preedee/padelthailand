@@ -64,7 +64,7 @@ const Standings = (() => {
       <table class="group-card__table">
         <thead>
           <tr>
-            <th>Pair</th>
+            <th>Team</th>
             <th>MP</th>
             <th>W</th>
             <th>L</th>

@@ -270,9 +270,13 @@ const Data = (() => {
 
   // --- Derived data: Live / Recent Matches ---
   function getMatchesByCourt(matchList) {
+    const validCourts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
     const courts = {};
     matchList.forEach(m => {
-      const court = m.court || 'Court';
+      // Only include matches with a Match ID (column W) and a valid court
+      if (!m.matchId) return;
+      if (!validCourts.includes(m.court)) return;
+      const court = m.court;
       if (!courts[court]) courts[court] = [];
       courts[court].push(m);
     });
