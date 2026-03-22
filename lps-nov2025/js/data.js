@@ -270,20 +270,23 @@ const Data = (() => {
 
   // --- Derived data: Live / Recent Matches ---
   function getMatchesByCourt(matchList) {
-    const validCourts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
     const courts = {};
     matchList.forEach(m => {
-      // Only include matches with a Match ID (column W) and a valid court
+      // Only include matches with a Match ID (column W)
       if (!m.matchId) return;
-      if (!validCourts.includes(m.court)) return;
-      const court = m.court;
+      const court = m.court || 'Unassigned';
       if (!courts[court]) courts[court] = [];
       courts[court].push(m);
     });
-    for (const court of Object.keys(courts)) {
-      courts[court].sort((a, b) => a.order - b.order);
+    // Sort courts: Court 1-4 first, then others
+    const sortedCourts = {};
+    const courtOrder = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
+    courtOrder.forEach(c => { if (courts[c]) sortedCourts[c] = courts[c]; });
+    Object.keys(courts).forEach(c => { if (!sortedCourts[c]) sortedCourts[c] = courts[c]; });
+    for (const court of Object.keys(sortedCourts)) {
+      sortedCourts[court].sort((a, b) => a.order - b.order);
     }
-    return courts;
+    return sortedCourts;
   }
 
   // --- Fetch and parse all 4 tabs ---
