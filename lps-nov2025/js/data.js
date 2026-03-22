@@ -272,7 +272,7 @@ const Data = (() => {
   function getMatchesByCourt(matchList) {
     const courts = {};
     matchList.forEach(m => {
-      const court = m.court || m.club || 'Court';
+      const court = m.court || 'Court';
       if (!courts[court]) courts[court] = [];
       courts[court].push(m);
     });
