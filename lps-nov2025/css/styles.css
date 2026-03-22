@@ -72,9 +72,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--black);
+  background: var(--white);
   padding: 16px 48px;
   height: 90px;
+  border-bottom: 1px solid rgba(8, 93, 60, 0.1);
 }
 
 .header__left {
@@ -99,7 +100,7 @@ html, body {
   font-family: var(--font);
   font-weight: 700;
   font-size: 26px;
-  color: var(--white);
+  color: var(--green);
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -108,7 +109,7 @@ html, body {
   font-family: var(--font);
   font-weight: 300;
   font-size: 14px;
-  color: var(--gold);
+  color: var(--green-support);
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-top: 2px;
