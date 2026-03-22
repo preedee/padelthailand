@@ -30,20 +30,11 @@ const Matches = (() => {
       m.status.toLowerCase() === 'upcoming' || m.status.toLowerCase() === ''
     );
 
-    // Show: live matches first, then most recent done, then next upcoming
+    // Show all matches: live first, then done, then upcoming
     const cards = [];
     live.forEach(m => cards.push(renderMatchCard(m, 'live')));
-
-    // Show last 2 completed matches
-    done.slice(-2).forEach(m => cards.push(renderMatchCard(m, 'done')));
-
-    // Show next upcoming
-    upcoming.slice(0, 1).forEach(m => cards.push(renderMatchCard(m, 'upcoming')));
-
-    // If no cards at all, show all matches
-    if (cards.length === 0) {
-      courtMatches.slice(0, 3).forEach(m => cards.push(renderMatchCard(m, 'done')));
-    }
+    done.forEach(m => cards.push(renderMatchCard(m, 'done')));
+    upcoming.forEach(m => cards.push(renderMatchCard(m, 'upcoming')));
 
     return `<div class="court-column">
       <div class="court-column__header">${name}</div>
