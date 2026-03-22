@@ -1,20 +1,22 @@
 /* ============================================
-   Data Layer — CSV fetch, parse, poll (3 tabs)
+   Data Layer — CSV fetch, parse, poll (4 tabs)
    ============================================ */
 
 const Data = (() => {
   const SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';
   const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   const URLS = {
-    matches:  `${BASE_URL}&sheet=Matches`,
+    matches:   `${BASE_URL}&sheet=Matches`,
     standings: `${BASE_URL}&sheet=Group%20Stage%20Standings`,
-    knockout:  `${BASE_URL}&sheet=Knockout%20Stage%20Standings`
+    powerKO:   `${BASE_URL}&sheet=Power%20Play%20Knockout%20Stage`,
+    clubKO:    `${BASE_URL}&sheet=Club%20Play%20Knockout%20Stage`
   };
   const POLL_INTERVAL = 30000; // 30 seconds
 
   let matches = [];
-  let standingsData = [];   // raw rows from standings tab
-  let knockoutData = [];    // raw rows from knockout tab
+  let standingsData = [];    // raw rows from standings tab
+  let powerKOData = [];      // raw rows from Power knockout tab
+  let clubKOData = [];       // raw rows from Club knockout tab
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
@@ -203,14 +205,14 @@ const Data = (() => {
   }
 
   // ============================================================
-  // Knockout Stage — parsed from dedicated tab
-  // Layout: division headers, then section headers (PLAYOFFS, Tier 3, etc.),
+  // Knockout Stage — parsed from a single-division tab
+  // Each tab has one division (Power or Club).
+  // Layout: header, section headers (PLAYOFFS, Tier 3, etc.),
   // then "Round","Team 1","Score","Team 2","Winner" rows.
   // Also has final standings sections.
   // ============================================================
-  function parseKnockoutTab(lines) {
-    const divisions = {};
-    let currentDivision = '';
+  function parseKnockoutTab(lines, divisionName) {
+    const result = { matches: [], standings: [] };
     let currentSection = '';
 
     for (const line of lines) {
@@ -218,11 +220,10 @@ const Data = (() => {
       const col0 = fields[0] || '';
       const col1 = fields[1] || '';
 
-      // Division header
-      if (col0.includes('DIVISION') && col0.includes('KNOCKOUT')) {
-        currentDivision = col0.includes('POWER') ? 'Power' : 'Club';
-        if (!divisions[currentDivision]) {
-          divisions[currentDivision] = { matches: [], standings: [] };
+      // Skip division/stage header rows
+      if (col0.includes('KNOCKOUT') || col0.includes('STANDINGS')) {
+        if (col0.includes('FINAL STANDINGS')) {
+          currentSection = 'FINAL_STANDINGS';
         }
         continue;
       }
@@ -233,18 +234,12 @@ const Data = (() => {
         continue;
       }
 
-      // Final standings header
-      if (col0.includes('DIVISION FINAL STANDINGS')) {
-        currentSection = 'FINAL_STANDINGS';
-        continue;
-      }
-
       // Skip column header rows
       if (col0 === 'Round' || col0 === 'Place') continue;
 
       // Final standings data row
-      if (currentSection === 'FINAL_STANDINGS' && col0 && col1 && currentDivision) {
-        divisions[currentDivision].standings.push({
+      if (currentSection === 'FINAL_STANDINGS' && col0 && col1) {
+        result.standings.push({
           place: col0,
           team: col1,
           note: fields[2] || ''
@@ -253,10 +248,10 @@ const Data = (() => {
       }
 
       // Match data row: Round, Team 1, Score, Team 2, Winner
-      if (col0 && col1 && fields[2] && fields[3] && currentDivision) {
+      if (col0 && col1 && fields[2] && fields[3]) {
         const score = fields[2] || '';
         const scoreParts = score.split('-').map(s => parseInt(s.trim()));
-        divisions[currentDivision].matches.push({
+        result.matches.push({
           round: col0,
           team1: col1,
           score: score.trim(),
@@ -265,12 +260,12 @@ const Data = (() => {
           team2: fields[3],
           winner: fields[4] || '',
           section: currentSection,
-          division: currentDivision
+          division: divisionName
         });
       }
     }
 
-    return divisions;
+    return result;
   }
 
   // --- Derived data: Live / Recent Matches ---
@@ -287,13 +282,14 @@ const Data = (() => {
     return courts;
   }
 
-  // --- Fetch and parse all 3 tabs ---
+  // --- Fetch and parse all 4 tabs ---
   async function fetchData() {
     try {
-      const [matchRes, standingsRes, knockoutRes] = await Promise.all([
+      const [matchRes, standingsRes, powerKORes, clubKORes] = await Promise.all([
         fetch(URLS.matches),
         fetch(URLS.standings),
-        fetch(URLS.knockout)
+        fetch(URLS.powerKO),
+        fetch(URLS.clubKO)
       ]);
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
@@ -307,9 +303,14 @@ const Data = (() => {
         standingsData = parseCSV(standingsText);
       }
 
-      if (knockoutRes.ok) {
-        const knockoutText = await knockoutRes.text();
-        knockoutData = parseCSV(knockoutText);
+      if (powerKORes.ok) {
+        const powerKOText = await powerKORes.text();
+        powerKOData = parseCSV(powerKOText);
+      }
+
+      if (clubKORes.ok) {
+        const clubKOText = await clubKORes.text();
+        clubKOData = parseCSV(clubKOText);
       }
 
       lastUpdated = new Date();
@@ -339,7 +340,8 @@ const Data = (() => {
     getWinner,
     getMatchesByCourt,
     getStandings: () => parseStandingsTab(standingsData),
-    getKnockout: () => parseKnockoutTab(knockoutData),
+    getPowerKnockout: () => parseKnockoutTab(powerKOData, 'Power'),
+    getClubKnockout: () => parseKnockoutTab(clubKOData, 'Club'),
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; }
   };

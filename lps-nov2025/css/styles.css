@@ -621,7 +621,13 @@ html, body {
   opacity: 0.25;
 }
 
-/* Bracket container for multiple divisions */
+/* Bracket container — single division per view */
+.bracket-single {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .bracket-container {
   display: flex;
   flex-direction: column;

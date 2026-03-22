@@ -3,7 +3,7 @@
    ============================================ */
 
 const App = (() => {
-  const VIEWS = ['standings', 'matches', 'bracket'];
+  const VIEWS = ['standings', 'matches', 'power-bracket', 'club-bracket'];
   const ROTATION_INTERVAL = 25000; // 25 seconds
   let currentViewIndex = 0;
   let rotationTimer = null;
@@ -65,13 +65,10 @@ const App = (() => {
   }
 
   function renderAllViews(matches) {
-    const standingsContainer = document.getElementById('view-standings');
-    const matchesContainer = document.getElementById('view-matches');
-    const bracketContainer = document.getElementById('view-bracket');
-
-    Standings.render(standingsContainer, matches);
-    Matches.render(matchesContainer, matches);
-    Bracket.render(bracketContainer, matches);
+    Standings.render(document.getElementById('view-standings'), matches);
+    Matches.render(document.getElementById('view-matches'), matches);
+    Bracket.renderPower(document.getElementById('view-power-bracket'));
+    Bracket.renderClub(document.getElementById('view-club-bracket'));
   }
 
   function switchToView(index) {

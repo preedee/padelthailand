@@ -1,7 +1,6 @@
 /* ============================================
-   View 3 — Knockout Bracket
-   Uses dedicated Knockout Stage Standings tab
-   Shows brackets for Power and Club divisions
+   View 3 & 4 — Knockout Brackets
+   Power and Club divisions as separate views
    ============================================ */
 
 const Bracket = (() => {
@@ -14,26 +13,24 @@ const Bracket = (() => {
     'Finals': 'Final'
   };
 
-  function render(container, matches) {
-    const knockout = Data.getKnockout();
-    const divisionNames = Object.keys(knockout);
+  function renderPower(container) {
+    const data = Data.getPowerKnockout();
+    renderDivision(container, 'Power Play Knockout', data);
+  }
 
-    if (divisionNames.length === 0) {
+  function renderClub(container) {
+    const data = Data.getClubKnockout();
+    renderDivision(container, 'Club Play Knockout', data);
+  }
+
+  function renderDivision(container, title, divData) {
+    if (!divData || divData.matches.length === 0) {
       container.innerHTML = '<div class="loading">No knockout bracket data available</div>';
       return;
     }
 
-    const html = `<div class="bracket-container">
-      ${divisionNames.map(div => renderDivision(div, knockout[div])).join('')}
-    </div>`;
-
-    container.innerHTML = html;
-  }
-
-  function renderDivision(divName, divData) {
-    // Get main playoff matches (from PLAYOFFS section)
+    // Get main playoff matches
     const playoffMatches = divData.matches.filter(m =>
-      m.section.includes('PLAYOFFS') ||
       ROUND_ORDER.includes(m.round)
     );
 
@@ -46,27 +43,25 @@ const Bracket = (() => {
 
     const presentRounds = ROUND_ORDER.filter(r => rounds[r] && rounds[r].length > 0);
 
-    // Get tier matches (Tier 3, 4, 5)
-    const tierMatches = divData.matches.filter(m =>
-      m.round.startsWith('Tier')
-    );
-
-    // Group tier matches by section
+    // Get tier matches
+    const tierMatches = divData.matches.filter(m => m.round.startsWith('Tier'));
     const tiers = {};
     tierMatches.forEach(m => {
       if (!tiers[m.section]) tiers[m.section] = [];
       tiers[m.section].push(m);
     });
 
-    return `
-      <div class="bracket-division">
-        <div class="bracket-division__title">${divName} Division Playoffs</div>
+    const html = `
+      <div class="bracket-single">
+        <div class="bracket-division__title">${title}</div>
         <div class="bracket">
           ${presentRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
           ${renderChampion(divData.standings)}
         </div>
         ${Object.keys(tiers).length > 0 ? renderTiers(tiers) : ''}
       </div>`;
+
+    container.innerHTML = html;
   }
 
   function renderRound(roundKey, roundMatches) {
@@ -109,15 +104,12 @@ const Bracket = (() => {
   function renderChampion(standings) {
     if (!standings || standings.length === 0) return '';
 
-    const champion = standings[0];
-    if (!champion) return '';
-
     return `<div class="bracket__round">
-      <div class="bracket__round-title">Champion</div>
+      <div class="bracket__round-title">Final Standings</div>
       <div class="bracket__matches">
         <div class="bracket-match bracket-match--champion">
           <div class="bracket-match__team bracket-match__team--winner bracket-match__team--champion-display">
-            <span class="bracket-match__team-name">${champion.place} ${champion.team}</span>
+            <span class="bracket-match__team-name">${standings[0].place} ${standings[0].team}</span>
           </div>
         </div>
         ${standings.slice(1, 4).map(s => `
@@ -144,5 +136,5 @@ const Bracket = (() => {
     </div>`;
   }
 
-  return { render };
+  return { renderPower, renderClub };
 })();

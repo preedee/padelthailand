@@ -29,9 +29,11 @@
     <nav class="view-bar">
       <button class="view-bar__tab active" data-view="standings">Group Standings</button>
       <button class="view-bar__tab" data-view="matches">Live Matches</button>
-      <button class="view-bar__tab" data-view="bracket">Knockout Bracket</button>
+      <button class="view-bar__tab" data-view="power-bracket">Power Bracket</button>
+      <button class="view-bar__tab" data-view="club-bracket">Club Bracket</button>
       <div class="view-bar__dots">
         <span class="view-bar__dot active"></span>
+        <span class="view-bar__dot"></span>
         <span class="view-bar__dot"></span>
         <span class="view-bar__dot"></span>
       </div>
@@ -49,9 +51,14 @@
         <div class="loading">Loading match data...</div>
       </section>
 
-      <!-- View: Bracket -->
-      <section class="view" id="view-bracket">
-        <div class="loading">Loading bracket data...</div>
+      <!-- View: Power Bracket -->
+      <section class="view" id="view-power-bracket">
+        <div class="loading">Loading Power bracket data...</div>
+      </section>
+
+      <!-- View: Club Bracket -->
+      <section class="view" id="view-club-bracket">
+        <div class="loading">Loading Club bracket data...</div>
       </section>
     </main>
 
@@ -67,10 +74,10 @@
 
   </div>
 
-  <script src="js/data.js?v=3"></script>
-  <script src="js/standings.js?v=3"></script>
-  <script src="js/matches.js?v=3"></script>
-  <script src="js/bracket.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/data.js?v=4"></script>
+  <script src="js/standings.js?v=4"></script>
+  <script src="js/matches.js?v=4"></script>
+  <script src="js/bracket.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
