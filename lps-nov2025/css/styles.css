@@ -234,6 +234,25 @@ html, body {
   opacity: 0.8;
 }
 
+.footer__powered {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer__tps-logo {
+  height: 24px;
+  width: auto;
+}
+
+.footer__powered-text {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--green-support);
+  letter-spacing: 0.5px;
+}
+
 .footer__timestamp {
   font-family: var(--font);
   font-weight: 300;
