@@ -2,15 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecting...</title>
-  <script>
-    window.location.replace('/tournament/?t=rpa-mar2026');
-  </script>
-  <noscript>
-    <meta http-equiv="refresh" content="0;url=/tournament/?t=rpa-mar2026">
-  </noscript>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/tournament/">
+  <title>Tournament Dashboard</title>
+  <link rel="icon" href="/assets/tps-favicon.png">
+  <link rel="stylesheet" href="css/styles.css?v=49">
+  <script>window.__SHEET_ID = '1uOG6yILLriCYtZ9evDLMmRbMpH4GX0PPEJHUgKGv8-U';</script>
 </head>
 <body>
-  <p>Redirecting to <a href="/tournament/?t=rpa-mar2026">tournament dashboard</a>...</p>
+  <div class="dashboard">
+    <header class="header">
+      <div class="header__left">
+        <img src="/assets/lps-logo.jpeg" alt="Event Logo" class="header__lps-logo">
+      </div>
+      <div class="header__title">
+        <h1>Tournament</h1>
+        <p>Dashboard</p>
+      </div>
+      <div class="header__right">
+        <img src="/assets/tps-logo-green.png" alt="Partner Logo" class="header__tps-logo">
+      </div>
+    </header>
+    <nav class="view-bar" id="view-bar"></nav>
+    <div class="content-area">
+      <main class="main-content" id="main-content">
+        <section class="view active" id="view-loading">
+          <div class="loading">Loading tournament data...</div>
+        </section>
+      </main>
+      <aside class="sidebar" id="sidebar-upcoming">
+        <div class="sidebar__title">Upcoming Matches</div>
+        <div class="sidebar__content">
+          <div class="loading">Loading...</div>
+        </div>
+      </aside>
+    </div>
+    <footer class="footer">
+      <div class="footer__powered">
+        <img src="/assets/favicon.png" alt="The Padel Society" class="footer__tps-logo">
+        <span class="footer__powered-text">Powered by The Padel Society</span>
+      </div>
+      <span class="footer__timestamp" id="last-updated">Last updated: --</span>
+    </footer>
+  </div>
+  <script src="js/data.js?v=49"></script>
+  <script src="js/standings.js?v=49"></script>
+  <script src="js/matches.js?v=49"></script>
+  <script src="js/bracket.js?v=49"></script>
+  <script src="js/app.js?v=49"></script>
 </body>
 </html>

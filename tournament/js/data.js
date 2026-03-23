@@ -9,32 +9,13 @@ const Data = (() => {
   // 3. Default fallback
   const DEFAULT_SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';
 
+  // Priority: window.__SHEET_ID (set by tournament stub) > ?sheet= param > default
   const urlParams = new URLSearchParams(window.location.search);
-  let SHEET_ID = urlParams.get('sheet') || DEFAULT_SHEET_ID;
-  let tournamentSlug = urlParams.get('t') || null;
-  let sheetIdResolved = !tournamentSlug; // already resolved if no slug lookup needed
+  let SHEET_ID = window.__SHEET_ID || urlParams.get('sheet') || DEFAULT_SHEET_ID;
+  let sheetIdResolved = true;
 
   function sheetURL(tabName, extraParams) {
     return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}${extraParams || ''}`;
-  }
-
-  // Resolve slug to sheet ID from /tournaments.json
-  async function resolveSheetId() {
-    if (sheetIdResolved) return;
-    try {
-      const res = await fetch('/tournaments.json');
-      if (res.ok) {
-        const map = await res.json();
-        if (map[tournamentSlug]) {
-          SHEET_ID = map[tournamentSlug];
-        } else {
-          console.warn(`Tournament slug "${tournamentSlug}" not found in tournaments.json`);
-        }
-      }
-    } catch (e) {
-      console.warn('Could not load tournaments.json:', e);
-    }
-    sheetIdResolved = true;
   }
 
   let config = {};              // key → value from Config tab
@@ -475,11 +456,6 @@ const Data = (() => {
   // --- Fetch and parse all tabs ---
   async function fetchData() {
     try {
-      // Resolve tournament slug to sheet ID on first call
-      if (!sheetIdResolved) {
-        await resolveSheetId();
-      }
-
       // Fetch config on first load
       if (!configLoaded) {
         try {
