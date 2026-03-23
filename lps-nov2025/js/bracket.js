@@ -62,11 +62,17 @@ const Bracket = (() => {
       tiers[m.section].push(m);
     });
 
+    // Render rounds, combining 3rd Place and Finals into one column
+    const regularRounds = presentRounds.filter(r => r !== '3rd Place' && r !== 'Finals');
+    const has3rd = rounds['3rd Place'] && rounds['3rd Place'].length > 0;
+    const hasFinals = rounds['Finals'] && rounds['Finals'].length > 0;
+
     const html = `
       <div class="bracket-single">
         <div class="bracket-division__title">${title}</div>
         <div class="bracket">
-          ${presentRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
+          ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
+          ${(has3rd || hasFinals) ? renderCombinedFinalsRound(rounds['3rd Place'] || [], rounds['Finals'] || []) : ''}
           ${renderChampion(divData.standings)}
         </div>
         ${Object.keys(tiers).length > 0 ? renderTiers(tiers) : ''}
@@ -84,7 +90,17 @@ const Bracket = (() => {
     </div>`;
   }
 
-  function renderBracketMatch(match) {
+  function renderCombinedFinalsRound(thirdPlaceMatches, finalsMatches) {
+    return `<div class="bracket__round">
+      <div class="bracket__round-title">Final / 3rd Place</div>
+      <div class="bracket__matches">
+        ${finalsMatches.map(m => renderBracketMatch(m, 'bracket-match--gold')).join('')}
+        ${thirdPlaceMatches.map(m => renderBracketMatch(m, 'bracket-match--bronze')).join('')}
+      </div>
+    </div>`;
+  }
+
+  function renderBracketMatch(match, extraClass) {
     const winnerClean = cleanTeamName(match.winner || '');
     const team1Clean = cleanTeamName(match.team1 || '');
     const team2Clean = cleanTeamName(match.team2 || '');
@@ -101,14 +117,23 @@ const Bracket = (() => {
     const team1TBD = !match.team1 ? 'bracket-match__team--tbd' : '';
     const team2TBD = !match.team2 ? 'bracket-match__team--tbd' : '';
 
-    return `<div class="bracket-match">
+    // Show set-by-set scores if available (from Matches tab enrichment), else total score
+    const validSets = match.sets ? match.sets.filter(s => s.a > 0 || s.b > 0) : [];
+    const displayScore1 = validSets.length > 0
+      ? validSets.map(s => `<span class="bracket-match__set">${s.a}</span>`).join('')
+      : `<span class="bracket-match__set">${match.score1 != null ? match.score1 : ''}</span>`;
+    const displayScore2 = validSets.length > 0
+      ? validSets.map(s => `<span class="bracket-match__set">${s.b}</span>`).join('')
+      : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
+
+    return `<div class="bracket-match ${extraClass || ''}">
       <div class="bracket-match__team ${team1Class} ${team1TBD}">
         <span class="bracket-match__team-name">${team1Name}</span>
-        <span class="bracket-match__score">${match.score1 != null ? match.score1 : ''}</span>
+        <div class="bracket-match__score">${displayScore1}</div>
       </div>
       <div class="bracket-match__team ${team2Class} ${team2TBD}">
         <span class="bracket-match__team-name">${team2Name}</span>
-        <span class="bracket-match__score">${match.score2 != null ? match.score2 : ''}</span>
+        <div class="bracket-match__score">${displayScore2}</div>
       </div>
     </div>`;
   }
@@ -116,16 +141,13 @@ const Bracket = (() => {
   function renderChampion(standings) {
     if (!standings || standings.length === 0) return '';
 
+    const placeClasses = ['bracket-match--gold', 'bracket-match--silver', 'bracket-match--bronze'];
+
     return `<div class="bracket__round">
       <div class="bracket__round-title">Final Standings</div>
       <div class="bracket__matches">
-        <div class="bracket-match bracket-match--champion">
-          <div class="bracket-match__team bracket-match__team--winner bracket-match__team--champion-display">
-            <span class="bracket-match__team-name">${standings[0].place} ${standings[0].team}</span>
-          </div>
-        </div>
-        ${standings.slice(1, 4).map(s => `
-          <div class="bracket-match bracket-match--standing">
+        ${standings.slice(0, 3).map((s, i) => `
+          <div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">
               <span class="bracket-match__team-name bracket-match__place">${s.place} ${s.team}</span>
             </div>

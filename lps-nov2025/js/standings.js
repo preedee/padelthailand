@@ -6,8 +6,15 @@
 
 const Standings = (() => {
 
-  function render(container, matches) {
-    const groups = Data.getStandings();
+  function renderPower(container) {
+    renderSingleDivision(container, 'Power Play Standings', Data.getPowerStandings());
+  }
+
+  function renderClub(container) {
+    renderSingleDivision(container, 'Club Play Standings', Data.getClubStandings());
+  }
+
+  function renderSingleDivision(container, title, groups) {
     const groupNames = Object.keys(groups);
 
     if (groupNames.length === 0) {
@@ -15,14 +22,9 @@ const Standings = (() => {
       return;
     }
 
-    // Separate Power and Club divisions
-    const powerGroups = groupNames.filter(g => g.startsWith('Power'));
-    const clubGroups = groupNames.filter(g => g.startsWith('Club'));
-
     const html = `
       <div class="standings-divisions">
-        ${powerGroups.length > 0 ? renderDivision('Power Division', powerGroups, groups) : ''}
-        ${clubGroups.length > 0 ? renderDivision('Club Division', clubGroups, groups) : ''}
+        ${renderDivision(title, groupNames, groups)}
       </div>`;
 
     container.innerHTML = html;
@@ -77,5 +79,5 @@ const Standings = (() => {
     </div>`;
   }
 
-  return { render };
+  return { renderPower, renderClub };
 })();

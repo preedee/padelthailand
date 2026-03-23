@@ -3,7 +3,8 @@
    ============================================ */
 
 const App = (() => {
-  const VIEWS = ['standings', 'matches', 'power-bracket', 'club-bracket'];
+  const VIEWS = ['power-standings', 'club-standings', 'power-bracket', 'club-bracket'];
+  const ALL_VIEWS = ['power-standings', 'club-standings', 'matches', 'power-bracket', 'club-bracket'];
   const ROTATION_INTERVAL = 25000; // 25 seconds
   let currentViewIndex = 0;
   let rotationTimer = null;
@@ -18,6 +19,10 @@ const App = (() => {
         if (idx !== -1) {
           switchToView(idx);
           resetRotation();
+        } else if (ALL_VIEWS.includes(viewName)) {
+          // Manual-only view (e.g. All Matches) — show it but stop rotation
+          showManualView(viewName);
+          stopRotation();
         }
       });
     });
@@ -39,8 +44,11 @@ const App = (() => {
     // Start data polling
     Data.startPolling(onDataUpdate);
 
-    // Start auto-rotation
-    startRotation();
+    // Start auto-rotation (desktop only)
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) {
+      startRotation();
+    }
   }
 
   function onDataUpdate(matches, lastUpdated, error) {
@@ -65,10 +73,17 @@ const App = (() => {
   }
 
   function renderAllViews(matches) {
-    Standings.render(document.getElementById('view-standings'), matches);
+    Standings.renderPower(document.getElementById('view-power-standings'));
+    Standings.renderClub(document.getElementById('view-club-standings'));
     Matches.render(document.getElementById('view-matches'), matches);
     Bracket.renderPower(document.getElementById('view-power-bracket'));
     Bracket.renderClub(document.getElementById('view-club-bracket'));
+
+    // Sidebar: upcoming matches (always visible)
+    const sidebarContent = document.querySelector('.sidebar__content');
+    if (sidebarContent) {
+      Matches.renderUpcoming(sidebarContent, matches);
+    }
   }
 
   function switchToView(index) {
@@ -84,6 +99,25 @@ const App = (() => {
     const dots = document.querySelectorAll('.view-bar__dot');
     dots.forEach((dot, i) => {
       dot.classList.toggle('active', i === index);
+    });
+
+    // Update views
+    document.querySelectorAll('.view').forEach(view => {
+      view.classList.remove('active');
+    });
+    const targetView = document.getElementById(`view-${viewName}`);
+    if (targetView) targetView.classList.add('active');
+  }
+
+  function showManualView(viewName) {
+    // Update tabs
+    document.querySelectorAll('.view-bar__tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.view === viewName);
+    });
+
+    // Clear dots (no rotation indicator for manual views)
+    document.querySelectorAll('.view-bar__dot').forEach(dot => {
+      dot.classList.remove('active');
     });
 
     // Update views

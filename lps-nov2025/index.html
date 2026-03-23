@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1920">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ladies Padel Series — Tournament Dashboard</title>
   <link rel="icon" href="assets/tps-favicon.png">
   <link rel="stylesheet" href="css/styles.css">
@@ -26,10 +26,11 @@
 
     <!-- View Indicator Bar -->
     <nav class="view-bar">
-      <button class="view-bar__tab active" data-view="standings">Group Standings</button>
-      <button class="view-bar__tab" data-view="matches">Live Matches</button>
+      <button class="view-bar__tab active" data-view="power-standings">Power Group Standings</button>
+      <button class="view-bar__tab" data-view="club-standings">Club Group Standings</button>
       <button class="view-bar__tab" data-view="power-bracket">Power Bracket</button>
       <button class="view-bar__tab" data-view="club-bracket">Club Bracket</button>
+      <button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>
       <div class="view-bar__dots">
         <span class="view-bar__dot active"></span>
         <span class="view-bar__dot"></span>
@@ -38,28 +39,44 @@
       </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="main-content" id="main-content">
-      <!-- View: Standings -->
-      <section class="view active" id="view-standings">
-        <div class="loading">Loading tournament data...</div>
-      </section>
+    <!-- Content Area: Main + Sidebar -->
+    <div class="content-area">
+      <!-- Main Content (rotates) -->
+      <main class="main-content" id="main-content">
+        <!-- View: Power Standings -->
+        <section class="view active" id="view-power-standings">
+          <div class="loading">Loading Power standings...</div>
+        </section>
 
-      <!-- View: Matches -->
-      <section class="view" id="view-matches">
-        <div class="loading">Loading match data...</div>
-      </section>
+        <!-- View: Club Standings -->
+        <section class="view" id="view-club-standings">
+          <div class="loading">Loading Club standings...</div>
+        </section>
 
-      <!-- View: Power Bracket -->
-      <section class="view" id="view-power-bracket">
-        <div class="loading">Loading Power bracket data...</div>
-      </section>
+        <!-- View: All Matches -->
+        <section class="view" id="view-matches">
+          <div class="loading">Loading match data...</div>
+        </section>
 
-      <!-- View: Club Bracket -->
-      <section class="view" id="view-club-bracket">
-        <div class="loading">Loading Club bracket data...</div>
-      </section>
-    </main>
+        <!-- View: Power Bracket -->
+        <section class="view" id="view-power-bracket">
+          <div class="loading">Loading Power bracket data...</div>
+        </section>
+
+        <!-- View: Club Bracket -->
+        <section class="view" id="view-club-bracket">
+          <div class="loading">Loading Club bracket data...</div>
+        </section>
+      </main>
+
+      <!-- Sidebar: Upcoming Matches (always visible) -->
+      <aside class="sidebar" id="sidebar-upcoming">
+        <div class="sidebar__title">Upcoming Matches</div>
+        <div class="sidebar__content">
+          <div class="loading">Loading...</div>
+        </div>
+      </aside>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -72,10 +89,10 @@
 
   </div>
 
-  <script src="js/data.js?v=4"></script>
-  <script src="js/standings.js?v=4"></script>
-  <script src="js/matches.js?v=4"></script>
-  <script src="js/bracket.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/data.js?v=17"></script>
+  <script src="js/standings.js?v=17"></script>
+  <script src="js/matches.js?v=17"></script>
+  <script src="js/bracket.js?v=17"></script>
+  <script src="js/app.js?v=17"></script>
 </body>
 </html>

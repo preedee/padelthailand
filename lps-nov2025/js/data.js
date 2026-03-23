@@ -6,22 +6,21 @@ const Data = (() => {
   const SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';
   const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   const URLS = {
-    matches:   `${BASE_URL}&sheet=Matches`,
-    standings: `${BASE_URL}&sheet=Group%20Stage%20Standings`,
-    powerKO:   `${BASE_URL}&sheet=Power%20Play%20Knockout%20Stage`,
-    clubKO:    `${BASE_URL}&sheet=Club%20Play%20Knockout%20Stage`
+    matches:       `${BASE_URL}&sheet=Matches`,
+    powerStandings: `${BASE_URL}&sheet=Power%20Play%20Group%20Standings`,
+    clubStandings:  `${BASE_URL}&sheet=Club%20Play%20Group%20Standings`
   };
   const POLL_INTERVAL = 30000; // 30 seconds
 
   let matches = [];
-  let standingsData = [];    // raw rows from standings tab
-  let powerKOData = [];      // raw rows from Power knockout tab
-  let clubKOData = [];       // raw rows from Club knockout tab
+  let powerStandingsData = [];  // raw rows from Power standings tab
+  let clubStandingsData = [];   // raw rows from Club standings tab
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
 
   // --- CSV Parser (handles quoted fields) ---
+  // Splits CSV text into lines, preserving quotes so splitCSVLine can handle commas in fields
   function parseCSV(text) {
     const lines = [];
     let current = '';
@@ -30,6 +29,7 @@ const Data = (() => {
     for (let i = 0; i < text.length; i++) {
       const ch = text[i];
       if (ch === '"') {
+        current += ch; // preserve quotes for splitCSVLine
         if (inQuotes && text[i + 1] === '"') {
           current += '"';
           i++;
@@ -205,67 +205,98 @@ const Data = (() => {
   }
 
   // ============================================================
-  // Knockout Stage — parsed from a single-division tab
-  // Each tab has one division (Power or Club).
-  // Layout: header, section headers (PLAYOFFS, Tier 3, etc.),
-  // then "Round","Team 1","Score","Team 2","Winner" rows.
-  // Also has final standings sections.
+  // Knockout Stage — built entirely from the Matches tab
+  // Filters matches by division, groups by round, derives winners
+  // and final standings from set scores.
   // ============================================================
-  function parseKnockoutTab(lines, divisionName) {
-    const result = { matches: [], standings: [] };
-    let currentSection = '';
+  function getKnockoutFromMatches(divisionPrefix) {
+    // divisionPrefix: 'Power' or 'Club'
+    const prefix = divisionPrefix.toLowerCase();
 
-    for (const line of lines) {
-      const fields = splitCSVLine(line);
-      const col0 = fields[0] || '';
-      const col1 = fields[1] || '';
+    // Knockout main bracket: division is exactly "Power Play" or "Club Play"
+    const mainDivision = divisionPrefix + ' Play';
+    const mainMatches = matches.filter(m =>
+      m.matchId && m.division === mainDivision &&
+      ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'].includes(m.round)
+    );
 
-      // Skip division/stage header rows
-      if (col0.includes('KNOCKOUT') || col0.includes('STANDINGS')) {
-        if (col0.includes('FINAL STANDINGS')) {
-          currentSection = 'FINAL_STANDINGS';
+    // Tier matches: division starts with "Power Tier" or "Club Tier"
+    const tierPrefix = divisionPrefix + ' Tier';
+    const tierMatches = matches.filter(m =>
+      m.matchId && m.division.startsWith(tierPrefix) && m.round.startsWith('Tier')
+    );
+
+    // Build match objects for the bracket
+    const allBracketMatches = [];
+
+    mainMatches.forEach(m => {
+      const winner = getWinner(m);
+      const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
+      // Normalize "Semis" to "Semi Finals" for bracket display
+      const round = m.round === 'Semis' ? 'Semi Finals' : m.round;
+      allBracketMatches.push({
+        round: round,
+        team1: m.team1,
+        team2: m.team2,
+        sets: m.sets,
+        score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        score: '',
+        winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
+        section: 'PLAYOFFS',
+        division: divisionPrefix,
+        order: m.order
+      });
+    });
+
+    tierMatches.forEach(m => {
+      const winner = getWinner(m);
+      const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
+      allBracketMatches.push({
+        round: m.round,
+        team1: m.team1,
+        team2: m.team2,
+        sets: m.sets,
+        score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        score: '',
+        winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
+        section: m.division, // e.g. "Power Tier 3"
+        division: divisionPrefix,
+        order: m.order
+      });
+    });
+
+    // Derive final standings from Finals and 3rd Place results
+    const standings = [];
+    const finalsMatch = allBracketMatches.find(m => m.round === 'Finals');
+    const thirdMatch = allBracketMatches.find(m => m.round === '3rd Place');
+
+    if (finalsMatch) {
+      if (finalsMatch.winner) {
+        // Finals played — show actual results
+        const finalsWinner = finalsMatch.winner;
+        const finalsLoser = finalsWinner === finalsMatch.team1 ? finalsMatch.team2 : finalsMatch.team1;
+        standings.push({ place: '🥇 1st', team: finalsWinner, note: divisionPrefix + ' Champion' });
+        standings.push({ place: '🥈 2nd', team: finalsLoser, note: '' });
+        if (thirdMatch && thirdMatch.winner) {
+          standings.push({ place: '🥉 3rd', team: thirdMatch.winner, note: '' });
+        } else if (thirdMatch) {
+          standings.push({ place: '🥉 3rd', team: 'TBD', note: '' });
         }
-        continue;
-      }
-
-      // Section header (e.g. "POWER PLAYOFFS", "Power Tier 3...")
-      if ((col0.includes('PLAYOFFS') || col0.includes('Tier')) && col1 === '') {
-        currentSection = col0;
-        continue;
-      }
-
-      // Skip column header rows
-      if (col0 === 'Round' || col0 === 'Place') continue;
-
-      // Final standings data row
-      if (currentSection === 'FINAL_STANDINGS' && col0 && col1) {
-        result.standings.push({
-          place: col0,
-          team: col1,
-          note: fields[2] || ''
-        });
-        continue;
-      }
-
-      // Match data row: Round, Team 1, Score, Team 2, Winner
-      if (col0 && col1 && fields[2] && fields[3]) {
-        const score = fields[2] || '';
-        const scoreParts = score.split('-').map(s => parseInt(s.trim()));
-        result.matches.push({
-          round: col0,
-          team1: col1,
-          score: score.trim(),
-          score1: scoreParts[0] || 0,
-          score2: scoreParts[1] || 0,
-          team2: fields[3],
-          winner: fields[4] || '',
-          section: currentSection,
-          division: divisionName
-        });
+      } else {
+        // Finals not played — show placeholders
+        standings.push({ place: '🥇 1st', team: 'TBD', note: '' });
+        standings.push({ place: '🥈 2nd', team: 'TBD', note: '' });
+        if (thirdMatch && thirdMatch.winner) {
+          standings.push({ place: '🥉 3rd', team: thirdMatch.winner, note: '' });
+        } else {
+          standings.push({ place: '🥉 3rd', team: 'TBD', note: '' });
+        }
       }
     }
 
-    return result;
+    return { matches: allBracketMatches, standings: standings };
   }
 
   // --- Derived data: Live / Recent Matches ---
@@ -289,14 +320,13 @@ const Data = (() => {
     return sortedCourts;
   }
 
-  // --- Fetch and parse all 4 tabs ---
+  // --- Fetch and parse all tabs ---
   async function fetchData() {
     try {
-      const [matchRes, standingsRes, powerKORes, clubKORes] = await Promise.all([
+      const [matchRes, powerStandingsRes, clubStandingsRes] = await Promise.all([
         fetch(URLS.matches),
-        fetch(URLS.standings),
-        fetch(URLS.powerKO),
-        fetch(URLS.clubKO)
+        fetch(URLS.powerStandings),
+        fetch(URLS.clubStandings)
       ]);
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
@@ -305,19 +335,14 @@ const Data = (() => {
       const matchRows = parseCSVWithHeaders(matchText);
       matches = matchRows.map(toMatch).filter(m => m.order > 0);
 
-      if (standingsRes.ok) {
-        const standingsText = await standingsRes.text();
-        standingsData = parseCSV(standingsText);
+      if (powerStandingsRes.ok) {
+        const text = await powerStandingsRes.text();
+        powerStandingsData = parseCSV(text);
       }
 
-      if (powerKORes.ok) {
-        const powerKOText = await powerKORes.text();
-        powerKOData = parseCSV(powerKOText);
-      }
-
-      if (clubKORes.ok) {
-        const clubKOText = await clubKORes.text();
-        clubKOData = parseCSV(clubKOText);
+      if (clubStandingsRes.ok) {
+        const text = await clubStandingsRes.text();
+        clubStandingsData = parseCSV(text);
       }
 
       lastUpdated = new Date();
@@ -346,9 +371,10 @@ const Data = (() => {
     stopPolling,
     getWinner,
     getMatchesByCourt,
-    getStandings: () => parseStandingsTab(standingsData),
-    getPowerKnockout: () => parseKnockoutTab(powerKOData, 'Power'),
-    getClubKnockout: () => parseKnockoutTab(clubKOData, 'Club'),
+    getPowerStandings: () => parseStandingsTab(powerStandingsData),
+    getClubStandings: () => parseStandingsTab(clubStandingsData),
+    getPowerKnockout: () => getKnockoutFromMatches('Power'),
+    getClubKnockout: () => getKnockoutFromMatches('Club'),
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; }
   };
