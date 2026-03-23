@@ -60,21 +60,30 @@ const App = (() => {
     divisions.forEach(d => VIEWS.push(d.slug + '-bracket'));
     ALL_VIEWS = [...VIEWS, 'matches'];
 
+    // Custom tab labels from config (optional)
+    // Order: standings labels for each division, then bracket labels for each division
+    const customLabels = Data.getConfigList('tab_labels');
+
     // Generate nav tabs
     const viewBar = document.getElementById('view-bar');
     let tabsHTML = '';
+    let tabIndex = 0;
 
     // Standings tabs
     divisions.forEach((d, i) => {
       const viewId = d.slug + '-standings';
       const active = i === 0 ? ' active' : '';
-      tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${d.name} Standings</button>`;
+      const label = customLabels[tabIndex] || (d.name + ' Standings');
+      tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+      tabIndex++;
     });
 
     // Bracket tabs
     divisions.forEach(d => {
       const viewId = d.slug + '-bracket';
-      tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${d.name} Bracket</button>`;
+      const label = customLabels[tabIndex] || (d.name + ' Bracket');
+      tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
+      tabIndex++;
     });
 
     // All Matches tab (manual only, pushed right)
