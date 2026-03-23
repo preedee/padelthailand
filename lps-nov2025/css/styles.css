@@ -1288,11 +1288,28 @@ img.avatar {
   /* Tiers: keep horizontal on mobile */
   .bracket-tiers {
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 12px;
+  }
+
+  .bracket-tier {
+    flex: 1;
+    min-width: 45%;
   }
 
   .bracket-tier__title {
     font-size: 11px;
+  }
+
+  .bracket-tier__matches {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bracket-tier__matches .bracket-match {
+    flex: 1;
+    min-width: 45%;
   }
 
   /* Podium: stack */
