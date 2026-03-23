@@ -8,13 +8,15 @@ const Data = (() => {
   const URLS = {
     matches:       `${BASE_URL}&sheet=Matches`,
     powerStandings: `${BASE_URL}&sheet=Power%20Play%20Group%20Standings`,
-    clubStandings:  `${BASE_URL}&sheet=Club%20Play%20Group%20Standings`
+    clubStandings:  `${BASE_URL}&sheet=Club%20Play%20Group%20Standings`,
+    players:       `${BASE_URL}&sheet=Teams%20and%20Players`
   };
   const POLL_INTERVAL = 30000; // 30 seconds
 
   let matches = [];
   let powerStandingsData = [];  // raw rows from Power standings tab
   let clubStandingsData = [];   // raw rows from Club standings tab
+  let playerAvatars = {};       // name → avatar URL lookup
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
@@ -299,6 +301,52 @@ const Data = (() => {
     return { matches: allBracketMatches, standings: standings };
   }
 
+  // ============================================================
+  // Player Avatars — parsed from "Teams and Players" tab
+  // Columns: ID, Name, Code, Name, P1 Name, P1 ID, P1 Avatar, P2 Name, P2 ID, P2 Avatar
+  // ============================================================
+  function parsePlayersTab(rows) {
+    const avatars = {};
+    rows.forEach(row => {
+      const p1Name = (row['P1 Name'] || '').trim().replace(/^\u2060+/, ''); // strip invisible chars
+      const p1Avatar = (row['P1 Avatar'] || '').trim();
+      const p2Name = (row['P2 Name'] || '').trim().replace(/^\u2060+/, '');
+      const p2Avatar = (row['P2 Avatar'] || '').trim();
+
+      if (p1Name && p1Avatar && p1Avatar !== 'null') {
+        avatars[p1Name] = p1Avatar;
+      }
+      if (p2Name && p2Avatar && p2Avatar !== 'null') {
+        avatars[p2Name] = p2Avatar;
+      }
+    });
+    return avatars;
+  }
+
+  function getPlayerAvatar(playerName) {
+    if (!playerName) return null;
+    const clean = playerName.trim().replace(/^\u2060+/, '');
+    return playerAvatars[clean] || null;
+  }
+
+  // Generate avatar HTML for a team (2 players split on " and ")
+  function getTeamAvatarsHTML(teamName, size) {
+    if (!teamName || teamName === 'TBD') return '';
+    const sz = size || 28;
+    // Clean invisible chars from team name before splitting
+    const cleanName = teamName.replace(/\u2060/g, '');
+    const players = cleanName.split(' and ');
+    return players.map(name => {
+      const trimmed = name.trim();
+      const url = getPlayerAvatar(trimmed);
+      const initial = trimmed.charAt(0).toUpperCase();
+      if (url) {
+        return `<img class="avatar" src="${url}" alt="${trimmed}" style="width:${sz}px;height:${sz}px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;display:none;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+      }
+      return `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+    }).join('');
+  }
+
   // --- Derived data: Live / Recent Matches ---
   function getMatchesByCourt(matchList) {
     const courts = {};
@@ -323,10 +371,11 @@ const Data = (() => {
   // --- Fetch and parse all tabs ---
   async function fetchData() {
     try {
-      const [matchRes, powerStandingsRes, clubStandingsRes] = await Promise.all([
+      const [matchRes, powerStandingsRes, clubStandingsRes, playersRes] = await Promise.all([
         fetch(URLS.matches),
         fetch(URLS.powerStandings),
-        fetch(URLS.clubStandings)
+        fetch(URLS.clubStandings),
+        fetch(URLS.players)
       ]);
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
@@ -343,6 +392,12 @@ const Data = (() => {
       if (clubStandingsRes.ok) {
         const text = await clubStandingsRes.text();
         clubStandingsData = parseCSV(text);
+      }
+
+      if (playersRes.ok) {
+        const text = await playersRes.text();
+        const rows = parseCSVWithHeaders(text);
+        playerAvatars = parsePlayersTab(rows);
       }
 
       lastUpdated = new Date();
@@ -371,6 +426,7 @@ const Data = (() => {
     stopPolling,
     getWinner,
     getMatchesByCourt,
+    getTeamAvatarsHTML,
     getPowerStandings: () => parseStandingsTab(powerStandingsData),
     getClubStandings: () => parseStandingsTab(clubStandingsData),
     getPowerKnockout: () => getKnockoutFromMatches('Power'),

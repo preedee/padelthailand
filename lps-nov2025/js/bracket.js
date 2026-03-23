@@ -128,11 +128,11 @@ const Bracket = (() => {
 
     return `<div class="bracket-match ${extraClass || ''}">
       <div class="bracket-match__team ${team1Class} ${team1TBD}">
-        <span class="bracket-match__team-name">${team1Name}</span>
+        <div class="team-with-avatars">${Data.getTeamAvatarsHTML(team1Name, 22)}<span class="bracket-match__team-name">${team1Name}</span></div>
         <div class="bracket-match__score">${displayScore1}</div>
       </div>
       <div class="bracket-match__team ${team2Class} ${team2TBD}">
-        <span class="bracket-match__team-name">${team2Name}</span>
+        <div class="team-with-avatars">${Data.getTeamAvatarsHTML(team2Name, 22)}<span class="bracket-match__team-name">${team2Name}</span></div>
         <div class="bracket-match__score">${displayScore2}</div>
       </div>
     </div>`;
@@ -149,7 +149,7 @@ const Bracket = (() => {
         ${standings.slice(0, 3).map((s, i) => `
           <div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">
-              <span class="bracket-match__team-name bracket-match__place">${s.place} ${s.team}</span>
+              <div class="team-with-avatars">${Data.getTeamAvatarsHTML(s.team, 22)}<span class="bracket-match__team-name bracket-match__place">${s.place} ${s.team}</span></div>
             </div>
           </div>
         `).join('')}

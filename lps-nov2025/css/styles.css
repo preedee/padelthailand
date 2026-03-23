@@ -436,6 +436,10 @@ html, body {
   white-space: normal;
 }
 
+.group-card__table img.avatar {
+  display: block;
+}
+
 .group-card__header {
   background: var(--green);
   color: var(--white);
@@ -468,7 +472,7 @@ html, body {
 
 .group-card__table th:not(:first-child) {
   text-align: center;
-  width: 32px;
+  width: 48px;
 }
 
 .group-card__table td {
@@ -476,7 +480,9 @@ html, body {
   font-weight: 300;
   font-size: 13px;
   color: var(--green);
-  padding: 6px 8px;
+  padding: 8px 8px;
+  height: 40px;
+  vertical-align: middle;
   border-bottom: 1px solid rgba(8, 93, 60, 0.06);
 }
 
@@ -486,18 +492,45 @@ html, body {
 }
 
 .group-card__table tr.qualifier td {
-  font-weight: 400;
+  font-weight: 700;
 }
 
 .group-card__table tr.qualifier td:first-child::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
+  display: none;
+}
+
+/* ============================================
+   AVATARS
+   ============================================ */
+.avatar {
   border-radius: 50%;
-  background: var(--green);
-  margin-right: 10px;
-  vertical-align: middle;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid var(--green);
+  box-sizing: border-box;
+}
+
+.avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  color: var(--green-support);
+  border-width: 1px;
+  font-family: var(--font);
+  font-weight: 400;
+  border-radius: 50%;
+}
+
+.team-with-avatars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.team-with-avatars .avatar + .avatar--fallback[style*="display:none"] + .avatar,
+.team-with-avatars .avatar:last-of-type {
+  margin-right: 6px;
 }
 
 /* ============================================
