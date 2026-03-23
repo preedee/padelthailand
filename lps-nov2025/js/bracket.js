@@ -24,6 +24,12 @@ const Bracket = (() => {
     return title.replace(/^(Power|Club)\s+/i, '').replace(/\s*\(.*\)\s*$/, '').trim();
   }
 
+  // Generic render: pass division prefix and title
+  function render(container, division, title) {
+    const data = Data.getKnockout(division);
+    renderDivision(container, title, data, true);
+  }
+
   function renderPower(container) {
     const data = Data.getPowerKnockout();
     renderDivision(container, 'Power Play Knockout', data, true);
@@ -180,5 +186,5 @@ const Bracket = (() => {
     </div>`;
   }
 
-  return { renderPower, renderClub };
+  return { render, renderPower, renderClub };
 })();

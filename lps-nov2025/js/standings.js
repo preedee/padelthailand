@@ -6,6 +6,11 @@
 
 const Standings = (() => {
 
+  // Generic render: pass tab name and display title
+  function render(container, tabName, title) {
+    renderSingleDivision(container, title, Data.getStandings(tabName));
+  }
+
   function renderPower(container) {
     renderSingleDivision(container, 'Power Play Standings', Data.getPowerStandings());
   }
@@ -79,5 +84,5 @@ const Standings = (() => {
     </div>`;
   }
 
-  return { renderPower, renderClub };
+  return { render, renderPower, renderClub };
 })();

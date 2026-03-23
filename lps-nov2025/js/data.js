@@ -3,20 +3,20 @@
    ============================================ */
 
 const Data = (() => {
-  const SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';
-  const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-  const URLS = {
-    matches:       `${BASE_URL}&sheet=Matches`,
-    powerStandings: `${BASE_URL}&sheet=Power%20Standings`,
-    clubStandings:  `${BASE_URL}&sheet=Club%20Standings`,
-    players:       `${BASE_URL}&sheet=Teams%20and%20Players`,
-    config:        `${BASE_URL}&sheet=Config&headers=1`
-  };
+  // Default Sheet ID — overridden by Config tab or URL param ?sheet=
+  const DEFAULT_SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';
+
+  // Get sheet ID from URL param or default
+  const urlParams = new URLSearchParams(window.location.search);
+  let SHEET_ID = urlParams.get('sheet') || DEFAULT_SHEET_ID;
+
+  function sheetURL(tabName, extraParams) {
+    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}${extraParams || ''}`;
+  }
 
   let config = {};              // key → value from Config tab
   let matches = [];
-  let powerStandingsData = [];  // raw rows from Power standings tab
-  let clubStandingsData = [];   // raw rows from Club standings tab
+  let standingsData = {};       // tab name → raw CSV rows
   let playerAvatars = {};       // name → avatar URL lookup
   let lastUpdated = null;
   let pollTimer = null;
@@ -27,7 +27,7 @@ const Data = (() => {
   function parseConfigTab(rows) {
     const cfg = {};
     rows.forEach(row => {
-      const key = (row['Key'] || '').trim();
+      const key = (row['Key'] || '').trim().replace(/ /g, '_'); // normalize spaces to underscores
       const value = (row['Value'] || '').trim();
       if (key) cfg[key] = value;
     });
@@ -36,6 +36,12 @@ const Data = (() => {
 
   function getConfig(key, fallback) {
     return config[key] !== undefined ? config[key] : (fallback !== undefined ? fallback : '');
+  }
+
+  // Parse comma-separated config value into array
+  function getConfigList(key) {
+    const val = getConfig(key, '');
+    return val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
   }
 
   function applyConfig() {
@@ -449,11 +455,17 @@ const Data = (() => {
       // Fetch config on first load
       if (!configLoaded) {
         try {
-          const configRes = await fetch(URLS.config);
+          const configRes = await fetch(sheetURL('Config', '&headers=1'));
           if (configRes.ok) {
             const configText = await configRes.text();
             const configRows = parseCSVWithHeaders(configText);
             config = parseConfigTab(configRows);
+
+            // If config has a sheet_id, update and refetch config from the correct sheet
+            if (config.sheet_id && config.sheet_id !== SHEET_ID) {
+              SHEET_ID = config.sheet_id;
+            }
+
             applyConfig();
             configLoaded = true;
           }
@@ -463,12 +475,23 @@ const Data = (() => {
         }
       }
 
-      const [matchRes, powerStandingsRes, clubStandingsRes, playersRes] = await Promise.all([
-        fetch(URLS.matches),
-        fetch(URLS.powerStandings),
-        fetch(URLS.clubStandings),
-        fetch(URLS.players)
-      ]);
+      // Build tab names from config (with defaults)
+      const matchesTab = getConfig('matches_tab', 'Matches');
+      const playersTab = getConfig('players_tab', 'Teams and Players');
+      const standingsTabs = getConfigList('standings_tabs');
+      if (standingsTabs.length === 0) standingsTabs.push('Power Standings', 'Club Standings');
+
+      // Fetch matches + players + all standings tabs in parallel
+      const fetches = [
+        fetch(sheetURL(matchesTab)),
+        fetch(sheetURL(playersTab)),
+        ...standingsTabs.map(tab => fetch(sheetURL(tab)))
+      ];
+      const responses = await Promise.all(fetches);
+
+      const matchRes = responses[0];
+      const playersRes = responses[1];
+      const standingsResponses = responses.slice(2);
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
 
@@ -476,14 +499,13 @@ const Data = (() => {
       const matchRows = parseCSVWithHeaders(matchText);
       matches = matchRows.map(toMatch).filter(m => m.order > 0);
 
-      if (powerStandingsRes.ok) {
-        const text = await powerStandingsRes.text();
-        powerStandingsData = parseCSV(text);
-      }
-
-      if (clubStandingsRes.ok) {
-        const text = await clubStandingsRes.text();
-        clubStandingsData = parseCSV(text);
+      // Parse each standings tab
+      standingsData = {};
+      for (let i = 0; i < standingsTabs.length; i++) {
+        if (standingsResponses[i].ok) {
+          const text = await standingsResponses[i].text();
+          standingsData[standingsTabs[i]] = parseCSV(text);
+        }
       }
 
       if (playersRes.ok) {
@@ -518,12 +540,18 @@ const Data = (() => {
     startPolling,
     stopPolling,
     getConfig,
+    getConfigList,
     getWinner,
     getMatchesByCourt,
     getTeamAvatarsHTML,
     getTeamStackedHTML,
-    getPowerStandings: () => parseStandingsTab(powerStandingsData),
-    getClubStandings: () => parseStandingsTab(clubStandingsData),
+    // Dynamic standings: pass tab name to get parsed standings
+    getStandings: (tabName) => parseStandingsTab(standingsData[tabName] || []),
+    // Backward compat
+    getPowerStandings: () => parseStandingsTab(standingsData['Power Standings'] || []),
+    getClubStandings: () => parseStandingsTab(standingsData['Club Standings'] || []),
+    // Dynamic knockout: pass division prefix
+    getKnockout: (division) => getKnockoutFromMatches(division),
     getPowerKnockout: () => getKnockoutFromMatches('Power'),
     getClubKnockout: () => getKnockoutFromMatches('Club'),
     get matches() { return matches; },

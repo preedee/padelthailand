@@ -1094,19 +1094,19 @@ img.avatar {
     left: 0;
     right: 0;
     z-index: 100;
-    height: 56px;
-    padding: 0 8px;
+    height: auto;
+    min-height: 44px;
+    padding: 4px 4px;
     gap: 0;
-    justify-content: stretch;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .view-bar__tab {
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    padding: 8px 10px;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+    padding: 8px 4px;
     flex: 1;
     min-width: 0;
     white-space: nowrap;
