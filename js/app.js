@@ -257,8 +257,10 @@ async function fetchTournaments() {
 
 // ---- Organizer Page Init ----
 async function fetchAndRenderOrganizer() {
-  const orgSlug = window.location.pathname.split('/').filter(Boolean).pop();
-  if (!orgSlug) { window.location.href = '/'; return; }
+  // Support both clean URL path (/organizer/slug) and query param fallback (?slug=slug)
+  const urlParams = new URLSearchParams(window.location.search);
+  const orgSlug = urlParams.get('slug') || window.location.pathname.split('/').filter(Boolean).pop();
+  if (!orgSlug || orgSlug === 'organizer.html') { window.location.href = '/'; return; }
 
   try {
     const [respTournaments, respLeagues, respDaily] = await Promise.all([

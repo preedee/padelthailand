@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padel Thailand</title>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      // Handle /organizer/slug routes — redirect to organizer.html with slug param
+      var match = path.match(/^\/organizer\/([^/]+)\/?$/);
+      if (match) {
+        window.location.replace('/organizer.html?slug=' + encodeURIComponent(match[1]));
+      } else {
+        // For any other 404, redirect to home
+        window.location.replace('/');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
