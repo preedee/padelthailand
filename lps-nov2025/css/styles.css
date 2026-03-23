@@ -511,13 +511,6 @@ img.avatar {
   display: block;
 }
 
-.team-with-avatars .avatar--fallback[style*="display:none"] {
-  position: absolute;
-  width: 0 !important;
-  height: 0 !important;
-  overflow: hidden;
-}
-
 .avatar--fallback {
   display: inline-flex;
   align-items: center;
@@ -543,7 +536,7 @@ img.avatar {
   flex-shrink: 0;
 }
 
-.team-with-avatars .avatar:last-of-type {
+.team-with-avatars > :nth-child(2) {
   margin-right: 6px;
 }
 
@@ -805,6 +798,7 @@ img.avatar {
   font-weight: 300;
   font-size: 13px;
   color: var(--green);
+  border-left: 3px solid transparent;
 }
 
 .bracket-match__team + .bracket-match__team {
@@ -813,7 +807,7 @@ img.avatar {
 
 .bracket-match__team--winner {
   font-weight: 700;
-  border-left: 3px solid var(--green);
+  border-left-color: var(--green);
 }
 
 .bracket-match__team--loser {

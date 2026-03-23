@@ -155,7 +155,7 @@ const Data = (() => {
 
       // Division header row (e.g. "POWER DIVISION - GROUP STAGE STANDINGS Power Play 1 Code")
       // This combined header also contains the first group name
-      if (col0.includes('DIVISION') && col0.includes('STANDINGS')) {
+      if (col0.includes('DIVISION') && (col0.includes('STANDINGS') || col0.includes('ST&INGS') || col0.includes('GROUP STAGE'))) {
         currentDivision = col0.includes('POWER') ? 'Power' : 'Club';
         // Extract first group name if embedded (e.g. "...STANDINGS Power Play 1 Code")
         const groupMatch = col0.match(/(Power Play \d+|Club Play \d+)/);
@@ -333,15 +333,14 @@ const Data = (() => {
   function getTeamAvatarsHTML(teamName, size) {
     if (!teamName || teamName === 'TBD') return '';
     const sz = size || 28;
-    // Clean invisible chars from team name before splitting
     const cleanName = teamName.replace(/\u2060/g, '');
-    const players = cleanName.split(' and ');
+    const players = cleanName.split(/ & | and /);
     return players.map(name => {
       const trimmed = name.trim();
       const url = getPlayerAvatar(trimmed);
       const initial = trimmed.charAt(0).toUpperCase();
       if (url) {
-        return `<img class="avatar" src="${url}" alt="${trimmed}" style="width:${sz}px;height:${sz}px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;display:none;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+        return `<img class="avatar" src="${url}" alt="${trimmed}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`;
       }
       return `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
     }).join('');
