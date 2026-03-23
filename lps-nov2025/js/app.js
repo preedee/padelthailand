@@ -5,7 +5,7 @@
 const App = (() => {
   const VIEWS = ['power-standings', 'club-standings', 'power-bracket', 'club-bracket'];
   const ALL_VIEWS = ['power-standings', 'club-standings', 'matches', 'power-bracket', 'club-bracket'];
-  const ROTATION_INTERVAL = 25000; // 25 seconds
+  let ROTATION_INTERVAL = 25000; // default 25 seconds, overridden by config
   let currentViewIndex = 0;
   let rotationTimer = null;
   let isRotating = true;
@@ -60,6 +60,15 @@ const App = (() => {
         </div>`;
       });
       return;
+    }
+
+    // Pick up rotation interval from config (once)
+    if (Data.configLoaded) {
+      const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
+      if (cfgInterval !== ROTATION_INTERVAL) {
+        ROTATION_INTERVAL = cfgInterval;
+        if (isRotating) resetRotation(); // restart with new interval
+      }
     }
 
     // Update timestamp

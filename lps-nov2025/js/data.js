@@ -9,10 +9,11 @@ const Data = (() => {
     matches:       `${BASE_URL}&sheet=Matches`,
     powerStandings: `${BASE_URL}&sheet=Power%20Standings`,
     clubStandings:  `${BASE_URL}&sheet=Club%20Standings`,
-    players:       `${BASE_URL}&sheet=Teams%20and%20Players`
+    players:       `${BASE_URL}&sheet=Teams%20and%20Players`,
+    config:        `${BASE_URL}&sheet=Config&headers=1`
   };
-  const POLL_INTERVAL = 30000; // 30 seconds
 
+  let config = {};              // key → value from Config tab
   let matches = [];
   let powerStandingsData = [];  // raw rows from Power standings tab
   let clubStandingsData = [];   // raw rows from Club standings tab
@@ -20,6 +21,64 @@ const Data = (() => {
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
+  let configLoaded = false;
+
+  // --- Config Parser ---
+  function parseConfigTab(rows) {
+    const cfg = {};
+    rows.forEach(row => {
+      const key = (row['Key'] || '').trim();
+      const value = (row['Value'] || '').trim();
+      if (key) cfg[key] = value;
+    });
+    return cfg;
+  }
+
+  function getConfig(key, fallback) {
+    return config[key] !== undefined ? config[key] : (fallback !== undefined ? fallback : '');
+  }
+
+  function applyConfig() {
+    // Apply CSS custom properties
+    const root = document.documentElement;
+    if (config.primary_color) root.style.setProperty('--green', config.primary_color);
+    if (config.support_color) root.style.setProperty('--green-support', config.support_color);
+
+    // Apply header text
+    const titleEl = document.querySelector('.header__title h1');
+    const subtitleEl = document.querySelector('.header__title p');
+    if (titleEl && config.tournament_name) titleEl.textContent = config.tournament_name;
+    if (subtitleEl && config.subtitle) subtitleEl.textContent = config.subtitle;
+
+    // Apply document title
+    if (config.tournament_name) {
+      document.title = config.tournament_name + ' — ' + (config.subtitle || 'Dashboard');
+    }
+
+    // Apply logos (skip placeholder example.com URLs)
+    function applyLogo(selector, url, alt) {
+      const el = document.querySelector(selector);
+      if (el && url && !url.includes('example.com')) {
+        el.src = url;
+        el.alt = alt || '';
+      }
+    }
+    applyLogo('.header__lps-logo', config.event_logo, config.tournament_name || 'Event Logo');
+    applyLogo('.header__tps-logo', config.partner_logo, 'Partner Logo');
+    applyLogo('.footer__tps-logo', config.footer_logo, 'Footer Logo');
+
+    // Apply favicon
+    if (config.favicon && !config.favicon.includes('example.com')) {
+      const faviconEl = document.querySelector('link[rel="icon"]');
+      if (faviconEl) faviconEl.href = config.favicon;
+    }
+
+    // Apply footer text
+    if (config.footer_text) {
+      const footerTextEl = document.querySelector('.footer__powered-text');
+      if (footerTextEl) footerTextEl.textContent = config.footer_text;
+    }
+  }
 
   // --- CSV Parser (handles quoted fields) ---
   // Splits CSV text into lines, preserving quotes so splitCSVLine can handle commas in fields
@@ -387,6 +446,23 @@ const Data = (() => {
   // --- Fetch and parse all tabs ---
   async function fetchData() {
     try {
+      // Fetch config on first load
+      if (!configLoaded) {
+        try {
+          const configRes = await fetch(URLS.config);
+          if (configRes.ok) {
+            const configText = await configRes.text();
+            const configRows = parseCSVWithHeaders(configText);
+            config = parseConfigTab(configRows);
+            applyConfig();
+            configLoaded = true;
+          }
+        } catch (e) {
+          console.warn('Config tab not available, using defaults:', e);
+          configLoaded = true;
+        }
+      }
+
       const [matchRes, powerStandingsRes, clubStandingsRes, playersRes] = await Promise.all([
         fetch(URLS.matches),
         fetch(URLS.powerStandings),
@@ -430,7 +506,8 @@ const Data = (() => {
   function startPolling(callback) {
     onUpdate = callback;
     fetchData();
-    pollTimer = setInterval(fetchData, POLL_INTERVAL);
+    const interval = parseInt(getConfig('poll_interval', '30'), 10) * 1000;
+    pollTimer = setInterval(fetchData, interval);
   }
 
   function stopPolling() {
@@ -440,6 +517,7 @@ const Data = (() => {
   return {
     startPolling,
     stopPolling,
+    getConfig,
     getWinner,
     getMatchesByCourt,
     getTeamAvatarsHTML,
@@ -449,6 +527,7 @@ const Data = (() => {
     getPowerKnockout: () => getKnockoutFromMatches('Power'),
     getClubKnockout: () => getKnockoutFromMatches('Club'),
     get matches() { return matches; },
-    get lastUpdated() { return lastUpdated; }
+    get lastUpdated() { return lastUpdated; },
+    get configLoaded() { return configLoaded; }
   };
 })();
