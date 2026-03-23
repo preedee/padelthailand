@@ -436,6 +436,16 @@ html, body {
   white-space: normal;
 }
 
+/* Prevent team names from wrapping — single line with ellipsis */
+.team-name,
+.bracket-match__team-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
 
 .group-card__header {
   background: var(--green);
@@ -452,7 +462,7 @@ html, body {
   width: 100%;
   border-collapse: collapse;
   flex: 1;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .group-card__table th {
@@ -469,7 +479,9 @@ html, body {
 
 .group-card__table th:not(:first-child) {
   text-align: center;
-  width: 48px;
+  width: 32px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .group-card__table td {
@@ -486,6 +498,8 @@ html, body {
 .group-card__table td:not(:first-child) {
   text-align: center;
   font-weight: 400;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .group-card__table tr.qualifier td {
