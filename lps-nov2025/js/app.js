@@ -1,34 +1,23 @@
 /* ============================================
-   App Controller — auto-rotation, view switching
+   App Controller — dynamic views from config
    ============================================ */
 
 const App = (() => {
-  const VIEWS = ['power-standings', 'club-standings', 'power-bracket', 'club-bracket'];
-  const ALL_VIEWS = ['power-standings', 'club-standings', 'matches', 'power-bracket', 'club-bracket'];
-  let ROTATION_INTERVAL = 25000; // default 25 seconds, overridden by config
+  let VIEWS = [];           // rotating views (standings + brackets)
+  let ALL_VIEWS = [];       // all views including manual-only (matches)
+  let ROTATION_INTERVAL = 25000;
   let currentViewIndex = 0;
   let rotationTimer = null;
   let isRotating = true;
+  let viewsBuilt = false;
+
+  // Division config: each has a standings tab, a bracket, and a slug
+  let divisions = [];       // [{ name, slug, standingsTab }]
 
   function init() {
-    // Wire up tab clicks
-    document.querySelectorAll('.view-bar__tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const viewName = tab.dataset.view;
-        const idx = VIEWS.indexOf(viewName);
-        if (idx !== -1) {
-          switchToView(idx);
-          resetRotation();
-        } else if (ALL_VIEWS.includes(viewName)) {
-          // Manual-only view (e.g. All Matches) — show it but stop rotation
-          showManualView(viewName);
-          stopRotation();
-        }
-      });
-    });
-
     // Keyboard nav: arrow keys to switch views, space to pause/resume
     document.addEventListener('keydown', (e) => {
+      if (VIEWS.length === 0) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         switchToView((currentViewIndex + 1) % VIEWS.length);
         resetRotation();
@@ -43,12 +32,117 @@ const App = (() => {
 
     // Start data polling
     Data.startPolling(onDataUpdate);
+  }
+
+  function toSlug(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  function buildViews() {
+    if (viewsBuilt) return;
+
+    // Read divisions from config
+    const divisionNames = Data.getConfigList('divisions');
+    const standingsTabs = Data.getConfigList('standings_tabs');
+
+    if (divisionNames.length === 0) return; // config not loaded yet
+
+    // Build division info — map each division to its standings tab
+    divisions = divisionNames.map((name, i) => ({
+      name: name,
+      slug: toSlug(name),
+      standingsTab: standingsTabs[i] || name + ' Standings'
+    }));
+
+    // Build view list: standings for each division, then brackets for each
+    VIEWS = [];
+    divisions.forEach(d => VIEWS.push(d.slug + '-standings'));
+    divisions.forEach(d => VIEWS.push(d.slug + '-bracket'));
+    ALL_VIEWS = [...VIEWS, 'matches'];
+
+    // Generate nav tabs
+    const viewBar = document.getElementById('view-bar');
+    let tabsHTML = '';
+
+    // Standings tabs
+    divisions.forEach((d, i) => {
+      const viewId = d.slug + '-standings';
+      const active = i === 0 ? ' active' : '';
+      tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${d.name} Standings</button>`;
+    });
+
+    // Bracket tabs
+    divisions.forEach(d => {
+      const viewId = d.slug + '-bracket';
+      tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${d.name} Bracket</button>`;
+    });
+
+    // All Matches tab (manual only, pushed right)
+    tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
+
+    // Rotation dots
+    tabsHTML += `<div class="view-bar__dots">`;
+    VIEWS.forEach((_, i) => {
+      tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
+    });
+    tabsHTML += `</div>`;
+
+    viewBar.innerHTML = tabsHTML;
+
+    // Generate view sections
+    const mainContent = document.getElementById('main-content');
+    let viewsHTML = '';
+
+    // Standings views
+    divisions.forEach((d, i) => {
+      const viewId = d.slug + '-standings';
+      const active = i === 0 ? ' active' : '';
+      viewsHTML += `<section class="view${active}" id="view-${viewId}">
+        <div class="loading">Loading ${d.name} standings...</div>
+      </section>`;
+    });
+
+    // Bracket views
+    divisions.forEach(d => {
+      const viewId = d.slug + '-bracket';
+      viewsHTML += `<section class="view" id="view-${viewId}">
+        <div class="loading">Loading ${d.name} bracket...</div>
+      </section>`;
+    });
+
+    // All Matches view
+    viewsHTML += `<section class="view" id="view-matches">
+      <div class="loading">Loading match data...</div>
+    </section>`;
+
+    mainContent.innerHTML = viewsHTML;
+
+    // Wire up tab clicks
+    viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const viewName = tab.dataset.view;
+        const idx = VIEWS.indexOf(viewName);
+        if (idx !== -1) {
+          switchToView(idx);
+          resetRotation();
+        } else if (ALL_VIEWS.includes(viewName)) {
+          showManualView(viewName);
+          stopRotation();
+        }
+      });
+    });
+
+    // Pick up rotation interval from config
+    const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
+    if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
 
     // Start auto-rotation (desktop only)
     const isMobile = window.innerWidth < 768;
     if (!isMobile) {
       startRotation();
     }
+
+    viewsBuilt = true;
   }
 
   function onDataUpdate(matches, lastUpdated, error) {
@@ -62,13 +156,9 @@ const App = (() => {
       return;
     }
 
-    // Pick up rotation interval from config (once)
-    if (Data.configLoaded) {
-      const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
-      if (cfgInterval !== ROTATION_INTERVAL) {
-        ROTATION_INTERVAL = cfgInterval;
-        if (isRotating) resetRotation(); // restart with new interval
-      }
+    // Build views on first successful data load (config is now available)
+    if (!viewsBuilt && Data.configLoaded) {
+      buildViews();
     }
 
     // Update timestamp
@@ -82,13 +172,31 @@ const App = (() => {
   }
 
   function renderAllViews(matches) {
-    Standings.renderPower(document.getElementById('view-power-standings'));
-    Standings.renderClub(document.getElementById('view-club-standings'));
-    Matches.render(document.getElementById('view-matches'), matches);
-    Bracket.renderPower(document.getElementById('view-power-bracket'));
-    Bracket.renderClub(document.getElementById('view-club-bracket'));
+    if (!viewsBuilt) return;
 
-    // Sidebar: upcoming matches (always visible)
+    // Render standings for each division
+    divisions.forEach(d => {
+      const container = document.getElementById('view-' + d.slug + '-standings');
+      if (container) {
+        Standings.render(container, d.standingsTab, d.name + ' Standings');
+      }
+    });
+
+    // Render brackets for each division
+    divisions.forEach(d => {
+      const container = document.getElementById('view-' + d.slug + '-bracket');
+      if (container) {
+        Bracket.render(container, d.name, d.name + ' Knockout');
+      }
+    });
+
+    // Render All Matches
+    const matchesContainer = document.getElementById('view-matches');
+    if (matchesContainer) {
+      Matches.render(matchesContainer, matches);
+    }
+
+    // Sidebar: upcoming matches
     const sidebarContent = document.querySelector('.sidebar__content');
     if (sidebarContent) {
       Matches.renderUpcoming(sidebarContent, matches);
@@ -99,18 +207,15 @@ const App = (() => {
     currentViewIndex = index;
     const viewName = VIEWS[index];
 
-    // Update tabs
     document.querySelectorAll('.view-bar__tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.view === viewName);
     });
 
-    // Update dots
     const dots = document.querySelectorAll('.view-bar__dot');
     dots.forEach((dot, i) => {
       dot.classList.toggle('active', i === index);
     });
 
-    // Update views
     document.querySelectorAll('.view').forEach(view => {
       view.classList.remove('active');
     });
@@ -119,17 +224,14 @@ const App = (() => {
   }
 
   function showManualView(viewName) {
-    // Update tabs
     document.querySelectorAll('.view-bar__tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.view === viewName);
     });
 
-    // Clear dots (no rotation indicator for manual views)
     document.querySelectorAll('.view-bar__dot').forEach(dot => {
       dot.classList.remove('active');
     });
 
-    // Update views
     document.querySelectorAll('.view').forEach(view => {
       view.classList.remove('active');
     });
@@ -140,7 +242,9 @@ const App = (() => {
   function startRotation() {
     isRotating = true;
     rotationTimer = setInterval(() => {
-      switchToView((currentViewIndex + 1) % VIEWS.length);
+      if (VIEWS.length > 0) {
+        switchToView((currentViewIndex + 1) % VIEWS.length);
+      }
     }, ROTATION_INTERVAL);
   }
 

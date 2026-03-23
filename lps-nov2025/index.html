@@ -3,69 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ladies Padel Series — Tournament Dashboard</title>
+  <title>Tournament Dashboard</title>
   <link rel="icon" href="assets/tps-favicon.png">
-  <link rel="stylesheet" href="css/styles.css?v=46">
+  <link rel="stylesheet" href="css/styles.css?v=47">
 </head>
 <body>
   <div class="dashboard">
 
-    <!-- Header — Royal Padel Association (dark) -->
+    <!-- Header -->
     <header class="header">
       <div class="header__left">
-        <img src="assets/lps-logo.jpeg" alt="Ladies Padel Series" class="header__lps-logo">
+        <img src="assets/lps-logo.jpeg" alt="Event Logo" class="header__lps-logo">
       </div>
       <div class="header__title">
-        <h1>Ladies Padel Series</h1>
-        <p>Tournament Dashboard</p>
+        <h1>Tournament</h1>
+        <p>Dashboard</p>
       </div>
       <div class="header__right">
-        <img src="assets/tps-logo-green.png" alt="The Padel Society" class="header__tps-logo">
+        <img src="assets/tps-logo-green.png" alt="Partner Logo" class="header__tps-logo">
       </div>
     </header>
 
-    <!-- View Indicator Bar -->
-    <nav class="view-bar">
-      <button class="view-bar__tab active" data-view="power-standings">Power Standings</button>
-      <button class="view-bar__tab" data-view="club-standings">Club Standings</button>
-      <button class="view-bar__tab" data-view="power-bracket">Power Bracket</button>
-      <button class="view-bar__tab" data-view="club-bracket">Club Bracket</button>
-      <button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>
-      <div class="view-bar__dots">
-        <span class="view-bar__dot active"></span>
-        <span class="view-bar__dot"></span>
-        <span class="view-bar__dot"></span>
-        <span class="view-bar__dot"></span>
-      </div>
-    </nav>
+    <!-- View Indicator Bar (generated dynamically) -->
+    <nav class="view-bar" id="view-bar"></nav>
 
     <!-- Content Area: Main + Sidebar -->
     <div class="content-area">
-      <!-- Main Content (rotates) -->
+      <!-- Main Content (views generated dynamically) -->
       <main class="main-content" id="main-content">
-        <!-- View: Power Standings -->
-        <section class="view active" id="view-power-standings">
-          <div class="loading">Loading Power standings...</div>
-        </section>
-
-        <!-- View: Club Standings -->
-        <section class="view" id="view-club-standings">
-          <div class="loading">Loading Club standings...</div>
-        </section>
-
-        <!-- View: All Matches -->
-        <section class="view" id="view-matches">
-          <div class="loading">Loading match data...</div>
-        </section>
-
-        <!-- View: Power Bracket -->
-        <section class="view" id="view-power-bracket">
-          <div class="loading">Loading Power bracket data...</div>
-        </section>
-
-        <!-- View: Club Bracket -->
-        <section class="view" id="view-club-bracket">
-          <div class="loading">Loading Club bracket data...</div>
+        <section class="view active" id="view-loading">
+          <div class="loading">Loading tournament data...</div>
         </section>
       </main>
 
@@ -89,10 +56,10 @@
 
   </div>
 
-  <script src="js/data.js?v=46"></script>
-  <script src="js/standings.js?v=46"></script>
-  <script src="js/matches.js?v=46"></script>
-  <script src="js/bracket.js?v=46"></script>
-  <script src="js/app.js?v=46"></script>
+  <script src="js/data.js?v=47"></script>
+  <script src="js/standings.js?v=47"></script>
+  <script src="js/matches.js?v=47"></script>
+  <script src="js/bracket.js?v=47"></script>
+  <script src="js/app.js?v=47"></script>
 </body>
 </html>
