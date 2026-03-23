@@ -1285,9 +1285,9 @@ img.avatar {
     margin-bottom: 8px;
   }
 
-  /* Tiers: stack vertically */
+  /* Tiers: keep horizontal on mobile */
   .bracket-tiers {
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
   }
 
