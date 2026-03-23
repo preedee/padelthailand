@@ -133,11 +133,11 @@ const Matches = (() => {
       </div>
       <div class="match-card__teams">
         <div class="match-card__team ${team1Class}">
-          <div class="team-with-avatars">${Data.getTeamAvatarsHTML(match.team1, 22)}<span class="match-card__team-name">${match.team1 || 'TBD'}</span></div>
+          ${Data.getTeamStackedHTML(match.team1, 20)}
           <div class="match-card__scores">${scores1}</div>
         </div>
         <div class="match-card__team ${team2Class}">
-          <div class="team-with-avatars">${Data.getTeamAvatarsHTML(match.team2, 22)}<span class="match-card__team-name">${match.team2 || 'TBD'}</span></div>
+          ${Data.getTeamStackedHTML(match.team2, 20)}
           <div class="match-card__scores">${scores2}</div>
         </div>
       </div>

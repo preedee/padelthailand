@@ -540,6 +540,35 @@ img.avatar {
   margin-right: 6px;
 }
 
+/* Stacked player layout (one player per row) */
+.team-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.team-stacked__player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-stacked__player .avatar {
+  flex-shrink: 0;
+}
+
+.team-stacked__name {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.team-stacked__place {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 2px;
+}
+
 /* Fixed height in standings tables only */
 .group-card__table .team-with-avatars {
   height: 24px;

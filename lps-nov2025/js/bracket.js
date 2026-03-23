@@ -26,15 +26,15 @@ const Bracket = (() => {
 
   function renderPower(container) {
     const data = Data.getPowerKnockout();
-    renderDivision(container, 'Power Play Knockout', data);
+    renderDivision(container, 'Power Play Knockout', data, true);
   }
 
   function renderClub(container) {
     const data = Data.getClubKnockout();
-    renderDivision(container, 'Club Play Knockout', data);
+    renderDivision(container, 'Club Play Knockout', data, true);
   }
 
-  function renderDivision(container, title, divData) {
+  function renderDivision(container, title, divData, stacked) {
     if (!divData || divData.matches.length === 0) {
       container.innerHTML = '<div class="loading">No knockout bracket data available</div>';
       return;
@@ -71,36 +71,36 @@ const Bracket = (() => {
       <div class="bracket-single">
         <div class="bracket-division__title">${title}</div>
         <div class="bracket">
-          ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
-          ${(has3rd || hasFinals) ? renderCombinedFinalsRound(rounds['3rd Place'] || [], rounds['Finals'] || []) : ''}
-          ${renderChampion(divData.standings)}
+          ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey], stacked)).join('')}
+          ${(has3rd || hasFinals) ? renderCombinedFinalsRound(rounds['3rd Place'] || [], rounds['Finals'] || [], stacked) : ''}
+          ${renderChampion(divData.standings, stacked)}
         </div>
-        ${Object.keys(tiers).length > 0 ? renderTiers(tiers) : ''}
+        ${Object.keys(tiers).length > 0 ? renderTiers(tiers, stacked) : ''}
       </div>`;
 
     container.innerHTML = html;
   }
 
-  function renderRound(roundKey, roundMatches) {
+  function renderRound(roundKey, roundMatches, stacked) {
     return `<div class="bracket__round">
       <div class="bracket__round-title">${ROUND_DISPLAY[roundKey] || roundKey}</div>
       <div class="bracket__matches">
-        ${roundMatches.map(m => renderBracketMatch(m)).join('')}
+        ${roundMatches.map(m => renderBracketMatch(m, '', stacked)).join('')}
       </div>
     </div>`;
   }
 
-  function renderCombinedFinalsRound(thirdPlaceMatches, finalsMatches) {
+  function renderCombinedFinalsRound(thirdPlaceMatches, finalsMatches, stacked) {
     return `<div class="bracket__round">
       <div class="bracket__round-title">Final / 3rd Place</div>
       <div class="bracket__matches">
-        ${finalsMatches.map(m => renderBracketMatch(m, 'bracket-match--gold')).join('')}
-        ${thirdPlaceMatches.map(m => renderBracketMatch(m, 'bracket-match--bronze')).join('')}
+        ${finalsMatches.map(m => renderBracketMatch(m, 'bracket-match--gold', stacked)).join('')}
+        ${thirdPlaceMatches.map(m => renderBracketMatch(m, 'bracket-match--bronze', stacked)).join('')}
       </div>
     </div>`;
   }
 
-  function renderBracketMatch(match, extraClass) {
+  function renderBracketMatch(match, extraClass, stacked) {
     const winnerClean = cleanTeamName(match.winner || '');
     const team1Clean = cleanTeamName(match.team1 || '');
     const team2Clean = cleanTeamName(match.team2 || '');
@@ -126,19 +126,26 @@ const Bracket = (() => {
       ? validSets.map(s => `<span class="bracket-match__set">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
+    const team1Content = stacked
+      ? Data.getTeamStackedHTML(team1Name, 22)
+      : `<div class="team-with-avatars">${Data.getTeamAvatarsHTML(team1Name, 22)}<span class="bracket-match__team-name">${team1Name}</span></div>`;
+    const team2Content = stacked
+      ? Data.getTeamStackedHTML(team2Name, 22)
+      : `<div class="team-with-avatars">${Data.getTeamAvatarsHTML(team2Name, 22)}<span class="bracket-match__team-name">${team2Name}</span></div>`;
+
     return `<div class="bracket-match ${extraClass || ''}">
       <div class="bracket-match__team ${team1Class} ${team1TBD}">
-        <div class="team-with-avatars">${Data.getTeamAvatarsHTML(team1Name, 22)}<span class="bracket-match__team-name">${team1Name}</span></div>
+        ${team1Content}
         <div class="bracket-match__score">${displayScore1}</div>
       </div>
       <div class="bracket-match__team ${team2Class} ${team2TBD}">
-        <div class="team-with-avatars">${Data.getTeamAvatarsHTML(team2Name, 22)}<span class="bracket-match__team-name">${team2Name}</span></div>
+        ${team2Content}
         <div class="bracket-match__score">${displayScore2}</div>
       </div>
     </div>`;
   }
 
-  function renderChampion(standings) {
+  function renderChampion(standings, stacked) {
     if (!standings || standings.length === 0) return '';
 
     const placeClasses = ['bracket-match--gold', 'bracket-match--silver', 'bracket-match--bronze'];
@@ -146,24 +153,27 @@ const Bracket = (() => {
     return `<div class="bracket__round">
       <div class="bracket__round-title">Final Standings</div>
       <div class="bracket__matches">
-        ${standings.slice(0, 3).map((s, i) => `
-          <div class="bracket-match ${placeClasses[i]}">
+        ${standings.slice(0, 3).map((s, i) => {
+          const teamContent = stacked
+            ? `<div class="team-stacked__place">${s.place}</div>${Data.getTeamStackedHTML(s.team, 22)}`
+            : `<div class="team-with-avatars">${Data.getTeamAvatarsHTML(s.team, 22)}<span class="bracket-match__team-name bracket-match__place">${s.place} ${s.team}</span></div>`;
+          return `<div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">
-              <div class="team-with-avatars">${Data.getTeamAvatarsHTML(s.team, 22)}<span class="bracket-match__team-name bracket-match__place">${s.place} ${s.team}</span></div>
+              ${teamContent}
             </div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }
 
-  function renderTiers(tiers) {
+  function renderTiers(tiers, stacked) {
     return `<div class="bracket-tiers">
       ${Object.entries(tiers).map(([section, matches]) => `
         <div class="bracket-tier">
           <div class="bracket-tier__title">${cleanTierTitle(section)}</div>
           <div class="bracket-tier__matches">
-            ${matches.map(m => renderBracketMatch(m)).join('')}
+            ${matches.map(m => renderBracketMatch(m, '', stacked)).join('')}
           </div>
         </div>
       `).join('')}

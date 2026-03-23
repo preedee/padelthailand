@@ -7,8 +7,8 @@ const Data = (() => {
   const BASE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
   const URLS = {
     matches:       `${BASE_URL}&sheet=Matches`,
-    powerStandings: `${BASE_URL}&sheet=Power%20Play%20Group%20Standings`,
-    clubStandings:  `${BASE_URL}&sheet=Club%20Play%20Group%20Standings`,
+    powerStandings: `${BASE_URL}&sheet=Power%20Standings`,
+    clubStandings:  `${BASE_URL}&sheet=Club%20Standings`,
     players:       `${BASE_URL}&sheet=Teams%20and%20Players`
   };
   const POLL_INTERVAL = 30000; // 30 seconds
@@ -346,6 +346,23 @@ const Data = (() => {
     }).join('');
   }
 
+  // Generate stacked avatar+name HTML (one player per row)
+  function getTeamStackedHTML(teamName, size) {
+    if (!teamName || teamName === 'TBD') return `<span class="bracket-match__team-name">TBD</span>`;
+    const sz = size || 22;
+    const cleanName = teamName.replace(/\u2060/g, '');
+    const players = cleanName.split(/ & | and /);
+    return `<div class="team-stacked">${players.map(name => {
+      const trimmed = name.trim();
+      const url = getPlayerAvatar(trimmed);
+      const initial = trimmed.charAt(0).toUpperCase();
+      const avatarHTML = url
+        ? `<img class="avatar" src="${url}" alt="${trimmed}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`
+        : `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+      return `<div class="team-stacked__player">${avatarHTML}<span class="team-stacked__name">${trimmed}</span></div>`;
+    }).join('')}</div>`;
+  }
+
   // --- Derived data: Live / Recent Matches ---
   function getMatchesByCourt(matchList) {
     const courts = {};
@@ -426,6 +443,7 @@ const Data = (() => {
     getWinner,
     getMatchesByCourt,
     getTeamAvatarsHTML,
+    getTeamStackedHTML,
     getPowerStandings: () => parseStandingsTab(powerStandingsData),
     getClubStandings: () => parseStandingsTab(clubStandingsData),
     getPowerKnockout: () => getKnockoutFromMatches('Power'),
