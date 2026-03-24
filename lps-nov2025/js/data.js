@@ -106,6 +106,28 @@ const Data = (() => {
       const footer = document.querySelector('.footer');
       if (footer) footer.style.color = config.footer_text_color;
     }
+
+    // Apply nav bar colors
+    const viewBar = document.querySelector('.view-bar');
+    if (viewBar) {
+      if (config.nav_bg) viewBar.style.background = config.nav_bg;
+      if (config.nav_text_color || config.nav_text_inactive) {
+        const style = document.createElement('style');
+        let css = '';
+        if (config.nav_text_inactive) {
+          css += `.view-bar__tab { color: ${config.nav_text_inactive} !important; }`;
+        }
+        if (config.nav_text_color) {
+          css += `.view-bar__tab.active { color: ${config.nav_text_color} !important; }`;
+          css += `.view-bar__dot.active { background: ${config.nav_text_color} !important; }`;
+        }
+        if (config.nav_text_inactive) {
+          css += `.view-bar__dot { background: ${config.nav_text_inactive} !important; }`;
+        }
+        style.textContent = css;
+        document.head.appendChild(style);
+      }
+    }
   }
 
   // --- CSV Parser (handles quoted fields) ---
