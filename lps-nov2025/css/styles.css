@@ -1305,16 +1305,15 @@ img.avatar {
     margin-bottom: 8px;
   }
 
-  /* Tiers: keep horizontal on mobile */
+  /* Tiers: stack vertically on mobile, full width like Tier 5 */
   .bracket-tiers {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .bracket-tier {
-    flex: 1;
-    min-width: 45%;
+    flex: none;
+    width: 100%;
   }
 
   .bracket-tier__title {
@@ -1322,14 +1321,13 @@ img.avatar {
   }
 
   .bracket-tier__matches {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
   }
 
   .bracket-tier__matches .bracket-match {
-    flex: 1;
-    min-width: 45%;
+    flex: none;
+    width: 100%;
   }
 
   /* Podium: stack */
