@@ -173,7 +173,7 @@ const Bracket = (() => {
       <div class="bracket__matches">
         ${standings.slice(0, 3).map((s, i) => {
           const teamContent = stacked
-            ? `<div class="team-stacked__place">${s.place}</div>${Data.getTeamStackedHTML(s.team, 22)}`
+            ? `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${Data.getTeamStackedHTML(s.team, 22)}</span></div>`
             : `<div class="team-with-avatars">${Data.getTeamAvatarsHTML(s.team, 22)}<span class="bracket-match__team-name bracket-match__place"><span class="bracket-match__medal">${s.place}</span> ${s.team}</span></div>`;
           return `<div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">

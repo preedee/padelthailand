@@ -179,7 +179,7 @@ const Matches = (() => {
 
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division} —</span> <span class="match-card__round-name">${match.round}</span></span>
+        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span></span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">
@@ -243,7 +243,7 @@ const Matches = (() => {
               </div>
               <div class="sidebar__match-row">
                 <span class="sidebar__match-team ${t2Class}">${m.team2 || 'TBD'}</span>
-                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.b).join(' ')}</span>` : isUpcoming && (m.round === 'Finals' || m.round === '3rd Place') ? `<span class="sidebar__match-time">${m.round}</span>` : ''}
+                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.b).join(' ')}</span>` : isUpcoming && m.round ? `<span class="sidebar__match-time">${m.round}</span>` : ''}
               </div>
             </div>`;
           }).join('')}

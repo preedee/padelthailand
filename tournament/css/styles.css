@@ -594,6 +594,20 @@ img.avatar {
   padding-left: 12px;
 }
 
+.team-stacked__standing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.team-stacked__standing .team-stacked__place {
+  margin-bottom: 0;
+  padding-left: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Fixed height in standings tables only */
 .group-card__table .team-with-avatars {
   height: 24px;
