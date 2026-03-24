@@ -20,7 +20,8 @@ const Data = (() => {
 
   let config = {};              // key → value from Config tab
   let matches = [];
-  let standingsData = {};       // tab name → raw CSV rows
+  let standingsData = {};       // tab name → raw CSV lines
+  let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
   let lastUpdated = null;
   let pollTimer = null;
@@ -328,9 +329,10 @@ const Data = (() => {
   // Groups are derived from team codes: 2nd char = group letter
   // e.g. MA1 → Group A, MB2 → Group B, PA1 → Group A
   // ============================================================
-  function computeStandingsFromMatchData(lines) {
+  function computeStandingsFromMatchData(rawText) {
+    if (!rawText) return {};
     // Parse as match rows with headers
-    const rows = parseCSVWithHeaders(lines.map(l => typeof l === 'string' ? l : l.join(',')).join('\n'));
+    const rows = parseCSVWithHeaders(rawText);
     if (rows.length === 0) return {};
 
     // Check if this looks like match data (has "Round" and "Team 1" columns)
@@ -693,12 +695,14 @@ const Data = (() => {
       const matchRows = parseCSVWithHeaders(matchText);
       matches = matchRows.map(toMatch).filter(m => m.matchId);
 
-      // Parse each standings tab
+      // Parse each standings tab — store both raw lines and raw text
       standingsData = {};
+      standingsRawText = {};
       for (let i = 0; i < standingsTabs.length; i++) {
         if (standingsResponses[i].ok) {
           const text = await standingsResponses[i].text();
           standingsData[standingsTabs[i]] = parseCSV(text);
+          standingsRawText[standingsTabs[i]] = text;
         }
       }
 
@@ -745,7 +749,7 @@ const Data = (() => {
       const parsed = parseStandingsTab(data);
       if (Object.keys(parsed).length > 0) return parsed;
       // Fall back: compute standings from match-format data
-      return computeStandingsFromMatchData(data);
+      return computeStandingsFromMatchData(standingsRawText[tabName]);
     },
     // Backward compat
     getPowerStandings: () => parseStandingsTab(standingsData['Power Standings'] || []),
