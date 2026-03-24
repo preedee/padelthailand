@@ -75,31 +75,73 @@ const Matches = (() => {
 
     // Render as time-aligned grid
     const colCount = courtNames.length;
+    const gridCols = `grid-template-columns: repeat(${colCount}, 1fr);`;
     const headerRow = courtNames.map(name =>
       `<div class="court-column__header">${name}</div>`
     ).join('');
 
-    const rows = timeSlots.map(ts => {
-      const cells = courtNames.map(court => {
-        const matchesInSlot = courtSlotMap[court][ts.slot] || [];
-        if (matchesInSlot.length === 0) {
-          return `<div class="matches-grid__cell matches-grid__cell--empty"></div>`;
-        }
-        const cards = matchesInSlot.map(m => {
-          const type = isLive(m) ? 'live' : hasScores(m) ? 'done' : 'upcoming';
-          return renderMatchCard(m, type);
+    // Helper: render rows for a set of time slots
+    function renderSlotRows(slots) {
+      return slots.map(ts => {
+        return courtNames.map(court => {
+          const matchesInSlot = courtSlotMap[court][ts.slot] || [];
+          if (matchesInSlot.length === 0) {
+            return `<div class="matches-grid__cell matches-grid__cell--empty"></div>`;
+          }
+          const cards = matchesInSlot.map(m => {
+            const type = isLive(m) ? 'live' : hasScores(m) ? 'done' : 'upcoming';
+            return renderMatchCard(m, type);
+          }).join('');
+          return `<div class="matches-grid__cell">${cards}</div>`;
         }).join('');
-        return `<div class="matches-grid__cell">${cards}</div>`;
       }).join('');
-      return cells;
-    }).join('');
+    }
 
-    const html = `<div class="matches-grid__header-row" style="grid-template-columns: repeat(${colCount}, 1fr);">
-      ${headerRow}
-    </div>
-    <div class="matches-grid" style="grid-template-columns: repeat(${colCount}, 1fr);">
-      ${rows}
-    </div>`;
+    // Group time slots by date
+    const uniqueDates = [];
+    const slotsByDate = {};
+    timeSlots.forEach(ts => {
+      const d = ts.date || 'Unknown';
+      if (!slotsByDate[d]) {
+        slotsByDate[d] = [];
+        uniqueDates.push(d);
+      }
+      slotsByDate[d].push(ts);
+    });
+
+    const isMultiDay = uniqueDates.length > 1;
+    let html;
+
+    if (isMultiDay) {
+      // Multi-day: collapsible sections per day
+      const daysSections = uniqueDates.map(date => {
+        const dayLabel = shortDate(date);
+        const rows = renderSlotRows(slotsByDate[date]);
+        return `<div class="matches-day">
+          <button class="matches-day__header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span>${dayLabel}</span>
+            <span class="matches-day__chevron">▼</span>
+          </button>
+          <div class="matches-grid" style="${gridCols}">
+            ${rows}
+          </div>
+        </div>`;
+      }).join('');
+
+      html = `<div class="matches-grid__header-row" style="${gridCols}">
+        ${headerRow}
+      </div>
+      ${daysSections}`;
+    } else {
+      // Single-day: no day headers, same as before
+      const rows = renderSlotRows(timeSlots);
+      html = `<div class="matches-grid__header-row" style="${gridCols}">
+        ${headerRow}
+      </div>
+      <div class="matches-grid" style="${gridCols}">
+        ${rows}
+      </div>`;
+    }
 
     container.innerHTML = html;
   }
@@ -137,7 +179,7 @@ const Matches = (() => {
 
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}">${match.division} — ${match.round}</span>
+        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division} —</span> <span class="match-card__round-name">${match.round}</span></span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">

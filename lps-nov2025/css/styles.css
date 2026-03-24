@@ -611,6 +611,48 @@ img.avatar {
   padding-bottom: 32px;
 }
 
+/* Day grouping for multi-day tournaments */
+.matches-day {
+  margin-bottom: 8px;
+}
+
+.matches-day__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--green);
+  color: var(--white);
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background var(--transition);
+}
+
+.matches-day__header:hover {
+  background: var(--green-support);
+}
+
+.matches-day__chevron {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.matches-day.collapsed .matches-day__chevron {
+  transform: rotate(-90deg);
+}
+
+.matches-day.collapsed .matches-grid {
+  display: none;
+}
+
 .matches-grid__cell {
   display: flex;
   flex-direction: column;
@@ -688,6 +730,11 @@ img.avatar {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--green-support);
+}
+
+.match-card__division,
+.match-card__round-name {
+  white-space: nowrap;
 }
 
 .match-card__round--finals {
@@ -995,6 +1042,10 @@ img.avatar {
 .bracket-match__place {
   font-size: 13px;
   color: var(--green-support);
+}
+
+.bracket-match__medal {
+  margin-right: 8px;
 }
 
 /* Tier matches */
