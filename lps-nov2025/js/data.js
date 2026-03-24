@@ -105,8 +105,9 @@ const Data = (() => {
       if (footer) footer.style.background = config.footer_bg;
     }
     if (config.footer_text_color) {
-      const footer = document.querySelector('.footer');
-      if (footer) footer.style.color = config.footer_text_color;
+      document.querySelectorAll('.footer__powered-text, .footer__timestamp').forEach(el => {
+        el.style.color = config.footer_text_color;
+      });
     }
 
     // Apply nav bar colors
