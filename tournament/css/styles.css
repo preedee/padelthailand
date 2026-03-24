@@ -590,7 +590,8 @@ img.avatar {
   font-size: 11px;
   font-weight: 700;
   color: var(--green);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  padding-left: 12px;
 }
 
 /* Fixed height in standings tables only */
