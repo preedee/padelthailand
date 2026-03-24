@@ -208,7 +208,6 @@ const Data = (() => {
   // --- Map raw row to Match object ---
   function toMatch(row) {
     return {
-      order: parseInt(row['Order']) || 0,
       division: row['Division'] || '',
       round: row['Round'] || '',
       team1Code: row['Team 1 Code'] || '',
@@ -358,8 +357,7 @@ const Data = (() => {
         score: '',
         winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
         section: 'PLAYOFFS',
-        division: divisionPrefix,
-        order: m.order
+        division: divisionPrefix
       });
     });
 
@@ -376,8 +374,7 @@ const Data = (() => {
         score: '',
         winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
         section: m.division, // e.g. "Power Tier 3"
-        division: divisionPrefix,
-        order: m.order
+        division: divisionPrefix
       });
     });
 
@@ -491,7 +488,7 @@ const Data = (() => {
     courtOrder.forEach(c => { if (courts[c]) sortedCourts[c] = courts[c]; });
     Object.keys(courts).forEach(c => { if (!sortedCourts[c]) sortedCourts[c] = courts[c]; });
     for (const court of Object.keys(sortedCourts)) {
-      sortedCourts[court].sort((a, b) => a.order - b.order);
+      sortedCourts[court].sort((a, b) => (parseInt(a.matchId) || 0) - (parseInt(b.matchId) || 0));
     }
     return sortedCourts;
   }

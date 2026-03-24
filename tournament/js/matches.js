@@ -27,7 +27,7 @@ const Matches = (() => {
     const timeA = timeToMinutes(a.time);
     const timeB = timeToMinutes(b.time);
     if (timeA !== timeB) return timeA - timeB;
-    return a.order - b.order;
+    return (parseInt(a.matchId) || 0) - (parseInt(b.matchId) || 0);
   }
 
   function render(container, matches) {
