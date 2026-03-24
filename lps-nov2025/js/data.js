@@ -207,14 +207,18 @@ const Data = (() => {
 
   // --- Map raw row to Match object ---
   function toMatch(row) {
+    const t1 = row['Team 1'] || '';
+    const t2 = row['Team 2'] || '';
+    const t1Code = row['Team 1 Code'] || '';
+    const t2Code = row['Team 2 Code'] || '';
     return {
       division: row['Division'] || '',
       round: row['Round'] || '',
-      team1Code: row['Team 1 Code'] || '',
-      team1: row['Team 1'] || '',
+      team1Code: t1Code,
+      team1: (t1 && t1 !== 'TBD') ? t1 : (t1Code || t1),
       team1Id: row['Team 1 ID'] || '',
-      team2Code: row['Team 2 Code'] || '',
-      team2: row['Team 2'] || '',
+      team2Code: t2Code,
+      team2: (t2 && t2 !== 'TBD') ? t2 : (t2Code || t2),
       team2Id: row['Team 2 ID'] || '',
       date: row['Date'] || '',
       time: row['Time'] || '',
@@ -326,11 +330,13 @@ const Data = (() => {
     // Knockout main bracket: match division that starts with the prefix
     // Handles both "Power Play" (division="Power Play", prefix="Power")
     // and "Male Amateur" (division="Male Amateur", prefix="Male Amateur")
+    const knockoutRounds = ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'];
     const mainMatches = matches.filter(m => {
       if (!m.matchId) return false;
       const div = m.division.toLowerCase();
       if (div !== prefix && !div.startsWith(prefix + ' play')) return false;
-      return ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'].includes(m.round);
+      // Match rounds like "Quarters", "Quarters #1", "Semis #2", "Finals"
+      return knockoutRounds.some(r => m.round === r || m.round.startsWith(r + ' '));
     });
 
     // Tier matches: division starts with prefix + " Tier"
@@ -345,17 +351,21 @@ const Data = (() => {
     mainMatches.forEach(m => {
       const winner = getWinner(m);
       const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
-      // Normalize "Semis" to "Semi Finals" for bracket display
-      const round = m.round === 'Semis' ? 'Semi Finals' : m.round;
+      // Normalize round: "Quarters #1" → "Quarters", "Semis #2" → "Semi Finals"
+      let round = m.round.replace(/\s*#\d+$/, '');
+      if (round === 'Semis') round = 'Semi Finals';
+      // Fall back to team code if team name is empty or "TBD"
+      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
+      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
       allBracketMatches.push({
         round: round,
-        team1: m.team1,
-        team2: m.team2,
+        team1: team1,
+        team2: team2,
         sets: m.sets,
         score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
         score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
-        winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
+        winner: hasScores ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
         section: 'PLAYOFFS',
         division: divisionPrefix,
         date: m.date,
@@ -366,15 +376,17 @@ const Data = (() => {
     tierMatches.forEach(m => {
       const winner = getWinner(m);
       const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
+      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
+      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
       allBracketMatches.push({
         round: m.round,
-        team1: m.team1,
-        team2: m.team2,
+        team1: team1,
+        team2: team2,
         sets: m.sets,
         score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
         score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
-        winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
+        winner: hasScores ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
         section: m.division, // e.g. "Power Tier 3"
         division: divisionPrefix,
         date: m.date,
