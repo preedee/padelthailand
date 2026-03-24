@@ -809,7 +809,6 @@ img.avatar {
 .bracket {
   display: flex;
   align-items: stretch;
-  height: 100%;
   gap: 0;
 }
 
@@ -930,7 +929,6 @@ img.avatar {
 .bracket-single {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .bracket-container {
