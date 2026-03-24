@@ -432,21 +432,55 @@ const Data = (() => {
 
   // ============================================================
   // Player Avatars — parsed from "Teams and Players" tab
-  // Columns: ID, Name, Code, Name, P1 Name, P1 ID, P1 Avatar, P2 Name, P2 ID, P2 Avatar
+  // Dynamically finds avatar and name columns by header name
   // ============================================================
   function parsePlayersTab(rows) {
     const avatars = {};
-    rows.forEach(row => {
-      const p1Name = (row['P1 Name'] || '').trim().replace(/^\u2060+/, ''); // strip invisible chars
-      const p1Avatar = (row['P1 Avatar'] || '').trim();
-      const p2Name = (row['P2 Name'] || '').trim().replace(/^\u2060+/, '');
-      const p2Avatar = (row['P2 Avatar'] || '').trim();
+    if (rows.length === 0) return avatars;
 
-      if (p1Name && p1Avatar && p1Avatar !== 'null') {
-        avatars[p1Name] = p1Avatar;
+    // Find column headers containing "Avatar" and their associated name columns
+    const headers = Object.keys(rows[0]);
+    const avatarCols = headers.filter(h => h.toLowerCase().includes('avatar'));
+
+    // For each avatar column, find the best name column:
+    // Try "P1 Name"/"P2 Name" first, then look for name column just before the avatar column
+    const p1AvatarCol = avatarCols.find(h => h.toLowerCase().includes('p1')) || avatarCols[0];
+    const p2AvatarCol = avatarCols.find(h => h.toLowerCase().includes('p2')) || avatarCols[1];
+
+    // Find name columns — try standard names first, then fall back to positional
+    function findNameCol(avatarCol, candidates) {
+      for (const c of candidates) {
+        if (headers.includes(c)) return c;
       }
-      if (p2Name && p2Avatar && p2Avatar !== 'null') {
-        avatars[p2Name] = p2Avatar;
+      // Fall back: look for a name-like column near the avatar column
+      const avatarIdx = headers.indexOf(avatarCol);
+      if (avatarIdx > 0) {
+        // Walk backwards to find a column with "name" in its header
+        for (let i = avatarIdx - 1; i >= 0; i--) {
+          const h = headers[i].toLowerCase();
+          if (h.includes('name') && !h.includes('last') && !h.includes('team')) return headers[i];
+        }
+      }
+      return null;
+    }
+
+    const p1NameCol = findNameCol(p1AvatarCol, ['P1 Name', 'First Name']);
+    const p2NameCol = findNameCol(p2AvatarCol, ['P2 Name', 'Partner Name:', 'Partner Name']);
+
+    rows.forEach(row => {
+      if (p1NameCol && p1AvatarCol) {
+        const name = (row[p1NameCol] || '').trim().replace(/^\u2060+/, '');
+        const avatar = (row[p1AvatarCol] || '').trim();
+        if (name && avatar && avatar !== 'null' && avatar !== '#N/A') {
+          avatars[name] = avatar;
+        }
+      }
+      if (p2NameCol && p2AvatarCol) {
+        const name = (row[p2NameCol] || '').trim().replace(/^\u2060+/, '');
+        const avatar = (row[p2AvatarCol] || '').trim();
+        if (name && avatar && avatar !== 'null' && avatar !== '#N/A') {
+          avatars[name] = avatar;
+        }
       }
     });
     return avatars;
