@@ -605,6 +605,7 @@ img.avatar {
   gap: 8px 12px;
   height: 100%;
   align-content: start;
+  padding-bottom: 32px;
 }
 
 .matches-grid__cell {
