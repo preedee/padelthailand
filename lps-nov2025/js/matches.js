@@ -94,8 +94,10 @@ const Matches = (() => {
       return cells;
     }).join('');
 
-    const html = `<div class="matches-grid" style="grid-template-columns: repeat(${colCount}, 1fr);">
+    const html = `<div class="matches-grid__header-row" style="grid-template-columns: repeat(${colCount}, 1fr);">
       ${headerRow}
+    </div>
+    <div class="matches-grid" style="grid-template-columns: repeat(${colCount}, 1fr);">
       ${rows}
     </div>`;
 

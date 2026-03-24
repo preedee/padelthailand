@@ -626,6 +626,15 @@ img.avatar {
   gap: 20px;
 }
 
+.matches-grid__header-row {
+  display: grid;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--off-white);
+  padding: 8px 0;
+}
+
 .court-column__header {
   font-family: var(--font);
   font-weight: 700;
@@ -634,12 +643,7 @@ img.avatar {
   text-transform: uppercase;
   color: var(--green);
   text-align: center;
-  padding-bottom: 8px;
-  position: sticky;
-  top: 0;
-  background: var(--off-white);
-  z-index: 5;
-  padding-top: 8px;
+  padding-bottom: 4px;
   border-bottom: 2px solid var(--green);
 }
 
@@ -1260,6 +1264,7 @@ img.avatar {
     -webkit-overflow-scrolling: touch;
   }
 
+  .matches-grid__header-row,
   .matches-grid {
     gap: 8px 12px;
     min-width: 700px;
