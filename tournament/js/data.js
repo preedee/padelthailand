@@ -89,14 +89,22 @@ const Data = (() => {
       if (footerTextEl) footerTextEl.textContent = config.footer_text;
     }
 
-    // Apply header/footer background colors
+    // Apply header/footer background colors and text colors
     if (config.header_bg) {
       const header = document.querySelector('.header');
       if (header) header.style.background = config.header_bg;
     }
+    if (config.header_text_color) {
+      const titleEl2 = document.querySelector('.header__title');
+      if (titleEl2) titleEl2.style.color = config.header_text_color;
+    }
     if (config.footer_bg) {
       const footer = document.querySelector('.footer');
       if (footer) footer.style.background = config.footer_bg;
+    }
+    if (config.footer_text_color) {
+      const footer = document.querySelector('.footer');
+      if (footer) footer.style.color = config.footer_text_color;
     }
   }
 
