@@ -213,7 +213,6 @@ const Data = (() => {
   // ============================================================
   function parseStandingsTab(lines) {
     const groups = {};
-    let currentDivision = '';
     let currentGroup = '';
 
     for (const line of lines) {
@@ -222,21 +221,20 @@ const Data = (() => {
       const col1 = fields[1] || '';
       const col2 = fields[2] || '';
 
-      // Division header row (e.g. "POWER DIVISION - GROUP STAGE STANDINGS Power Play 1 Code")
-      // This combined header also contains the first group name
-      if (col0.includes('DIVISION') && (col0.includes('STANDINGS') || col0.includes('ST&INGS') || col0.includes('GROUP STAGE'))) {
-        currentDivision = col0.includes('POWER') ? 'Power' : 'Club';
-        // Extract first group name if embedded (e.g. "...STANDINGS Power Play 1 Code")
-        const groupMatch = col0.match(/(Power Play \d+|Club Play \d+)/);
+      // Division/standings header row — contains "STANDINGS" or "ST&INGS" or "GROUP STAGE"
+      // May embed first group name (e.g. "...STANDINGS Group A Code" or "...STANDINGS Power Play 1 Code")
+      if (col0.includes('STANDINGS') || col0.includes('ST&INGS') || col0.includes('GROUP STAGE')) {
+        // Try to extract group name: "Group A", "Group B", "Power Play 1", "Club Play 2", etc.
+        const groupMatch = col0.match(/(Group [A-Z0-9]+|Power Play \d+|Club Play \d+)/i);
         if (groupMatch) {
           currentGroup = groupMatch[1];
         }
         continue;
       }
 
-      // Group header row (e.g. "Power Play 1" or "Club Play 2")
-      if ((col0.startsWith('Power Play') || col0.startsWith('Club Play')) && col1 === '') {
-        currentGroup = col0;
+      // Group header row (e.g. "Group B", "Power Play 2", "Club Play 3")
+      if (/^(Group [A-Z0-9]+|Power Play \d+|Club Play \d+)$/i.test(col0.trim()) && col1 === '') {
+        currentGroup = col0.trim();
         continue;
       }
 
@@ -266,8 +264,7 @@ const Data = (() => {
           setsLost: setsL,
           gamesWon: gamesW,
           gamesLost: gamesL,
-          points: w, // W count is the ranking metric
-          division: currentDivision
+          points: w
         });
       }
     }
