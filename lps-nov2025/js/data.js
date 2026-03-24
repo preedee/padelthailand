@@ -95,8 +95,10 @@ const Data = (() => {
       if (header) header.style.background = config.header_bg;
     }
     if (config.header_text_color) {
-      const titleEl2 = document.querySelector('.header__title');
-      if (titleEl2) titleEl2.style.color = config.header_text_color;
+      const h1 = document.querySelector('.header__title h1');
+      const p = document.querySelector('.header__title p');
+      if (h1) h1.style.color = config.header_text_color;
+      if (p) p.style.color = config.header_text_color;
     }
     if (config.footer_bg) {
       const footer = document.querySelector('.footer');
