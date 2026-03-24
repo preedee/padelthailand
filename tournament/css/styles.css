@@ -278,6 +278,9 @@ html, body {
   overflow: hidden;
   flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .view-bar__tab.active {

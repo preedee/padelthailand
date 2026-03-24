@@ -321,17 +321,20 @@ const Data = (() => {
   // and final standings from set scores.
   // ============================================================
   function getKnockoutFromMatches(divisionPrefix) {
-    // divisionPrefix: 'Power' or 'Club'
+    // divisionPrefix: 'Power', 'Club', 'Male Amateur', 'Male Advanced', etc.
     const prefix = divisionPrefix.toLowerCase();
 
-    // Knockout main bracket: division is exactly "Power Play" or "Club Play"
-    const mainDivision = divisionPrefix + ' Play';
-    const mainMatches = matches.filter(m =>
-      m.matchId && m.division === mainDivision &&
-      ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'].includes(m.round)
-    );
+    // Knockout main bracket: match division that starts with the prefix
+    // Handles both "Power Play" (division="Power Play", prefix="Power")
+    // and "Male Amateur" (division="Male Amateur", prefix="Male Amateur")
+    const mainMatches = matches.filter(m => {
+      if (!m.matchId) return false;
+      const div = m.division.toLowerCase();
+      if (div !== prefix && !div.startsWith(prefix + ' play')) return false;
+      return ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'].includes(m.round);
+    });
 
-    // Tier matches: division starts with "Power Tier" or "Club Tier"
+    // Tier matches: division starts with prefix + " Tier"
     const tierPrefix = divisionPrefix + ' Tier';
     const tierMatches = matches.filter(m =>
       m.matchId && m.division.startsWith(tierPrefix) && m.round.startsWith('Tier')
