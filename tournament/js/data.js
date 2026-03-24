@@ -323,6 +323,102 @@ const Data = (() => {
   }
 
   // ============================================================
+  // Compute standings from match-format data (when standings tab
+  // has match rows instead of pre-computed standings)
+  // Groups are derived from team codes: 2nd char = group letter
+  // e.g. MA1 → Group A, MB2 → Group B, PA1 → Group A
+  // ============================================================
+  function computeStandingsFromMatchData(lines) {
+    // Parse as match rows with headers
+    const rows = parseCSVWithHeaders(lines.map(l => typeof l === 'string' ? l : l.join(',')).join('\n'));
+    if (rows.length === 0) return {};
+
+    // Check if this looks like match data (has "Round" and "Team 1" columns)
+    if (!rows[0].hasOwnProperty('Round') && !rows[0].hasOwnProperty('Team 1')) return {};
+
+    const teams = {}; // teamName → { code, group, played, won, lost, gamesWon, gamesLost }
+
+    rows.forEach(row => {
+      const round = (row['Round'] || '').trim();
+      if (!round.toLowerCase().includes('group')) return; // only group stage matches
+
+      const t1Code = (row['Team 1 Code'] || '').trim();
+      const t2Code = (row['Team 2 Code'] || '').trim();
+      const t1Name = (row['Team 1'] || '').trim();
+      const t2Name = (row['Team 2'] || '').trim();
+
+      // Derive group from team code (2nd character)
+      const groupChar = t1Code.length >= 2 ? t1Code[1].toUpperCase() : '?';
+      const groupName = 'Group ' + groupChar;
+
+      // Parse set scores
+      const s1a = parseInt(row['Set 1 - Team A']) || 0;
+      const s1b = parseInt(row['Set 1 - Team B']) || 0;
+      const s2a = parseInt(row['Set 2 - Team A']) || 0;
+      const s2b = parseInt(row['Set 2 - Team B']) || 0;
+      const s3a = parseInt(row['Set 3 - Team A']) || 0;
+      const s3b = parseInt(row['Set 3 - Team B']) || 0;
+
+      // Check if match has been played (any scores > 0)
+      const hasScores = (s1a + s1b + s2a + s2b + s3a + s3b) > 0;
+      if (!hasScores) return;
+
+      // Count sets won
+      let t1Sets = 0, t2Sets = 0;
+      if (s1a > 0 || s1b > 0) { if (s1a > s1b) t1Sets++; else if (s1b > s1a) t2Sets++; }
+      if (s2a > 0 || s2b > 0) { if (s2a > s2b) t1Sets++; else if (s2b > s2a) t2Sets++; }
+      if (s3a > 0 || s3b > 0) { if (s3a > s3b) t1Sets++; else if (s3b > s3a) t2Sets++; }
+
+      // Total games won
+      const t1Games = s1a + s2a + s3a;
+      const t2Games = s1b + s2b + s3b;
+
+      // Determine match winner
+      const t1Won = t1Sets > t2Sets;
+
+      // Initialize teams
+      if (!teams[t1Name]) teams[t1Name] = { code: t1Code, group: groupName, played: 0, won: 0, lost: 0, gamesWon: 0, gamesLost: 0 };
+      if (!teams[t2Name]) teams[t2Name] = { code: t2Code, group: groupName, played: 0, won: 0, lost: 0, gamesWon: 0, gamesLost: 0 };
+
+      // Update stats
+      teams[t1Name].played++;
+      teams[t2Name].played++;
+      teams[t1Name].gamesWon += t1Games;
+      teams[t1Name].gamesLost += t2Games;
+      teams[t2Name].gamesWon += t2Games;
+      teams[t2Name].gamesLost += t1Games;
+
+      if (t1Won) {
+        teams[t1Name].won++;
+        teams[t2Name].lost++;
+      } else {
+        teams[t2Name].won++;
+        teams[t1Name].lost++;
+      }
+    });
+
+    // Group teams
+    const groups = {};
+    Object.entries(teams).forEach(([name, t]) => {
+      if (!groups[t.group]) groups[t.group] = [];
+      groups[t.group].push({
+        code: t.code,
+        name: name,
+        played: t.played,
+        won: t.won,
+        lost: t.lost,
+        setsWon: 0,
+        setsLost: 0,
+        gamesWon: t.gamesWon,
+        gamesLost: t.gamesLost,
+        points: t.won
+      });
+    });
+
+    return groups;
+  }
+
+  // ============================================================
   // Knockout Stage — built entirely from the Matches tab
   // Filters matches by division, groups by round, derives winners
   // and final standings from set scores.
@@ -643,8 +739,14 @@ const Data = (() => {
     getMatchesByCourt,
     getTeamAvatarsHTML,
     getTeamStackedHTML,
-    // Dynamic standings: pass tab name to get parsed standings
-    getStandings: (tabName) => parseStandingsTab(standingsData[tabName] || []),
+    // Dynamic standings: try pre-computed format first, fall back to computing from match data
+    getStandings: (tabName) => {
+      const data = standingsData[tabName] || [];
+      const parsed = parseStandingsTab(data);
+      if (Object.keys(parsed).length > 0) return parsed;
+      // Fall back: compute standings from match-format data
+      return computeStandingsFromMatchData(data);
+    },
     // Backward compat
     getPowerStandings: () => parseStandingsTab(standingsData['Power Standings'] || []),
     getClubStandings: () => parseStandingsTab(standingsData['Club Standings'] || []),
