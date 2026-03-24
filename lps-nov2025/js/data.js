@@ -88,6 +88,13 @@ const Data = (() => {
       const footerTextEl = document.querySelector('.footer__powered-text');
       if (footerTextEl) footerTextEl.textContent = config.footer_text;
     }
+
+    // Apply header/footer background colors
+    if (config.header_bg) root.style.setProperty('--black', config.header_bg);
+    if (config.footer_bg) {
+      const footer = document.querySelector('.footer');
+      if (footer) footer.style.background = config.footer_bg;
+    }
   }
 
   // --- CSV Parser (handles quoted fields) ---
