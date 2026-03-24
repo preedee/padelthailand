@@ -305,8 +305,10 @@ html, body {
 
 .view-bar__dots {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-left: 24px;
+  align-self: center;
 }
 
 .view-bar__dot {
@@ -633,6 +635,11 @@ img.avatar {
   color: var(--green);
   text-align: center;
   padding-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--off-white);
+  z-index: 5;
+  padding-top: 8px;
   border-bottom: 2px solid var(--green);
 }
 
@@ -877,6 +884,15 @@ img.avatar {
   white-space: normal;
   overflow: visible;
   min-width: 0;
+}
+
+.bracket-match__datetime {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: 11px;
+  color: var(--green-support);
+  padding: 0 12px 4px;
+  letter-spacing: 0.3px;
 }
 
 .bracket-match__score {

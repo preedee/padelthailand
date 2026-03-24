@@ -357,7 +357,9 @@ const Data = (() => {
         score: '',
         winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
         section: 'PLAYOFFS',
-        division: divisionPrefix
+        division: divisionPrefix,
+        date: m.date,
+        time: m.time
       });
     });
 
@@ -374,7 +376,9 @@ const Data = (() => {
         score: '',
         winner: hasScores ? (winner === 1 ? m.team1 : winner === 2 ? m.team2 : '') : '',
         section: m.division, // e.g. "Power Tier 3"
-        division: divisionPrefix
+        division: divisionPrefix,
+        date: m.date,
+        time: m.time
       });
     });
 

@@ -13,6 +13,12 @@ const Bracket = (() => {
     'Finals': 'Final'
   };
 
+  // Shorten date: "Fri 27-Mar-2026" → "Fri 27 Mar"
+  function shortDate(d) {
+    if (!d) return '';
+    return d.replace(/-\d{4}$/, '').replace(/-/g, ' ');
+  }
+
   // Strip team codes like (PA3rd), (CB4th), (PD5th), (PC5th - no team) from names
   function cleanTeamName(name) {
     if (!name) return name;
@@ -139,7 +145,13 @@ const Bracket = (() => {
       ? Data.getTeamStackedHTML(team2Name, 22)
       : `<div class="team-with-avatars">${Data.getTeamAvatarsHTML(team2Name, 22)}<span class="bracket-match__team-name">${team2Name}</span></div>`;
 
+    const dateStr = shortDate(match.date);
+    const timeStr = match.time || '';
+    const dateTimeStr = dateStr ? (timeStr ? `${dateStr} · ${timeStr}` : dateStr) : timeStr;
+    const dateTimeHTML = dateTimeStr ? `<div class="bracket-match__datetime">${dateTimeStr}</div>` : '';
+
     return `<div class="bracket-match ${extraClass || ''}">
+      ${dateTimeHTML}
       <div class="bracket-match__team ${team1Class} ${team1TBD}">
         ${team1Content}
         <div class="bracket-match__score">${displayScore1}</div>

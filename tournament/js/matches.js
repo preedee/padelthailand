@@ -4,6 +4,12 @@
 
 const Matches = (() => {
 
+  // Shorten date: "Fri 27-Mar-2026" → "Fri 27 Mar"
+  function shortDate(d) {
+    if (!d) return '';
+    return d.replace(/-\d{4}$/, '').replace(/-/g, ' ');
+  }
+
   // Parse time string like "9:00", "10:30", "16:45" to minutes since midnight
   function timeToMinutes(t) {
     if (!t) return 9999;
@@ -109,9 +115,10 @@ const Matches = (() => {
       ? `<span class="live-badge"><span class="live-badge__dot"></span>LIVE</span>`
       : '';
 
-    const statusLabel = type === 'upcoming'
-      ? `<span class="match-card__time">${match.time || 'TBD'}</span>`
-      : `<span class="match-card__time">${match.time || ''}</span>`;
+    const dateStr = shortDate(match.date);
+    const timeStr = match.time || (type === 'upcoming' ? 'TBD' : '');
+    const dateTimeStr = dateStr ? `${dateStr} · ${timeStr}` : timeStr;
+    const statusLabel = `<span class="match-card__time">${dateTimeStr}</span>`;
 
     const team1Class = winner === 1 ? 'match-card__team--winner' : winner === 2 ? 'match-card__team--loser' : '';
     const team2Class = winner === 2 ? 'match-card__team--winner' : winner === 1 ? 'match-card__team--loser' : '';
@@ -188,7 +195,7 @@ const Matches = (() => {
             return `<div class="sidebar__match ${matchIsLive ? 'sidebar__match--live' : ''}">
               <div class="sidebar__match-row">
                 <span class="sidebar__match-team ${t1Class}">${m.team1 || 'TBD'}</span>
-                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.a).join(' ')}</span>` : `<span class="sidebar__match-time">${m.time || ''}</span>`}
+                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.a).join(' ')}</span>` : `<span class="sidebar__match-time">${shortDate(m.date) ? shortDate(m.date) + ' · ' : ''}${m.time || ''}</span>`}
               </div>
               <div class="sidebar__match-row">
                 <span class="sidebar__match-team ${t2Class}">${m.team2 || 'TBD'}</span>
