@@ -747,6 +747,7 @@ const Data = (() => {
     getStandings: (tabName) => {
       const data = standingsData[tabName] || [];
       const parsed = parseStandingsTab(data);
+      console.log('getStandings', tabName, 'lines:', data.length, 'groups:', Object.keys(parsed));
       if (Object.keys(parsed).length > 0) return parsed;
       // Fall back: compute standings from match-format data
       return computeStandingsFromMatchData(standingsRawText[tabName]);
