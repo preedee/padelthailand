@@ -544,7 +544,7 @@ const Data = (() => {
 
       const matchText = await matchRes.text();
       const matchRows = parseCSVWithHeaders(matchText);
-      matches = matchRows.map(toMatch).filter(m => m.order > 0);
+      matches = matchRows.map(toMatch).filter(m => m.matchId);
 
       // Parse each standings tab
       standingsData = {};

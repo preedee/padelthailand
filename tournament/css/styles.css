@@ -251,11 +251,11 @@ html, body {
 /* --- View Indicator Bar --- */
 .view-bar {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   gap: 16px;
   background: var(--green);
-  padding: 8px 32px;
+  padding: 8px 32px 14px;
   min-height: 48px;
 }
 
@@ -274,8 +274,6 @@ html, body {
   position: relative;
   text-align: center;
   line-height: 1.3;
-  max-height: 2.6em;
-  overflow: hidden;
   flex: 1 1 0;
   min-width: 0;
   display: flex;
@@ -292,7 +290,7 @@ html, body {
 .view-bar__tab.active::after {
   content: '';
   position: absolute;
-  bottom: -4px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
   width: 6px;
