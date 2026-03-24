@@ -131,6 +131,10 @@ const Data = (() => {
         document.head.appendChild(style);
       }
     }
+
+    // Reveal dashboard now that config is applied
+    const dashboard = document.querySelector('.dashboard');
+    if (dashboard) dashboard.classList.add('config-loaded');
   }
 
   // --- CSV Parser (handles quoted fields) ---
