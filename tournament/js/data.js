@@ -90,7 +90,10 @@ const Data = (() => {
     }
 
     // Apply header/footer background colors
-    if (config.header_bg) root.style.setProperty('--black', config.header_bg);
+    if (config.header_bg) {
+      const header = document.querySelector('.header');
+      if (header) header.style.background = config.header_bg;
+    }
     if (config.footer_bg) {
       const footer = document.querySelector('.footer');
       if (footer) footer.style.background = config.footer_bg;
