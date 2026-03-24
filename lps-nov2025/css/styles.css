@@ -1308,7 +1308,7 @@ img.avatar {
     margin-bottom: 8px;
   }
 
-  /* Tiers: stack vertically on mobile, full width like Tier 5 */
+  /* Tiers: stack tiers vertically, matches side-by-side within each tier */
   .bracket-tiers {
     flex-direction: column;
     gap: 16px;
@@ -1324,13 +1324,14 @@ img.avatar {
   }
 
   .bracket-tier__matches {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
   }
 
   .bracket-tier__matches .bracket-match {
-    flex: none;
-    width: 100%;
+    flex: 1;
+    min-width: 45%;
   }
 
   /* Podium: stack */
