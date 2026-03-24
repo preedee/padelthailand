@@ -274,10 +274,8 @@ html, body {
   position: relative;
   text-align: center;
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .view-bar__tab.active {
