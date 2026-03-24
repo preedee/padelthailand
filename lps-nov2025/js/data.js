@@ -276,7 +276,7 @@ const Data = (() => {
       // May embed first group name (e.g. "...STANDINGS Group A Code" or "...STANDINGS Power Play 1 Code")
       if (col0.includes('STANDINGS') || col0.includes('ST&INGS') || col0.includes('GROUP STAGE')) {
         // Try to extract group name: "Group A", "Group B", "Power Play 1", "Club Play 2", etc.
-        const groupMatch = col0.match(/(Group [A-Z0-9]+|Power Play \d+|Club Play \d+)/i);
+        const groupMatch = col0.match(/(Group [A-Z]\b|Power Play \d+|Club Play \d+)/i);
         if (groupMatch) {
           currentGroup = groupMatch[1];
         }
@@ -747,7 +747,6 @@ const Data = (() => {
     getStandings: (tabName) => {
       const data = standingsData[tabName] || [];
       const parsed = parseStandingsTab(data);
-      console.log('getStandings', tabName, 'lines:', data.length, 'groups:', Object.keys(parsed));
       if (Object.keys(parsed).length > 0) return parsed;
       // Fall back: compute standings from match-format data
       return computeStandingsFromMatchData(standingsRawText[tabName]);
