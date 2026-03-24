@@ -252,17 +252,11 @@ html, body {
 .view-bar {
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: center;
+  gap: 16px;
   background: var(--green);
-  padding: 12px 48px;
-  height: 48px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-
-.view-bar::-webkit-scrollbar {
-  display: none;
+  padding: 8px 32px;
+  min-height: 48px;
 }
 
 .view-bar__tab {
@@ -275,11 +269,15 @@ html, body {
   cursor: pointer;
   border: none;
   background: none;
-  padding: 4px 12px;
+  padding: 4px 10px;
   transition: color var(--transition);
   position: relative;
-  white-space: nowrap;
-  flex-shrink: 0;
+  text-align: center;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .view-bar__tab.active {
