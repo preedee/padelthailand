@@ -34,7 +34,8 @@
   --green-support: #3A5C36;
   --white: #FFFFFF;
   --off-white: #EFEFEF;
-  --bronze: var(--bronze);
+  --silver: #A0A0A0;
+  --bronze: #CD7F32;
 
   --font: 'SuperBlue', Georgia, serif;
   --radius: 4px;
