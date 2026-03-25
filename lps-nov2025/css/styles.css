@@ -512,9 +512,8 @@ html, body {
   font-size: 13px;
   vertical-align: middle;
   color: var(--green);
-  padding: 8px 8px;
-  height: 40px;
-  vertical-align: middle;
+  padding: 12px 8px;
+  height: 48px;
   border-bottom: 1px solid rgba(8, 93, 60, 0.06);
 }
 

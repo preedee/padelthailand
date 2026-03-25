@@ -58,7 +58,7 @@ const Standings = (() => {
     const rows = teams.map((team, idx) => {
       const isQualifier = idx < 2;
       return `<tr class="${isQualifier ? 'qualifier' : ''}">
-        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 40)}<span class="team-name">${team.name}</span></div></td>
+        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 36)}<span class="team-name">${team.name}</span></div></td>
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
