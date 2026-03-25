@@ -88,8 +88,9 @@ const Bracket = (() => {
   }
 
   function renderCombinedFinalsRound(thirdPlaceMatches, finalsMatches) {
+    const title = thirdPlaceMatches.length > 0 ? 'Final / 3rd Place' : 'Final';
     return `<div class="bracket__round">
-      <div class="bracket__round-title">Final / 3rd Place</div>
+      <div class="bracket__round-title">${title}</div>
       <div class="bracket__matches">
         ${finalsMatches.map(m => renderBracketMatch(m, 'bracket-match--gold')).join('')}
         ${thirdPlaceMatches.map(m => renderBracketMatch(m, 'bracket-match--bronze')).join('')}
