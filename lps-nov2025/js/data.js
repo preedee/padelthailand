@@ -537,7 +537,7 @@ const Data = (() => {
         standings.push({ place: '🥈 2nd', team: 'TBD', note: '' });
         if (thirdMatch && thirdMatch.winner) {
           standings.push({ place: '🥉 3rd', team: thirdMatch.winner, note: '' });
-        } else {
+        } else if (thirdMatch) {
           standings.push({ place: '🥉 3rd', team: 'TBD', note: '' });
         }
       }
