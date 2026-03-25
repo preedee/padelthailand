@@ -119,6 +119,9 @@ const Bracket = (() => {
       ? validSets.map(s => `<span class="bracket-match__set">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
+    const team1Content = Data.getTeamStackedHTML(team1Name, 22);
+    const team2Content = Data.getTeamStackedHTML(team2Name, 22);
+
     const dateStr = shortDate(match.date);
     const timeStr = match.time || '';
     const dateTimeStr = dateStr ? (timeStr ? `${dateStr} · ${timeStr}` : dateStr) : timeStr;
