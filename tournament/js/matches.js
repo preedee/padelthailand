@@ -4,22 +4,14 @@
 
 const Matches = (() => {
 
-  // Shorten date: "Fri 27-Mar-2026" → "Fri 27 Mar"
-  function shortDate(d) {
-    if (!d) return '';
-    return d.replace(/-\d{4}$/, '').replace(/-/g, ' ');
-  }
+  const shortDate = Data.shortDate;
+  const hasScores = Data.hasScores;
 
   // Parse time string like "9:00", "10:30", "16:45" to minutes since midnight
   function timeToMinutes(t) {
     if (!t) return 9999;
     const parts = t.split(':');
     return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-  }
-
-  // Check if match has been played (has any set scores)
-  function hasScores(m) {
-    return m.sets.some(s => s.a > 0 || s.b > 0);
   }
 
   // Check if match is live
@@ -197,7 +189,9 @@ const Matches = (() => {
 
   // Sidebar: 2 matches per court (current + next, or last 2 done)
   function renderUpcoming(container, matches) {
-    const validCourts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
+    const validCourts = Data.getConfigList('courts').length > 0
+      ? Data.getConfigList('courts')
+      : ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
     const courts = {};
     matches.forEach(m => {
       if (!m.matchId) return;

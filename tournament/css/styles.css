@@ -34,6 +34,7 @@
   --green-support: #3A5C36;
   --white: #FFFFFF;
   --off-white: #EFEFEF;
+  --bronze: var(--bronze);
 
   --font: 'SuperBlue', Georgia, serif;
   --radius: 4px;
@@ -734,7 +735,7 @@ img.avatar {
 }
 
 .match-card--third-place {
-  border: 2px solid #CD7F32;
+  border: 2px solid var(--bronze);
 }
 
 .match-card--upcoming {
@@ -768,7 +769,7 @@ img.avatar {
 
 .match-card__round--third-place {
   font-weight: 700;
-  color: #CD7F32;
+  color: var(--bronze);
 }
 
 .match-card__time {
@@ -1054,7 +1055,7 @@ img.avatar {
 
 .bracket-match--bronze {
   background: var(--white);
-  border: 2px solid #CD7F32;
+  border: 2px solid var(--bronze);
 }
 
 .bracket-match--bronze .bracket-match__place {

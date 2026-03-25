@@ -12,7 +12,6 @@ const Data = (() => {
   // Priority: window.__SHEET_ID (set by tournament stub) > ?sheet= param > default
   const urlParams = new URLSearchParams(window.location.search);
   let SHEET_ID = window.__SHEET_ID || urlParams.get('sheet') || DEFAULT_SHEET_ID;
-  let sheetIdResolved = true;
 
   function sheetURL(tabName, extraParams) {
     return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}${extraParams || ''}`;
@@ -257,6 +256,18 @@ const Data = (() => {
     return null;
   }
 
+  // --- Shared utilities ---
+  // Shorten date: "Fri 27-Mar-2026" → "Fri 27 Mar"
+  function shortDate(d) {
+    if (!d) return '';
+    return d.replace(/-\d{4}$/, '').replace(/-/g, ' ');
+  }
+
+  // Check if a match has any non-zero set scores
+  function hasScores(m) {
+    return m.sets && m.sets.some(s => s.a > 0 || s.b > 0);
+  }
+
   // ============================================================
   // Group Stage Standings — parsed from dedicated tab
   // The tab has a non-standard layout: division headers as rows,
@@ -452,7 +463,7 @@ const Data = (() => {
 
     mainMatches.forEach(m => {
       const winner = getWinner(m);
-      const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
+      const played = hasScores(m);
       // Normalize round: "Quarters #1" → "Quarters", "Semis #2" → "Semi Finals"
       let round = m.round.replace(/\s*#\d+$/, '');
       if (round === 'Semis') round = 'Semi Finals';
@@ -464,10 +475,10 @@ const Data = (() => {
         team1: team1,
         team2: team2,
         sets: m.sets,
-        score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
-        score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
-        winner: hasScores ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
+        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
         section: 'PLAYOFFS',
         division: divisionPrefix,
         date: m.date,
@@ -477,22 +488,19 @@ const Data = (() => {
 
     tierMatches.forEach(m => {
       const winner = getWinner(m);
-      const hasScores = m.sets.some(s => s.a > 0 || s.b > 0);
+      const played = hasScores(m);
       const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
       const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
       allBracketMatches.push({
         round: m.round,
-        team1: team1,
-        team2: team2,
-        sets: m.sets,
-        score1: hasScores ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
-        score2: hasScores ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        team1, team2, sets: m.sets,
+        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
-        winner: hasScores ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
-        section: m.division, // e.g. "Power Tier 3"
+        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
+        section: m.division,
         division: divisionPrefix,
-        date: m.date,
-        time: m.time
+        date: m.date, time: m.time
       });
     });
 
@@ -723,9 +731,9 @@ const Data = (() => {
   }
 
   // --- Start polling ---
-  function startPolling(callback) {
+  async function startPolling(callback) {
     onUpdate = callback;
-    fetchData();
+    await fetchData(); // Wait for first fetch so config is loaded
     const interval = parseInt(getConfig('poll_interval', '30'), 10) * 1000;
     pollTimer = setInterval(fetchData, interval);
   }
@@ -740,6 +748,8 @@ const Data = (() => {
     getConfig,
     getConfigList,
     getWinner,
+    shortDate,
+    hasScores,
     getMatchesByCourt,
     getTeamAvatarsHTML,
     getTeamStackedHTML,
@@ -748,16 +758,9 @@ const Data = (() => {
       const data = standingsData[tabName] || [];
       const parsed = parseStandingsTab(data);
       if (Object.keys(parsed).length > 0) return parsed;
-      // Fall back: compute standings from match-format data
       return computeStandingsFromMatchData(standingsRawText[tabName]);
     },
-    // Backward compat
-    getPowerStandings: () => parseStandingsTab(standingsData['Power Standings'] || []),
-    getClubStandings: () => parseStandingsTab(standingsData['Club Standings'] || []),
-    // Dynamic knockout: pass division prefix
     getKnockout: (division) => getKnockoutFromMatches(division),
-    getPowerKnockout: () => getKnockoutFromMatches('Power'),
-    getClubKnockout: () => getKnockoutFromMatches('Club'),
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; },
     get configLoaded() { return configLoaded; }

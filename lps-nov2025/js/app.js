@@ -54,11 +54,25 @@ const App = (() => {
       standingsTab: standingsTabs[i] || name + ' Standings'
     }));
 
-    // Build view list: standings for each division, then brackets for each
-    VIEWS = [];
-    divisions.forEach(d => VIEWS.push(d.slug + '-standings'));
-    divisions.forEach(d => VIEWS.push(d.slug + '-bracket'));
-    ALL_VIEWS = [...VIEWS, 'matches'];
+    // Build all view IDs
+    const standingsViews = divisions.map(d => d.slug + '-standings');
+    const bracketViews = divisions.map(d => d.slug + '-bracket');
+
+    // All possible views
+    ALL_VIEWS = [...standingsViews, ...bracketViews, 'matches'];
+
+    // Determine which views to include in rotation from config
+    // Accepts specific view IDs (e.g. "male-amateur-standings, power-bracket, matches")
+    const rotationConfig = Data.getConfigList('rotation_views');
+    if (rotationConfig.length === 0) {
+      // Default: all standings + all brackets (not matches)
+      VIEWS = [...standingsViews, ...bracketViews];
+    } else {
+      // Filter to only valid view IDs
+      VIEWS = rotationConfig
+        .map(v => v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+        .filter(v => ALL_VIEWS.includes(v));
+    }
 
     // Custom tab labels from config (optional)
     // Order: standings labels for each division, then bracket labels for each division
@@ -145,9 +159,10 @@ const App = (() => {
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
 
-    // Start auto-rotation (desktop only)
+    // Start auto-rotation (desktop only, if enabled in config)
+    const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
     const isMobile = window.innerWidth < 768;
-    if (!isMobile) {
+    if (!isMobile && autorotate && VIEWS.length > 1) {
       startRotation();
     }
 
