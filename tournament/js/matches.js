@@ -176,11 +176,11 @@ const Matches = (() => {
       </div>
       <div class="match-card__teams">
         <div class="match-card__team ${team1Class}">
-          ${Data.getTeamStackedHTML(match.team1, 20)}
+          ${Data.getTeamStackedHTML(match.team1, 30)}
           <div class="match-card__scores">${scores1}</div>
         </div>
         <div class="match-card__team ${team2Class}">
-          ${Data.getTeamStackedHTML(match.team2, 20)}
+          ${Data.getTeamStackedHTML(match.team2, 30)}
           <div class="match-card__scores">${scores2}</div>
         </div>
       </div>
