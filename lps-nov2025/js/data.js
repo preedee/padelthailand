@@ -305,15 +305,17 @@ const Data = (() => {
         continue;
       }
 
-      // Data row: code, team, MP, W, L, Sets W, Sets L, Games W, Games L
+      // Data row: code, team, MP, W, L, Sets W, Sets L, Sets Diff, Games W, Games L, Games Diff
       if (col1 && col2 && currentGroup) {
         const mp = parseInt(col2) || 0;
         const w = parseInt(fields[3]) || 0;
         const l = parseInt(fields[4]) || 0;
         const setsW = parseInt(fields[5]) || 0;
         const setsL = parseInt(fields[6]) || 0;
-        const gamesW = parseInt(fields[7]) || 0;
-        const gamesL = parseInt(fields[8]) || 0;
+        const setsDiff = parseInt(fields[7]) || 0;
+        const gamesW = parseInt(fields[8]) || 0;
+        const gamesL = parseInt(fields[9]) || 0;
+        const gamesDiff = parseInt(fields[10]) || 0;
 
         if (!groups[currentGroup]) groups[currentGroup] = [];
         groups[currentGroup].push({
@@ -324,8 +326,10 @@ const Data = (() => {
           lost: l,
           setsWon: setsW,
           setsLost: setsL,
+          setsDiff: setsDiff,
           gamesWon: gamesW,
           gamesLost: gamesL,
+          gamesDiff: gamesDiff,
           points: w
         });
       }
@@ -390,12 +394,16 @@ const Data = (() => {
       const t1Won = t1Sets > t2Sets;
 
       // Initialize teams
-      if (!teams[t1Name]) teams[t1Name] = { code: t1Code, group: groupName, played: 0, won: 0, lost: 0, gamesWon: 0, gamesLost: 0 };
-      if (!teams[t2Name]) teams[t2Name] = { code: t2Code, group: groupName, played: 0, won: 0, lost: 0, gamesWon: 0, gamesLost: 0 };
+      if (!teams[t1Name]) teams[t1Name] = { code: t1Code, group: groupName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, gamesWon: 0, gamesLost: 0 };
+      if (!teams[t2Name]) teams[t2Name] = { code: t2Code, group: groupName, played: 0, won: 0, lost: 0, setsWon: 0, setsLost: 0, gamesWon: 0, gamesLost: 0 };
 
       // Update stats
       teams[t1Name].played++;
       teams[t2Name].played++;
+      teams[t1Name].setsWon += t1Sets;
+      teams[t1Name].setsLost += t2Sets;
+      teams[t2Name].setsWon += t2Sets;
+      teams[t2Name].setsLost += t1Sets;
       teams[t1Name].gamesWon += t1Games;
       teams[t1Name].gamesLost += t2Games;
       teams[t2Name].gamesWon += t2Games;
@@ -420,10 +428,12 @@ const Data = (() => {
         played: t.played,
         won: t.won,
         lost: t.lost,
-        setsWon: 0,
-        setsLost: 0,
+        setsWon: t.setsWon,
+        setsLost: t.setsLost,
+        setsDiff: t.setsWon - t.setsLost,
         gamesWon: t.gamesWon,
         gamesLost: t.gamesLost,
+        gamesDiff: t.gamesWon - t.gamesLost,
         points: t.won
       });
     });

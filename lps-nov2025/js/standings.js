@@ -46,11 +46,12 @@ const Standings = (() => {
   }
 
   function renderGroup(name, teams) {
-    // Sort: Wins desc, Losses asc, then game difference (GW - GL) desc
+    // Sort: Wins desc, Losses asc, set difference desc, game difference desc
     teams.sort((a, b) =>
       b.won - a.won ||
       a.lost - b.lost ||
-      (b.gamesWon - b.gamesLost) - (a.gamesWon - a.gamesLost)
+      (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
+      (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
     );
 
     // Top 2 teams are qualifiers
@@ -61,8 +62,8 @@ const Standings = (() => {
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
-        <td>${team.gamesWon}</td>
-        <td>${team.gamesLost}</td>
+        <td>${team.setsDiff != null ? team.setsDiff : (team.setsWon - team.setsLost)}</td>
+        <td>${team.gamesDiff != null ? team.gamesDiff : (team.gamesWon - team.gamesLost)}</td>
       </tr>`;
     }).join('');
 
@@ -75,8 +76,8 @@ const Standings = (() => {
             <th>MP</th>
             <th>W</th>
             <th>L</th>
-            <th>GW</th>
-            <th>GL</th>
+            <th>SD</th>
+            <th>GD</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
