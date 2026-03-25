@@ -151,7 +151,7 @@ const Matches = (() => {
       ? `<span class="live-badge"><span class="live-badge__dot"></span>LIVE</span>`
       : '';
 
-    const dateStr = shortDate(match.date);
+    const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || (type === 'upcoming' ? 'TBD' : '');
     const dateTimeStr = dateStr ? `${dateStr} · ${timeStr}` : timeStr;
     const statusLabel = `<span class="match-card__time">${dateTimeStr}</span>`;
@@ -233,7 +233,7 @@ const Matches = (() => {
             return `<div class="sidebar__match ${matchIsLive ? 'sidebar__match--live' : ''}">
               <div class="sidebar__match-row">
                 <span class="sidebar__match-team ${t1Class}">${m.team1 || 'TBD'}</span>
-                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.a).join(' ')}</span>` : `<span class="sidebar__match-time">${shortDate(m.date) ? shortDate(m.date) + ' · ' : ''}${m.time || ''}</span>`}
+                ${isDone && scores ? `<span class="sidebar__match-score">${m.sets.filter(s=>s.a>0||s.b>0).map(s=>s.a).join(' ')}</span>` : `<span class="sidebar__match-time">${Data.isMultiDay() && shortDate(m.date) ? shortDate(m.date) + ' · ' : ''}${m.time || ''}</span>`}
               </div>
               <div class="sidebar__match-row">
                 <span class="sidebar__match-team ${t2Class}">${m.team2 || 'TBD'}</span>

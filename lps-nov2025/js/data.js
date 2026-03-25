@@ -761,6 +761,10 @@ const Data = (() => {
       return computeStandingsFromMatchData(standingsRawText[tabName]);
     },
     getKnockout: (division) => getKnockoutFromMatches(division),
+    isMultiDay: () => {
+      const dates = new Set(matches.map(m => m.date).filter(Boolean));
+      return dates.size > 1;
+    },
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; },
     get configLoaded() { return configLoaded; }

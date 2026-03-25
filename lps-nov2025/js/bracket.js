@@ -122,7 +122,7 @@ const Bracket = (() => {
     const team1Content = Data.getTeamStackedHTML(team1Name, 22);
     const team2Content = Data.getTeamStackedHTML(team2Name, 22);
 
-    const dateStr = shortDate(match.date);
+    const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || '';
     const dateTimeStr = dateStr ? (timeStr ? `${dateStr} · ${timeStr}` : dateStr) : timeStr;
     const dateTimeHTML = dateTimeStr ? `<div class="bracket-match__datetime">${dateTimeStr}</div>` : '';
