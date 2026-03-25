@@ -207,13 +207,14 @@ const Matches = (() => {
       const done = courtMatches.filter(m => !isLive(m) && hasScores(m));
       const upcoming = courtMatches.filter(m => !isLive(m) && !hasScores(m));
 
-      // Pick 2: last done first, then live, then upcoming
+      // Show more matches per court when fewer courts
+      const maxPicks = validCourts.length <= 3 ? 3 : 2;
       const picks = [];
       if (done.length > 0) picks.push(done[done.length - 1]);
-      live.forEach(m => { if (picks.length < 2) picks.push(m); });
-      upcoming.forEach(m => { if (picks.length < 2) picks.push(m); });
-      if (picks.length < 2 && done.length > 1) {
-        picks.unshift(done[done.length - 2]);
+      live.forEach(m => { if (picks.length < maxPicks) picks.push(m); });
+      upcoming.forEach(m => { if (picks.length < maxPicks) picks.push(m); });
+      for (let i = done.length - 2; i >= 0 && picks.length < maxPicks; i--) {
+        picks.unshift(done[i]);
       }
 
       if (picks.length === 0) return '';
