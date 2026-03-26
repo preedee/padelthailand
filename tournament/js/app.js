@@ -159,10 +159,23 @@ const App = (() => {
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
 
-    // Start auto-rotation (desktop only, if enabled in config)
+    // Check URL hash — if present, navigate to that view and disable rotation
+    const hash = window.location.hash.replace('#', '');
+    let hashHandled = false;
+    if (hash && ALL_VIEWS.includes(hash)) {
+      const idx = VIEWS.indexOf(hash);
+      if (idx !== -1) {
+        switchToView(idx, true);
+      } else {
+        showManualView(hash, true);
+      }
+      hashHandled = true;
+    }
+
+    // Start auto-rotation (desktop only, if enabled in config, and no hash override)
     const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
     const isMobile = window.innerWidth < 768;
-    if (!isMobile && autorotate && VIEWS.length > 1) {
+    if (!isMobile && autorotate && VIEWS.length > 1 && !hashHandled) {
       startRotation();
     }
 
@@ -227,7 +240,7 @@ const App = (() => {
     }
   }
 
-  function switchToView(index) {
+  function switchToView(index, skipHash) {
     currentViewIndex = index;
     const viewName = VIEWS[index];
 
@@ -245,9 +258,14 @@ const App = (() => {
     });
     const targetView = document.getElementById(`view-${viewName}`);
     if (targetView) targetView.classList.add('active');
+
+    // Update URL hash (unless called during auto-rotation or initial hash load)
+    if (!skipHash) {
+      history.replaceState(null, '', '#' + viewName);
+    }
   }
 
-  function showManualView(viewName) {
+  function showManualView(viewName, skipHash) {
     document.querySelectorAll('.view-bar__tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.view === viewName);
     });
@@ -261,13 +279,17 @@ const App = (() => {
     });
     const targetView = document.getElementById(`view-${viewName}`);
     if (targetView) targetView.classList.add('active');
+
+    if (!skipHash) {
+      history.replaceState(null, '', '#' + viewName);
+    }
   }
 
   function startRotation() {
     isRotating = true;
     rotationTimer = setInterval(() => {
       if (VIEWS.length > 0) {
-        switchToView((currentViewIndex + 1) % VIEWS.length);
+        switchToView((currentViewIndex + 1) % VIEWS.length, true); // skip hash during auto-rotation
       }
     }, ROTATION_INTERVAL);
   }
