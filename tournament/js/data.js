@@ -460,7 +460,6 @@ const Data = (() => {
     // and "Male Amateur" (division="Male Amateur", prefix="Male Amateur")
     const knockoutRounds = ['Quarters', 'Semis', 'Semi Finals', 'Finals', '3rd Place'];
     const mainMatches = matches.filter(m => {
-      if (!m.matchId) return false;
       const div = m.division.toLowerCase();
       if (div !== prefix && !div.startsWith(prefix + ' play')) return false;
       // Match rounds like "Quarters", "Quarters #1", "Semis #2", "Finals"
@@ -470,7 +469,7 @@ const Data = (() => {
     // Tier matches: division starts with prefix + " Tier"
     const tierPrefix = divisionPrefix + ' Tier';
     const tierMatches = matches.filter(m =>
-      m.matchId && m.division.startsWith(tierPrefix) && m.round.startsWith('Tier')
+      m.division.startsWith(tierPrefix) && m.round.startsWith('Tier')
     );
 
     // Build match objects for the bracket
@@ -647,12 +646,27 @@ const Data = (() => {
     }).join('')}</div>`;
   }
 
+  // --- Time helper ---
+  function timeToMinutes(t) {
+    if (!t) return 9999;
+    const parts = t.split(':');
+    return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+  }
+
+  // --- Match validation ---
+  // A valid match must have a date, time, and at least one identifier for each team
+  function isValidMatch(m) {
+    if (!m.date || !m.time) return false;
+    const hasTeam1 = m.team1 || m.team1Code;
+    const hasTeam2 = m.team2 || m.team2Code;
+    return !!(hasTeam1 && hasTeam2);
+  }
+
   // --- Derived data: Live / Recent Matches ---
   function getMatchesByCourt(matchList) {
     const courts = {};
     matchList.forEach(m => {
-      // Only include matches with a Match ID (column W)
-      if (!m.matchId) return;
+      if (!isValidMatch(m)) return;
       const court = m.court || 'Unassigned';
       if (!courts[court]) courts[court] = [];
       courts[court].push(m);
@@ -663,7 +677,11 @@ const Data = (() => {
     courtOrder.forEach(c => { if (courts[c]) sortedCourts[c] = courts[c]; });
     Object.keys(courts).forEach(c => { if (!sortedCourts[c]) sortedCourts[c] = courts[c]; });
     for (const court of Object.keys(sortedCourts)) {
-      sortedCourts[court].sort((a, b) => (parseInt(a.matchId) || 0) - (parseInt(b.matchId) || 0));
+      sortedCourts[court].sort((a, b) => {
+        // Sort by date then time
+        if (a.date !== b.date) return (a.date || '').localeCompare(b.date || '');
+        return timeToMinutes(a.time) - timeToMinutes(b.time);
+      });
     }
     return sortedCourts;
   }
@@ -716,7 +734,7 @@ const Data = (() => {
 
       const matchText = await matchRes.text();
       const matchRows = parseCSVWithHeaders(matchText);
-      matches = matchRows.map(toMatch).filter(m => m.matchId);
+      matches = matchRows.map(toMatch).filter(isValidMatch);
 
       // Parse each standings tab — store both raw lines and raw text
       standingsData = {};

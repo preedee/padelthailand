@@ -25,7 +25,7 @@ const Matches = (() => {
     const timeA = timeToMinutes(a.time);
     const timeB = timeToMinutes(b.time);
     if (timeA !== timeB) return timeA - timeB;
-    return (parseInt(a.matchId) || 0) - (parseInt(b.matchId) || 0);
+    return 0;
   }
 
   function render(container, matches) {
@@ -194,7 +194,7 @@ const Matches = (() => {
       : ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
     const courts = {};
     matches.forEach(m => {
-      if (!m.matchId) return;
+      if (!m.date || !m.time) return;
       if (!validCourts.includes(m.court)) return;
       if (!courts[m.court]) courts[m.court] = [];
       courts[m.court].push(m);
