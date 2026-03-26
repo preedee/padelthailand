@@ -307,9 +307,12 @@ const Data = (() => {
       }
 
       // Column header row — detect column positions by name
+      // Only rebuild colMap if this header row has actual column names (not blank)
       if (col0 === 'Code') {
-        colMap = {};
-        fields.forEach((f, idx) => { colMap[f.trim()] = idx; });
+        if (col2 && col2 !== '') {
+          colMap = {};
+          fields.forEach((f, idx) => { colMap[f.trim()] = idx; });
+        }
         continue;
       }
 
