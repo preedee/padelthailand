@@ -276,6 +276,7 @@ const Data = (() => {
   function parseStandingsTab(lines) {
     const groups = {};
     let currentGroup = '';
+    let colMap = null;
 
     for (const line of lines) {
       const fields = splitCSVLine(line);
@@ -297,25 +298,29 @@ const Data = (() => {
       // Group header row (e.g. "Group B", "Power Play 2", "Club Play 3")
       if (/^(Group [A-Z0-9]+|Power Play \d+|Club Play \d+)$/i.test(col0.trim()) && col1 === '') {
         currentGroup = col0.trim();
+        colMap = null; // reset for next group's header row
         continue;
       }
 
-      // Column header row — skip
+      // Column header row — detect column positions by name
       if (col0 === 'Code') {
+        colMap = {};
+        fields.forEach((f, idx) => { colMap[f.trim()] = idx; });
         continue;
       }
 
-      // Data row: code, team, MP, W, L, Sets W, Sets L, Sets Diff, Games W, Games L, Games Diff
-      if (col1 && col2 && currentGroup) {
-        const mp = parseInt(col2) || 0;
-        const w = parseInt(fields[3]) || 0;
-        const l = parseInt(fields[4]) || 0;
-        const setsW = parseInt(fields[5]) || 0;
-        const setsL = parseInt(fields[6]) || 0;
-        const setsDiff = parseInt(fields[7]) || 0;
-        const gamesW = parseInt(fields[8]) || 0;
-        const gamesL = parseInt(fields[9]) || 0;
-        const gamesDiff = parseInt(fields[10]) || 0;
+      // Data row — use column map if available, else fallback to positional
+      if (col1 && currentGroup) {
+        const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
+        const mp = colMap ? c('MP') : (parseInt(col2) || 0);
+        const w = colMap ? c('W') : (parseInt(fields[3]) || 0);
+        const l = colMap ? c('L') : (parseInt(fields[4]) || 0);
+        const setsW = colMap ? c('Sets W') : (parseInt(fields[5]) || 0);
+        const setsL = colMap ? c('Sets L') : (parseInt(fields[6]) || 0);
+        const setsDiff = colMap ? c('Sets Difference') : (parseInt(fields[7]) || 0);
+        const gamesW = colMap ? c('Games W') : (parseInt(fields[8]) || 0);
+        const gamesL = colMap ? c('Games L') : (parseInt(fields[9]) || 0);
+        const gamesDiff = colMap ? c('Games Difference') : (parseInt(fields[10]) || 0);
 
         if (!groups[currentGroup]) groups[currentGroup] = [];
         groups[currentGroup].push({
