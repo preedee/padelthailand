@@ -302,7 +302,7 @@ const Data = (() => {
       // Group header row (e.g. "Group B", "Power Play 2", "Club Play 3")
       if (/^(Group [A-Z0-9]+|Power Play \d+|Club Play \d+)$/i.test(col0.trim()) && col1 === '') {
         currentGroup = col0.trim();
-        colMap = null; // reset for next group's header row
+        // Don't reset colMap — column order stays the same across all groups
         continue;
       }
 
