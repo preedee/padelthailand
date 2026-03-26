@@ -263,9 +263,17 @@ async function fetchTournaments() {
 
 // ---- Organizer Page Init ----
 async function fetchAndRenderOrganizer() {
-  // Support both clean URL path (/organizer/slug) and query param fallback (?slug=slug)
+  // Restore clean URL from 404.html redirect via sessionStorage
+  const savedPath = sessionStorage.getItem('spa-redirect');
+  if (savedPath) {
+    sessionStorage.removeItem('spa-redirect');
+    history.replaceState(null, '', savedPath);
+  }
+  // Extract slug from clean URL path or query param fallback
+  const currentPath = savedPath || window.location.pathname;
+  const pathSlug = currentPath.split('/').filter(Boolean).pop();
   const urlParams = new URLSearchParams(window.location.search);
-  const orgSlug = urlParams.get('slug') || window.location.pathname.split('/').filter(Boolean).pop();
+  const orgSlug = urlParams.get('slug') || pathSlug;
   if (!orgSlug || orgSlug === 'organizer.html') { window.location.href = '/'; return; }
 
   try {
@@ -344,8 +352,17 @@ async function fetchAndRenderOrganizer() {
 
 // ---- Competition Page Init ----
 async function fetchAndRenderCompetition() {
+  // Restore clean URL from 404.html redirect via sessionStorage
+  const savedPath = sessionStorage.getItem('spa-redirect');
+  if (savedPath) {
+    sessionStorage.removeItem('spa-redirect');
+    history.replaceState(null, '', savedPath);
+  }
+  // Extract slug from clean URL path or query param fallback
+  const currentPath = savedPath || window.location.pathname;
+  const pathSlug = currentPath.split('/').filter(Boolean).pop();
   const urlParams = new URLSearchParams(window.location.search);
-  const compSlug = urlParams.get('slug') || window.location.pathname.split('/').filter(Boolean).pop();
+  const compSlug = urlParams.get('slug') || pathSlug;
   if (!compSlug || compSlug === 'competition.html') { window.location.href = '/'; return; }
 
   try {

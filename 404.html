@@ -7,16 +7,18 @@
   <script>
     (function() {
       var path = window.location.pathname;
-      // Handle /organizer/slug routes
+      // Store the original clean URL path, then redirect to the HTML page.
+      // The target page will use history.replaceState to restore the clean URL.
       var orgMatch = path.match(/^\/organizer\/([^/]+)\/?$/);
       if (orgMatch) {
-        window.location.replace('/organizer.html?slug=' + encodeURIComponent(orgMatch[1]));
+        sessionStorage.setItem('spa-redirect', path);
+        window.location.replace('/organizer.html');
         return;
       }
-      // Handle /competitions/slug routes
       var compMatch = path.match(/^\/competitions\/([^/]+)\/?$/);
       if (compMatch) {
-        window.location.replace('/competition.html?slug=' + encodeURIComponent(compMatch[1]));
+        sessionStorage.setItem('spa-redirect', path);
+        window.location.replace('/competition.html');
         return;
       }
       // For any other 404, redirect to home
