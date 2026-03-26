@@ -446,6 +446,7 @@ html, body {
 
 .standings-footnote {
   font-family: var(--font);
+  font-weight: 700;
   font-size: 13px;
   color: var(--green);
   margin-top: 12px;
