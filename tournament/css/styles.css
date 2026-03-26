@@ -444,6 +444,14 @@ html, body {
   gap: 16px;
 }
 
+.standings-footnote {
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 12px;
+  padding-left: 4px;
+}
+
 .group-card {
   background: var(--white);
   border: 1px solid rgba(8, 93, 60, 0.1);

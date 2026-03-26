@@ -30,6 +30,7 @@ const Standings = (() => {
     const html = `
       <div class="standings-divisions">
         ${renderDivision(title, groupNames, groups)}
+        <div class="standings-footnote"><strong>*Qualifies for the next round</strong></div>
       </div>`;
 
     container.innerHTML = html;
