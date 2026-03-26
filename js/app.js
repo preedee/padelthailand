@@ -1331,19 +1331,9 @@ function renderWeek() {
     weekTodayBtn.classList.remove('is-current');
   }
 
-  // Build header
+  // Build header — same format as monthly view (just day names)
   const header = document.getElementById('week-header');
-  header.innerHTML = '';
-  weekDates.forEach((d, i) => {
-    const dateStr = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    const isToday = dateStr === todayStr;
-    const cell = document.createElement('div');
-    cell.className = 'week-header-cell' + (isToday ? ' today' : '');
-    cell.innerHTML =
-      '<span class="week-header-day">' + daysShort[i] + '</span>' +
-      '<span class="week-header-date">' + d.getDate() + '</span>';
-    header.appendChild(cell);
-  });
+  header.innerHTML = daysShort.map(d => '<span>' + d + '</span>').join('');
 
   // Build body
   const body = document.getElementById('week-body');
@@ -1360,6 +1350,12 @@ function renderWeek() {
     col.setAttribute('data-day-label', daysShort[i] + ' ' + d.getDate() + ' ' + monthsShort[d.getMonth()]);
     if (isToday) col.classList.add('today');
     if (isPast) col.classList.add('past-day');
+
+    // Add day number inside cell — same as monthly view
+    const dayNum = document.createElement('span');
+    dayNum.className = 'cal-day-number';
+    dayNum.textContent = d.getDate();
+    col.appendChild(dayNum);
 
     renderDayEvents(col, d, dated, today, { expanded: true });
 
