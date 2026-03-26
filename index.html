@@ -92,6 +92,9 @@
               <button class="view-btn active" data-view="calendar" title="Calendar view">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </button>
+              <button class="view-btn" data-view="week" title="Week view">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="4" x2="10" y2="22"/></svg>
+              </button>
               <button class="view-btn" data-view="year" title="Year view">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
               </button>
@@ -154,6 +157,24 @@
           <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
         </div>
         <div class="cal-body" id="cal-body" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Week View -->
+    <section class="week-section hidden" id="week-view">
+      <div class="week-nav">
+        <button class="cal-nav-btn" id="prev-week" title="Previous week">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 class="cal-month-title" id="week-title"></h2>
+        <button class="cal-nav-btn" id="next-week" title="Next week">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="today-btn" id="week-today-btn" data-i18n="today_btn">Today</button>
+      </div>
+      <div class="week-grid">
+        <div class="week-header" id="week-header"></div>
+        <div class="week-body" id="week-body"></div>
       </div>
     </section>
 

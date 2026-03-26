@@ -73,6 +73,7 @@ const i18n = {
     map_directions: 'Directions',
     map_website: 'Website',
     map_no_clubs: 'No padel clubs found.',
+    empty_week: 'No tournaments this week',
   },
   th: {
     nav_calendar: 'ปฏิทิน',
@@ -136,6 +137,7 @@ const i18n = {
     map_directions: 'เส้นทาง',
     map_website: 'เว็บไซต์',
     map_no_clubs: 'ไม่พบสนามแพเดิล',
+    empty_week: 'ไม่มีทัวร์นาเมนต์สัปดาห์นี้',
   }
 };
 
@@ -168,6 +170,7 @@ const IS_ORGANIZER_PAGE = !!document.getElementById('page-organizer');
 function toSlug(str) {
   return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
+let currentWeekStart = null; // Date, always a Monday
 let listShouldScroll = true;
 let modalScrollY = 0;
 let clubs = [];
@@ -900,6 +903,9 @@ function bindEvents() {
   document.getElementById('today-btn').addEventListener('click', goToToday);
 
   // Year navigation
+  document.getElementById('prev-week').addEventListener('click', () => navigateWeek(-1));
+  document.getElementById('next-week').addEventListener('click', () => navigateWeek(1));
+  document.getElementById('week-today-btn').addEventListener('click', goToCurrentWeek);
   document.getElementById('prev-year').addEventListener('click', () => { currentYearView--; renderYear(); });
   document.getElementById('next-year').addEventListener('click', () => { currentYearView++; renderYear(); });
 
@@ -1037,6 +1043,7 @@ function handleKeyboard(e) {
     case 'ArrowLeft':
       if (!isModalOpen()) {
         if (activeView === 'year') { currentYearView--; renderYear(); }
+        else if (activeView === 'week') { navigateWeek(-1); }
         else { navigateMonth(-1); }
         e.preventDefault();
       }
@@ -1044,6 +1051,7 @@ function handleKeyboard(e) {
     case 'ArrowRight':
       if (!isModalOpen()) {
         if (activeView === 'year') { currentYearView++; renderYear(); }
+        else if (activeView === 'week') { navigateWeek(1); }
         else { navigateMonth(1); }
         e.preventDefault();
       }
@@ -1086,14 +1094,129 @@ function navigateMonth(dir) {
 
 function goToToday() {
   const now = new Date();
-  currentMonth = now.getMonth();
-  currentYear = now.getFullYear();
-  renderCalendar();
+  if (activeView === 'week') {
+    currentWeekStart = getWeekStart(now);
+    renderWeek();
+  } else {
+    currentMonth = now.getMonth();
+    currentYear = now.getFullYear();
+    renderCalendar();
+  }
+}
+
+function navigateWeek(dir) {
+  const body = document.getElementById('week-body');
+  body.classList.add('fade-out');
+  let hasFired = false;
+  const onFadeOut = () => {
+    if (hasFired) return;
+    hasFired = true;
+    body.removeEventListener('transitionend', onFadeOut);
+    if (!currentWeekStart) currentWeekStart = getWeekStart(new Date());
+    currentWeekStart = new Date(currentWeekStart.getTime() + dir * 7 * 86400000);
+    renderWeek();
+    requestAnimationFrame(() => {
+      body.classList.remove('fade-out');
+      body.classList.add('fade-in');
+      setTimeout(() => body.classList.remove('fade-in'), 250);
+    });
+  };
+  body.addEventListener('transitionend', onFadeOut, { once: true });
+  setTimeout(() => { if (body.classList.contains('fade-out')) onFadeOut(); }, 300);
+}
+
+function goToCurrentWeek() {
+  currentWeekStart = getWeekStart(new Date());
+  renderWeek();
+}
+
+function renderWeek() {
+  if (!currentWeekStart) currentWeekStart = getWeekStart(new Date());
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const dated = getDated();
+  const daysShort = t('days_short');
+  const monthsShort = t('months_short');
+
+  // Compute 7 dates
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    weekDates.push(d);
+  }
+
+  // Title: "Mar 24 – 30, 2026" or "Mar 28 – Apr 3, 2026"
+  const first = weekDates[0];
+  const last = weekDates[6];
+  let title;
+  if (first.getMonth() === last.getMonth()) {
+    title = `${monthsShort[first.getMonth()]} ${first.getDate()} – ${last.getDate()}, ${first.getFullYear()}`;
+  } else if (first.getFullYear() === last.getFullYear()) {
+    title = `${monthsShort[first.getMonth()]} ${first.getDate()} – ${monthsShort[last.getMonth()]} ${last.getDate()}, ${first.getFullYear()}`;
+  } else {
+    title = `${monthsShort[first.getMonth()]} ${first.getDate()}, ${first.getFullYear()} – ${monthsShort[last.getMonth()]} ${last.getDate()}, ${last.getFullYear()}`;
+  }
+  document.getElementById('week-title').textContent = title;
+
+  // Today button state
+  const currentWeekMonday = getWeekStart(today);
+  const weekTodayBtn = document.getElementById('week-today-btn');
+  if (currentWeekStart.getTime() === currentWeekMonday.getTime()) {
+    weekTodayBtn.classList.add('is-current');
+  } else {
+    weekTodayBtn.classList.remove('is-current');
+  }
+
+  // Build header
+  const header = document.getElementById('week-header');
+  header.innerHTML = '';
+  weekDates.forEach((d, i) => {
+    const dateStr = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const isToday = dateStr === todayStr;
+    const cell = document.createElement('div');
+    cell.className = 'week-header-cell' + (isToday ? ' today' : '');
+    cell.innerHTML =
+      '<span class="week-header-day">' + daysShort[i] + '</span>' +
+      '<span class="week-header-date">' + d.getDate() + '</span>';
+    header.appendChild(cell);
+  });
+
+  // Build body
+  const body = document.getElementById('week-body');
+  body.innerHTML = '';
+  let hasEvents = false;
+
+  weekDates.forEach((d, i) => {
+    const dateStr = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const isToday = dateStr === todayStr;
+    const isPast = d < stripTime(today);
+
+    const col = document.createElement('div');
+    col.className = 'week-day';
+    col.setAttribute('data-day-label', daysShort[i] + ' ' + d.getDate() + ' ' + monthsShort[d.getMonth()]);
+    if (isToday) col.classList.add('today');
+    if (isPast) col.classList.add('past-day');
+
+    renderDayEvents(col, d, dated, today, { expanded: true });
+
+    if (col.classList.contains('has-events')) hasEvents = true;
+    body.appendChild(col);
+  });
+
+  // Empty state
+  if (!hasEvents) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'week-empty';
+    emptyMsg.innerHTML = '<span class="cal-empty-month-icon">&#127934;</span>' + t('empty_week');
+    body.appendChild(emptyMsg);
+  }
 }
 
 // ---- Rendering ----
 function render() {
-  const views = ['calendar-view', 'year-view', 'list-view', 'map-view'];
+  const views = ['calendar-view', 'week-view', 'year-view', 'list-view', 'map-view'];
   views.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -1116,6 +1239,11 @@ function render() {
     activeEl.classList.remove('hidden');
     activeEl.classList.add('view-transition-enter');
     renderCalendar();
+  } else if (activeView === 'week') {
+    activeEl = document.getElementById('week-view');
+    activeEl.classList.remove('hidden');
+    activeEl.classList.add('view-transition-enter');
+    renderWeek();
   } else if (activeView === 'year') {
     activeEl = document.getElementById('year-view');
     activeEl.classList.remove('hidden');
@@ -1183,6 +1311,143 @@ function getTBC() {
 }
 
 // ---- Calendar Rendering ----
+// Shared day event renderer — used by both month and week views
+function renderDayEvents(cell, dayDate, dated, today, options) {
+  const expanded = options && options.expanded;
+
+  // Find events on this day (exclude month-TBC)
+  const eventsOnDay = dated.filter(ev => {
+    if (ev.dateTBC) return false;
+    const start = stripTime(ev.startDate);
+    const end = ev.endDate ? stripTime(ev.endDate) : start;
+    return dayDate >= start && dayDate <= end;
+  });
+
+  const barEvents = eventsOnDay.filter(ev => ev.type !== 'daily');
+  const dailyEvents = eventsOnDay.filter(ev => ev.type === 'daily');
+
+  if (barEvents.length > 0 || dailyEvents.length > 0) {
+    cell.classList.add('has-events');
+  }
+
+  // Sort bar events: leagues first
+  barEvents.sort((a, b) => {
+    if (a.type === 'league' && b.type !== 'league') return -1;
+    if (a.type !== 'league' && b.type === 'league') return 1;
+    return 0;
+  });
+
+  // Render bar events (tournaments + leagues)
+  barEvents.forEach(ev => {
+    const start = stripTime(ev.startDate);
+    const end = ev.endDate ? stripTime(ev.endDate) : start;
+    const isStart = dayDate.getTime() === start.getTime();
+    const isEnd = dayDate.getTime() === end.getTime();
+    const dow = (dayDate.getDay() + 6) % 7;
+    const isWeekStart = dow === 0;
+    const nextDay = new Date(dayDate); nextDay.setDate(nextDay.getDate() + 1);
+    const nextDow = (nextDay.getDay() + 6) % 7;
+    const isWeekEnd = nextDow === 0;
+
+    let barClass = 'bar-single';
+    if (start.getTime() === end.getTime()) {
+      barClass = 'bar-single';
+    } else if (isStart || isWeekStart) {
+      barClass = (isEnd || isWeekEnd) ? 'bar-single' : 'bar-start';
+    } else if (isEnd || isWeekEnd) {
+      barClass = 'bar-end';
+    } else {
+      barClass = 'bar-middle';
+    }
+
+    const isLeague = ev.type === 'league';
+    const bar = document.createElement('div');
+    bar.className = `cal-event-bar ${barClass}${isLeague ? ' cal-league-bar' : ''}`;
+    bar.style.background = ev.color;
+
+    if (isStart || isWeekStart) {
+      const leagueBadge = isLeague ? `<span class="cal-league-badge">${t('type_league')}</span>` : '';
+      const starBadge = ev.featured ? `<span class="bar-star">${SVG_STAR}</span>` : '';
+      bar.innerHTML = leagueBadge + starBadge + esc(ev.name);
+    }
+
+    if (end < stripTime(today)) {
+      bar.classList.add('past-event');
+    }
+
+    bar.addEventListener('click', (e) => { e.stopPropagation(); openModal(ev); });
+    bar.addEventListener('mouseenter', (e) => showTooltip(e, ev));
+    bar.addEventListener('mousemove', (e) => moveTooltip(e));
+    bar.addEventListener('mouseleave', hideTooltip);
+
+    cell.appendChild(bar);
+  });
+
+  // Render daily events
+  if (dailyEvents.length > 0) {
+    if (expanded) {
+      // Week view: render as mini-cards with name + time
+      dailyEvents.forEach(ev => {
+        const card = document.createElement('div');
+        card.className = 'week-daily-event';
+        card.style.borderLeftColor = ev.color;
+        if (stripTime(ev.startDate) < stripTime(today)) card.style.opacity = '0.4';
+        card.innerHTML =
+          '<span class="week-daily-event-name">' + esc(ev.name) + '</span>' +
+          (ev.timeSlot ? '<span class="week-daily-event-time">' + esc(ev.timeSlot) + '</span>' : '');
+        card.addEventListener('click', (e) => { e.stopPropagation(); openModal(ev); });
+        card.addEventListener('mouseenter', (e) => showTooltip(e, ev));
+        card.addEventListener('mousemove', (e) => moveTooltip(e));
+        card.addEventListener('mouseleave', hideTooltip);
+        cell.appendChild(card);
+      });
+    } else {
+      // Month view: render as dots/count badge
+      const dotContainer = document.createElement('div');
+      dotContainer.className = 'cal-daily-dots';
+
+      if (dailyEvents.length === 1) {
+        const dot = document.createElement('span');
+        dot.className = 'cal-daily-dot';
+        dot.style.backgroundColor = dailyEvents[0].color;
+        dot.title = dailyEvents[0].name + (dailyEvents[0].timeSlot ? ` (${dailyEvents[0].timeSlot})` : '');
+        if (stripTime(dailyEvents[0].startDate) < stripTime(today)) dot.classList.add('past-event');
+        dot.addEventListener('click', (e) => { e.stopPropagation(); openModal(dailyEvents[0]); });
+        dot.addEventListener('mouseenter', (e) => showTooltip(e, dailyEvents[0]));
+        dot.addEventListener('mousemove', (e) => moveTooltip(e));
+        dot.addEventListener('mouseleave', hideTooltip);
+        dotContainer.appendChild(dot);
+      } else {
+        const badge = document.createElement('span');
+        badge.className = 'cal-daily-count';
+        badge.textContent = dailyEvents.length;
+        badge.style.backgroundColor = dailyEvents[0].color;
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showDailyEventsPopover(e, dailyEvents, cell);
+        });
+        badge.addEventListener('mouseenter', (e) => {
+          const tip = document.getElementById('tooltip');
+          tip.innerHTML = dailyEvents.map(ev =>
+            `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">` +
+            `<span style="width:6px;height:6px;border-radius:50%;background:${ev.color};flex-shrink:0;display:inline-block;"></span>` +
+            `<strong>${esc(ev.name)}</strong>` +
+            (ev.timeSlot ? `<span style="opacity:0.7;font-size:10px">${esc(ev.timeSlot)}</span>` : '') +
+            `</div>`
+          ).join('');
+          tip.classList.add('visible');
+          moveTooltip(e);
+        });
+        badge.addEventListener('mousemove', (e) => moveTooltip(e));
+        badge.addEventListener('mouseleave', hideTooltip);
+        dotContainer.appendChild(badge);
+      }
+
+      cell.appendChild(dotContainer);
+    }
+  }
+}
+
 function renderCalendar() {
   document.getElementById('month-title').textContent = `${t('months')[currentMonth]} ${currentYear}`;
 
@@ -1232,124 +1497,7 @@ function renderCalendar() {
     const isPast = dayDate < stripTime(today);
     const cell = createDayCell(d, false, isToday, isPast);
 
-    // Find events on this day (exclude month-TBC)
-    const eventsOnDay = dated.filter(ev => {
-      if (ev.dateTBC) return false;
-      const start = stripTime(ev.startDate);
-      const end = ev.endDate ? stripTime(ev.endDate) : start;
-      return dayDate >= start && dayDate <= end;
-    });
-
-    // Separate daily events from bar events (tournaments/leagues)
-    const barEvents = eventsOnDay.filter(ev => ev.type !== 'daily');
-    const dailyEvents = eventsOnDay.filter(ev => ev.type === 'daily');
-
-    if (barEvents.length > 0 || dailyEvents.length > 0) {
-      cell.classList.add('has-events');
-    }
-
-    // Sort bar events: leagues first so they render underneath tournaments
-    barEvents.sort((a, b) => {
-      if (a.type === 'league' && b.type !== 'league') return -1;
-      if (a.type !== 'league' && b.type === 'league') return 1;
-      return 0;
-    });
-
-    // Render bar events (tournaments + leagues)
-    barEvents.forEach(ev => {
-      const start = stripTime(ev.startDate);
-      const end = ev.endDate ? stripTime(ev.endDate) : start;
-      const isStart = dayDate.getTime() === start.getTime();
-      const isEnd = dayDate.getTime() === end.getTime();
-      // Also break at week boundaries (Monday)
-      const dow = (dayDate.getDay() + 6) % 7;
-      const isWeekStart = dow === 0;
-      const nextDay = new Date(dayDate); nextDay.setDate(nextDay.getDate() + 1);
-      const nextDow = (nextDay.getDay() + 6) % 7;
-      const isWeekEnd = nextDow === 0;
-
-      let barClass = 'bar-single';
-      if (start.getTime() === end.getTime()) {
-        barClass = 'bar-single';
-      } else if (isStart || isWeekStart) {
-        barClass = (isEnd || isWeekEnd) ? 'bar-single' : 'bar-start';
-      } else if (isEnd || isWeekEnd) {
-        barClass = 'bar-end';
-      } else {
-        barClass = 'bar-middle';
-      }
-
-      const isLeague = ev.type === 'league';
-      const bar = document.createElement('div');
-      bar.className = `cal-event-bar ${barClass}${isLeague ? ' cal-league-bar' : ''}`;
-      bar.style.background = ev.color;
-
-      if (isStart || isWeekStart) {
-        const leagueBadge = isLeague ? `<span class="cal-league-badge">${t('type_league')}</span>` : '';
-        const starBadge = ev.featured ? `<span class="bar-star">${SVG_STAR}</span>` : '';
-        bar.innerHTML = leagueBadge + starBadge + esc(ev.name);
-      }
-
-      // Past event dimming
-      if (end < stripTime(today)) {
-        bar.classList.add('past-event');
-      }
-
-      bar.addEventListener('click', (e) => { e.stopPropagation(); openModal(ev); });
-
-      // Tooltip
-      bar.addEventListener('mouseenter', (e) => showTooltip(e, ev));
-      bar.addEventListener('mousemove', (e) => moveTooltip(e));
-      bar.addEventListener('mouseleave', hideTooltip);
-
-      cell.appendChild(bar);
-    });
-
-    // Render daily event dot indicators
-    if (dailyEvents.length > 0) {
-      const dotContainer = document.createElement('div');
-      dotContainer.className = 'cal-daily-dots';
-
-      if (dailyEvents.length === 1) {
-        const dot = document.createElement('span');
-        dot.className = 'cal-daily-dot';
-        dot.style.backgroundColor = dailyEvents[0].color;
-        dot.title = dailyEvents[0].name + (dailyEvents[0].timeSlot ? ` (${dailyEvents[0].timeSlot})` : '');
-        if (stripTime(dailyEvents[0].startDate) < stripTime(today)) dot.classList.add('past-event');
-        dot.addEventListener('click', (e) => { e.stopPropagation(); openModal(dailyEvents[0]); });
-        dot.addEventListener('mouseenter', (e) => showTooltip(e, dailyEvents[0]));
-        dot.addEventListener('mousemove', (e) => moveTooltip(e));
-        dot.addEventListener('mouseleave', hideTooltip);
-        dotContainer.appendChild(dot);
-      } else {
-        const badge = document.createElement('span');
-        badge.className = 'cal-daily-count';
-        badge.textContent = dailyEvents.length;
-        badge.style.backgroundColor = dailyEvents[0].color;
-        badge.addEventListener('click', (e) => {
-          e.stopPropagation();
-          showDailyEventsPopover(e, dailyEvents, cell);
-        });
-        badge.addEventListener('mouseenter', (e) => {
-          const tip = document.getElementById('tooltip');
-          tip.innerHTML = dailyEvents.map(ev =>
-            `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">` +
-            `<span style="width:6px;height:6px;border-radius:50%;background:${ev.color};flex-shrink:0;display:inline-block;"></span>` +
-            `<strong>${esc(ev.name)}</strong>` +
-            (ev.timeSlot ? `<span style="opacity:0.7;font-size:10px">${esc(ev.timeSlot)}</span>` : '') +
-            `</div>`
-          ).join('');
-          tip.classList.add('visible');
-          moveTooltip(e);
-        });
-        badge.addEventListener('mousemove', (e) => moveTooltip(e));
-        badge.addEventListener('mouseleave', hideTooltip);
-        dotContainer.appendChild(badge);
-      }
-
-      cell.appendChild(dotContainer);
-    }
-
+    renderDayEvents(cell, dayDate, dated, today, { expanded: false });
     body.appendChild(cell);
   }
 
@@ -2587,6 +2735,15 @@ function formatDateRange(ev) {
 
 function stripTime(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 function hexToRgba(hex, alpha) {
