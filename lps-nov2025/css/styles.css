@@ -1344,11 +1344,11 @@ img.avatar {
 
   .matches-grid__header-row {
     position: sticky;
-    top: 0;
+    top: -1px;
     z-index: 5;
     background: var(--off-white);
-    padding: 8px 0;
-    margin-top: 0;
+    padding: 12px 0 8px;
+    margin-top: -12px;
     gap: 8px 12px;
     min-width: 700px;
   }
