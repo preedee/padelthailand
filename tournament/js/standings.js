@@ -99,10 +99,15 @@ const Standings = (() => {
       }
     }
 
-    // Build footnote text
-    let footnote = '*Qualifies for the next round';
+    // Build descriptive footnote text
+    let footnote;
+    const numGroups = groupNames.length;
     if (rule.best) {
       footnote = '*Top ' + rule.perGroup + ' per group + best remaining qualify for the next round';
+    } else if (numGroups === 1) {
+      footnote = '*Top ' + rule.perGroup + ' qualify for the next round';
+    } else {
+      footnote = '*Top ' + rule.perGroup + ' per group qualify for the next round';
     }
 
     const html = `
