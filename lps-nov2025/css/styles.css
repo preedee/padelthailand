@@ -1335,10 +1335,11 @@ img.avatar {
     min-width: 32px;
   }
 
-  /* --- Matches: horizontal scroll wrapper on mobile --- */
+  /* --- Matches: scrollable container on mobile --- */
   #view-matches {
-    overflow-x: auto;
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 140px);
   }
 
   .matches-grid__header-row {
