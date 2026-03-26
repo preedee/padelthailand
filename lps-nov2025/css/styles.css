@@ -1340,15 +1340,16 @@ img.avatar {
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     max-height: calc(100vh - 140px);
+    padding-top: 0;
   }
 
   .matches-grid__header-row {
     position: sticky;
-    top: -1px;
+    top: 0;
     z-index: 5;
     background: var(--off-white);
-    padding: 12px 0 8px;
-    margin-top: -12px;
+    padding: 10px 0 8px;
+    margin-top: 0;
     gap: 8px 12px;
     min-width: 700px;
   }
