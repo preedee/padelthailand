@@ -1341,7 +1341,17 @@ img.avatar {
     -webkit-overflow-scrolling: touch;
   }
 
-  .matches-grid__header-row,
+  .matches-grid__header-row {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--off-white);
+    padding: 8px 0;
+    margin-top: 0;
+    gap: 8px 12px;
+    min-width: 700px;
+  }
+
   .matches-grid {
     gap: 8px 12px;
     min-width: 700px;
