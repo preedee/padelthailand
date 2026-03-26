@@ -202,7 +202,7 @@ const App = (() => {
     divisions.forEach(d => {
       const container = document.getElementById('view-' + d.slug + '-standings');
       if (container) {
-        Standings.render(container, d.standingsTab, d.name + ' Standings');
+        Standings.render(container, d.standingsTab, d.name + ' Standings', d.name);
       }
     });
 

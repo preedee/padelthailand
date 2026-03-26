@@ -1,25 +1,55 @@
 /* ============================================
    View 1 — Group Standings
    Uses dedicated Group Stage Standings tab
-   Power Division (4 groups) + Club Division (4 groups)
+   Qualification rules from config:
+     "Male Amateur:2, Male Advanced:1+best, Female Amateur:4"
+     - N = top N per group qualify
+     - N+best = top N per group + best remaining team(s)
    ============================================ */
 
 const Standings = (() => {
 
-  // Generic render: pass tab name and display title
-  function render(container, tabName, title) {
-    renderSingleDivision(container, title, Data.getStandings(tabName));
+  // Parse qualification rules from config
+  // Format: "Division:rule, Division:rule" e.g. "Male Amateur:2, Male Advanced:1+best, Female Amateur:4"
+  function getQualificationRule(divisionName) {
+    const rulesStr = Data.getConfig('qualification_rules', '');
+    if (!rulesStr) return { perGroup: 2, best: false }; // default: top 2
+
+    const rules = rulesStr.split(',').map(s => s.trim());
+    for (const rule of rules) {
+      const parts = rule.split(':');
+      if (parts.length !== 2) continue;
+      const name = parts[0].trim();
+      const value = parts[1].trim().toLowerCase();
+      if (name.toLowerCase() === divisionName.toLowerCase()) {
+        if (value.includes('+best')) {
+          const n = parseInt(value, 10) || 1;
+          return { perGroup: n, best: true };
+        }
+        return { perGroup: parseInt(value, 10) || 2, best: false };
+      }
+    }
+    return { perGroup: 2, best: false }; // default
+  }
+
+  // Generic render: pass tab name, display title, and division name for qualification lookup
+  function render(container, tabName, title, divisionName) {
+    const groups = Data.getStandings(tabName);
+    const rule = getQualificationRule(divisionName || '');
+    renderSingleDivision(container, title, groups, rule);
   }
 
   function renderPower(container) {
-    renderSingleDivision(container, 'Power Play Standings', Data.getPowerStandings());
+    const rule = getQualificationRule('Power');
+    renderSingleDivision(container, 'Power Play Standings', Data.getPowerStandings(), rule);
   }
 
   function renderClub(container) {
-    renderSingleDivision(container, 'Club Play Standings', Data.getClubStandings());
+    const rule = getQualificationRule('Club');
+    renderSingleDivision(container, 'Club Play Standings', Data.getClubStandings(), rule);
   }
 
-  function renderSingleDivision(container, title, groups) {
+  function renderSingleDivision(container, title, groups, rule) {
     const groupNames = Object.keys(groups);
 
     if (groupNames.length === 0) {
@@ -27,37 +57,76 @@ const Standings = (() => {
       return;
     }
 
+    // Sort teams within each group first
+    groupNames.forEach(name => {
+      groups[name].sort((a, b) =>
+        b.won - a.won ||
+        a.lost - b.lost ||
+        (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
+        (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
+      );
+    });
+
+    // Determine qualifiers
+    const qualifiedNames = new Set();
+
+    // Top N per group
+    groupNames.forEach(name => {
+      groups[name].forEach((team, idx) => {
+        if (idx < rule.perGroup) qualifiedNames.add(team.name);
+      });
+    });
+
+    // Best remaining (for "N+best" rule)
+    if (rule.best) {
+      const remaining = [];
+      groupNames.forEach(name => {
+        groups[name].forEach((team, idx) => {
+          if (idx >= rule.perGroup) {
+            remaining.push(team);
+          }
+        });
+      });
+      // Sort remaining by same criteria
+      remaining.sort((a, b) =>
+        b.won - a.won ||
+        a.lost - b.lost ||
+        (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
+        (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
+      );
+      if (remaining.length > 0) {
+        qualifiedNames.add(remaining[0].name);
+      }
+    }
+
+    // Build footnote text
+    let footnote = '*Qualifies for the next round';
+    if (rule.best) {
+      footnote = '*Top ' + rule.perGroup + ' per group + best remaining qualify for the next round';
+    }
+
     const html = `
       <div class="standings-divisions">
-        ${renderDivision(title, groupNames, groups)}
-        <div class="standings-footnote"><strong>*Qualifies for the next round</strong></div>
+        ${renderDivision(title, groupNames, groups, qualifiedNames)}
+        <div class="standings-footnote"><strong>${footnote}</strong></div>
       </div>`;
 
     container.innerHTML = html;
   }
 
-  function renderDivision(title, groupNames, groups) {
+  function renderDivision(title, groupNames, groups, qualifiedNames) {
     return `
       <div class="standings-division">
         <div class="standings-division__title">${title}</div>
         <div class="standings-grid">
-          ${groupNames.map(name => renderGroup(name, groups[name])).join('')}
+          ${groupNames.map(name => renderGroup(name, groups[name], qualifiedNames)).join('')}
         </div>
       </div>`;
   }
 
-  function renderGroup(name, teams) {
-    // Sort: Wins desc, Losses asc, set difference desc, game difference desc
-    teams.sort((a, b) =>
-      b.won - a.won ||
-      a.lost - b.lost ||
-      (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
-      (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
-    );
-
-    // Top 2 teams are qualifiers
-    const rows = teams.map((team, idx) => {
-      const isQualifier = idx < 2;
+  function renderGroup(name, teams, qualifiedNames) {
+    const rows = teams.map(team => {
+      const isQualifier = qualifiedNames.has(team.name);
       return `<tr class="${isQualifier ? 'qualifier' : ''}">
         <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 36)}<span class="team-name">${team.name}</span></div></td>
         <td>${team.played}</td>
