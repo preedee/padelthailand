@@ -292,6 +292,10 @@ const Data = (() => {
         if (groupMatch) {
           currentGroup = groupMatch[1];
         }
+        // This row also contains column headers (e.g. col0="...Code", col1="Team", col2="TM", col3="MP"...)
+        // Build colMap from it, treating col0 as "Code"
+        colMap = { 'Code': 0 };
+        fields.forEach((f, idx) => { if (idx > 0) colMap[f.trim()] = idx; });
         continue;
       }
 
