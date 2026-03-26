@@ -3,33 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/tournament/">
   <title>Tournament Dashboard</title>
-  <link rel="icon" href="/assets/tps-favicon.png">
+  <link rel="icon" href="assets/tps-favicon.png">
   <link rel="stylesheet" href="css/styles.css?v=97">
-  <script>window.__SHEET_ID = '1taW8qRBwHLXm1Yvl06uRz1GGlVEfq2HMF-CyjIMmEhs';</script>
 </head>
 <body>
   <div class="dashboard">
+
+    <!-- Header -->
     <header class="header">
       <div class="header__left">
-        <img src="/assets/lps-logo.jpeg" alt="Event Logo" class="header__lps-logo">
+        <img src="assets/lps-logo.jpeg" alt="Event Logo" class="header__lps-logo">
       </div>
       <div class="header__title">
         <h1>Tournament</h1>
         <p>Dashboard</p>
       </div>
       <div class="header__right">
-        <img src="/assets/tps-logo-green-on-white.png" alt="Partner Logo" class="header__tps-logo">
+        <img src="assets/tps-logo-green.png" alt="Partner Logo" class="header__tps-logo">
       </div>
     </header>
+
+    <!-- View Indicator Bar (generated dynamically) -->
     <nav class="view-bar" id="view-bar"></nav>
+
+    <!-- Content Area: Main + Sidebar -->
     <div class="content-area">
+      <!-- Main Content (views generated dynamically) -->
       <main class="main-content" id="main-content">
         <section class="view active" id="view-loading">
           <div class="loading">Loading tournament data...</div>
         </section>
       </main>
+
+      <!-- Sidebar: Upcoming Matches (always visible) -->
       <aside class="sidebar" id="sidebar-upcoming">
         <div class="sidebar__title">Upcoming Matches</div>
         <div class="sidebar__content">
@@ -37,14 +44,18 @@
         </div>
       </aside>
     </div>
+
+    <!-- Footer -->
     <footer class="footer">
       <div class="footer__powered">
-        <img src="/assets/favicon.png" alt="The Padel Society" class="footer__tps-logo">
+        <img src="assets/favicon.png" alt="The Padel Society" class="footer__tps-logo">
         <span class="footer__powered-text">Powered by The Padel Society</span>
       </div>
       <span class="footer__timestamp" id="last-updated">Last updated: --</span>
     </footer>
+
   </div>
+
   <script src="js/data.js?v=97"></script>
   <script src="js/standings.js?v=97"></script>
   <script src="js/matches.js?v=97"></script>
