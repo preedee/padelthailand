@@ -166,6 +166,7 @@ let filtersExpanded = false;
 let selectedOrganizer = null;
 let previousView = 'calendar';
 const IS_ORGANIZER_PAGE = !!document.getElementById('page-organizer');
+const IS_COMPETITION_PAGE = !!document.getElementById('page-competition');
 
 function toSlug(str) {
   return (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -195,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLang(currentLang);
   if (IS_ORGANIZER_PAGE) {
     fetchAndRenderOrganizer();
+  } else if (IS_COMPETITION_PAGE) {
+    fetchAndRenderCompetition();
   } else {
     fetchTournaments();
     bindEvents();
@@ -335,6 +338,148 @@ async function fetchAndRenderOrganizer() {
   } catch (err) {
     console.error('Error loading organizer:', err);
     const container = document.getElementById('org-detail-events');
+    if (container) container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Unable to load data. Please try again later.</p>';
+  }
+}
+
+// ---- Competition Page Init ----
+async function fetchAndRenderCompetition() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const compSlug = urlParams.get('slug') || window.location.pathname.split('/').filter(Boolean).pop();
+  if (!compSlug || compSlug === 'competition.html') { window.location.href = '/'; return; }
+
+  try {
+    const [respTournaments, respLeagues, respDaily] = await Promise.all([
+      fetch(SHEET_URL),
+      fetch(LEAGUES_URL),
+      fetch(DAILY_URL)
+    ]);
+    if (!respTournaments.ok) throw new Error('Failed to fetch tournaments');
+
+    const csvTournaments = await respTournaments.text();
+    const tournamentData = parseCSV(csvTournaments);
+
+    let leagueData = [];
+    if (respLeagues.ok) {
+      const csvLeagues = await respLeagues.text();
+      const mappedCsv = mapLeagueHeaders(csvLeagues);
+      leagueData = parseCSV(mappedCsv);
+      leagueData.forEach(l => { l.type = 'league'; });
+      leagueData.forEach((l, i) => { l.id = tournamentData.length + i; });
+    }
+
+    let dailyData = [];
+    if (respDaily.ok) {
+      const csvDaily = await respDaily.text();
+      const mappedCsv = mapDailyHeaders(csvDaily);
+      dailyData = parseCSV(mappedCsv);
+      dailyData.forEach(d => { d.type = 'daily'; });
+      dailyData.forEach((d, i) => { d.id = tournamentData.length + leagueData.length + i; });
+    }
+
+    tournaments = [...tournamentData, ...leagueData, ...dailyData];
+    buildOrganizerMeta();
+
+    // Find competition by slug
+    const ev = tournaments.find(t => t.slug === compSlug);
+    if (!ev) { window.location.href = '/'; return; }
+
+    document.title = ev.name + ' — Padel Thailand';
+
+    // Render competition detail (reuses modal content layout)
+    const content = document.getElementById('competition-content');
+    const dateRange = ev.dateTBC ? formatMonthTBC(ev) : (ev.startDate ? formatDateRange(ev) : 'TBC');
+    const countdown = (ev.startDate && !ev.dateTBC) ? getCountdownText(ev) : '';
+    const gcalUrl = (ev.startDate && !ev.dateTBC) ? buildGoogleCalendarUrl(ev) : '';
+    const shareUrl = window.location.href;
+
+    const today = stripTime(new Date());
+    let isPast = false;
+    if (ev.dateTBC) {
+      isPast = new Date(ev.tbcYear, ev.tbcMonth + 1, 0) < today;
+    } else {
+      const end = ev.endDate ? stripTime(ev.endDate) : (ev.startDate ? stripTime(ev.startDate) : null);
+      isPast = end ? end < today : false;
+    }
+
+    const meta = organizerMeta[ev.organizer] || {};
+    const logoHtml = meta.logoUrl ? '<img class="modal-org-logo" src="' + esc(meta.logoUrl) + '" alt="" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : '';
+    const igEmbedHtml = ev.instagramUrl
+      ? '<div class="modal-ig-embed"><blockquote class="instagram-media" data-instgrm-permalink="' + esc(ev.instagramUrl) + '" style="max-width:100%; min-width:280px; width:100%;"></blockquote></div>'
+      : '';
+    const categoriesHtml = ev.categories.length > 0 ? '<div class="modal-tags">' + ev.categories.map(function(c) { return '<span class="modal-tag">' + esc(c) + '</span>'; }).join('') + '</div>' : '';
+    const featuredBadge = ev.featured ? '<span class="modal-featured-badge">' + SVG_STAR + ' ' + t('featured') + '</span>' : '';
+    const leagueBadge = ev.type === 'league' ? '<span class="modal-league-badge">' + t('type_league') + '</span>' : '';
+    const dailyBadge = ev.type === 'daily' ? '<span class="modal-daily-badge">' + t('type_daily') + '</span>' : '';
+    const igAction = ev.instagramUrl ? '<a href="' + esc(ev.instagramUrl) + '" target="_blank" rel="noopener" class="modal-action-btn">' + SVG_INSTAGRAM + ' ' + t('view_instagram') + '</a>' : '';
+
+    content.innerHTML =
+      '<div class="modal-header-row">' +
+        '<span class="modal-organizer" style="background:' + ev.color + '">' + logoHtml + esc(ev.organizer) + '</span>' +
+        leagueBadge + dailyBadge + featuredBadge +
+      '</div>' +
+      '<h2 class="modal-title">' + esc(ev.name) + (countdown ? ' <span class="countdown-badge">' + countdown + '</span>' : '') + '</h2>' +
+      categoriesHtml +
+      '<div class="modal-details">' +
+        '<div class="modal-detail">' +
+          '<span class="modal-detail-icon">&#128197;</span>' +
+          '<span class="modal-detail-label">' + t('modal_date') + '</span>' +
+          '<span class="modal-detail-value">' + esc(dateRange) + '</span>' +
+        '</div>' +
+        (ev.timeSlot ? '<div class="modal-detail"><span class="modal-detail-icon">&#128340;</span><span class="modal-detail-label">' + t('modal_time') + '</span><span class="modal-detail-value">' + esc(ev.timeSlot) + '</span></div>' : '') +
+        '<div class="modal-detail">' +
+          '<span class="modal-detail-icon">&#128205;</span>' +
+          '<span class="modal-detail-label">' + t('modal_city') + '</span>' +
+          '<span class="modal-detail-value">' + esc(ev.city) + (ev.country ? ', ' + esc(ev.country) : '') + '</span>' +
+        '</div>' +
+        (ev.club && ev.club !== 'TBC' ? '<div class="modal-detail"><span class="modal-detail-icon">&#127934;</span><span class="modal-detail-label">' + t('modal_club') + '</span><span class="modal-detail-value">' + esc(ev.club) + '</span></div>' : '') +
+        (ev.prize ? '<div class="modal-detail"><span class="modal-detail-icon">&#127942;</span><span class="modal-detail-label">' + t('modal_prize') + '</span><span class="modal-detail-value">' + esc(ev.prize) + '</span></div>' : '') +
+      '</div>' +
+      '<div class="modal-actions">' +
+        (ev.regUrl ? '<a href="' + esc(ev.regUrl) + '" target="_blank" rel="noopener" class="modal-register" style="background:' + ev.color + '">' + (isPast ? t('tournament_details') : (ev.regUrl1Label ? esc(ev.regUrl1Label) : t('register'))) + '</a>' : '') +
+        (ev.regUrl2 ? '<a href="' + esc(ev.regUrl2) + '" target="_blank" rel="noopener" class="modal-register" style="background:' + ev.color + '">' + (isPast ? t('tournament_details') : (ev.regUrl2Label ? esc(ev.regUrl2Label) : t('register_2'))) + '</a>' : '') +
+        '<div class="modal-secondary-actions">' +
+          (gcalUrl ? '<a href="' + gcalUrl + '" target="_blank" rel="noopener" class="modal-action-btn">&#128197; ' + t('add_gcal') + '</a>' : '') +
+          igAction +
+          '<button class="modal-action-btn modal-share-btn" data-share-url="' + esc(shareUrl) + '">&#128279; ' + t('share') + '</button>' +
+        '</div>' +
+      '</div>' +
+      igEmbedHtml;
+
+    // Bind share button
+    const shareBtn = content.querySelector('.modal-share-btn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', function() { shareTournament(shareBtn.dataset.shareUrl); });
+    }
+
+    // Re-process Instagram embeds
+    if (ev.instagramUrl && window.instgrm) {
+      window.instgrm.Embeds.process();
+    }
+
+    // Bind minimal events for competition page
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) langToggle.addEventListener('click', function() {
+      toggleLang();
+      document.title = ev.name + ' — Padel Thailand';
+      // Re-render content with new language
+      fetchAndRenderCompetition();
+    });
+    document.addEventListener('keydown', handleKeyboard);
+
+    // Back to top
+    const backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      window.addEventListener('scroll', function() {
+        backToTop.classList.toggle('visible', window.scrollY > 300);
+      });
+      backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    }
+  } catch (err) {
+    console.error('Error loading competition:', err);
+    const container = document.getElementById('competition-content');
     if (container) container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Unable to load data. Please try again later.</p>';
   }
 }
@@ -560,7 +705,7 @@ function applyLang(lang) {
 
 function toggleLang() {
   applyLang(currentLang === 'en' ? 'th' : 'en');
-  if (IS_ORGANIZER_PAGE) return; // Organizer page handles re-render separately
+  if (IS_ORGANIZER_PAGE || IS_COMPETITION_PAGE) return; // Subpages handle re-render separately
   // Re-render content with new language — buildFilters rebuilds filter buttons,
   // then render() updates the active view, summary, TBC, legend, profiles
   if (tournaments.length) {
@@ -1037,7 +1182,7 @@ function handleKeyboard(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   if (e.key === 'Escape') { closeModal(); return; }
-  if (IS_ORGANIZER_PAGE) return; // No keyboard nav on organizer page
+  if (IS_ORGANIZER_PAGE || IS_COMPETITION_PAGE) return; // No keyboard nav on subpages
 
   switch (e.key) {
     case 'ArrowLeft':
@@ -2642,8 +2787,7 @@ function buildGoogleCalendarUrl(ev) {
 
 // ---- Share ----
 function buildShareUrl(ev) {
-  const base = window.location.origin + window.location.pathname;
-  return `${base}?tournament=${encodeURIComponent(ev.slug)}`;
+  return window.location.origin + '/competitions/' + encodeURIComponent(ev.slug);
 }
 
 function shareTournament(url) {
@@ -2690,16 +2834,17 @@ function checkDeepLink() {
   }
 
   // Tournament deep link
+  // Redirect old ?tournament=slug to new /competitions/slug URL
   const tid = params.get('tournament');
   if (tid !== null) {
-    // Support both slug-based (new) and numeric id-based (legacy) deep links
     let ev = tournaments.find(t => t.slug === tid);
     if (!ev) {
       const numId = parseInt(tid, 10);
       if (!isNaN(numId)) ev = tournaments.find(t => t.id === numId);
     }
     if (ev) {
-      setTimeout(() => openModal(ev), 300);
+      window.location.replace('/competitions/' + encodeURIComponent(ev.slug));
+      return;
     }
   }
 }

@@ -7,14 +7,20 @@
   <script>
     (function() {
       var path = window.location.pathname;
-      // Handle /organizer/slug routes — redirect to organizer.html with slug param
-      var match = path.match(/^\/organizer\/([^/]+)\/?$/);
-      if (match) {
-        window.location.replace('/organizer.html?slug=' + encodeURIComponent(match[1]));
-      } else {
-        // For any other 404, redirect to home
-        window.location.replace('/');
+      // Handle /organizer/slug routes
+      var orgMatch = path.match(/^\/organizer\/([^/]+)\/?$/);
+      if (orgMatch) {
+        window.location.replace('/organizer.html?slug=' + encodeURIComponent(orgMatch[1]));
+        return;
       }
+      // Handle /competitions/slug routes
+      var compMatch = path.match(/^\/competitions\/([^/]+)\/?$/);
+      if (compMatch) {
+        window.location.replace('/competition.html?slug=' + encodeURIComponent(compMatch[1]));
+        return;
+      }
+      // For any other 404, redirect to home
+      window.location.replace('/');
     })();
   </script>
 </head>

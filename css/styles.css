@@ -653,7 +653,7 @@ input:focus-visible {
 
 .cal-header {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--border);
@@ -669,7 +669,7 @@ input:focus-visible {
 
 .cal-body {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   transition: opacity 0.25s ease;
 }
 
@@ -687,6 +687,7 @@ input:focus-visible {
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   position: relative;
+  overflow: hidden;
   transition: background var(--transition), box-shadow var(--transition);
   cursor: default;
 }
@@ -3253,5 +3254,34 @@ input:focus-visible {
 
   .map-popup-actions {
     flex-direction: column;
+  }
+}
+
+/* ---- Competition Detail Page ---- */
+.competition-detail-section {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: var(--space-5) 20px 40px;
+}
+
+.competition-detail-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.competition-detail-container .modal-content {
+  max-width: none;
+}
+
+@media (max-width: 768px) {
+  .competition-detail-section {
+    padding: var(--space-3) var(--space-2) 40px;
+  }
+
+  .competition-detail-container {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
   }
 }
