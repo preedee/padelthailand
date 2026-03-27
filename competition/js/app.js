@@ -426,7 +426,9 @@ const App = (() => {
     currentViewIndex = index;
     const viewName = VIEWS[index];
 
-    document.querySelectorAll('.view-bar__tab').forEach(tab => {
+    // Only update tab active states for single-row nav
+    // Two-row nav handles its own tab states via updateTwoRowNav
+    document.querySelectorAll('.view-bar__tab[data-view]').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.view === viewName);
     });
 
@@ -448,7 +450,7 @@ const App = (() => {
   }
 
   function showManualView(viewName, skipHash) {
-    document.querySelectorAll('.view-bar__tab').forEach(tab => {
+    document.querySelectorAll('.view-bar__tab[data-view]').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.view === viewName);
     });
 
