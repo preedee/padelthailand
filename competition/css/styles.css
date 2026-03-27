@@ -797,6 +797,9 @@ img.avatar {
   font-weight: 300;
   font-size: 13px;
   color: var(--green-support);
+  text-align: right;
+  white-space: nowrap;
+  margin-left: auto;
 }
 
 .live-badge {
