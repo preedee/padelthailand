@@ -812,7 +812,6 @@ img.avatar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
 }
 
 .match-card__round {
