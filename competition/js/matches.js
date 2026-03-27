@@ -161,12 +161,12 @@ const Matches = (() => {
 
     const scores1 = match.sets
       .filter(s => s.a > 0 || s.b > 0)
-      .map(s => `<span class="match-card__set-score">${s.a}</span>`)
+      .map(s => `<span class="match-card__set-score${s.a > s.b ? ' match-card__set-score--high' : ''}">${s.a}</span>`)
       .join('');
 
     const scores2 = match.sets
       .filter(s => s.a > 0 || s.b > 0)
-      .map(s => `<span class="match-card__set-score">${s.b}</span>`)
+      .map(s => `<span class="match-card__set-score${s.b > s.a ? ' match-card__set-score--high' : ''}">${s.b}</span>`)
       .join('');
 
     return `<div class="match-card ${statusClass} ${roundClass}">

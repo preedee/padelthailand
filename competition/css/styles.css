@@ -885,7 +885,7 @@ img.avatar {
   text-align: center;
 }
 
-.match-card__team--winner .match-card__set-score {
+.match-card__set-score--high {
   font-weight: 700;
 }
 
@@ -1008,6 +1008,10 @@ img.avatar {
 .bracket-match__set {
   min-width: 14px;
   text-align: center;
+}
+
+.bracket-match__set--high {
+  font-weight: 700;
 }
 
 /* Bracket connector lines */

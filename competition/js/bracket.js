@@ -114,10 +114,10 @@ const Bracket = (() => {
 
     const validSets = match.sets ? match.sets.filter(s => s.a > 0 || s.b > 0) : [];
     const displayScore1 = validSets.length > 0
-      ? validSets.map(s => `<span class="bracket-match__set">${s.a}</span>`).join('')
+      ? validSets.map(s => `<span class="bracket-match__set${s.a > s.b ? ' bracket-match__set--high' : ''}">${s.a}</span>`).join('')
       : `<span class="bracket-match__set">${match.score1 != null ? match.score1 : ''}</span>`;
     const displayScore2 = validSets.length > 0
-      ? validSets.map(s => `<span class="bracket-match__set">${s.b}</span>`).join('')
+      ? validSets.map(s => `<span class="bracket-match__set${s.b > s.a ? ' bracket-match__set--high' : ''}">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
     const team1Content = Data.getTeamStackedHTML(team1Name, 18);
