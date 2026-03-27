@@ -422,7 +422,7 @@ html, body {
 .standings-divisions {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   height: 100%;
   overflow-y: auto;
 }
@@ -451,7 +451,7 @@ html, body {
 .standings-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 10px;
 }
 
 .standings-footnote {
@@ -460,7 +460,7 @@ html, body {
   font-weight: 700;
   font-size: 14px;
   color: var(--green);
-  padding: 4px;
+  padding: 2px;
 }
 
 .group-card {
@@ -491,7 +491,7 @@ html, body {
 .group-card__header {
   background: var(--green);
   color: var(--white);
-  padding: 8px 10px;
+  padding: 6px 10px;
   font-family: var(--font);
   font-weight: 700;
   font-size: 12px;
@@ -513,7 +513,7 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--green-support);
-  padding: 6px 8px;
+  padding: 4px 8px;
   text-align: left;
   border-bottom: 1px solid rgba(8, 93, 60, 0.1);
 }
@@ -531,8 +531,8 @@ html, body {
   font-size: 18px;
   vertical-align: middle;
   color: var(--green);
-  padding: 6px 8px;
-  height: 46px;
+  padding: 4px 8px;
+  height: 40px;
   border-bottom: 1px solid rgba(8, 93, 60, 0.06);
 }
 

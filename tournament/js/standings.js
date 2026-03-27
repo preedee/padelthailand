@@ -133,7 +133,7 @@ const Standings = (() => {
     const rows = teams.map(team => {
       const isQualifier = qualifiedNames.has(team.name);
       return `<tr class="${isQualifier ? 'qualifier' : ''}">
-        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 30)}<span class="team-name">${team.name}</span></div></td>
+        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 26)}<span class="team-name">${team.name}</span></div></td>
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
