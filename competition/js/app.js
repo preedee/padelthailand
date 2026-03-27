@@ -159,20 +159,23 @@ const App = (() => {
           t.classList.toggle('active', t.dataset.type === type);
         });
 
-        // Update division tabs
+        // Update division tabs — deselect all for Home/Matches, highlight for Standings/Brackets
+        const showDivisionHighlight = (type === 'standings' || type === 'bracket');
         viewBar.querySelectorAll('.view-bar__div-tab').forEach(t => {
-          t.classList.toggle('active', t.dataset.division === division);
+          t.classList.toggle('active', showDivisionHighlight && t.dataset.division === division);
         });
-
-        // Division row always visible (Option A)
       }
 
       // Wire up type tab clicks
       viewBar.querySelectorAll('.view-bar__type-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           const type = tab.dataset.type;
-          updateTwoRowNav(type, currentDivision);
-          const viewId = resolveViewId(type, currentDivision);
+          // For Standings/Brackets, ensure a division is selected (default to first)
+          const division = (type === 'standings' || type === 'bracket')
+            ? (currentDivision || divisions[0].slug)
+            : currentDivision;
+          updateTwoRowNav(type, division);
+          const viewId = resolveViewId(type, division);
           const idx = VIEWS.indexOf(viewId);
           if (idx !== -1) {
             switchToView(idx);
@@ -184,12 +187,14 @@ const App = (() => {
         });
       });
 
-      // Wire up division tab clicks
+      // Wire up division tab clicks — switch to current type + new division
       viewBar.querySelectorAll('.view-bar__div-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           const division = tab.dataset.division;
-          updateTwoRowNav(currentType, division);
-          const viewId = resolveViewId(currentType, division);
+          // If current type is Home or Matches, default to Standings
+          const type = (currentType === 'home' || currentType === 'matches') ? 'standings' : currentType;
+          updateTwoRowNav(type, division);
+          const viewId = resolveViewId(type, division);
           const idx = VIEWS.indexOf(viewId);
           if (idx !== -1) {
             switchToView(idx);
