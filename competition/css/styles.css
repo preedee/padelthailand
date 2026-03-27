@@ -341,6 +341,52 @@ html, body {
   background: var(--white);
 }
 
+/* --- Two-Row Nav Style --- */
+.view-bar--two-row {
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+.view-bar__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.view-bar__row--primary {
+  padding: 8px 32px 6px;
+  gap: 16px;
+}
+
+.view-bar__row--secondary {
+  padding: 4px 32px 6px;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.view-bar--two-row .view-bar__tab {
+  flex: 0 0 auto;
+}
+
+.view-bar__row--secondary .view-bar__tab {
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 3px 12px;
+}
+
+.view-bar__row--secondary .view-bar__tab.active {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.view-bar__row--secondary .view-bar__tab.active::after {
+  bottom: -4px;
+  width: 4px;
+  height: 4px;
+}
+
 /* --- Main Content Area --- */
 .main-content {
   position: relative;

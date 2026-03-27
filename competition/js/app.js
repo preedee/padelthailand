@@ -105,44 +105,176 @@ const App = (() => {
     // Order: standings labels for each division, then bracket labels for each division
     const customLabels = Data.getConfigList('tab_labels');
 
+    // Check nav style
+    const navStyle = Data.getConfig('nav_style', 'single-row');
+
     // Generate nav tabs
     const viewBar = document.getElementById('view-bar');
     let tabsHTML = '';
-    let tabIndex = 0;
 
-    // Home tab (if enabled)
-    if (showHomePage) {
-      tabsHTML += `<button class="view-bar__tab active" data-view="home">Home</button>`;
+    if (navStyle === 'two-row') {
+      // ===== TWO-ROW NAV =====
+      // Row 1: View types (Home, Standings, Brackets, All Matches) + dots
+      tabsHTML += `<div class="view-bar__row view-bar__row--primary">`;
+      if (showHomePage) {
+        tabsHTML += `<button class="view-bar__tab view-bar__type-tab active" data-type="home">Home</button>`;
+      }
+      tabsHTML += `<button class="view-bar__tab view-bar__type-tab${!showHomePage ? ' active' : ''}" data-type="standings">Standings</button>`;
+      tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Brackets</button>`;
+      tabsHTML += `<button class="view-bar__tab view-bar__type-tab view-bar__tab--right" data-type="matches">All Matches</button>`;
+      tabsHTML += `<div class="view-bar__dots">`;
+      VIEWS.forEach((_, i) => {
+        tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
+      });
+      tabsHTML += `</div>`;
+      tabsHTML += `</div>`;
+
+      // Row 2: Division selector
+      tabsHTML += `<div class="view-bar__row view-bar__row--secondary">`;
+      divisions.forEach((d, i) => {
+        const active = i === 0 ? ' active' : '';
+        tabsHTML += `<button class="view-bar__tab view-bar__div-tab${active}" data-division="${d.slug}">${d.name}</button>`;
+      });
+      tabsHTML += `</div>`;
+
+      viewBar.innerHTML = tabsHTML;
+      viewBar.classList.add('view-bar--two-row');
+
+      // Track current type and division for two-row nav
+      let currentType = showHomePage ? 'home' : 'standings';
+      let currentDivision = divisions[0].slug;
+
+      function resolveViewId(type, division) {
+        if (type === 'home') return 'home';
+        if (type === 'matches') return 'matches';
+        return division + '-' + type;
+      }
+
+      function updateTwoRowNav(type, division) {
+        currentType = type;
+        currentDivision = division;
+
+        // Update type tabs
+        viewBar.querySelectorAll('.view-bar__type-tab').forEach(t => {
+          t.classList.toggle('active', t.dataset.type === type);
+        });
+
+        // Update division tabs
+        viewBar.querySelectorAll('.view-bar__div-tab').forEach(t => {
+          t.classList.toggle('active', t.dataset.division === division);
+        });
+
+        // Show/hide division row based on type
+        const divRow = viewBar.querySelector('.view-bar__row--secondary');
+        if (divRow) {
+          divRow.style.display = (type === 'home' || type === 'matches') ? 'none' : 'flex';
+        }
+      }
+
+      // Wire up type tab clicks
+      viewBar.querySelectorAll('.view-bar__type-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const type = tab.dataset.type;
+          updateTwoRowNav(type, currentDivision);
+          const viewId = resolveViewId(type, currentDivision);
+          const idx = VIEWS.indexOf(viewId);
+          if (idx !== -1) {
+            switchToView(idx);
+            resetRotation();
+          } else if (ALL_VIEWS.includes(viewId)) {
+            showManualView(viewId);
+            stopRotation();
+          }
+        });
+      });
+
+      // Wire up division tab clicks
+      viewBar.querySelectorAll('.view-bar__div-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const division = tab.dataset.division;
+          updateTwoRowNav(currentType, division);
+          const viewId = resolveViewId(currentType, division);
+          const idx = VIEWS.indexOf(viewId);
+          if (idx !== -1) {
+            switchToView(idx);
+            resetRotation();
+          } else if (ALL_VIEWS.includes(viewId)) {
+            showManualView(viewId);
+            stopRotation();
+          }
+        });
+      });
+
+      // Override switchToView to also update two-row nav state
+      const origSwitchToView = switchToView;
+      switchToView = function(index, skipHash) {
+        origSwitchToView(index, skipHash);
+        const viewName = VIEWS[index];
+        if (viewName === 'home') {
+          updateTwoRowNav('home', currentDivision);
+        } else if (viewName === 'matches') {
+          updateTwoRowNav('matches', currentDivision);
+        } else {
+          // Parse "slug-type" from view name
+          const parts = viewName.split('-');
+          const type = parts[parts.length - 1]; // "standings" or "bracket"
+          const divSlug = parts.slice(0, -1).join('-');
+          updateTwoRowNav(type, divSlug);
+        }
+      };
+
+      const origShowManualView = showManualView;
+      showManualView = function(viewName, skipHash) {
+        origShowManualView(viewName, skipHash);
+        if (viewName === 'matches') {
+          updateTwoRowNav('matches', currentDivision);
+        }
+      };
+
+      // Initial state: hide division row if home
+      if (showHomePage) {
+        const divRow = viewBar.querySelector('.view-bar__row--secondary');
+        if (divRow) divRow.style.display = 'none';
+      }
+
+    } else {
+      // ===== SINGLE-ROW NAV (original) =====
+      let tabIndex = 0;
+
+      // Home tab (if enabled)
+      if (showHomePage) {
+        tabsHTML += `<button class="view-bar__tab active" data-view="home">Home</button>`;
+      }
+
+      // Standings tabs
+      divisions.forEach((d, i) => {
+        const viewId = d.slug + '-standings';
+        const active = (!showHomePage && i === 0) ? ' active' : '';
+        const label = customLabels[tabIndex] || (d.name + ' Standings');
+        tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+        tabIndex++;
+      });
+
+      // Bracket tabs
+      divisions.forEach(d => {
+        const viewId = d.slug + '-bracket';
+        const label = customLabels[tabIndex] || (d.name + ' Bracket');
+        tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
+        tabIndex++;
+      });
+
+      // All Matches tab (manual only, pushed right)
+      tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
+
+      // Rotation dots
+      tabsHTML += `<div class="view-bar__dots">`;
+      VIEWS.forEach((_, i) => {
+        tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
+      });
+      tabsHTML += `</div>`;
+
+      viewBar.innerHTML = tabsHTML;
     }
-
-    // Standings tabs
-    divisions.forEach((d, i) => {
-      const viewId = d.slug + '-standings';
-      const active = (!showHomePage && i === 0) ? ' active' : '';
-      const label = customLabels[tabIndex] || (d.name + ' Standings');
-      tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
-      tabIndex++;
-    });
-
-    // Bracket tabs
-    divisions.forEach(d => {
-      const viewId = d.slug + '-bracket';
-      const label = customLabels[tabIndex] || (d.name + ' Bracket');
-      tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
-      tabIndex++;
-    });
-
-    // All Matches tab (manual only, pushed right)
-    tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
-
-    // Rotation dots
-    tabsHTML += `<div class="view-bar__dots">`;
-    VIEWS.forEach((_, i) => {
-      tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
-    });
-    tabsHTML += `</div>`;
-
-    viewBar.innerHTML = tabsHTML;
 
     // Generate view sections
     const mainContent = document.getElementById('main-content');
@@ -193,20 +325,22 @@ const App = (() => {
 
     mainContent.innerHTML = viewsHTML;
 
-    // Wire up tab clicks
-    viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const viewName = tab.dataset.view;
-        const idx = VIEWS.indexOf(viewName);
-        if (idx !== -1) {
-          switchToView(idx);
-          resetRotation();
-        } else if (ALL_VIEWS.includes(viewName)) {
-          showManualView(viewName);
-          stopRotation();
-        }
+    // Wire up tab clicks (single-row only — two-row wires its own above)
+    if (navStyle !== 'two-row') {
+      viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const viewName = tab.dataset.view;
+          const idx = VIEWS.indexOf(viewName);
+          if (idx !== -1) {
+            switchToView(idx);
+            resetRotation();
+          } else if (ALL_VIEWS.includes(viewName)) {
+            showManualView(viewName);
+            stopRotation();
+          }
+        });
       });
-    });
+    }
 
     // Pick up rotation interval from config
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
