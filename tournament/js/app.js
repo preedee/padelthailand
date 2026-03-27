@@ -11,6 +11,9 @@ const App = (() => {
   let isRotating = true;
   let viewsBuilt = false;
 
+  // Capture the original page path before <base> tag affects relative URLs
+  const originalPath = window.location.pathname;
+
   // Division config: each has a standings tab, a bracket, and a slug
   let divisions = [];       // [{ name, slug, standingsTab }]
 
@@ -261,7 +264,7 @@ const App = (() => {
 
     // Update URL hash (unless called during auto-rotation or initial hash load)
     if (!skipHash) {
-      history.replaceState(null, '', '#' + viewName);
+      history.replaceState(null, '', originalPath + '#' + viewName);
     }
   }
 
@@ -281,7 +284,7 @@ const App = (() => {
     if (targetView) targetView.classList.add('active');
 
     if (!skipHash) {
-      history.replaceState(null, '', '#' + viewName);
+      history.replaceState(null, '', originalPath + '#' + viewName);
     }
   }
 
