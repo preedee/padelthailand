@@ -714,7 +714,7 @@ img.avatar {
 .court-column__header {
   font-family: var(--font);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 18px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--green);
@@ -877,7 +877,7 @@ img.avatar {
   text-align: center;
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
+  font-size: 10px;
   color: var(--green-support);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -939,7 +939,7 @@ img.avatar {
   min-height: 55px;
   font-family: var(--font);
   font-weight: 300;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--green);
   border-left: 3px solid transparent;
 }
@@ -973,7 +973,7 @@ img.avatar {
 .bracket-match__datetime {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--green-support);
   padding: 0 12px 4px;
   letter-spacing: 0.3px;
@@ -983,7 +983,7 @@ img.avatar {
   display: flex;
   gap: 4px;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 14px;
   margin-left: 8px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -1064,7 +1064,7 @@ img.avatar {
 }
 
 .bracket-match__place {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--green-support);
 }
 
@@ -1086,7 +1086,7 @@ img.avatar {
 .bracket-tier__title {
   font-family: var(--font);
   font-weight: 400;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--green-support);
