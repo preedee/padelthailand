@@ -219,6 +219,11 @@ html, body {
   gap: 20px;
 }
 
+.header__home-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .header__rpa-logo,
 .header__lps-logo {
   height: 84px;

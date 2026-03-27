@@ -33,6 +33,23 @@ const App = (() => {
       }
     });
 
+    // Home link: click event logo to go back to first view and restart rotation
+    const homeLink = document.getElementById('home-link');
+    if (homeLink) {
+      homeLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (VIEWS.length > 0) {
+          switchToView(0);
+          history.replaceState(null, '', originalPath);
+          const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
+          const isMobile = window.innerWidth < 768;
+          if (!isMobile && autorotate && VIEWS.length > 1) {
+            resetRotation();
+          }
+        }
+      });
+    }
+
     // Start data polling
     Data.startPolling(onDataUpdate);
   }
