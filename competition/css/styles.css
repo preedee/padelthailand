@@ -810,10 +810,8 @@ img.avatar {
 
 .match-card__status {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 10%;
-  flex-wrap: wrap;
 }
 
 .match-card__round {
@@ -823,12 +821,6 @@ img.avatar {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--green-support);
-  white-space: nowrap;
-}
-
-.match-card__time {
-  white-space: nowrap;
-  text-align: right;
 }
 
 .match-card__division,

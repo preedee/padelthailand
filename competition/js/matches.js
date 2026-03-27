@@ -153,7 +153,7 @@ const Matches = (() => {
 
     const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || (type === 'upcoming' ? 'TBD' : '');
-    const dateTimeStr = dateStr ? `${dateStr} · ${timeStr}` : timeStr;
+    const dateTimeStr = dateStr && timeStr ? `${dateStr} · ${timeStr}` : (dateStr || timeStr);
     const statusLabel = `<span class="match-card__time">${dateTimeStr}</span>`;
 
     const team1Class = winner === 1 ? 'match-card__team--winner' : winner === 2 ? 'match-card__team--loser' : '';
@@ -171,7 +171,7 @@ const Matches = (() => {
 
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span> <span class="match-card__delimiter">— </span><span class="match-card__round-name">${match.round}</span></span>
+        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span></span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">
