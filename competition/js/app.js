@@ -284,7 +284,8 @@ const App = (() => {
       const homePartnerLogo = Data.getConfig('home_partner_logo', '');
       const homeLogoDesktop = Data.getConfig('home_logo_size_desktop', '60');
       const homePartnerDesktop = Data.getConfig('home_partner_logo_size_desktop', '40');
-      const homeTextSize = Data.getConfig('home_text_size', '1.5');
+      const homeTextDesktop = Data.getConfig('home_text_size_desktop', '1.5');
+      const homeTextMobile = Data.getConfig('home_text_size_mobile', '4');
       const homeLogoMobile = Data.getConfig('home_logo_size_mobile', '60');
       const homePartnerMobile = Data.getConfig('home_partner_logo_size_mobile', '40');
       const homeBg = Data.getConfig('home_bg', '');
@@ -297,11 +298,12 @@ const App = (() => {
       logoStyle.textContent = `
         .home-page { gap: 0 !important; }
         .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; margin-bottom: ${gapLogoText}vw; }
-        .home-page__powered { margin-bottom: ${gapTextPartner}vw; font-size: ${homeTextSize}vw !important; }
+        .home-page__powered { margin-bottom: ${gapTextPartner}vw; font-size: ${homeTextDesktop}vw !important; }
         .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vw !important; }
         @media (max-width: 768px) {
           .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
           .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
+          .home-page__powered { font-size: ${homeTextMobile}vw !important; }
         }`;
       document.head.appendChild(logoStyle);
 
