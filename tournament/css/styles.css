@@ -403,7 +403,7 @@ html, body {
 .footer__powered-text {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--green-support);
   letter-spacing: 0.5px;
 }
@@ -411,7 +411,7 @@ html, body {
 .footer__timestamp {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--green-support);
   letter-spacing: 0.5px;
 }
