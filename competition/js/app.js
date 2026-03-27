@@ -296,10 +296,10 @@ const App = (() => {
       // Inject responsive sizes as CSS (all vw-based)
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
-        .home-page { gap: 0 !important; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; margin-bottom: ${gapLogoText}vw; }
+        .home-page { gap: 0 !important; overflow: hidden; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: min(${Math.round(homeLogoDesktop * 0.75)}vw, 40vh) !important; margin-bottom: ${gapLogoText}vw; }
         .home-page__powered { margin-bottom: ${gapTextPartner}vw; font-size: ${homeTextDesktop}vw !important; }
-        .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vw !important; }
+        .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: min(${Math.round(homePartnerDesktop * 0.5)}vw, 20vh) !important; }
         @media (max-width: 768px) {
           .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
           .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
