@@ -454,8 +454,11 @@ html, body {
   font-weight: 700;
   font-size: 13px;
   color: var(--green);
-  margin-top: 12px;
-  padding-left: 4px;
+  margin-top: 16px;
+  padding: 8px 4px;
+  clear: both;
+  position: relative;
+  z-index: 1;
 }
 
 .group-card {
