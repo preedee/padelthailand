@@ -161,7 +161,7 @@ const App = (() => {
           ${eventLogo ? `<img class="home-page__event-logo" src="${eventLogo}" alt="${tournamentName}">` : ''}
           <div class="home-page__powered">Powered by</div>
           <div class="home-page__partner-row">
-            ${footerLogo ? `<img class="home-page__partner-logo" src="${footerLogo}" alt="Partner">` : ''}
+            ${footerLogo ? `<img class="home-page__footer-logo" src="${footerLogo}" alt="Partner">` : ''}
             ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
           </div>
         </div>

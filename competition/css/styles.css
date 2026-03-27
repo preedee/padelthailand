@@ -1220,6 +1220,12 @@ img.avatar {
   gap: 24px;
 }
 
+.home-page__footer-logo {
+  max-width: 160px;
+  max-height: 80px;
+  object-fit: contain;
+}
+
 .home-page__partner-logo {
   max-width: 200px;
   max-height: 100px;
