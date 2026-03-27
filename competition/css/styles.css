@@ -1416,13 +1416,13 @@ img.avatar {
     gap: 4px;
   }
 
-  /* Two-row nav: keep active tabs same size on mobile, just bold */
+  /* Two-row nav: active tabs 1px larger on mobile */
   .view-bar--two-row .view-bar__tab {
     font-size: 10px !important;
   }
 
   .view-bar--two-row .view-bar__tab.active {
-    font-size: 10px !important;
+    font-size: 11px !important;
     font-weight: 700;
   }
 
