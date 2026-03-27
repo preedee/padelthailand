@@ -94,7 +94,16 @@ const Data = (() => {
       rightEl.alt = 'Logo';
       rightEl.style.height = Math.round(headerHeight * rightLogoSize / 100) + 'px';
     }
-    applyLogo('.footer__tps-logo', config.footer_logo, 'Footer Logo');
+    // Footer logo — show if configured, hide if not
+    const footerLogoEl = document.querySelector('.footer__tps-logo');
+    if (footerLogoEl) {
+      if (config.footer_logo && !config.footer_logo.includes('example.com')) {
+        footerLogoEl.src = config.footer_logo;
+        footerLogoEl.alt = 'Footer Logo';
+      } else {
+        footerLogoEl.style.display = 'none';
+      }
+    }
 
     // Apply favicon
     if (config.favicon && !config.favicon.includes('example.com')) {
