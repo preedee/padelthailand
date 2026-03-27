@@ -458,7 +458,7 @@ html, body {
   grid-column: 1 / -1;
   font-family: var(--font);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--green);
   padding: 4px;
 }
