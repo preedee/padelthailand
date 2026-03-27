@@ -432,15 +432,7 @@ html, body {
 }
 
 .standings-division__title {
-  font-family: var(--font);
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--green);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--green);
+  display: none;
 }
 
 .standings-grid {
@@ -1034,15 +1026,7 @@ img.avatar {
 }
 
 .bracket-division__title {
-  font-family: var(--font);
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--green);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--green);
+  display: none;
 }
 
 /* Podium display */
@@ -1444,8 +1428,7 @@ img.avatar {
   }
 
   .bracket-division__title {
-    font-size: 14px;
-    margin-bottom: 8px;
+    display: none;
   }
 
   /* Tiers: stack tiers vertically, matches side-by-side within each tier */
