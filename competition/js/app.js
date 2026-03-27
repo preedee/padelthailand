@@ -164,11 +164,7 @@ const App = (() => {
           t.classList.toggle('active', t.dataset.division === division);
         });
 
-        // Show/hide division row based on type
-        const divRow = viewBar.querySelector('.view-bar__row--secondary');
-        if (divRow) {
-          divRow.style.display = (type === 'home' || type === 'matches') ? 'none' : 'flex';
-        }
+        // Division row always visible (Option A)
       }
 
       // Wire up type tab clicks
@@ -230,12 +226,6 @@ const App = (() => {
           updateTwoRowNav('matches', currentDivision);
         }
       };
-
-      // Initial state: hide division row if home
-      if (showHomePage) {
-        const divRow = viewBar.querySelector('.view-bar__row--secondary');
-        if (divRow) divRow.style.display = 'none';
-      }
 
     } else {
       // ===== SINGLE-ROW NAV (original) =====
