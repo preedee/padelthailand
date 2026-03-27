@@ -282,28 +282,31 @@ const App = (() => {
       const homeLogo = Data.getConfig('home_logo', '');
       const homeText = Data.getConfig('home_text', 'Powered by');
       const homePartnerLogo = Data.getConfig('home_partner_logo', '');
-      const homeLogoSize = Data.getConfig('home_logo_size', '320');
-      const homePartnerSize = Data.getConfig('home_partner_logo_size', '200');
+      const homeLogoDesktop = Data.getConfig('home_logo_size_desktop', '60');
+      const homePartnerDesktop = Data.getConfig('home_partner_logo_size_desktop', '40');
       const homeTextSize = Data.getConfig('home_text_size', '14');
       const homeLogoMobile = Data.getConfig('home_logo_size_mobile', '60');
       const homePartnerMobile = Data.getConfig('home_partner_logo_size_mobile', '40');
       const homeBg = Data.getConfig('home_bg', '');
       const tournamentName = Data.getConfig('tournament_name', '');
 
-      // Inject mobile sizes as CSS
-      const mobileStyle = document.createElement('style');
-      mobileStyle.textContent = `@media (max-width: 768px) {
-        .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
-        .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
-      }`;
-      document.head.appendChild(mobileStyle);
+      // Inject responsive logo sizes as CSS
+      const logoStyle = document.createElement('style');
+      logoStyle.textContent = `
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; }
+        .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vw !important; }
+        @media (max-width: 768px) {
+          .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
+          .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
+        }`;
+      document.head.appendChild(logoStyle);
 
       const active = ' active';
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page"${homeBg ? ` style="background:${homeBg}"` : ''}>
-          ${homeLogo ? `<img class="home-page__event-logo" src="${homeLogo}" alt="${tournamentName}" style="max-width:${homeLogoSize}px;max-height:${Math.round(homeLogoSize * 0.75)}px">` : ''}
+          ${homeLogo ? `<img class="home-page__event-logo" src="${homeLogo}" alt="${tournamentName}">` : ''}
           ${homeText ? `<div class="home-page__powered" style="font-size:${homeTextSize}px">${homeText}</div>` : ''}
-          ${homePartnerLogo ? `<img class="home-page__partner-logo" src="${homePartnerLogo}" alt="Partner" style="max-width:${homePartnerSize}px;max-height:${Math.round(homePartnerSize * 0.5)}px">` : ''}
+          ${homePartnerLogo ? `<img class="home-page__partner-logo" src="${homePartnerLogo}" alt="Partner">` : ''}
         </div>
       </section>`;
     }
