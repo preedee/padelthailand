@@ -450,15 +450,12 @@ html, body {
 }
 
 .standings-footnote {
+  grid-column: 1 / -1;
   font-family: var(--font);
   font-weight: 700;
   font-size: 13px;
   color: var(--green);
-  margin-top: 16px;
-  padding: 8px 4px;
-  clear: both;
-  position: relative;
-  z-index: 1;
+  padding: 4px;
 }
 
 .group-card {

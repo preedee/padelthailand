@@ -112,19 +112,19 @@ const Standings = (() => {
 
     const html = `
       <div class="standings-divisions">
-        ${renderDivision(title, groupNames, groups, qualifiedNames)}
-        <div class="standings-footnote"><strong>${footnote}</strong></div>
+        ${renderDivision(title, groupNames, groups, qualifiedNames, footnote)}
       </div>`;
 
     container.innerHTML = html;
   }
 
-  function renderDivision(title, groupNames, groups, qualifiedNames) {
+  function renderDivision(title, groupNames, groups, qualifiedNames, footnote) {
     return `
       <div class="standings-division">
         <div class="standings-division__title">${title}</div>
         <div class="standings-grid">
           ${groupNames.map(name => renderGroup(name, groups[name], qualifiedNames)).join('')}
+          <div class="standings-footnote">${footnote}</div>
         </div>
       </div>`;
   }
