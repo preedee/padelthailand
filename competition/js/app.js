@@ -150,16 +150,19 @@ const App = (() => {
 
     // Home page view (if enabled)
     if (showHomePage) {
-      const eventLogo = Data.getConfig('event_logo', '');
-      const partnerLogo = Data.getConfig('partner_logo', '');
+      const homeLogo = Data.getConfig('home_logo', '');
+      const homeText = Data.getConfig('home_text', 'Powered by');
+      const homePartnerLogo = Data.getConfig('home_partner_logo', '');
+      const homeLogoSize = Data.getConfig('home_logo_size', '320');
+      const homePartnerSize = Data.getConfig('home_partner_logo_size', '200');
+      const homeTextSize = Data.getConfig('home_text_size', '14');
       const tournamentName = Data.getConfig('tournament_name', '');
-      const subtitle = Data.getConfig('subtitle', '');
       const active = ' active';
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page">
-          ${eventLogo ? `<img class="home-page__event-logo" src="${eventLogo}" alt="${tournamentName}">` : ''}
-          <div class="home-page__powered">Powered by</div>
-          ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
+          ${homeLogo ? `<img class="home-page__event-logo" src="${homeLogo}" alt="${tournamentName}" style="max-width:${homeLogoSize}px;max-height:${Math.round(homeLogoSize * 0.75)}px">` : ''}
+          ${homeText ? `<div class="home-page__powered" style="font-size:${homeTextSize}px">${homeText}</div>` : ''}
+          ${homePartnerLogo ? `<img class="home-page__partner-logo" src="${homePartnerLogo}" alt="Partner" style="max-width:${homePartnerSize}px;max-height:${Math.round(homePartnerSize * 0.5)}px">` : ''}
         </div>
       </section>`;
     }
