@@ -207,8 +207,8 @@ const Matches = (() => {
       const done = courtMatches.filter(m => !isLive(m) && hasScores(m));
       const upcoming = courtMatches.filter(m => !isLive(m) && !hasScores(m));
 
-      // Show more matches per court when fewer courts
-      const maxPicks = validCourts.length <= 3 ? 3 : 2;
+      // Config-driven matches per court in sidebar (default: 2)
+      const maxPicks = parseInt(Data.getConfig('sidebar_matches_per_court', '2'), 10);
       const picks = [];
       if (done.length > 0) picks.push(done[done.length - 1]);
       live.forEach(m => { if (picks.length < maxPicks) picks.push(m); });
