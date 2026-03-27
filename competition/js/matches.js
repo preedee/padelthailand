@@ -172,7 +172,7 @@ const Matches = (() => {
 
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span></span>
+        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span><br><span class="match-card__round-name">${match.round}</span></span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">
