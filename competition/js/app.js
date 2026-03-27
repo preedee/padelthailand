@@ -110,10 +110,15 @@ const App = (() => {
     let tabsHTML = '';
     let tabIndex = 0;
 
+    // Home tab (if enabled)
+    if (showHomePage) {
+      tabsHTML += `<button class="view-bar__tab active" data-view="home">Home</button>`;
+    }
+
     // Standings tabs
     divisions.forEach((d, i) => {
       const viewId = d.slug + '-standings';
-      const active = i === 0 ? ' active' : '';
+      const active = (!showHomePage && i === 0) ? ' active' : '';
       const label = customLabels[tabIndex] || (d.name + ' Standings');
       tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
       tabIndex++;
