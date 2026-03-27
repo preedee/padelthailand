@@ -865,10 +865,15 @@ img.avatar {
 
 .match-card__team--winner .match-card__team-name {
   font-weight: 700;
+  font-size: 17px;
 }
 
 .match-card__team--loser {
   opacity: 0.5;
+}
+
+.match-card__team--loser .match-card__team-name {
+  font-size: 15px;
 }
 
 .match-card__scores {
@@ -966,11 +971,13 @@ img.avatar {
 
 .bracket-match__team--winner {
   font-weight: 700;
+  font-size: 15px;
   border-left-color: var(--green);
 }
 
 .bracket-match__team--loser {
   opacity: 0.45;
+  font-size: 13px;
 }
 
 .bracket-match__team--tbd {
