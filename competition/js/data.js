@@ -66,15 +66,22 @@ const Data = (() => {
     }
 
     // Apply logos (skip placeholder example.com URLs)
-    function applyLogo(selector, url, alt) {
+    function applyLogo(selector, url, alt, maxHeight) {
       const el = document.querySelector(selector);
       if (el && url && !url.includes('example.com')) {
         el.src = url;
         el.alt = alt || '';
+        if (maxHeight) el.style.maxHeight = maxHeight + 'px';
       }
     }
-    applyLogo('.header__lps-logo', config.event_logo, config.tournament_name || 'Event Logo');
-    applyLogo('.header__tps-logo', config.partner_logo, 'Partner Logo');
+
+    // Header logos — use left/right config, fall back to event/partner
+    const leftLogoUrl = config.header_logo_left || config.event_logo;
+    const rightLogoUrl = config.header_logo_right || config.partner_logo;
+    const leftLogoSize = config.header_logo_left_size || '';
+    const rightLogoSize = config.header_logo_right_size || '';
+    applyLogo('.header__lps-logo', leftLogoUrl, config.tournament_name || 'Logo', leftLogoSize);
+    applyLogo('.header__tps-logo', rightLogoUrl, 'Logo', rightLogoSize);
     applyLogo('.footer__tps-logo', config.footer_logo, 'Footer Logo');
 
     // Apply favicon
