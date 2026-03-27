@@ -121,7 +121,7 @@ const App = (() => {
       }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab${!showHomePage ? ' active' : ''}" data-type="standings">Standings</button>`;
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Brackets</button>`;
-      tabsHTML += `<button class="view-bar__tab view-bar__type-tab view-bar__tab--right" data-type="matches">All Matches</button>`;
+      tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="matches">All Matches</button>`;
       tabsHTML += `<div class="view-bar__dots">`;
       VIEWS.forEach((_, i) => {
         tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
