@@ -285,8 +285,19 @@ const App = (() => {
       const homeLogoSize = Data.getConfig('home_logo_size', '320');
       const homePartnerSize = Data.getConfig('home_partner_logo_size', '200');
       const homeTextSize = Data.getConfig('home_text_size', '14');
+      const homeLogoMobile = Data.getConfig('home_logo_size_mobile', '60');
+      const homePartnerMobile = Data.getConfig('home_partner_logo_size_mobile', '40');
       const homeBg = Data.getConfig('home_bg', '');
       const tournamentName = Data.getConfig('tournament_name', '');
+
+      // Inject mobile sizes as CSS
+      const mobileStyle = document.createElement('style');
+      mobileStyle.textContent = `@media (max-width: 768px) {
+        .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
+        .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
+      }`;
+      document.head.appendChild(mobileStyle);
+
       const active = ' active';
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page"${homeBg ? ` style="background:${homeBg}"` : ''}>

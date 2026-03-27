@@ -1622,18 +1622,8 @@ img.avatar {
     margin-bottom: 4px;
   }
 
-  /* Home page: scale logos for mobile */
+  /* Home page: reduce padding for mobile (logo sizes from config) */
   .home-page {
     padding: 24px 16px;
-  }
-
-  .home-page__event-logo {
-    max-width: 60vw !important;
-    max-height: 45vw !important;
-  }
-
-  .home-page__partner-logo {
-    max-width: 40vw !important;
-    max-height: 20vw !important;
   }
 }
