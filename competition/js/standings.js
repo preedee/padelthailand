@@ -67,18 +67,27 @@ const Standings = (() => {
       );
     });
 
-    // Determine qualifiers
+    // Determine qualifiers — only if at least one team has played
     const qualifiedNames = new Set();
+    const anyMatchesPlayed = groupNames.some(name =>
+      groups[name].some(team => team.played > 0)
+    );
 
-    // Top N per group
-    groupNames.forEach(name => {
-      groups[name].forEach((team, idx) => {
-        if (idx < rule.perGroup) qualifiedNames.add(team.name);
+    // Top N per group (only if matches have been played)
+    if (anyMatchesPlayed) {
+      groupNames.forEach(name => {
+        // Only qualify from groups where at least one team has played
+        const groupHasPlayed = groups[name].some(team => team.played > 0);
+        if (groupHasPlayed) {
+          groups[name].forEach((team, idx) => {
+            if (idx < rule.perGroup) qualifiedNames.add(team.name);
+          });
+        }
       });
-    });
+    }
 
     // Best remaining (for "N+best" rule)
-    if (rule.best) {
+    if (rule.best && anyMatchesPlayed) {
       const remaining = [];
       groupNames.forEach(name => {
         groups[name].forEach((team, idx) => {
