@@ -758,7 +758,7 @@ img.avatar {
 .match-card__round {
   font-family: var(--font);
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--green-support);
@@ -840,7 +840,7 @@ img.avatar {
 .match-card__team-name {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--green);
   white-space: nowrap;
   overflow: hidden;
