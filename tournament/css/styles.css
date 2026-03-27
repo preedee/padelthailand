@@ -93,7 +93,7 @@ html, body {
 
 /* --- Sidebar: Upcoming Matches --- */
 .sidebar {
-  width: 25%;
+  width: 20%;
   flex-shrink: 0;
   background: var(--white);
   border-left: 1px solid rgba(8, 93, 60, 0.1);
@@ -105,7 +105,7 @@ html, body {
 .sidebar__title {
   font-family: var(--font);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--white);
@@ -136,7 +136,7 @@ html, body {
 .sidebar__match-team {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--green);
   white-space: nowrap;
   overflow: hidden;
@@ -147,7 +147,7 @@ html, body {
 .sidebar__match-time {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--green-support);
   flex-shrink: 0;
   margin-left: 6px;
@@ -160,7 +160,7 @@ html, body {
 .sidebar__court-label {
   font-family: var(--font);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--green-support);
@@ -177,7 +177,7 @@ html, body {
 .sidebar__match-score {
   font-family: var(--font);
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--green);
   flex-shrink: 0;
   margin-left: 6px;
@@ -187,7 +187,7 @@ html, body {
 .sidebar__match-round {
   font-family: var(--font);
   font-weight: 300;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--green-support);
