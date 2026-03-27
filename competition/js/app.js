@@ -376,13 +376,10 @@ const App = (() => {
       hashHandled = true;
     }
 
-    // Start auto-rotation (desktop only, if enabled in config)
-    // Hash navigates to the right view but doesn't prevent rotation
-    // (only manual-only views like 'matches' stop rotation)
+    // Start auto-rotation (desktop only, if enabled in config, no hash in URL)
     const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
     const isMobile = window.innerWidth < 768;
-    const hashIsManualOnly = hashHandled && !VIEWS.includes(hash);
-    if (!isMobile && autorotate && VIEWS.length > 1 && !hashIsManualOnly) {
+    if (!isMobile && autorotate && VIEWS.length > 1 && !hashHandled) {
       startRotation();
     }
 
