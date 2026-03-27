@@ -1386,6 +1386,36 @@ img.avatar {
     display: none;
   }
 
+  /* Two-row nav on mobile: each row scrolls independently */
+  .view-bar--two-row {
+    overflow: hidden;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .view-bar__row {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  .view-bar__row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .view-bar__row--primary {
+    padding: 6px 8px 4px;
+    gap: 4px;
+  }
+
+  .view-bar__row--secondary {
+    padding: 4px 8px 6px;
+    gap: 4px;
+  }
+
   /* --- Main content: scrollable, not absolute --- */
   .main-content {
     padding: 0;
