@@ -78,10 +78,20 @@ const Data = (() => {
     // Header logos — use left/right config, fall back to event/partner
     const leftLogoUrl = config.header_logo_left || config.event_logo;
     const rightLogoUrl = config.header_logo_right || config.partner_logo;
-    const leftLogoSize = config.header_logo_left_size || '';
-    const rightLogoSize = config.header_logo_right_size || '';
-    applyLogo('.header__lps-logo', leftLogoUrl, config.tournament_name || 'Logo', leftLogoSize);
-    applyLogo('.header__tps-logo', rightLogoUrl, 'Logo', rightLogoSize);
+    const leftLogoSize = config.header_logo_left_size || '100';
+    const rightLogoSize = config.header_logo_right_size || '100';
+    const leftEl = document.querySelector('.header__lps-logo');
+    const rightEl = document.querySelector('.header__tps-logo');
+    if (leftEl && leftLogoUrl && !leftLogoUrl.includes('example.com')) {
+      leftEl.src = leftLogoUrl;
+      leftEl.alt = config.tournament_name || 'Logo';
+      leftEl.style.maxHeight = leftLogoSize + '%';
+    }
+    if (rightEl && rightLogoUrl && !rightLogoUrl.includes('example.com')) {
+      rightEl.src = rightLogoUrl;
+      rightEl.alt = 'Logo';
+      rightEl.style.maxHeight = rightLogoSize + '%';
+    }
     applyLogo('.footer__tps-logo', config.footer_logo, 'Footer Logo');
 
     // Apply favicon
