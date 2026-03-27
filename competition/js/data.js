@@ -75,9 +75,9 @@ const Data = (() => {
       }
     }
 
-    // Header logos — use left/right config, fall back to event/partner
-    const leftLogoUrl = config.header_logo_left || config.event_logo;
-    const rightLogoUrl = config.header_logo_right || config.partner_logo;
+    // Header logos
+    const leftLogoUrl = config.header_logo_left;
+    const rightLogoUrl = config.header_logo_right;
     const leftLogoSize = parseInt(config.header_logo_left_size || '100', 10);
     const rightLogoSize = parseInt(config.header_logo_right_size || '100', 10);
     const headerEl = document.querySelector('.header');
