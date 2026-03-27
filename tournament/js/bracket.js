@@ -120,8 +120,8 @@ const Bracket = (() => {
       ? validSets.map(s => `<span class="bracket-match__set">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
-    const team1Content = Data.getTeamStackedHTML(team1Name, 30);
-    const team2Content = Data.getTeamStackedHTML(team2Name, 30);
+    const team1Content = Data.getTeamStackedHTML(team1Name, 18);
+    const team2Content = Data.getTeamStackedHTML(team2Name, 18);
 
     const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || '';
@@ -150,7 +150,7 @@ const Bracket = (() => {
       <div class="bracket__round-title">Final Standings</div>
       <div class="bracket__matches">
         ${standings.slice(0, 3).map((s, i) => {
-          const teamContent = `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${Data.getTeamStackedHTML(s.team, 30)}</span></div>`;
+          const teamContent = `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${Data.getTeamStackedHTML(s.team, 18)}</span></div>`;
           return `<div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">
               ${teamContent}

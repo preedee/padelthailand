@@ -132,6 +132,11 @@ const Data = (() => {
       }
     }
 
+    // Show/hide page titles based on config (default: show)
+    if (config.show_page_titles && config.show_page_titles.toLowerCase() === 'false') {
+      document.querySelector('.dashboard').classList.add('hide-page-titles');
+    }
+
     // Reveal dashboard now that config is applied
     const dashboard = document.querySelector('.dashboard');
     if (dashboard) dashboard.classList.add('config-loaded');
