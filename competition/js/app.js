@@ -129,10 +129,12 @@ const App = (() => {
       tabsHTML += `</div>`;
       tabsHTML += `</div>`;
 
-      // Row 2: Division selector
+      // Row 2: Division selector (no initial selection if starting on Home or Matches)
+      const initialType = showHomePage ? 'home' : 'standings';
+      const showInitialDivision = (initialType === 'standings' || initialType === 'bracket');
       tabsHTML += `<div class="view-bar__row view-bar__row--secondary">`;
       divisions.forEach((d, i) => {
-        const active = i === 0 ? ' active' : '';
+        const active = (showInitialDivision && i === 0) ? ' active' : '';
         tabsHTML += `<button class="view-bar__tab view-bar__div-tab${active}" data-division="${d.slug}">${d.name}</button>`;
       });
       tabsHTML += `</div>`;
