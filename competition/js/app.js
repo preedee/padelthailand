@@ -156,10 +156,11 @@ const App = (() => {
       const homeLogoSize = Data.getConfig('home_logo_size', '320');
       const homePartnerSize = Data.getConfig('home_partner_logo_size', '200');
       const homeTextSize = Data.getConfig('home_text_size', '14');
+      const homeBg = Data.getConfig('home_bg', '');
       const tournamentName = Data.getConfig('tournament_name', '');
       const active = ' active';
       viewsHTML += `<section class="view${active}" id="view-home">
-        <div class="home-page">
+        <div class="home-page"${homeBg ? ` style="background:${homeBg}"` : ''}>
           ${homeLogo ? `<img class="home-page__event-logo" src="${homeLogo}" alt="${tournamentName}" style="max-width:${homeLogoSize}px;max-height:${Math.round(homeLogoSize * 0.75)}px">` : ''}
           ${homeText ? `<div class="home-page__powered" style="font-size:${homeTextSize}px">${homeText}</div>` : ''}
           ${homePartnerLogo ? `<img class="home-page__partner-logo" src="${homePartnerLogo}" alt="Partner" style="max-width:${homePartnerSize}px;max-height:${Math.round(homePartnerSize * 0.5)}px">` : ''}
