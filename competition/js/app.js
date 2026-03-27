@@ -288,12 +288,16 @@ const App = (() => {
       const homeLogoMobile = Data.getConfig('home_logo_size_mobile', '60');
       const homePartnerMobile = Data.getConfig('home_partner_logo_size_mobile', '40');
       const homeBg = Data.getConfig('home_bg', '');
+      const gapLogoText = Data.getConfig('home_gap_logo_text', '16');
+      const gapTextPartner = Data.getConfig('home_gap_text_partner', '16');
       const tournamentName = Data.getConfig('tournament_name', '');
 
       // Inject responsive logo sizes as CSS
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; }
+        .home-page { gap: 0 !important; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; margin-bottom: ${gapLogoText}px; }
+        .home-page__powered { margin-bottom: ${gapTextPartner}px; }
         .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vw !important; }
         @media (max-width: 768px) {
           .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
