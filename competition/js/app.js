@@ -284,20 +284,20 @@ const App = (() => {
       const homePartnerLogo = Data.getConfig('home_partner_logo', '');
       const homeLogoDesktop = Data.getConfig('home_logo_size_desktop', '60');
       const homePartnerDesktop = Data.getConfig('home_partner_logo_size_desktop', '40');
-      const homeTextSize = Data.getConfig('home_text_size', '14');
+      const homeTextSize = Data.getConfig('home_text_size', '1.5');
       const homeLogoMobile = Data.getConfig('home_logo_size_mobile', '60');
       const homePartnerMobile = Data.getConfig('home_partner_logo_size_mobile', '40');
       const homeBg = Data.getConfig('home_bg', '');
-      const gapLogoText = Data.getConfig('home_gap_logo_text', '16');
-      const gapTextPartner = Data.getConfig('home_gap_text_partner', '16');
+      const gapLogoText = Data.getConfig('home_gap_logo_text', '2');
+      const gapTextPartner = Data.getConfig('home_gap_text_partner', '2');
       const tournamentName = Data.getConfig('tournament_name', '');
 
-      // Inject responsive logo sizes as CSS
+      // Inject responsive sizes as CSS (all vw-based)
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
         .home-page { gap: 0 !important; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; margin-bottom: ${gapLogoText}px; }
-        .home-page__powered { margin-bottom: ${gapTextPartner}px; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vw !important; margin-bottom: ${gapLogoText}vw; }
+        .home-page__powered { margin-bottom: ${gapTextPartner}vw; font-size: ${homeTextSize}vw !important; }
         .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vw !important; }
         @media (max-width: 768px) {
           .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
@@ -309,7 +309,7 @@ const App = (() => {
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page"${homeBg ? ` style="background:${homeBg}"` : ''}>
           ${homeLogo ? `<img class="home-page__event-logo" src="${homeLogo}" alt="${tournamentName}">` : ''}
-          ${homeText ? `<div class="home-page__powered" style="font-size:${homeTextSize}px">${homeText}</div>` : ''}
+          ${homeText ? `<div class="home-page__powered">${homeText}</div>` : ''}
           ${homePartnerLogo ? `<img class="home-page__partner-logo" src="${homePartnerLogo}" alt="Partner">` : ''}
         </div>
       </section>`;
