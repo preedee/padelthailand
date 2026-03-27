@@ -158,8 +158,6 @@ const App = (() => {
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page">
           ${eventLogo ? `<img class="home-page__event-logo" src="${eventLogo}" alt="${tournamentName}">` : ''}
-          ${tournamentName ? `<div class="home-page__title">${tournamentName}</div>` : ''}
-          ${subtitle ? `<div class="home-page__subtitle">${subtitle}</div>` : ''}
           <div class="home-page__powered">Powered by</div>
           ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
         </div>

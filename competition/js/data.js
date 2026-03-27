@@ -93,12 +93,15 @@ const Data = (() => {
     if (config.header_bg) {
       const header = document.querySelector('.header');
       if (header) header.style.background = config.header_bg;
+      // Store header_bg as CSS variable for home page
+      root.style.setProperty('--header-bg', config.header_bg);
     }
     if (config.header_text_color) {
       const h1 = document.querySelector('.header__title h1');
       const p = document.querySelector('.header__title p');
       if (h1) h1.style.color = config.header_text_color;
       if (p) p.style.color = config.header_text_color;
+      root.style.setProperty('--header-text', config.header_text_color);
     }
     if (config.footer_bg) {
       const footer = document.querySelector('.footer');

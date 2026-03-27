@@ -1175,6 +1175,7 @@ img.avatar {
   height: 100%;
   gap: 16px;
   padding: 40px;
+  background: var(--header-bg, var(--off-white));
 }
 
 .home-page__event-logo {
@@ -1187,7 +1188,7 @@ img.avatar {
   font-family: var(--font);
   font-weight: 700;
   font-size: 36px;
-  color: var(--green);
+  color: var(--header-text, var(--green));
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -1197,7 +1198,7 @@ img.avatar {
   font-family: var(--font);
   font-weight: 300;
   font-size: 18px;
-  color: var(--green-support);
+  color: var(--header-text, var(--green-support));
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -1208,7 +1209,7 @@ img.avatar {
   font-family: var(--font);
   font-weight: 300;
   font-size: 14px;
-  color: var(--green-support);
+  color: var(--header-text, var(--green-support));
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 16px;
