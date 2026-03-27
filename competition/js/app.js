@@ -74,19 +74,26 @@ const App = (() => {
       standingsTab: standingsTabs[i] || name + ' Standings'
     }));
 
+    // Check if home page is enabled
+    const showHomePage = Data.getConfig('show_home_page', 'false').toLowerCase() === 'true';
+
     // Build all view IDs
     const standingsViews = divisions.map(d => d.slug + '-standings');
     const bracketViews = divisions.map(d => d.slug + '-bracket');
 
     // All possible views
-    ALL_VIEWS = [...standingsViews, ...bracketViews, 'matches'];
+    ALL_VIEWS = [];
+    if (showHomePage) ALL_VIEWS.push('home');
+    ALL_VIEWS.push(...standingsViews, ...bracketViews, 'matches');
 
     // Determine which views to include in rotation from config
-    // Accepts specific view IDs (e.g. "male-amateur-standings, power-bracket, matches")
+    // Accepts specific view IDs (e.g. "home, male-amateur-standings, power-bracket, matches")
     const rotationConfig = Data.getConfigList('rotation_views');
     if (rotationConfig.length === 0) {
-      // Default: all standings + all brackets (not matches)
-      VIEWS = [...standingsViews, ...bracketViews];
+      // Default: home (if enabled) + all standings + all brackets (not matches)
+      VIEWS = [];
+      if (showHomePage) VIEWS.push('home');
+      VIEWS.push(...standingsViews, ...bracketViews);
     } else {
       // Filter to only valid view IDs
       VIEWS = rotationConfig
@@ -136,10 +143,29 @@ const App = (() => {
     const mainContent = document.getElementById('main-content');
     let viewsHTML = '';
 
+    // Home page view (if enabled)
+    if (showHomePage) {
+      const eventLogo = Data.getConfig('event_logo', '');
+      const partnerLogo = Data.getConfig('partner_logo', '');
+      const tournamentName = Data.getConfig('tournament_name', '');
+      const subtitle = Data.getConfig('subtitle', '');
+      const active = ' active';
+      viewsHTML += `<section class="view${active}" id="view-home">
+        <div class="home-page">
+          ${eventLogo ? `<img class="home-page__event-logo" src="${eventLogo}" alt="${tournamentName}">` : ''}
+          ${tournamentName ? `<div class="home-page__title">${tournamentName}</div>` : ''}
+          ${subtitle ? `<div class="home-page__subtitle">${subtitle}</div>` : ''}
+          <div class="home-page__powered">Powered by</div>
+          ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
+        </div>
+      </section>`;
+    }
+
     // Standings views
+    const firstNonHome = !showHomePage;
     divisions.forEach((d, i) => {
       const viewId = d.slug + '-standings';
-      const active = i === 0 ? ' active' : '';
+      const active = (i === 0 && firstNonHome) ? ' active' : '';
       viewsHTML += `<section class="view${active}" id="view-${viewId}">
         <div class="loading">Loading ${d.name} standings...</div>
       </section>`;
