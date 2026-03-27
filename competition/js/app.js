@@ -155,15 +155,11 @@ const App = (() => {
       const tournamentName = Data.getConfig('tournament_name', '');
       const subtitle = Data.getConfig('subtitle', '');
       const active = ' active';
-      const footerLogo = Data.getConfig('footer_logo', '');
       viewsHTML += `<section class="view${active}" id="view-home">
         <div class="home-page">
           ${eventLogo ? `<img class="home-page__event-logo" src="${eventLogo}" alt="${tournamentName}">` : ''}
           <div class="home-page__powered">Powered by</div>
-          <div class="home-page__partner-row">
-            ${footerLogo ? `<img class="home-page__footer-logo" src="${footerLogo}" alt="Partner">` : ''}
-            ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
-          </div>
+          ${partnerLogo ? `<img class="home-page__partner-logo" src="${partnerLogo}" alt="Partner">` : ''}
         </div>
       </section>`;
     }
