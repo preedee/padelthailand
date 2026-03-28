@@ -293,13 +293,14 @@ const App = (() => {
       const gapTextPartner = Data.getConfig('home_gap_text_partner', '2');
       const homeLogoMaxH = Data.getConfig('home_logo_max_height', '50');
       const homePartnerMaxH = Data.getConfig('home_partner_logo_max_height', '30');
+      const homePaddingTop = Data.getConfig('home_padding_top', '2');
       const tournamentName = Data.getConfig('tournament_name', '');
 
       // Inject responsive sizes as CSS
       // Use max-width in vmin for horizontal sizing, max-height capped to % of container
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
-        .home-page { gap: 0 !important; overflow: hidden; }
+        .home-page { gap: 0 !important; overflow: hidden; padding-top: ${homePaddingTop}vmin !important; }
         .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${homeLogoMaxH}% !important; margin-bottom: ${gapLogoText}vmin; }
         .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; }
         .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: ${homePartnerMaxH}% !important; }
