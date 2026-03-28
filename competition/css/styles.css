@@ -648,6 +648,13 @@ img.avatar {
   gap: 2px;
 }
 
+.team-stacked--placeholder {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
 .team-stacked__player {
   display: flex;
   align-items: center;

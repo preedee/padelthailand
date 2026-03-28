@@ -674,10 +674,16 @@ const Data = (() => {
 
   // Generate stacked avatar+name HTML (one player per row)
   function getTeamStackedHTML(teamName, size) {
-    if (!teamName || teamName === 'TBD') return `<span class="bracket-match__team-name">TBD</span>`;
+    if (!teamName || teamName === 'TBD') return `<div class="team-stacked team-stacked--placeholder"><span class="team-stacked__name">TBD</span></div>`;
     const sz = size || 22;
     const cleanName = teamName.replace(/\u2060/g, '');
     const players = cleanName.split(/ & | and /);
+    // Single name (placeholder code like "1st Male Amateur Group A") — render with consistent height
+    if (players.length === 1) {
+      const trimmed = players[0].trim();
+      const initial = trimmed.charAt(0).toUpperCase();
+      return `<div class="team-stacked team-stacked--placeholder"><span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span><span class="team-stacked__name">${trimmed}</span></div>`;
+    }
     return `<div class="team-stacked">${players.map(name => {
       const trimmed = name.trim();
       const url = getPlayerAvatar(trimmed);
