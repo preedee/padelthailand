@@ -209,7 +209,7 @@ html, body {
   justify-content: space-between;
   background: var(--white);
   padding: 12px 48px;
-  height: 108px;
+  height: 100px;
   border-bottom: 1px solid rgba(8, 93, 60, 0.1);
 }
 
