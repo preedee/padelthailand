@@ -1244,10 +1244,12 @@ img.avatar {
   gap: 16px;
   padding: 40px;
   background: var(--header-bg, var(--off-white));
+  overflow: hidden;
 }
 
 .home-page__event-logo {
   object-fit: contain;
+  flex-shrink: 1;
 }
 
 .home-page__title {
@@ -1294,6 +1296,7 @@ img.avatar {
 
 .home-page__partner-logo {
   object-fit: contain;
+  flex-shrink: 1;
 }
 
 /* ============================================
