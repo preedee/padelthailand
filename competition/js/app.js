@@ -369,21 +369,20 @@ const App = (() => {
 
     // Check URL hash — if present, navigate to that view and disable rotation
     const hash = window.location.hash.replace('#', '');
-    let hashHandled = false;
-    if (hash && ALL_VIEWS.includes(hash)) {
+    const hasHash = hash.length > 0;
+    if (hasHash && ALL_VIEWS.includes(hash)) {
       const idx = VIEWS.indexOf(hash);
       if (idx !== -1) {
         switchToView(idx, true);
       } else {
         showManualView(hash, true);
       }
-      hashHandled = true;
     }
 
     // Start auto-rotation (desktop only, if enabled in config, no hash in URL)
     const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
     const isMobile = window.innerWidth < 768;
-    if (!isMobile && autorotate && VIEWS.length > 1 && !hashHandled) {
+    if (!isMobile && autorotate && VIEWS.length > 1 && !hasHash) {
       startRotation();
     }
 
