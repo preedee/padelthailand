@@ -294,15 +294,16 @@ const App = (() => {
       const tournamentName = Data.getConfig('tournament_name', '');
 
       // Inject responsive sizes as CSS (all vmin-based for aspect-ratio awareness)
+      // Use flex-basis + flex-shrink so logos scale down when container is too small
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
         .home-page { gap: 0 !important; overflow: hidden; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vmin !important; margin-bottom: ${gapLogoText}vmin; }
-        .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; }
-        .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vmin !important; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; height: ${Math.round(homeLogoDesktop * 0.75)}vmin; flex: 0 1 auto; margin-bottom: ${gapLogoText}vmin; }
+        .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; flex-shrink: 0; }
+        .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; height: ${Math.round(homePartnerDesktop * 0.5)}vmin; flex: 0 1 auto; }
         @media (max-width: 768px) {
-          .home-page__event-logo { max-width: ${homeLogoMobile}vmin !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vmin !important; }
-          .home-page__partner-logo { max-width: ${homePartnerMobile}vmin !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vmin !important; }
+          .home-page__event-logo { max-width: ${homeLogoMobile}vmin !important; height: ${Math.round(homeLogoMobile * 0.75)}vmin; }
+          .home-page__partner-logo { max-width: ${homePartnerMobile}vmin !important; height: ${Math.round(homePartnerMobile * 0.5)}vmin; }
           .home-page__powered { font-size: ${homeTextMobile}vmin !important; }
         }`;
       document.head.appendChild(logoStyle);
