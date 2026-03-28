@@ -291,6 +291,8 @@ const App = (() => {
       const homeBg = Data.getConfig('home_bg', '');
       const gapLogoText = Data.getConfig('home_gap_logo_text', '2');
       const gapTextPartner = Data.getConfig('home_gap_text_partner', '2');
+      const homeLogoMaxH = Data.getConfig('home_logo_max_height', '50');
+      const homePartnerMaxH = Data.getConfig('home_partner_logo_max_height', '30');
       const tournamentName = Data.getConfig('tournament_name', '');
 
       // Inject responsive sizes as CSS
@@ -298,12 +300,12 @@ const App = (() => {
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
         .home-page { gap: 0 !important; overflow: hidden; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: 45% !important; margin-bottom: ${gapLogoText}vmin; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${homeLogoMaxH}% !important; margin-bottom: ${gapLogoText}vmin; }
         .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; }
-        .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: 30% !important; }
+        .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: ${homePartnerMaxH}% !important; }
         @media (max-width: 768px) {
-          .home-page__event-logo { max-width: ${homeLogoMobile}vmin !important; max-height: 40% !important; }
-          .home-page__partner-logo { max-width: ${homePartnerMobile}vmin !important; max-height: 25% !important; }
+          .home-page__event-logo { max-width: ${homeLogoMobile}vmin !important; max-height: ${homeLogoMaxH}% !important; }
+          .home-page__partner-logo { max-width: ${homePartnerMobile}vmin !important; max-height: ${homePartnerMaxH}% !important; }
           .home-page__powered { font-size: ${homeTextMobile}vmin !important; }
         }`;
       document.head.appendChild(logoStyle);
