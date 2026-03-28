@@ -293,17 +293,17 @@ const App = (() => {
       const gapTextPartner = Data.getConfig('home_gap_text_partner', '2');
       const tournamentName = Data.getConfig('tournament_name', '');
 
-      // Inject responsive sizes as CSS (all vw-based)
+      // Inject responsive sizes as CSS (all vmin-based for aspect-ratio awareness)
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
         .home-page { gap: 0 !important; overflow: hidden; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vw !important; max-height: min(${Math.round(homeLogoDesktop * 0.75)}vw, 40vh) !important; margin-bottom: ${gapLogoText}vw; }
-        .home-page__powered { margin-bottom: ${gapTextPartner}vw; font-size: ${homeTextDesktop}vw !important; }
-        .home-page__partner-logo { max-width: ${homePartnerDesktop}vw !important; max-height: min(${Math.round(homePartnerDesktop * 0.5)}vw, 20vh) !important; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${Math.round(homeLogoDesktop * 0.75)}vmin !important; margin-bottom: ${gapLogoText}vmin; }
+        .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; }
+        .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: ${Math.round(homePartnerDesktop * 0.5)}vmin !important; }
         @media (max-width: 768px) {
-          .home-page__event-logo { max-width: ${homeLogoMobile}vw !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vw !important; }
-          .home-page__partner-logo { max-width: ${homePartnerMobile}vw !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vw !important; }
-          .home-page__powered { font-size: ${homeTextMobile}vw !important; }
+          .home-page__event-logo { max-width: ${homeLogoMobile}vmin !important; max-height: ${Math.round(homeLogoMobile * 0.75)}vmin !important; }
+          .home-page__partner-logo { max-width: ${homePartnerMobile}vmin !important; max-height: ${Math.round(homePartnerMobile * 0.5)}vmin !important; }
+          .home-page__powered { font-size: ${homeTextMobile}vmin !important; }
         }`;
       document.head.appendChild(logoStyle);
 
