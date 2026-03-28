@@ -300,8 +300,8 @@ const App = (() => {
       // Use max-width in vmin for horizontal sizing, max-height capped to % of container
       const logoStyle = document.createElement('style');
       logoStyle.textContent = `
-        .home-page { gap: 0 !important; overflow: hidden; padding-top: ${homePaddingTop}vmin !important; }
-        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${homeLogoMaxH}% !important; margin-bottom: ${gapLogoText}vmin; }
+        .home-page { gap: 0 !important; overflow: hidden; }
+        .home-page__event-logo { max-width: ${homeLogoDesktop}vmin !important; max-height: ${homeLogoMaxH}% !important; margin-top: ${homePaddingTop}vmin; margin-bottom: ${gapLogoText}vmin; }
         .home-page__powered { margin-bottom: ${gapTextPartner}vmin; font-size: ${homeTextDesktop}vmin !important; }
         .home-page__partner-logo { max-width: ${homePartnerDesktop}vmin !important; max-height: ${homePartnerMaxH}% !important; }
         @media (max-width: 768px) {
