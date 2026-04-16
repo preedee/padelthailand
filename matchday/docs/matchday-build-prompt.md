@@ -54,8 +54,8 @@ You are Claude Code, receiving this prompt at the start of a fresh session in an
 
 1. Read this entire document.
 2. Produce a short response that summarizes your understanding of the mission, scope, stack recommendation, and anti-requirements in your own words.
-3. **Present the CONFIRMATION GATE** from §6 to Pap as a structured `AskUserQuestion`. Wait for his answers. Do not run `flutter create`, `next create`, or any scaffolding command until the gate has been cleared.
-4. Once the gate is cleared, propose a **Milestone 0 plan** (repo layout, dependency list, first commit) and **ask for approval** before starting implementation.
+3. **Present the CONFIRMATION GATE** from §6 to Pap as a structured `AskUserQuestion`. Wait for his answers. Do not run `next create` or any scaffolding command until the gate has been cleared.
+4. Once the gate is cleared, propose a **build plan** (repo layout, dependency list, first commit) and **ask for approval** before starting implementation.
 5. Only then begin coding.
 
 **Hard rules for this project:**
@@ -70,13 +70,8 @@ You are Claude Code, receiving this prompt at the start of a fresh session in an
 
 ## 4 · Project Context & Personas
 
-### Standalone product (v2 links to TPS)
-Matchday is a **standalone product** with its own brand, codebase, repositories, release cadence, auth system, and venue data. In v1, Matchday has **no runtime dependency on TPS** — it manages its own users, venues, and tournaments independently.
-
-In v2, Matchday will integrate with TPS via:
-- Federated SSO: TPS users can sign in to Matchday with their TPS credentials (OIDC)
-- Shared player data: TPS player profiles and levels become a supplementary data source
-- Shared club catalog: TPS venues can be synced into Matchday's venue list
+### Standalone product
+Matchday is a **standalone product** with its own brand, codebase, repositories, release cadence, auth system, and venue data. In v1, Matchday has **no runtime dependency on TPS** — it manages its own users, venues, and tournaments independently. TPS integration (account linking API) begins in v3. See `matchday-v2-reference.md` for details.
 
 Matchday does **NOT** get merged into the TPS codebase. Matchday does **NOT** inherit the TPS feature flag catalog or ticket namespace.
 
@@ -95,12 +90,12 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 ### Personas
 | Persona | Needs in v1 | Priority in v1 |
 |---|---|---|
-| **Tournament Organizer** (TO) | Apply for organizer access, create tournaments with venues, manage registrations, seed players, generate draws, publish brackets, enter final placements | P0 |
-| **Player** | Sign up via email, discover tournaments, register solo or with a partner, view published brackets and schedules, receive match reminders, see final placements | P0 |
+| **Tournament Organizer** (TO) | Apply for organizer access, create tournaments with venues, manage registrations, seed players, generate draws, publish brackets, enter live scores, manage live tournament | P0 |
+| **Player** | Sign up (email or social), discover tournaments, register solo or with a partner, view live bracket updates, see final placements | P0 |
 | **Matchday Admin (Pap + designees)** | Review organizer applications, approve or reject, manage overall platform | P0 (new in v1) |
 | **Club / Venue Owner** | Venues managed by TOs in v1; dedicated venue owner portal is v2 | v2 |
 | **National Federation** | Sanction tournaments, enforce rules | v2 (architecture-ready in v1) |
-| **Referee / Court Official** | Live score matches, confirm results | v2 (depends on v2 live scoring) |
+| **Referee / Court Official** | Enter/validate scores during live matches | v7 |
 
 ---
 
@@ -392,7 +387,15 @@ Core entities — for the new Claude Code session to refine. **Every entity belo
 - `Registration` — player/team → event
 - `Team` — for doubles events
 - `Draw` — bracket structure for an event
-- `Match` — a single match in a draw. Includes `status` enum (`upcoming` / `in_progress` / `completed`), per-set score columns, `scored_at`, `scored_by`, `winner_team_id`. v1 uses these for TO live scoring.
+- `Match` — a single match in a draw. Key columns:
+  - `status` enum (`upcoming` / `in_progress` / `completed`)
+  - `scheduled_court` text, `scheduled_at` timestamptz — from TO scheduling
+  - `set1_team_a` int nullable, `set1_team_b` int nullable — first set score
+  - `set2_team_a` int nullable, `set2_team_b` int nullable — second set score
+  - `set3_team_a` int nullable, `set3_team_b` int nullable — third set (tiebreak/super tiebreak, nullable if match ends in 2 sets)
+  - `winner_team_id` uuid nullable FK → Team — populated on match completion
+  - `scored_at` timestamptz nullable, `scored_by` uuid nullable FK → User (the TO who entered the score)
+  - Match winner determination: first team to win 2 sets. Standard sets play to 6 games (tiebreak at 6-6). Last set follows tournament's `last_set_rule`: `full_set` (standard), `tiebreak` (first to 7, win by 2), or `super_tiebreak` (first to 10, win by 2).
 - `Score` — richer polymorphic score table, empty in v1, reserved for v2 detailed per-sport/per-format scoring
 - `RatingPush` — outbound result push record — empty in v1
 - `Sanctioning` — optional federation link for a tournament — empty in v1
@@ -439,9 +442,9 @@ Language investment follows the market priority from §4.
 - Zero payment UI, zero payment logic, zero `CountryPaymentPolicy` rows in v1
 
 ### Messaging / notifications
-Regional messaging rails as pluggable notification channels, not just push:
-- **v1**: push notifications + email
-- **v2**: LINE, WhatsApp, KakaoTalk, WeChat (per-market)
+- **v1**: email notifications only (registration confirmation, partner invite, waitlist promotion, draw published, tournament cancellation)
+- **v2**: push notifications via OneSignal (Web Push)
+- **v6+**: LINE, WhatsApp, and regional messaging channels (per-market)
 
 ### Timezones
 UTC in the database, always. Display in venue-local time as primary, user-local as secondary. Multi-day tournaments must handle DST correctly (minor issue in APAC but AU observes DST).
@@ -464,22 +467,12 @@ UTC in the database, always. Display in venue-local time as primary, user-local 
 ## 11 · Integration Contracts
 
 ### v1: No external integrations
-Matchday v1 is fully standalone. Auth, venues, player profiles, and partner search are all Matchday-native. No TPS API calls, no OIDC federation, no service tokens.
+Matchday v1 is fully standalone. No TPS API calls, no OIDC federation, no service tokens, no payment providers, no rating providers. All future integrations are documented in `matchday-v2-reference.md`.
 
-### v2 TPS integration (reference — NOT built in v1)
-
-The following TPS integrations are planned for v2 and are documented here as architectural context. The full v1 specs for these contracts (OIDC SSO, Clubs API, Profile API, Player Directory Search API) are preserved in `matchday-v2-reference.md` for when v2 begins.
-
-- **TPS OIDC SSO**: Federated auth — TPS users sign into Matchday with TPS credentials. Matchday becomes an OIDC relying party.
-- **TPS Clubs API**: Sync TPS club catalog into Matchday venues.
-- **TPS Profile API**: Populate Matchday profiles from TPS padel profile data on SSO login.
-- **TPS Player Directory Search**: Search TPS users for doubles partner matching.
-
-### Matchday ↔ Rating Provider (v2 — see `matchday-v2-reference.md` §4)
-v1 ships no rating code. v2 integrates with ONE chosen provider (WPR / APR / TBD). Schema reserves nullable rating columns on `User` and `Match` per §9.0.
-
-### Matchday ↔ Payment Provider (v2 — see `matchday-v2-reference.md` §3.4)
-v1 ships no payment code. Schema reserves nullable `stripe_connect_account_id` + `omise_recipient_id` on `User` per §9.0.
+**v1 architectural obligations** (leave space for future integrations per §9.0):
+- Nullable `stripe_connect_account_id` + `omise_recipient_id` on `User` table
+- Nullable rating columns on `User` and `Match`
+- Empty `Payment`, `RatingPush`, `Sanctioning` tables in schema
 
 ---
 
@@ -494,6 +487,21 @@ v1 ships no payment code. Schema reserves nullable `stripe_connect_account_id` +
 - **Rate limiting**: public endpoints rate-limited per IP; authenticated endpoints per user. Tournament registration: max 10 req/min per user. Partner search: max 30 req/min per user.
 - **Audit log**: every draw modification, post-publish edit, TO-application review action, admin override, and role-change operation is logged immutably in v1. v2 adds score changes and payouts to the audit log as new event types.
 - **OWASP Top 10**: Security Engineer reviews every PR explicitly against OWASP.
+
+### 12.0 · Email Template Inventory (v1)
+
+All emails sent via Resend. Each template is i18n-keyed (TH + EN). 8 templates in v1:
+
+| # | Template | Trigger | Recipient |
+|---|---|---|---|
+| 1 | Application received | TO submits organizer application | Applicant |
+| 2 | Application approved | Admin approves TO application | Applicant |
+| 3 | Application rejected | Admin rejects TO application (includes reason) | Applicant |
+| 4 | Registration confirmed | Player registers solo or doubles pair is confirmed | Player (+ partner for doubles) |
+| 5 | Partner invite | Player invites a partner for doubles | Partner (magic-link to accept/decline) |
+| 6 | Waitlist promotion | Player promoted from waitlist to confirmed | Player |
+| 7 | Draw published | TO publishes the tournament draw | All registered players |
+| 8 | Tournament cancelled | TO cancels the tournament | All registered players |
 
 ### 12.1 · Secrets, Environments & Deployment Topology
 
@@ -521,7 +529,6 @@ v1 ships no payment code. Schema reserves nullable `stripe_connect_account_id` +
 |---|---|---|---|
 
 | `RESEND_API_KEY` | Transactional emails | Vercel server env (never client) | Quarterly |
-| `ONESIGNAL_APP_ID` + `ONESIGNAL_REST_API_KEY` | Web Push | App ID is public; REST key in Supabase secrets + Vercel server env | Annually |
 | `SENTRY_DSN` | Error tracking | Vercel env (both client and server DSNs) | On compromise only |
 | `POSTHOG_API_KEY` | Event tracking + feature flags | Vercel env | Annually |
 | Supabase `service_role_key` | Server-side admin operations | Supabase secrets only — NEVER in Vercel client env, NEVER in code | On compromise only |
@@ -554,7 +561,6 @@ Mirror The Padel Society's engineering conventions (TPS `CLAUDE.md` is the refer
 - **Linters (zero tolerance)**:
   - Next.js: `yarn lint` + `npx tsc --noEmit`
   - Edge Functions: `deno lint`
-  - (Flutter linting is TPS-side only — Matchday has no Flutter code)
 - **Never disable lint rules**, never modify linter config without Lead approval
 
 ### 13.1 · Testing Strategy (matches current TPS practices)
@@ -562,7 +568,7 @@ Mirror The Padel Society's engineering conventions (TPS `CLAUDE.md` is the refer
 TPS's actual testing footprint is minimal — verified 2026-04 by inspecting the TPS repos:
 - `thepadelsociety-admin/` — **no test framework installed.** `package.json` scripts are `dev`, `build`, `start`, `lint` only. No Jest, no Vitest, no Playwright.
 - `mobile-app-padel/` — only the default Flutter template `widget_test.dart`. No real widget or integration tests.
-- `padel-backend/` — **Deno unit tests for tournament engine logic.** Files like `supabase/functions/src/__tests__/americano.test.ts`, `mexicano.test.ts`, `koc.test.ts`, `round_completion.test.ts`. Tests use `Deno.test` + `assertEquals` from `deno.land/std/assert`. Focused on pure logic (no DB, no HTTP).
+- `padel-backend/` — **Deno unit tests for tournament engine logic.** Files like `supabase/functions/src/__tests__/bracket.test.ts`, `bye-placement.test.ts`, `scoring.test.ts`. Tests use `Deno.test` + `assertEquals` from `deno.land/std/assert`. Focused on pure logic (no DB, no HTTP).
 
 Matchday adopts the same pattern exactly. **Don't over-invest in testing infrastructure TPS doesn't have.**
 
@@ -590,7 +596,7 @@ Claude Code can self-check v1 readiness against these. Every criterion is atomic
 
 ### Auth + Identity
 - [ ] ISC-01: User can sign up and sign in via Supabase Auth email + magic link
-- [ ] ISC-1b: User can sign in via Facebook, Google, or Apple OAuth
+- [ ] ISC-01b: User can sign in via Facebook, Google, or Apple OAuth
 - [ ] ISC-02: Successful auth creates or updates a local `User` row keyed by Supabase `auth.uid`
 - [ ] ISC-03: On first login, user sees a profile completion form (display name, playing hand, preferred side) and data is stored in `User` table
 - [ ] ISC-04: User signs out cleanly; subsequent requests return 401 until re-authenticated
