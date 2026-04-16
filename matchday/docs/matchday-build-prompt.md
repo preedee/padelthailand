@@ -10,7 +10,7 @@
 
 - **Project name:** Matchday
 - **Tagline (working):** Tournament operations for Asia-Pacific racket sports
-- **Version target:** v1.0 (padel-only MVP) — see §15 for v1-v11 roadmap
+- **Version target:** v1.0 (padel-only MVP) — see §15 for v1-v9 roadmap
 - **Sister product:** The Padel Society (TPS) — existing Flutter + Supabase + Next.js ecosystem
 - **Primary founder:** Pap
 
@@ -130,7 +130,7 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 - **Multi-day tournament support**: scheduling grid handles multiple days
 - i18n: TH + EN
 
-### Out-of-scope v1 (see §15 for full v1-v11 roadmap)
+### Out-of-scope v1 (see §15 for full v1-v9 roadmap)
 - **Player score entry** — only TO enters scores in v1. Player scoring + dispute flow arrives in v2.
 - **Push notifications** — v1 has email notifications + "my next match" card. Web Push (OneSignal) arrives in v2.
 - **Entry fee payments** — v1 collects no money. Fees handled offline. Payments arrive in v5.
@@ -209,40 +209,40 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 ### 7.1 — Player features
 
 **v1 scope** (10 features):
-- P-01: **Player profile created on signup** — on first login, Matchday presents a brief profile completion form (display name, playing hand, preferred side). Auth supports email magic link + Facebook + Google + Apple OAuth. The schema includes a nullable `gender` column for future mixed-format pairing constraints, but **v1 does NOT collect or use gender in any UX**.
-- P-02: Browse tournament list — simple list view showing upcoming tournaments with date, venue, and registration status (open / closed / waitlist). v1 shows Thailand tournaments only.
-- P-03: Register for a tournament solo
-- P-04: **Register for doubles by searching Matchday users** — player searches registered Matchday users by name or email, selects a partner, partner receives an email invite from Matchday. Partners must have a Matchday account. If the partner declines or does not respond before registration closes, the solo half of the registration is rolled back.
-- P-05: **View live single-elim bracket** — bracket updates in realtime via Supabase Realtime as the TO enters scores. Matches show status (upcoming / in progress / completed) and per-set scores. Bracket rendered via `@g-loot/react-tournament-brackets` or equivalent — **do not hand-roll**.
-- P-06: **View "my next match" card** during a tournament — when a player is logged in and has a scheduled upcoming match, a prominent card shows court number, scheduled time, opponent(s), and round. Updates as bracket progresses (opponent from previous round decided).
-- P-07: **View final placements** — auto-derived from bracket (1st = winner, 2nd = finalist, 3rd/4th = semi-finalists). Visible on the tournament page after completion.
-- P-08: **Spectator mode** — `?spectator=true` on any tournament page hides navigation, enlarges bracket, auto-refreshes via Realtime. Designed for venue TVs.
-- P-09: **Social sharing** — tournament pages have OpenGraph meta tags for rich link previews when shared on LINE/WhatsApp. Share button copies link.
-- P-10: **Waitlist promotion notification** — email sent when a player is promoted from waitlist to confirmed.
+- PL-V1-01: **Player profile created on signup** — on first login, Matchday presents a brief profile completion form (display name, playing hand, preferred side). Auth supports email magic link + Facebook + Google + Apple OAuth. The schema includes a nullable `gender` column for future mixed-format pairing constraints, but **v1 does NOT collect or use gender in any UX**.
+- PL-V1-02: Browse tournament list — simple list view showing upcoming tournaments with date, venue, and registration status (open / closed / waitlist). v1 shows Thailand tournaments only.
+- PL-V1-03: Register for a tournament solo
+- PL-V1-04: **Register for doubles by searching Matchday users** — player searches registered Matchday users by name or email, selects a partner, partner receives an email invite from Matchday. Partners must have a Matchday account. If the partner declines or does not respond before registration closes, the solo half of the registration is rolled back.
+- PL-V1-05: **View live single-elim bracket** — bracket updates in realtime via Supabase Realtime as the TO enters scores. Matches show status (upcoming / in progress / completed) and per-set scores. Bracket rendered via `@g-loot/react-tournament-brackets` or equivalent — **do not hand-roll**.
+- PL-V1-06: **View "my next match" card** during a tournament — when a player is logged in and has a scheduled upcoming match, a prominent card shows court number, scheduled time, opponent(s), and round. Updates as bracket progresses (opponent from previous round decided).
+- PL-V1-07: **View final placements** — auto-derived from bracket (1st = winner, 2nd = finalist, 3rd/4th = semi-finalists). Visible on the tournament page after completion.
+- PL-V1-08: **Spectator mode** — `?spectator=true` on any tournament page hides navigation, enlarges bracket, auto-refreshes via Realtime. Designed for venue TVs.
+- PL-V1-09: **Social sharing** — tournament pages have OpenGraph meta tags for rich link previews when shared on LINE/WhatsApp. Share button copies link.
+- PL-V1-10: **Waitlist promotion notification** — email sent when a player is promoted from waitlist to confirmed.
 
 **v2 scope** (deferred — NOT in v1):
-- P-V2-01: Player score entry — either player can submit per-set scores
-- P-V2-02: Score dispute flow — opponent disputes, TO resolves
-- P-V2-03: Push notifications via OneSignal (match starting, next match ready, score disputed)
-- P-V2-04: View match history organized by tournament → individual match results
-- P-V2-05: Double elimination format support
-- P-V2-06: TV display mode (dedicated spectator experience with auto-rotate between matches)
+- PL-V2-01: Player score entry — either player can submit per-set scores
+- PL-V2-02: Score dispute flow — opponent disputes, TO resolves
+- PL-V2-03: Push notifications via OneSignal (match starting, next match ready, score disputed)
+- PL-V2-04: View match history organized by tournament → individual match results
+- PL-V2-05: Double elimination format support
+- PL-V2-06: TV display mode (dedicated spectator experience with auto-rotate between matches)
 
 ### 7.2 — Tournament organizer features
 
 **v1 scope** (12 features):
-- TO-01: Create a tournament — fields: name, dates, venue (with court names), draw size, **last-set scoring rule** (full set / tiebreak / super tiebreak), **free-text level band**, **free-text entry info**. No entry_fee or currency columns — Matchday collects no money in v1.
-- TO-02: Open / close registration window
-- TO-03: Manage entry list — **registrations auto-accept by default** until the draw is full, then auto-waitlist. TO can manually remove or promote from waitlist.
-- TO-04: Seed players manually — drag-and-drop into seed slots. **Top seeds automatically receive first-round byes** for non-power-of-2 draw sizes.
-- TO-05: Generate draw from seeds — single-elim bracket (with byes)
-- TO-06: **Schedule matches to courts and time slots** — court x time grid with drag-drop. Conflict detection (player double-booked, overlapping matches). Multi-day support.
-- TO-07: Regenerate the draw if registrations change before publish
-- TO-08: **Publish the draw** — bracket visible to players. Post-publish editing with audit log until tournament start. **Draw published email sent to all registered players.**
-- TO-09: **Start tournament** — transitions tournament to `live` state. Matches become scorable.
-- TO-10: **Enter live scores** — TO selects a match, enters per-set scores (e.g. 6-4, 7-5). Last set follows tournament's configured rule (full set / tiebreak / super tiebreak). On submit, winner auto-advances to next round. Bracket updates via Realtime for all viewers. Audit-logged.
-- TO-11: **Walkover / withdrawal** — TO marks a player as withdrawn, opponent auto-advances.
-- TO-12: **Cancel tournament** — all registered players notified via email, registrations voided, tournament marked cancelled.
+- TO-V1-01: Create a tournament — fields: name, dates, venue (with court names), draw size, **last-set scoring rule** (full set / tiebreak / super tiebreak), **free-text level band**, **free-text entry info**. No entry_fee or currency columns — Matchday collects no money in v1.
+- TO-V1-02: Open / close registration window
+- TO-V1-03: Manage entry list — **registrations auto-accept by default** until the draw is full, then auto-waitlist. TO can manually remove or promote from waitlist.
+- TO-V1-04: Seed players manually — drag-and-drop into seed slots. **Top seeds automatically receive first-round byes** for non-power-of-2 draw sizes.
+- TO-V1-05: Generate draw from seeds — single-elim bracket (with byes)
+- TO-V1-06: **Schedule matches to courts and time slots** — court x time grid with drag-drop. Conflict detection (player double-booked, overlapping matches). Multi-day support.
+- TO-V1-07: Regenerate the draw if registrations change before publish
+- TO-V1-08: **Publish the draw** — bracket visible to players. Post-publish editing with audit log until tournament start. **Draw published email sent to all registered players.**
+- TO-V1-09: **Start tournament** — transitions tournament to `live` state. Matches become scorable.
+- TO-V1-10: **Enter live scores** — TO selects a match, enters per-set scores (e.g. 6-4, 7-5). Last set follows tournament's configured rule (full set / tiebreak / super tiebreak). On submit, winner auto-advances to next round. Bracket updates via Realtime for all viewers. Audit-logged.
+- TO-V1-11: **Walkover / withdrawal** — TO marks a player as withdrawn, opponent auto-advances.
+- TO-V1-12: **Cancel tournament** — all registered players notified via email, registrations voided, tournament marked cancelled.
 
 **v2 scope** (deferred — NOT in v1):
 - TO-V2-01: Configure scoring rules (sets/games/golden point, time-capped, best-of-X) — v2 when live scoring arrives
@@ -259,9 +259,9 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 **v1 scope — Matchday manages venues natively.** TOs create and manage venues directly in Matchday. No TPS dependency.
 
 **v1 features:**
-- CV-01: When creating a tournament, the TO selects an existing venue or creates a new one inline (name, city/location, court count, optional address)
-- CV-02: Tournament detail page shows the venue's name, location, and court count
-- CV-03: A simple "Venues" page lists all venues that have Matchday tournaments, each linking to the list of that venue's tournaments
+- CV-V1-01: When creating a tournament, the TO selects an existing venue or creates a new one inline (name, city/location, court count, optional address)
+- CV-V1-02: Tournament detail page shows the venue's name, location, and court count
+- CV-V1-03: A simple "Venues" page lists all venues that have Matchday tournaments, each linking to the list of that venue's tournaments
 
 **v2 scope** (deferred — NOT in v1):
 - CV-V2-01: TPS club catalog sync — import TPS clubs as Matchday venues
@@ -759,7 +759,7 @@ These are the counter-weights to the build restrictions above — "don't build X
 
 ---
 
-## 16b · Product Roadmap (v1-v11)
+## 16b · Product Roadmap (v1-v9)
 
 | Version | Theme | Key Features |
 |---|---|---|
@@ -772,8 +772,6 @@ These are the counter-weights to the build restrictions above — "don't build X
 | **v7** | Federations | Sanctioning UI, official tournament approval workflows, federation ranking management, referee mode |
 | **v8** | Multi-sport | Tennis, pickleball, badminton, squash — sport as first-class dimension |
 | **v9** | Indonesia | Bahasa Indonesia, GoPay/OVO/Dana, Telegram notifications |
-| **v10** | SEA expansion | SG, MY, PH, VN — local languages + payment rails + Zalo + Facebook Messenger |
-| **v11** | Rest of Asia | JP, KR, IN, AU, HK, TW — local languages + payment rails + KakaoTalk (KR) |
 
 ---
 
