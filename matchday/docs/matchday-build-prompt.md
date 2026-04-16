@@ -37,12 +37,12 @@ Matchday's wedge (long-term):
 
 Matchday's four long-term differentiators vs WeCourts and Playtomic. v1 ships a narrow slice; v2 fills them out.
 
-| # | Pillar | v1 scope | v2 scope |
+| # | Pillar | v1 scope | Future versions |
 |---|---|---|---|
-| 1 | **Deep rating integration** | Not in v1 | Integrate with one chosen external rating provider (WPR / APR / TBD) so rating feels native — visible on every profile, match, bracket, with per-match impact breakdowns and a rating leaderboard |
-| 2 | **Federation Support** | Not in v1 | Sanctioning UI, official tournament approval workflows, federation ranking management, referee mode |
-| 3 | **Tournament Formats** | Single Elimination | Double Elimination, Round Robin, Groups + Knockout |
-| 4 | **Tournament Configuration** | TO-mode live scoring with per-set scores, realtime bracket progression, auto-derived placements, spectator mode | Player + referee modes, dispute resolution, score override audit |
+| 1 | **Deep rating integration** | Not in v1 | v3: Rating integration with one external provider — profiles, brackets, auto-seeding, per-match impact, leaderboard |
+| 2 | **Federation Support** | Not in v1 | v7: Sanctioning UI, official tournament approval workflows, federation ranking management, referee mode |
+| 3 | **Tournament Formats** | Single Elimination | v2: Double Elimination · v4: Round Robin, Groups + Knockout |
+| 4 | **Tournament Configuration** | TO-mode live scoring, per-set scores, realtime bracket, auto-derived placements, spectator mode | v2: Player score entry, dispute flow · v4: Scoring configs, registration approval · v7: Referee mode |
 
 ---
 
