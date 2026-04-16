@@ -10,7 +10,7 @@
 
 - **Project name:** Matchday
 - **Tagline (working):** Tournament operations for Asia-Pacific racket sports
-- **Version target:** v1.0 (padel-only MVP) — see §15 for v1-v9 roadmap
+- **Version target:** v1.0 (padel-only MVP) — see `matchday-v2-reference.md` for v2-v9 roadmap
 - **Sister product:** The Padel Society (TPS) — existing Flutter + Supabase + Next.js ecosystem
 - **Primary founder:** Pap
 
@@ -130,7 +130,7 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 - **Multi-day tournament support**: scheduling grid handles multiple days
 - i18n: TH + EN
 
-### Out-of-scope v1 (see §15 for full v1-v9 roadmap)
+### Out-of-scope v1 (see `matchday-v2-reference.md` for full v2-v9 roadmap)
 - **Player score entry** — only TO enters scores in v1. Player scoring + dispute flow arrives in v2.
 - **Push notifications** — v1 has email notifications + "my next match" card. Web Push (OneSignal) arrives in v2.
 - **Entry fee payments** — v1 collects no money. Fees handled offline. Payments arrive in v5.
@@ -170,18 +170,8 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 ### v1 has NO runtime dependency on TPS
 v1 Matchday is fully standalone. Auth, venues, player profiles, and partner search are all Matchday-native. TPS account linking API arrives in v3.
 
-### Post-v1 additions (see §15b for full roadmap)
-| Layer | Choice | Version |
-|---|---|---|
-| Player scoring + disputes | Player submits scores, opponent disputes, TO resolves | v2 |
-| Push notifications | OneSignal (managed Web Push) | v2 |
-| Double elimination | New bracket type + progression logic | v2 |
-| TV display mode | Dedicated spectator experience for venue TVs | v2 |
-| Rating integration | One external provider (TBD) | v3 |
-| TPS APIs | Public API + account linking API | v3 |
-| Round robin + groups+KO | Additional format engines | v4 |
-| Payments | Stripe + Omise, PromptPay, refunds, payouts | v5 |
-| Mobile surface | **TPS Flutter app** — Matchday has no standalone mobile app. TPS links to Matchday responsive web. | N/A (TPS-owned) |
+### Post-v1
+See `matchday-v2-reference.md` for the v2-v9 roadmap. Matchday has no standalone mobile app — TPS links to Matchday responsive web.
 
 ### CONFIRMATION GATE (do not skip)
 Before writing **any** code, present the following to Pap as a structured `AskUserQuestion`:
@@ -220,13 +210,7 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - PL-V1-09: **Social sharing** — tournament pages have OpenGraph meta tags for rich link previews when shared on LINE/WhatsApp. Share button copies link.
 - PL-V1-10: **Waitlist promotion notification** — email sent when a player is promoted from waitlist to confirmed.
 
-**v2 scope** (deferred — NOT in v1):
-- PL-V2-01: Player score entry — either player can submit per-set scores
-- PL-V2-02: Score dispute flow — opponent disputes, TO resolves
-- PL-V2-03: Push notifications via OneSignal (match starting, next match ready, score disputed)
-- PL-V2-04: View match history organized by tournament → individual match results
-- PL-V2-05: Double elimination format support
-- PL-V2-06: TV display mode (dedicated spectator experience with auto-rotate between matches)
+**v2+ scope**: See `matchday-v2-reference.md` for deferred player features (player scoring, disputes, push notifications, match history, double elim, TV display mode).
 
 ### 7.2 — Tournament organizer features
 
@@ -244,15 +228,7 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - TO-V1-11: **Walkover / withdrawal** — TO marks a player as withdrawn, opponent auto-advances.
 - TO-V1-12: **Cancel tournament** — all registered players notified via email, registrations voided, tournament marked cancelled.
 
-**v2 scope** (deferred — NOT in v1):
-- TO-V2-01: Configure scoring rules (sets/games/golden point, time-capped, best-of-X) — v2 when live scoring arrives
-- TO-V2-02: Enter live scores (TO mode) — v2
-- TO-V2-03: Delegate live scoring to referees or club staff — v2
-- TO-V2-04: Override a submitted score with audit log — v2
-- TO-V2-05: Publish results + push to rating provider — v2
-- TO-V2-06: Handle payouts to prize winners — v2 (or outside Matchday entirely)
-- TO-V2-07: Export tournament report (PDF + CSV for sponsors/federation) — cut from v1, revisit in v2 if demand exists
-- TO-V2-08: Seed players by rating from a connected provider — v2 when rating pillar ships
+**v2+ scope**: See `matchday-v2-reference.md` for deferred TO features (scoring configs, referee delegation, rating-based seeding, payouts, exports).
 
 ### 7.3 — Club / venue features
 
@@ -263,12 +239,7 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - CV-V1-02: Tournament detail page shows the venue's name, location, and court count
 - CV-V1-03: A simple "Venues" page lists all venues that have Matchday tournaments, each linking to the list of that venue's tournaments
 
-**v2 scope** (deferred — NOT in v1):
-- CV-V2-01: TPS club catalog sync — import TPS clubs as Matchday venues
-- CV-V2-02: Club staff acting as scoring officials during tournaments (depends on v2 live scoring)
-- CV-V2-03: Deep link / integration with TPS court booking for cross-product journeys
-- CV-V2-04: Venue photos, branding, contact info
-- CV-V2-05: Venue analytics (revenue, tournaments hosted, players served) for venue owners
+**v2+ scope**: See `matchday-v2-reference.md` for deferred venue features.
 
 **Architectural note for v1**: The `Venue` table is Matchday-native and is the source of truth. In v2, a `venue_source` column (enum: `matchday` | `tps_sync`) can distinguish Matchday-created venues from TPS-synced ones.
 
@@ -759,19 +730,9 @@ These are the counter-weights to the build restrictions above — "don't build X
 
 ---
 
-## 16b · Product Roadmap (v1-v9)
+## 16b · Product Roadmap
 
-| Version | Theme | Key Features |
-|---|---|---|
-| **v1** | Ship the first tournament | Single-elim, TO live scoring, realtime bracket, social sign-in (Facebook/Google/Apple), spectator mode, social sharing/OpenGraph |
-| **v2** | Complete the live experience | Player score entry, score dispute flow, push notifications (OneSignal), double elimination format, tournament + match history (by tournament → match results), TV display mode, rating provider investigation (business task) |
-| **v3** | Ratings + platform maturity | Rating integration (one external provider — profiles, brackets, auto-seeding, leaderboard), historical tournament import (spreadsheet → rating engine), TPS APIs (public API for tournaments/results + account linking API) |
-| **v4** | Formats + config | Round robin format, groups + knockout format, additional scoring configs (golden point, time-capped, best-of-X), registration approval toggle, personal records / lifetime stats, tournament sponsorship + branding (TO's sponsors on tournament pages) |
-| **v5** | Monetize | Entry fee payments (Stripe + Omise, PromptPay, APAC rails), refunds (TO-initiated or automatic on cancellation), TO payouts (prize distribution via hosted checkout) |
-| **v6** | Messaging | WhatsApp + LINE notifications (match reminders, results, tournament updates) |
-| **v7** | Federations | Sanctioning UI, official tournament approval workflows, federation ranking management, referee mode |
-| **v8** | Multi-sport | Tennis, pickleball, badminton, squash — sport as first-class dimension |
-| **v9** | Indonesia | Bahasa Indonesia, GoPay/OVO/Dana, Telegram notifications |
+See `matchday-v2-reference.md` for the full v2-v9 roadmap with detailed feature specs for each version.
 
 ---
 
