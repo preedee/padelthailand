@@ -39,10 +39,10 @@ Matchday's four long-term differentiators vs WeCourts and Playtomic. v1 ships a 
 
 | # | Pillar | v1 scope | v2 scope |
 |---|---|---|---|
-| 1 | **Additional tournament formats** | Not in v1 (single-elim only) | Double elimination, round robin, groups + knockout, championship variants |
-| 2 | **Federation-grade bracket engine** | Single-elim with manual drag-drop seeding, byes, walkovers, audit log | Double elim, round robin, groups + KO, federation sanctioning rule profiles, auto-seeding from rating provider |
-| 3 | **Multi-mode live scoring** | TO-mode live scoring with per-set scores, realtime bracket progression, auto-derived placements, spectator mode | Player + referee modes (v2/v7), dispute resolution (v2), score override audit |
-| 4 | **Deep rating integration** | Not in v1 | Integrate with one chosen external rating provider (WPR / APR / TBD) so rating feels native — visible on every profile, match, bracket, with per-match impact breakdowns and a rating leaderboard. See `matchday-v2-reference.md` §4. |
+| 1 | **Deep rating integration** | Not in v1 | Integrate with one chosen external rating provider (WPR / APR / TBD) so rating feels native — visible on every profile, match, bracket, with per-match impact breakdowns and a rating leaderboard |
+| 2 | **Federation Support** | Not in v1 | Mark tournaments as federation-sanctioned, enforce federation rule profiles (e.g. TPA rules for Thailand), feed results to federation-controlled rating systems, generate federation-compliant tournament reports |
+| 3 | **Tournament Formats** | Single Elimination | Double Elimination, Round Robin, Groups + Knockout |
+| 4 | **Tournament Configuration** | TO-mode live scoring with per-set scores, realtime bracket progression, auto-derived placements, spectator mode | Player + referee modes, dispute resolution, score override audit |
 
 ---
 
