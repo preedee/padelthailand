@@ -40,7 +40,7 @@ Matchday's four long-term differentiators vs WeCourts and Playtomic. v1 ships a 
 | # | Pillar | v1 scope | v2 scope |
 |---|---|---|---|
 | 1 | **Deep rating integration** | Not in v1 | Integrate with one chosen external rating provider (WPR / APR / TBD) so rating feels native — visible on every profile, match, bracket, with per-match impact breakdowns and a rating leaderboard |
-| 2 | **Federation Support** | Not in v1 | Mark tournaments as federation-sanctioned, enforce federation rule profiles (e.g. TPA rules for Thailand), feed results to federation-controlled rating systems, generate federation-compliant tournament reports |
+| 2 | **Federation Support** | Not in v1 | Sanctioning UI, official tournament approval workflows, federation ranking management, referee mode |
 | 3 | **Tournament Formats** | Single Elimination | Double Elimination, Round Robin, Groups + Knockout |
 | 4 | **Tournament Configuration** | TO-mode live scoring with per-set scores, realtime bracket progression, auto-derived placements, spectator mode | Player + referee modes, dispute resolution, score override audit |
 
@@ -618,16 +618,16 @@ If v1.1 or v2 needs any of the above, the Lead Engineer proposes it as a deliber
 Claude Code can self-check v1 readiness against these. Every criterion is atomic and binary-testable. v1 is intentionally narrow — the cohort tournament is the north star. Progress on this list gates v1 launch.
 
 ### Auth + Identity
-- [ ] ISC-1: User can sign up and sign in via Supabase Auth email + magic link
+- [ ] ISC-01: User can sign up and sign in via Supabase Auth email + magic link
 - [ ] ISC-1b: User can sign in via Facebook, Google, or Apple OAuth
-- [ ] ISC-2: Successful auth creates or updates a local `User` row keyed by Supabase `auth.uid`
-- [ ] ISC-3: On first login, user sees a profile completion form (display name, playing hand, preferred side) and data is stored in `User` table
-- [ ] ISC-4: User signs out cleanly; subsequent requests return 401 until re-authenticated
-- [ ] ISC-5: `User.roles` defaults to `['player']` for every new user
+- [ ] ISC-02: Successful auth creates or updates a local `User` row keyed by Supabase `auth.uid`
+- [ ] ISC-03: On first login, user sees a profile completion form (display name, playing hand, preferred side) and data is stored in `User` table
+- [ ] ISC-04: User signs out cleanly; subsequent requests return 401 until re-authenticated
+- [ ] ISC-05: `User.roles` defaults to `['player']` for every new user
 
 ### TO Onboarding
-- [ ] ISC-8: `/organizer/apply` page is accessible to any authenticated user and presents the TO application form
-- [ ] ISC-9: Application form requires LINE ID, logo upload, and ToS agreement checkbox before submission
+- [ ] ISC-08: `/organizer/apply` page is accessible to any authenticated user and presents the TO application form
+- [ ] ISC-09: Application form requires LINE ID, logo upload, and ToS agreement checkbox before submission
 - [ ] ISC-10: Logo upload enforces 500×500 pixel output via a client-side square-aspect-ratio cropper
 - [ ] ISC-11: Logo upload accepts PNG or JPG, rejects other formats, and caps upload size at 2 MB
 - [ ] ISC-12: Uploaded logos land in the Supabase Storage `organizer-logos` bucket with RLS restricting writes to the uploading user
@@ -721,41 +721,41 @@ Claude Code can self-check v1 readiness against these. Every criterion is atomic
 
 ---
 
-## 16 · Anti-Requirements (ISC-A — what NOT to build in v1)
+## 16 · Anti-Requirements (AR — what NOT to build in v1)
 
 ### Build restrictions (what NOT to implement in v1)
-- [ ] ISC-A-1: Do NOT build Matchday's own rating algorithm, ever (we integrate with an external provider — in v3)
-- [ ] ISC-A-2: Do NOT build any rating UX in v1 — no rating display, no rating-based seeding, no rating leaderboard, no rating history. All rating work is v3.
-- [ ] ISC-A-3: Do NOT build a Flutter mobile app — Matchday is a responsive web product. TPS is the mobile surface for players.
-- [ ] ISC-A-4: Do NOT build entry fee payment collection in v1 — no Stripe integration, no Omise integration, no checkout flow. TOs collect fees offline.
-- [ ] ISC-A-5: Do NOT build player-mode or referee-mode scoring in v1 — only TO can enter scores. Player scoring + dispute flow arrives in v2. Referee mode arrives in v7.
-- [ ] ISC-A-6: Supabase Realtime in v1 is scoped to the bracket update channel only (`tournament:{id}:bracket`). Do NOT add other Realtime channels in v1.
-- [ ] ISC-A-6b: Do NOT build any tournament format other than single-elimination in v1.
-- [ ] ISC-A-7: Do NOT build referee or official features in v1
-- [ ] ISC-A-8: Do NOT build federation sanctioning UI in v1
-- [ ] ISC-A-9: Do NOT support tournament formats other than single elimination in v1. Double elim is v2; round robin + groups+KO is v4.
-- [ ] ISC-A-10: Do NOT support sports other than padel
-- [ ] ISC-A-11: Do NOT build court reservation (TPS owns this domain)
-- [ ] ISC-A-12: Do NOT build coach/lesson booking (TPS owns this domain)
-- [ ] ISC-A-13: Do NOT merge the Matchday codebase into the TPS codebase
-- [ ] ISC-A-14: Do NOT bypass Supabase RLS from any client
-- [ ] ISC-A-15: (Removed — Matchday has no Flutter code)
-- [ ] ISC-A-16: Do NOT build livestream video in v1 or v2
-- [ ] ISC-A-17: Do NOT commit secrets, `.env` files, or service role keys
-- [ ] ISC-A-18: Do NOT skip pre-commit linter runs
-- [ ] ISC-A-19: Do NOT merge a PR without both Lead Engineer and Security Engineer approval
+- [ ] AR-01: Do NOT build Matchday's own rating algorithm, ever (we integrate with an external provider — in v3)
+- [ ] AR-02: Do NOT build any rating UX in v1 — no rating display, no rating-based seeding, no rating leaderboard, no rating history. All rating work is v3.
+- [ ] AR-03: Do NOT build a Flutter mobile app — Matchday is a responsive web product. TPS is the mobile surface for players.
+- [ ] AR-04: Do NOT build entry fee payment collection in v1 — no Stripe integration, no Omise integration, no checkout flow. TOs collect fees offline.
+- [ ] AR-05: Do NOT build player-mode or referee-mode scoring in v1 — only TO can enter scores. Player scoring + dispute flow arrives in v2. Referee mode arrives in v7.
+- [ ] AR-06: Supabase Realtime in v1 is scoped to the bracket update channel only (`tournament:{id}:bracket`). Do NOT add other Realtime channels in v1.
+- [ ] AR-06b: Do NOT build any tournament format other than single-elimination in v1.
+- [ ] AR-07: Do NOT build referee or official features in v1
+- [ ] AR-08: Do NOT build federation sanctioning UI in v1
+- [ ] AR-09: Do NOT support tournament formats other than single elimination in v1. Double elim is v2; round robin + groups+KO is v4.
+- [ ] AR-10: Do NOT support sports other than padel
+- [ ] AR-11: Do NOT build court reservation (TPS owns this domain)
+- [ ] AR-12: Do NOT build coach/lesson booking (TPS owns this domain)
+- [ ] AR-13: Do NOT merge the Matchday codebase into the TPS codebase
+- [ ] AR-14: Do NOT bypass Supabase RLS from any client
+- [ ] AR-15: (Removed — Matchday has no Flutter code)
+- [ ] AR-16: Do NOT build livestream video in v1 or v2
+- [ ] AR-17: Do NOT commit secrets, `.env` files, or service role keys
+- [ ] AR-18: Do NOT skip pre-commit linter runs
+- [ ] AR-19: Do NOT merge a PR without both Lead Engineer and Security Engineer approval
 
 ### Architectural obligations (what the v1 code MUST do even though the feature is deferred)
 These are the counter-weights to the build restrictions above — "don't build X, but DO leave room for X." See §9.0 for the philosophy.
 
-- [ ] ISC-A-20: DO ship the full entity schema from §9.1 in v1 — including empty tables for Payment, Score, RatingPush, Sanctioning
-- [ ] ISC-A-21: DO define the `RatingProvider` and `PaymentProvider` interfaces as TypeScript types in v1, even though no concrete adapters exist
-- [ ] ISC-A-22: DO ship a `Sport` table with padel as the first row, not a constant enum — v2 sports are data, not code changes
-- [ ] ISC-A-23: DO model user roles as data, not constants — v2 referee/federation/admin roles are role-rows, not schema changes
-- [ ] ISC-A-24: DO use the `{amount_minor, currency_code}` Money shape on any fee-related column from v1, even though no money flows in v1
-- [ ] ISC-A-25: DO emit domain events (`tournament.published`, `registration.confirmed`) from v1 even if no subscriber exists yet — v2 features subscribe without touching the emitter
-- [ ] ISC-A-26: DO NOT use `if country == X` conditionals anywhere in code (even for non-payment country-specific logic) — country behavior lives in config tables
-- [ ] ISC-A-27: DO ship all user-visible strings as i18n keys from day one, never hardcoded — adding a new locale in v2 is a bundle file, not a code change
+- [ ] AR-20: DO ship the full entity schema from §9.1 in v1 — including empty tables for Payment, Score, RatingPush, Sanctioning
+- [ ] AR-21: DO define the `RatingProvider` and `PaymentProvider` interfaces as TypeScript types in v1, even though no concrete adapters exist
+- [ ] AR-22: DO ship a `Sport` table with padel as the first row, not a constant enum — v2 sports are data, not code changes
+- [ ] AR-23: DO model user roles as data, not constants — v2 referee/federation/admin roles are role-rows, not schema changes
+- [ ] AR-24: DO use the `{amount_minor, currency_code}` Money shape on any fee-related column from v1, even though no money flows in v1
+- [ ] AR-25: DO emit domain events (`tournament.published`, `registration.confirmed`) from v1 even if no subscriber exists yet — v2 features subscribe without touching the emitter
+- [ ] AR-26: DO NOT use `if country == X` conditionals anywhere in code (even for non-payment country-specific logic) — country behavior lives in config tables
+- [ ] AR-27: DO ship all user-visible strings as i18n keys from day one, never hardcoded — adding a new locale in v2 is a bundle file, not a code change
 
 ---
 

@@ -1,2 +1,2 @@
-:HL["/matchday/_next/static/chunks/014rnh-1ddnz6.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"MgZ-zvd5Jroha8meg1bVw"}
+:HL["/matchday/_next/static/chunks/0nh5knm0vk7w8.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"PpkHGflIuKvRAWYRDeiB1"}
