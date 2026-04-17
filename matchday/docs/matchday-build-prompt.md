@@ -114,13 +114,14 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 - **Tournament lifecycle**: `draft` → `registration_open` → `registration_closed` → `published` → `live` → `completed`. TO creates as `draft` (invisible to public), explicitly publishes when ready.
 - Draw generation: single-elim bracket via manual drag-drop seeding (with byes for non-power-of-2 draw sizes; **top seeds get byes automatically**)
 - **Live bracket view**: bracket updates in realtime via Supabase Realtime (~100 concurrent viewers). Matches show status (upcoming / in progress / completed) and scores.
-- **TO live scoring**: TO enters per-set scores during the tournament (e.g. 6-4, 7-5, 10-8 super tiebreak). On match completion, winner auto-advances to next round. Tournament auto-completes when the final is scored.
-- **Placements auto-derived** from bracket results (1st = winner, 2nd = finalist, 3rd/4th = semi-finalists). TO can manually override if needed (audit-logged).
-- **Match scheduling**: court x time grid with drag-drop. TO assigns each match to a court + time window. Conflict detection.
+- **TO live scoring**: TO enters per-set scores during the tournament (e.g. 6-4, 7-5, 10-8 super tiebreak). Supports **best-of-1 or best-of-3** (configurable per tournament). On match completion, winner auto-advances to next round. Retirement option (partial scores, opponent advances). Tournament auto-completes when final + optional 3rd-place match are scored.
+- **Placements auto-derived** from bracket results (1st = winner, 2nd = finalist). **Optional 3rd-place match** — if enabled, 3rd = winner, 4th = loser; if disabled, 3rd/4th are unranked semi-final losers. TO can manually override any placement (audit-logged).
+- **Match scheduling**: court x time grid with drag-drop (15-minute increments). Configurable match duration per round. Auto-schedule algorithm + manual adjustments. Court availability blocking. Conflict detection (player double-booked, bracket dependency).
 - **Spectator mode**: `?spectator=true` hides nav, enlarges bracket, works on venue TVs. Auto-refreshes via Realtime.
 - **Tournament cancellation**: TO cancels → all registered players notified → registrations voided.
 - Venue management: **Matchday-native** — TO creates/selects venues directly in Matchday (name, city, court count, court names, address)
 - Auth via **Supabase Auth** (email + magic link) + **social sign-in** (Facebook, Google, Apple)
+- **Player profile**: display name, date of birth (required), gender (optional), city + country + nationality (required), phone + LINE ID + WhatsApp number (optional), playing hand + preferred side (optional)
 - **Social sharing + OpenGraph**: tournament pages have rich link previews for LINE/WhatsApp sharing
 - **Multi-day tournament support**: scheduling grid handles multiple days
 - i18n: TH + EN
@@ -198,29 +199,32 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - PL-V1-02: Browse tournament list — simple list view showing upcoming tournaments with date, venue, and registration status (open / closed / waitlist). v1 shows Thailand tournaments only.
 - PL-V1-03: Register for a tournament solo
 - PL-V1-04: **Register for doubles by searching Matchday users** — player searches registered Matchday users by name or email, selects a partner, partner receives an email invite from Matchday. Partners must have a Matchday account. If the partner declines or does not respond before registration closes, the solo half of the registration is rolled back.
+- PL-V1-04b: **Add partner later** — solo player can add a partner any time while registration is open (becomes doubles). Partner must accept via invite.
+- PL-V1-04c: **Remove partner** — doubles player can remove partner while registration is open (becomes solo). Partner notified.
 - PL-V1-05: **View live single-elim bracket** — bracket updates in realtime via Supabase Realtime as the TO enters scores. Matches show status (upcoming / in progress / completed) and per-set scores. Bracket rendered via `@g-loot/react-tournament-brackets` or equivalent — **do not hand-roll**.
 - PL-V1-06: **View "my next match" card** during a tournament — when a player is logged in and has a scheduled upcoming match, a prominent card shows court number, scheduled time, opponent(s), and round. Updates as bracket progresses (opponent from previous round decided).
 - PL-V1-07: **View final placements** — auto-derived from bracket (1st = winner, 2nd = finalist, 3rd/4th = semi-finalists). Visible on the tournament page after completion.
 - PL-V1-08: **Spectator mode** — `?spectator=true` on any tournament page hides navigation, enlarges bracket, auto-refreshes via Realtime. Designed for venue TVs.
 - PL-V1-09: **Social sharing** — tournament pages have OpenGraph meta tags for rich link previews when shared on LINE/WhatsApp. Share button copies link.
 - PL-V1-10: **Waitlist promotion notification** — email sent when a player is promoted from waitlist to confirmed.
+- PL-V1-11: **Withdrawal** — player can withdraw only while registration is open. Doubles withdrawal voids both registrations. Triggers waitlist promotion (FCFS, TO can override).
 
 **v2+ scope**: See `matchday-v2-reference.md` for deferred player features (player scoring, disputes, push notifications, match history, double elim, TV display mode).
 
 ### 7.2 — Tournament organizer features
 
 **v1 scope** (12 features):
-- TO-V1-01: Create a tournament — fields: name, dates, venue (with court names), draw size, **last-set scoring rule** (full set / tiebreak / super tiebreak), **free-text level band**, **free-text entry info**. No entry_fee or currency columns — Matchday collects no money in v1.
+- TO-V1-01: Create a tournament — fields: name, dates, venue (with court names), draw size, **match format** (best-of-1 / best-of-3), **last-set scoring rule** (full set / tiebreak / super tiebreak), **3rd-place match** (on/off), **free-text level band**, **free-text entry info**. No entry_fee or currency columns — Matchday collects no money in v1.
 - TO-V1-02: Open / close registration window
 - TO-V1-03: Manage entry list — **registrations auto-accept by default** until the draw is full, then auto-waitlist. TO can manually remove or promote from waitlist.
-- TO-V1-04: Seed players manually — drag-and-drop into seed slots. **Top seeds automatically receive first-round byes** for non-power-of-2 draw sizes.
+- TO-V1-04: Seed players manually — drag-and-drop into seed slots with auto-save. **Top seeds automatically receive first-round byes**. "Auto-fill remaining" assigns unseeded teams randomly (can regenerate for new random). TO can leave and return — seed assignments persist.
 - TO-V1-05: Generate draw from seeds — single-elim bracket (with byes)
-- TO-V1-06: **Schedule matches to courts and time slots** — court x time grid with drag-drop. Conflict detection (player double-booked, overlapping matches). Multi-day support.
+- TO-V1-06: **Schedule matches to courts and time slots** — configurable match duration per round (15-minute increments). Auto-schedule algorithm places matches respecting bracket order + court availability. Manual drag-drop adjustments on top. Court availability blocking (mark courts unavailable for time ranges). Multi-day support. Conflict detection (player double-booked, bracket dependency violations).
 - TO-V1-07: Regenerate the draw if registrations change before publish
 - TO-V1-08: **Publish the draw** — bracket visible to players. Post-publish editing with audit log until tournament start. **Draw published email sent to all registered players.**
 - TO-V1-09: **Start tournament** — transitions tournament to `live` state. Matches become scorable.
 - TO-V1-10: **Enter live scores** — TO selects a match, enters per-set scores (e.g. 6-4, 7-5). Last set follows tournament's configured rule (full set / tiebreak / super tiebreak). On submit, winner auto-advances to next round. Bracket updates via Realtime for all viewers. Audit-logged.
-- TO-V1-11: **Walkover / withdrawal** — TO marks a player as withdrawn, opponent auto-advances.
+- TO-V1-11: **Walkover / withdrawal / retirement** — TO marks walkover (no scores, opponent advances), retirement (partial scores recorded, opponent advances), or undo walkover (cascading reset if downstream matches played).
 - TO-V1-12: **Cancel tournament** — all registered players notified via email, registrations voided, tournament marked cancelled.
 
 **v2+ scope**: See `matchday-v2-reference.md` for deferred TO features (scoring configs, referee delegation, rating-based seeding, payouts, exports).
@@ -382,7 +386,7 @@ Core entities — for the new Claude Code session to refine. **Every entity belo
 - `RatingProvider` — config row stub, empty in v1
 - `PlayerProviderLink` — `(player_id, provider_slug, provider_player_id, ...)` — empty in v1
 - `Venue` — Matchday-native venue (name, city, court_count, address)
-- `Tournament` — top-level event. Format is `single_elim` in v1; schema can extend with new format values in v2.
+- `Tournament` — top-level event. Format is `single_elim` in v1. Includes `match_format` enum (`best_of_1` / `best_of_3`), `last_set_rule` enum (`full_set` / `tiebreak` / `super_tiebreak`), `has_third_place_match` boolean. Schema can extend with new format values in v2.
 - `Event` — a draw/category inside a tournament (e.g., "Men's Open", "Mixed 4.0")
 - `Registration` — player/team → event
 - `Team` — for doubles events
@@ -394,6 +398,7 @@ Core entities — for the new Claude Code session to refine. **Every entity belo
   - `set2_team_a` int nullable, `set2_team_b` int nullable — second set score
   - `set3_team_a` int nullable, `set3_team_b` int nullable — third set (tiebreak/super tiebreak, nullable if match ends in 2 sets)
   - `winner_team_id` uuid nullable FK → Team — populated on match completion
+  - `match_type` enum (`standard` / `third_place`) — distinguishes the 3rd-place match from standard bracket matches
   - `scored_at` timestamptz nullable, `scored_by` uuid nullable FK → User (the TO who entered the score)
   - Match winner determination: first team to win 2 sets. Standard sets play to 6 games (tiebreak at 6-6). Last set follows tournament's `last_set_rule`: `full_set` (standard), `tiebreak` (first to 7, win by 2), or `super_tiebreak` (first to 10, win by 2).
 - `Score` — richer polymorphic score table, empty in v1, reserved for v2 detailed per-sport/per-format scoring
@@ -490,7 +495,7 @@ Matchday v1 is fully standalone. No TPS API calls, no OIDC federation, no servic
 
 ### 12.0 · Email Template Inventory (v1)
 
-All emails sent via Resend. Each template is i18n-keyed (TH + EN). 8 templates in v1:
+All emails sent via Resend. Each template is i18n-keyed (TH + EN). 11 templates in v1:
 
 | # | Template | Trigger | Recipient |
 |---|---|---|---|
@@ -499,9 +504,12 @@ All emails sent via Resend. Each template is i18n-keyed (TH + EN). 8 templates i
 | 3 | Application rejected | Admin rejects TO application (includes reason) | Applicant |
 | 4 | Registration confirmed | Player registers solo or doubles pair is confirmed | Player (+ partner for doubles) |
 | 5 | Partner invite | Player invites a partner for doubles | Partner (magic-link to accept/decline) |
-| 6 | Waitlist promotion | Player promoted from waitlist to confirmed | Player |
-| 7 | Draw published | TO publishes the tournament draw | All registered players |
-| 8 | Tournament cancelled | TO cancels the tournament | All registered players |
+| 6 | Partner removed | Doubles player removes their partner | Removed partner |
+| 7 | Partner declined | Partner declines the invite | Inviter |
+| 8 | Invite expired | Registration closed while invite pending | Inviter |
+| 9 | Waitlist promotion | Player promoted from waitlist to confirmed | Player |
+| 10 | Draw published | TO publishes the tournament draw | All registered players |
+| 11 | Tournament cancelled | TO cancels the tournament | All registered players |
 
 ### 12.1 · Secrets, Environments & Deployment Topology
 
@@ -628,7 +636,7 @@ Claude Code can self-check v1 readiness against these. Every criterion is atomic
 - [ ] ISC-28: User search is rate-limited to 30 requests per minute per user
 
 ### Tournament Creation + Registration
-- [ ] ISC-31: Organizer creates a tournament with fields: name, dates, venue, draw size, last-set scoring rule (full set / tiebreak / super tiebreak), free-text level band, free-text entry info
+- [ ] ISC-31: Organizer creates a tournament with fields: name, dates, venue, draw size, match format (best-of-1 / best-of-3), last-set scoring rule (full set / tiebreak / super tiebreak), 3rd-place match toggle, free-text level band, free-text entry info
 - [ ] ISC-31a: New tournaments are created in `draft` status and are visible ONLY to the creating TO and Matchday admins
 - [ ] ISC-31b: Draft tournaments do NOT appear in the public tournament list or in any player's registration flow
 - [ ] ISC-31c: TO transitions a tournament from `draft` to `registration_open` via an explicit "Publish tournament" action on the management hub or the dashboard draft card
@@ -669,7 +677,8 @@ Claude Code can self-check v1 readiness against these. Every criterion is atomic
 - [ ] ISC-53f: On match completion, winner auto-advances to the next bracket slot via Edge Function
 - [ ] ISC-53g: Supabase Realtime broadcasts bracket updates on channel `tournament:{id}:bracket`
 - [ ] ISC-53h: All connected clients see bracket updates within 1s p95 under 100 concurrent viewers
-- [ ] ISC-53i: TO can mark a walkover/withdrawal — opponent auto-advances
+- [ ] ISC-53i: TO can mark a walkover (no scores, opponent advances) or retirement (partial scores recorded, opponent advances)
+- [ ] ISC-53i2: TO can undo a walkover — cascading reset of downstream matches if needed
 - [ ] ISC-53j: Tournament auto-completes when the final match is scored
 - [ ] ISC-53k: Every score entry/edit writes an audit log row
 
