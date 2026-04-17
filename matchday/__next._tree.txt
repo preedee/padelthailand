@@ -5,4 +5,4 @@
 :HL["/matchday/logos/padelution.png","image"]
 :HL["/matchday/logos/americano-padel.png","image"]
 :HL["/matchday/logos/playtomic.png","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"NMElb5NBPWhVYX5qinnEz"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"OUvrZyiVOHgKNaCTB5H3A"}
