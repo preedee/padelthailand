@@ -10,7 +10,7 @@
 
 - **Project name:** Matchday
 - **Tagline (working):** Tournament operations for Asia-Pacific racket sports
-- **Version target:** v1.0 (padel-only MVP) — see `matchday-v2-reference.md` for v2-v9 roadmap
+- **Version target:** v1.0 (padel-only MVP) — see `matchday-v2-v9-reference.md` for v2-v9 roadmap
 - **Sister product:** The Padel Society (TPS) — existing Flutter + Supabase + Next.js ecosystem
 - **Primary founder:** Pap
 
@@ -71,7 +71,7 @@ You are Claude Code, receiving this prompt at the start of a fresh session in an
 ## 4 · Project Context & Personas
 
 ### Standalone product
-Matchday is a **standalone product** with its own brand, codebase, repositories, release cadence, auth system, and venue data. In v1, Matchday has **no runtime dependency on TPS** — it manages its own users, venues, and tournaments independently. TPS integration (account linking API) begins in v3. See `matchday-v2-reference.md` for details.
+Matchday is a **standalone product** with its own brand, codebase, repositories, release cadence, auth system, and venue data. In v1, Matchday has **no runtime dependency on TPS** — it manages its own users, venues, and tournaments independently. TPS integration (account linking API) begins in v3. See `matchday-v2-v9-reference.md` for details.
 
 Matchday does **NOT** get merged into the TPS codebase. Matchday does **NOT** inherit the TPS feature flag catalog or ticket namespace.
 
@@ -126,7 +126,7 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 - **Multi-day tournament support**: scheduling grid handles multiple days
 - i18n: TH + EN
 
-### Out-of-scope v1 (see `matchday-v2-reference.md` for full v2-v9 roadmap)
+### Out-of-scope v1 (see `matchday-v2-v9-reference.md` for full v2-v9 roadmap)
 - **Player score entry** — only TO enters scores in v1. Player scoring + dispute flow arrives in v2.
 - **Push notifications** — v1 has email notifications + "my next match" card. Web Push (OneSignal) arrives in v2.
 - **Entry fee payments** — v1 collects no money. Fees handled offline. Payments arrive in v5.
@@ -167,7 +167,7 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 v1 Matchday is fully standalone. Auth, venues, player profiles, and partner search are all Matchday-native. TPS account linking API arrives in v3.
 
 ### Post-v1
-See `matchday-v2-reference.md` for the v2-v9 roadmap. Matchday has no standalone mobile app — TPS links to Matchday responsive web.
+See `matchday-v2-v9-reference.md` for the v2-v9 roadmap. Matchday has no standalone mobile app — TPS links to Matchday responsive web.
 
 ### CONFIRMATION GATE (do not skip)
 Before writing **any** code, present the following to Pap as a structured `AskUserQuestion`:
@@ -209,7 +209,7 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - PL-V1-10: **Waitlist promotion notification** — email sent when a player is promoted from waitlist to confirmed.
 - PL-V1-11: **Withdrawal** — player can withdraw only while registration is open. Doubles withdrawal voids both registrations. Triggers waitlist promotion (FCFS, TO can override).
 
-**v2+ scope**: See `matchday-v2-reference.md` for deferred player features (player scoring, disputes, push notifications, match history, double elim, TV display mode).
+**v2+ scope**: See `matchday-v2-v9-reference.md` for deferred player features (player scoring, disputes, push notifications, match history, double elim, TV display mode).
 
 ### 7.2 — Tournament organizer features
 
@@ -227,7 +227,7 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - TO-V1-11: **Walkover / withdrawal / retirement** — TO marks walkover (no scores, opponent advances), retirement (partial scores recorded, opponent advances), or undo walkover (cascading reset if downstream matches played).
 - TO-V1-12: **Cancel tournament** — all registered players notified via email, registrations voided, tournament marked cancelled.
 
-**v2+ scope**: See `matchday-v2-reference.md` for deferred TO features (scoring configs, referee delegation, rating-based seeding, payouts, exports).
+**v2+ scope**: See `matchday-v2-v9-reference.md` for deferred TO features (scoring configs, referee delegation, rating-based seeding, payouts, exports).
 
 ### 7.3 — Club / venue features
 
@@ -238,14 +238,14 @@ Caveat: `wecourts.com` geo-blocks non-MENA IPs, so some internals are inferred f
 - CV-V1-02: Tournament detail page shows the venue's name, location, and court count
 - CV-V1-03: A simple "Venues" page lists all venues that have Matchday tournaments, each linking to the list of that venue's tournaments
 
-**v2+ scope**: See `matchday-v2-reference.md` for deferred venue features.
+**v2+ scope**: See `matchday-v2-v9-reference.md` for deferred venue features.
 
 **Architectural note for v1**: The `Venue` table is Matchday-native and is the source of truth. In v2, a `venue_source` column (enum: `matchday` | `tps_sync`) can distinguish Matchday-created venues from TPS-synced ones.
 
-### 7.4 — Referee features (v2 — see `matchday-v2-reference.md` §1)
+### 7.4 — Referee features (v2 — see `matchday-v2-v9-reference.md` §1)
 Not in v1. **v1 architectural obligation**: `User.roles` is a text array supporting additive `referee` role without schema migration.
 
-### 7.5 — Federation features (v2 — see `matchday-v2-reference.md` §2)
+### 7.5 — Federation features (v2 — see `matchday-v2-v9-reference.md` §2)
 Not in v1. **v1 architectural obligation**: `Tournament.sanctioning_profile_id` is a nullable FK column from day one.
 
 ### 7.6 — Tournament Organizer onboarding (v1)
@@ -360,7 +360,7 @@ This matters because migrating production data is expensive and risky. Every arc
 1. **Schema reserves space for deferred features**. Nullable columns, lookup tables, and foreign keys exist for every v2+ feature that will touch an existing table. Examples:
    - `Match.rating_delta_json` (nullable) — reserves space for v2 rating integration on existing match rows
    - `Tournament.sanctioning_profile_id` (nullable FK) — reserves space for v2 federation sanctioning
-   - `Payment` table exists (empty in v1) with the shape defined in `matchday-v2-reference.md` §3 — reserves space for v2 payment processing
+   - `Payment` table exists (empty in v1) with the shape defined in `matchday-v2-v9-reference.md` §3 — reserves space for v2 payment processing
    - `User.role` supports adding `referee`, `federation_official`, etc. without migrating existing rows
    - `Sport` is a first-class row (even though only padel exists in v1), not a constant — v2 sports are new rows, not a schema change
    - `Match` table has nullable `team_a_points`, `team_b_points`, `scored_at`, `scored_by` columns — unused in v1, reserved for v2 scoring. A separate richer `Score` table with polymorphic per-sport/per-format shape (sets, games, golden-point, point-by-point) exists empty in v1 — reserves space for v2 detailed scoring across all formats.
@@ -437,9 +437,9 @@ Language investment follows the market priority from §4.
 
 **Do NOT** translate into P4 languages in v1. It's wasted effort before those markets open.
 
-### Payments — v2 only (see `matchday-v2-reference.md` §3)
+### Payments — v2 only (see `matchday-v2-v9-reference.md` §3)
 
-**v1 does NOT process payments.** v1 TOs collect entry fees offline (cash, bank transfer, LINE Pay, etc.) and describe payment instructions in the tournament's free-text entry-info field. The full payment architecture — country dispatch policy table, hosted-checkout-only rule, Money struct shape, idempotency, generic webhook receiver, reconciliation, refund interface, launch providers (Stripe + Omise for Thailand), and v2+ rollout backlog — is specified in `matchday-v2-reference.md` §3.
+**v1 does NOT process payments.** v1 TOs collect entry fees offline (cash, bank transfer, LINE Pay, etc.) and describe payment instructions in the tournament's free-text entry-info field. The full payment architecture — country dispatch policy table, hosted-checkout-only rule, Money struct shape, idempotency, generic webhook receiver, reconciliation, refund interface, launch providers (Stripe + Omise for Thailand), and v2+ rollout backlog — is specified in `matchday-v2-v9-reference.md` §3.
 
 **v1 architectural obligations** (per §9.0 full-backlog principle):
 - Nullable `stripe_connect_account_id` and `omise_recipient_id` columns on the `User` table
@@ -472,7 +472,7 @@ UTC in the database, always. Display in venue-local time as primary, user-local 
 ## 11 · Integration Contracts
 
 ### v1: No external integrations
-Matchday v1 is fully standalone. No TPS API calls, no OIDC federation, no service tokens, no payment providers, no rating providers. All future integrations are documented in `matchday-v2-reference.md`.
+Matchday v1 is fully standalone. No TPS API calls, no OIDC federation, no service tokens, no payment providers, no rating providers. All future integrations are documented in `matchday-v2-v9-reference.md`.
 
 **v1 architectural obligations** (leave space for future integrations per §9.0):
 - Nullable `stripe_connect_account_id` + `omise_recipient_id` on `User` table
@@ -747,7 +747,7 @@ These are the counter-weights to the build restrictions above — "don't build X
 
 ## 16b · Product Roadmap
 
-See `matchday-v2-reference.md` for the full v2-v9 roadmap with detailed feature specs for each version.
+See `matchday-v2-v9-reference.md` for the full v2-v9 roadmap with detailed feature specs for each version.
 
 ---
 
@@ -1183,7 +1183,7 @@ This appendix captures the competitive landscape as of 2026-04-12. It's not auth
 
 ### 20.3 · Features to steal for v2 (not v1)
 
-- **TV display / spectator mode** — the single-URL live leaderboard for venue TVs. **Build as plain HTML, not framework canvas** (see `matchday-v2-reference.md` §5.1 for the architectural rationale).
+- **TV display / spectator mode** — the single-URL live leaderboard for venue TVs. **Build as plain HTML, not framework canvas** (see `matchday-v2-v9-reference.md` §5.1 for the architectural rationale).
 - **Personal records / lifetime stats** — engagement mechanic seen in competitor apps.
 - **Max-Teams button group UX** for Draw Size input — adopted in v1 (§18.1 Screen 12).
 - **BYE fairness compensation** — can evaluate for v2 formats if needed.

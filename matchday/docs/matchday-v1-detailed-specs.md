@@ -1,7 +1,7 @@
 # Matchday v1 — Detailed Specifications
 
 > **Status:** Draft v0.2 · **Updated:** 2026-04-17 · **Owner:** Pap
-> **Companion to:** `matchday-build-prompt.md` (v1 scope + acceptance criteria) and `matchday-v2-reference.md` (v2-v9 roadmap)
+> **Companion to:** `matchday-build-prompt.md` (v1 scope + acceptance criteria) and `matchday-v2-v9-reference.md` (v2-v9 roadmap)
 > **Purpose:** Implementation-level detail for every v1 feature — state machines, algorithms, validation rules, API contracts, data flows, and edge cases.
 
 ---
