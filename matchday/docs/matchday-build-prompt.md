@@ -101,8 +101,8 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 
 ## 5 · Scope
 
-### v1 cohort & target
-**v1 cohort**: a specific padel tournament in **Thailand**. This is Matchday's beta. v1 exists to serve that one tournament end-to-end, then collect feedback.
+### v1 target
+**v1** is a general-purpose single-elimination padel tournament platform for **Thailand**. Not tied to a specific cohort tournament — v1 is built to handle any single-elim padel tournament in Thailand.
 
 ### In-scope v1 (registration + live single-elim tournament)
 - Sport: **padel only**
@@ -138,8 +138,12 @@ Matchday expands market-by-market in strict priority order. Earlier priorities m
 - Matchday's own rating algorithm (permanent — we integrate, we don't build)
 - Messaging channels — WhatsApp + LINE (v6), others in expansion milestones
 
-### TBD (blocked until Pap decides)
-- Exact v1 cohort tournament identity + organizer contact
+### Decisions (resolved)
+- **No specific cohort tournament** — v1 is general-purpose for any Thailand single-elim padel tournament
+- **Single repo** — `matchday-web/` contains Next.js + Supabase migrations + Edge Functions
+- **Design sprint needed** — no existing brand assets; design sprint before build starts
+- **Pap is primary tester** — plays both TO and player roles during development
+- **Pap on-site** — will be on-site at the first tournament that runs on Matchday
 
 ---
 
@@ -174,7 +178,7 @@ Before writing **any** code, present the following to Pap as a structured `AskUs
 
 1. **Stack confirmation** — approve the v1 stack: Next.js + Supabase (with Realtime for live bracket) + Supabase Auth (email + magic link + Facebook + Google + Apple OAuth) + `@g-loot/react-tournament-brackets` + `dnd-kit` + Resend (no Flutter, no Stripe, no Omise, no TPS integration in v1). If overridden, capture the new choice and the rationale in `DECISIONS.md`.
 2. **Repo strategy for v1** — single `matchday-web/` repo that contains the Next.js frontend, Supabase migrations, and Edge Functions (simpler), OR two separate repos `matchday-web/` + `matchday-backend/` (mirrors TPS structure). Recommended: **single `matchday-web/` repo for v1**.
-3. **v1 cohort confirmation** — confirm the target tournament identity, organizer contact, expected draw size, expected player count, and a rough target date. These numbers shape draw-generation edge cases.
+3. **Draw size range** — confirm the expected range of draw sizes (e.g., 4-64 players) to shape draw-generation edge cases.
 
 Wait for answers. Write answers to `DECISIONS.md` in the root. Then propose a build plan.
 
@@ -353,7 +357,7 @@ Moved into §2.1 to eliminate duplication with the strategic wedge. See the four
 
 **Core principle**: v1's feature scope is tiny, but v1's architecture must accommodate every v2+ feature listed in this document. The schema, auth model, domain boundaries, and API surface must be designed as if you were building the full product — and then you implement only the v1 slice on top of that architecture.
 
-This matters because migrating production data is expensive and risky. Every architectural hole you leave in v1 becomes a schema migration, a refactor, or a scramble in v2. v2 begins immediately after the v1 cohort tournament. There is no grace period to refactor.
+This matters because migrating production data is expensive and risky. Every architectural hole you leave in v1 becomes a schema migration, a refactor, or a scramble in v2. v2 begins immediately after v1 ships. There is no grace period to refactor.
 
 **What "architectural readiness" means in practice:**
 
@@ -529,7 +533,7 @@ All emails sent via Resend. Each template is i18n-keyed (TH + EN). 11 templates 
 - Flags are enabled first for the team (PostHog user targeting), then rolled out 5% → 25% → 50% → 100% per §13 team conventions
 - Unfinished features can land in main as long as their flag is OFF and CI passes
 - A flag stays at 100% for one week before removal
-- The cohort tournament enables its flags only after team-level dogfood has been clean for at least 48 hours
+- The first real tournament enables its flags only after team-level dogfood has been clean for at least 48 hours
 
 **Secrets inventory** (v1):
 
@@ -590,7 +594,7 @@ Matchday adopts the same pattern exactly. **Don't over-invest in testing infrast
 **Explicitly NOT in v1 testing** (matches TPS's current state):
 - No Playwright E2E — TPS doesn't have it; Matchday doesn't either
 - No RLS integration tests — TPS doesn't have them; rely on PR review of RLS policies by the Security Engineer
-- No load testing framework (k6 / Artillery) — TPS doesn't have it; the cohort is small enough that realistic usage is the load test
+- No load testing framework (k6 / Artillery) — TPS doesn't have it; early tournaments are small enough that realistic usage is the load test
 - No visual regression, no accessibility automation, no device-matrix testing
 - No test coverage targets on the Next.js side (no tests to cover)
 
@@ -600,7 +604,7 @@ If v1.1 or v2 needs any of the above, the Lead Engineer proposes it as a deliber
 
 ## 15 · v1 Acceptance Criteria (ISC)
 
-Claude Code can self-check v1 readiness against these. Every criterion is atomic and binary-testable. v1 is intentionally narrow — the cohort tournament is the north star. Progress on this list gates v1 launch.
+Claude Code can self-check v1 readiness against these. Every criterion is atomic and binary-testable. v1 is intentionally narrow — a working single-elim tournament platform is the north star. Progress on this list gates v1 launch.
 
 ### Auth + Identity
 - [ ] ISC-01: User can sign up and sign in via Supabase Auth email + magic link
@@ -751,15 +755,17 @@ See `matchday-v2-v9-reference.md` for the full v2-v9 roadmap with detailed featu
 
 ---
 
-## 17 · Open Questions (Claude Code must ask Pap)
+## 17 · Resolved Decisions
 
-These are v1-critical.
+All open questions have been answered:
 
-1. **v1 cohort tournament identity**: which specific Thailand padel tournament is v1's beta? Organizer name, venue, expected draw size, expected player count, target start date.
-2. **Repo strategy**: single `matchday-web/` repo for v1 (recommended), or two repos (`matchday-web/` + `matchday-backend/`) from day one?
-3. **Branding**: logo, color palette, typography, product voice — does Pap have existing brand assets, or does Matchday need a quick design sprint before v1 build starts?
-4. **Organizer interaction**: how close is Pap to the v1 cohort organizer? Are they willing to be on a weekly call during the v1 build to validate assumptions and test in staging?
-5. **On-site support at the cohort tournament**: who runs it? Is there a Matchday-side technical operator on site during the tournament, or is the TO trained to self-serve?
+| # | Question | Decision |
+|---|---|---|
+| 1 | Cohort tournament | No specific tournament — v1 is general-purpose for any Thailand single-elim padel tournament |
+| 2 | Repo strategy | Single `matchday-web/` repo (Next.js + Supabase migrations + Edge Functions) |
+| 3 | Branding | Design sprint needed — no existing brand assets |
+| 4 | Testing approach | Pap is primary tester, playing both TO and player roles |
+| 5 | On-site support | Pap will be on-site at the first tournament |
 
 ---
 
@@ -1071,7 +1077,7 @@ Fully specced in §7.6. Summary of the layout:
 
 - Paginated list of all `OrganizerApplication` rows, newest first
 - Columns: applicant name · submitted date · LINE ID · status chip (`submitted` / `under_review` / `approved` / `rejected`) · click-through to detail
-- **No filters, no search, no bulk actions in v1** — expected volume is ~1-5 applications total for the cohort
+- **No filters, no search, no bulk actions in v1** — expected volume is ~1-5 applications total at launch
 - Empty state: "No applications yet"
 
 #### Screen 23 — Organizer application detail (`/admin/organizer-applications/[id]`)
@@ -1142,7 +1148,7 @@ Shared layout with Screen 6 (authenticated tournament detail). Differences when 
    ```
    Matchday build prompt received. Summary of my understanding: [2-3 paragraphs
    covering the mission, v1 scope, live scoring + Realtime architecture, and the
-   cohort target].
+   v1 target].
    Before I write any code, I need to complete the confirmation gate.
    ```
 2. Present the §6 CONFIRMATION GATE questions via `AskUserQuestion`.
