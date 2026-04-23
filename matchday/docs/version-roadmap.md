@@ -1,71 +1,95 @@
 # Matchday — Version Roadmap (v0.1 → v1.0)
 
-> **Status:** DRAFT v1 — sequence + increments locked. Content per version evolves as work ships.
-> **Source:** Derived from `matchday-build-prompt.md §5 (v1 in-scope)` and `matchday-v1-detailed-specs.md`.
-> **Format:** Follows `Plans/version-anatomy.md`.
+> **Status:** DRAFT v3 — simplified 2026-04-24.
+> **All versions:** `Planned` · target Q2 '26
+> **Format:** `Plans/version-anatomy.md` · **Decisions log:** `Plans/decisions.md`
 
 ---
 
-> **v0.1.0 — "Foundation"**  `Planned`  ·  Q2 '26
+## Prerequisites (in place before v0.1)
+
+- Domain registration + DNS
+- Apple Developer account (Sign in with Apple)
+- Facebook OAuth app + review submission
+- Google OAuth app
+- Email provider account (Resend / SES decision)
+- Branding + design sprint
+- Sentry / observability provider account
+
+## Cross-cutting Definition of Done (every version)
+
+- **Accessibility:** keyboard nav + screen reader labels + WCAG AA contrast
+- **Observability:** errors instrumented in Sentry; key page loads logged
+- **Audit log:** mutating actions write an audit row (who, what, when)
+
+---
+
+> **v0.1.0 — "Foundation"**
 >
-> Next.js 15 + Supabase scaffold, auth, and core schema with RLS.
+> Next.js + Supabase scaffold, magic-link auth, RLS baseline, realtime architecture spike.
 >
 > - Next.js 15 + Tailwind 4 + shadcn/ui scaffold
-> - Supabase project, migrations, RLS baseline
-> - Auth: email magic link + Google/Facebook/Apple
+> - Supabase project + first migration
+> - RLS baseline + policy testing harness
+> - Auth: email magic link only
 > - i18n harness (TH + EN)
 > - Design system tokens from `matchday-design-system.md`
+> - **Realtime spike:** Supabase Realtime POC — broadcast/subscribe + payload size sanity check
 >
-> [Spec →]
+> **Done when:** Realtime POC validates 2-client round-trip <500ms; magic-link login + RLS gates on protected tables both work.
 
-> **v0.2.0 — "Player Identity"**  `Planned`  ·  Q2 '26  ·  `Player`
+> **v0.2.0 — "Player Identity"**  ·  `Player`
 >
-> Player signup, profile, and authenticated home.
+> Social auth, email infrastructure, player profile, authenticated home.
 >
+> - Social sign-in: Google + Facebook + Apple
+> - **Email infrastructure:** provider integration + transactional template engine + dev/prod sender separation
 > - Player profile: name, DOB, gender, city/country, phone/LINE/WhatsApp, hand/side
-> - Signup + sign-in flows (email + social)
 > - `/me/settings` + `/me/registrations` (empty state)
 > - Player home `/`
 >
-> [Spec →]
+> **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain.
 
-> **v0.3.0 — "Organizer + Venues"**  `Planned`  ·  Q2 '26  ·  `Organizer` `Venue`
+> **v0.3.0 — "Organizer + Venues + Admin"**  ·  `Organizer` `Venue` `Admin`
 >
-> TO onboarding, venue management, draft tournament creation.
+> TO onboarding, admin approval, venue management, draft tournament creation.
 >
-> - TO application flow + admin approval (`/organizer/apply`, `/admin/organizer-applications`)
+> - TO application flow (`/organizer/apply`, `/organizer/apply/status`)
+> - Admin dashboard + organizer applications list + detail (`/admin`, `/admin/organizer-applications`)
 > - Venue create/select (name, city, court count + names, address)
 > - Tournament create as `draft`: name, dates, venue, draw size, last-set rule
 > - Organizer dashboard + tournament management hub
 > - Organizer public profile `/organizer/[slug]`
 >
-> [Spec →]
+> **Done when:** A player applies → admin approves → approved TO creates a venue + draft tournament invisible to the public.
 
-> **v0.4.0 — "Registration"**  `Planned`  ·  Q2 '26  ·  `Player` `Organizer`
+> **v0.4.0 — "Registration"**  ·  `Player` `Organizer`
 >
 > Solo + doubles registration with partner matching and waitlist.
 >
 > - Tournament lifecycle: `draft → registration_open → registration_closed`
 > - Solo registration
 > - Doubles registration + partner search modal + invite tokens
+> - `/invite/[token]` accept/decline flow
 > - TO registrations tab: auto-accept, waitlist, waitlist promotion email
 > - Withdrawal + add/remove partner
 >
-> [Spec →]
+> **Done when:** Doubles team registers via partner-invite token; waitlist promotion email fires when a slot opens.
 
-> **v0.5.0 — "Draw Engine"**  `Planned`  ·  Q2 '26  ·  `Organizer`
+> **v0.5.0 — "Draw Engine + Public Bracket"**  ·  `Organizer` `Spectator`
 >
-> Single-elim bracket generation with manual seeding and byes.
+> Single-elim bracket generation with manual seeding, byes, and read-only public view.
 >
 > - Bracket sizing (4–128, top seeds get byes)
 > - Manual drag-drop seeding UI
 > - Bye placement algorithm
 > - Draw as persistent document (decoupled from tournament state)
 > - Publish draw → tournament `published`
+> - **Public read-only bracket view** at `/tournaments/[id]` (page refresh; realtime arrives v0.8)
 >
-> [Spec →]
+> **Done when:** A published bracket renders correctly to an unauthenticated viewer for both power-of-2 and non-power-of-2 draw sizes.
 
-> **v0.6.0 — "Live Scoring"**  `Planned`  ·  Q2 '26  ·  `Organizer`
+> **v0.6.0 — "Live Scoring"**  ·  `Organizer`
 >
 > TO score entry, bracket cascade, retirement, score-edit undo.
 >
@@ -76,9 +100,9 @@
 > - Cascading undo for score edits + walkover undo
 > - Tournament `live` state on first match start
 >
-> [Spec →]
+> **Done when:** A mock 8-team tournament is scored end-to-end with cascade, retirement, and undo all passing E2E tests.
 
-> **v0.7.0 — "Scheduling"**  `Planned`  ·  Q2 '26  ·  `Organizer`
+> **v0.7.0 — "Scheduling"**  ·  `Organizer`
 >
 > Court × time grid scheduling with auto-schedule and conflict detection.
 >
@@ -89,9 +113,9 @@
 > - Conflict detection (player double-book, bracket dependency)
 > - Multi-day support
 >
-> [Spec →]
+> **Done when:** Auto-schedule produces a conflict-free schedule for a representative 16-team multi-day tournament.
 
-> **v0.8.0 — "Realtime + Spectator"**  `Planned`  ·  Q2 '26  ·  `Spectator` `Player`
+> **v0.8.0 — "Realtime + Spectator"**  ·  `Spectator` `Player`
 >
 > Supabase Realtime bracket updates and TV-friendly spectator mode.
 >
@@ -101,11 +125,11 @@
 > - Spectator mode `?spectator=true` (hides nav, enlarges bracket, TV-ready)
 > - Presence / viewer count
 >
-> [Spec →]
+> **Done when:** 100 concurrent simulated viewers receive score updates within 1 second.
 
-> **v0.9.0 — "Placements + Polish"**  `Planned`  ·  Q2 '26  ·  `Organizer` `Player`
+> **v0.9.0 — "Placements + Polish"**  ·  `Organizer` `Player`
 >
-> Placements, cancellation, social sharing, and pre-launch polish.
+> Placements, cancellation, social sharing, pre-launch polish.
 >
 > - Placements auto-derived (1st/2nd/optional 3rd-place match)
 > - Manual placement override (audit-logged)
@@ -113,23 +137,26 @@
 > - OpenGraph rich previews for LINE/WhatsApp sharing
 > - Email template inventory complete
 >
-> [Spec →]
+> **Done when:** End-to-end mock tournament finishes with correct placements and a shared link renders an OG preview on LINE.
 
-> **v1.0.0 — "General Availability"**  `Planned`  ·  Q2 '26  ·  `Organizer` `Player` `Spectator` `Venue`
+> **v1.0.0 — "General Availability"**  ·  `Organizer` `Player` `Spectator` `Venue`
 >
 > Production-hardened, first real Thailand padel tournament runs on Matchday.
 >
-> - Performance + accessibility pass
-> - Security review (secrets, RLS coverage, audit log)
+> - Performance pass (Lighthouse budgets met)
+> - Accessibility audit (WCAG AA)
+> - Security review (secrets, RLS coverage, audit log completeness)
 > - All v1 ISC criteria from build-prompt §15 met
 > - Pap on-site for first tournament
 >
-> [Spec →]
+> **Done when:** A real Thailand padel tournament runs end-to-end on Matchday without engineering intervention.
 
 ---
 
-## Resolved decisions
+## Known risks
 
-- **Sequence:** Live Scoring (v0.6) ships before Scheduling (v0.7) — de-risks state-machine complexity first; a tournament can run without a printed schedule but not without scoring.
-- **Increments:** 9 sub-versions before v1.0 — preserves demo-able milestones; granularity trades higher status-update cost for clearer progress signal.
-- **v0.1.0 status:** `Planned` — keep `In Progress` reserved for versions with substantive traction (Supabase wired, auth working, first migration).
+| # | Risk | Where it bites | Mitigation |
+|---|---|---|---|
+| 1 | Supabase Realtime at 100 concurrent viewers | v0.8 | Realtime spike in v0.1 + scaled test before v0.6 |
+| 2 | Auto-schedule fails to converge on hard cases | v0.7 | Ship manual-only first; auto-schedule as enhancement |
+| 3 | Doubles partner-invite race conditions | v0.4 | Edge Function with row-level lock, not direct mutation |
