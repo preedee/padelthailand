@@ -1,12 +1,12 @@
 # Matchday — Version Roadmap (v0.1 → v1.0)
 
-> **Status:** DRAFT — proposed decomposition, sequence and increments pending Pap's review.
+> **Status:** DRAFT v1 — sequence + increments locked. Content per version evolves as work ships.
 > **Source:** Derived from `matchday-build-prompt.md §5 (v1 in-scope)` and `matchday-v1-detailed-specs.md`.
 > **Format:** Follows `Plans/version-anatomy.md`.
 
 ---
 
-> **v0.1.0 — "Foundation"**  `In Progress`  ·  Q2 '26
+> **v0.1.0 — "Foundation"**  `Planned`  ·  Q2 '26
 >
 > Next.js 15 + Supabase scaffold, auth, and core schema with RLS.
 >
@@ -65,20 +65,7 @@
 >
 > [Spec →]
 
-> **v0.6.0 — "Scheduling"**  `Planned`  ·  Q2 '26  ·  `Organizer`
->
-> Court × time grid scheduling with auto-schedule and conflict detection.
->
-> - Court × time grid (15-min increments)
-> - Per-round duration config
-> - Auto-schedule algorithm + drag-drop manual adjustments
-> - Court availability blocking
-> - Conflict detection (player double-book, bracket dependency)
-> - Multi-day support
->
-> [Spec →]
-
-> **v0.7.0 — "Live Scoring"**  `Planned`  ·  Q2 '26  ·  `Organizer`
+> **v0.6.0 — "Live Scoring"**  `Planned`  ·  Q2 '26  ·  `Organizer`
 >
 > TO score entry, bracket cascade, retirement, score-edit undo.
 >
@@ -88,6 +75,19 @@
 > - Bracket cascade: winner auto-advances
 > - Cascading undo for score edits + walkover undo
 > - Tournament `live` state on first match start
+>
+> [Spec →]
+
+> **v0.7.0 — "Scheduling"**  `Planned`  ·  Q2 '26  ·  `Organizer`
+>
+> Court × time grid scheduling with auto-schedule and conflict detection.
+>
+> - Court × time grid (15-min increments)
+> - Per-round duration config
+> - Auto-schedule algorithm + drag-drop manual adjustments
+> - Court availability blocking
+> - Conflict detection (player double-book, bracket dependency)
+> - Multi-day support
 >
 > [Spec →]
 
@@ -128,8 +128,8 @@
 
 ---
 
-## Open questions for Pap
+## Resolved decisions
 
-1. **Sequence:** Could swap Scheduling (v0.6) and Live Scoring (v0.7) — a tournament can run without a printed schedule.
-2. **Increments:** 9 sub-versions may be too many. Candidates to merge: v0.5+v0.6 (Draw+Schedule), v0.8+v0.9 (Realtime+Polish).
-3. **Status of v0.1.0:** Marked `In Progress` based on the existing scaffold edits in `product-hub/` — confirm.
+- **Sequence:** Live Scoring (v0.6) ships before Scheduling (v0.7) — de-risks state-machine complexity first; a tournament can run without a printed schedule but not without scoring.
+- **Increments:** 9 sub-versions before v1.0 — preserves demo-able milestones; granularity trades higher status-update cost for clearer progress signal.
+- **v0.1.0 status:** `Planned` — keep `In Progress` reserved for versions with substantive traction (Supabase wired, auth working, first migration).
