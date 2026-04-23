@@ -6,7 +6,7 @@
 
 ---
 
-> **v0.1.0 — "Foundation"**  `In Progress`  ·  target Apr 2026
+> **v0.1.0 — "Foundation"**  `In Progress`  ·  Q2 '26
 >
 > Next.js 15 + Supabase scaffold, auth, and core schema with RLS.
 >
@@ -41,7 +41,7 @@
 >
 > [Spec →]
 
-> **v0.4.0 — "Registration"**  `Planned`  ·  Q3 '26  ·  `Player` `Organizer`
+> **v0.4.0 — "Registration"**  `Planned`  ·  Q2 '26  ·  `Player` `Organizer`
 >
 > Solo + doubles registration with partner matching and waitlist.
 >
@@ -53,7 +53,7 @@
 >
 > [Spec →]
 
-> **v0.5.0 — "Draw Engine"**  `Planned`  ·  Q3 '26  ·  `Organizer`
+> **v0.5.0 — "Draw Engine"**  `Planned`  ·  Q2 '26  ·  `Organizer`
 >
 > Single-elim bracket generation with manual seeding and byes.
 >
@@ -65,7 +65,7 @@
 >
 > [Spec →]
 
-> **v0.6.0 — "Scheduling"**  `Planned`  ·  Q3 '26  ·  `Organizer`
+> **v0.6.0 — "Scheduling"**  `Planned`  ·  Q2 '26  ·  `Organizer`
 >
 > Court × time grid scheduling with auto-schedule and conflict detection.
 >
@@ -78,7 +78,7 @@
 >
 > [Spec →]
 
-> **v0.7.0 — "Live Scoring"**  `Planned`  ·  Q3 '26  ·  `Organizer`
+> **v0.7.0 — "Live Scoring"**  `Planned`  ·  Q2 '26  ·  `Organizer`
 >
 > TO score entry, bracket cascade, retirement, score-edit undo.
 >
@@ -91,7 +91,7 @@
 >
 > [Spec →]
 
-> **v0.8.0 — "Realtime + Spectator"**  `Planned`  ·  Q3 '26  ·  `Spectator` `Player`
+> **v0.8.0 — "Realtime + Spectator"**  `Planned`  ·  Q2 '26  ·  `Spectator` `Player`
 >
 > Supabase Realtime bracket updates and TV-friendly spectator mode.
 >
@@ -103,7 +103,7 @@
 >
 > [Spec →]
 
-> **v0.9.0 — "Placements + Polish"**  `Planned`  ·  Q3 '26  ·  `Organizer` `Player`
+> **v0.9.0 — "Placements + Polish"**  `Planned`  ·  Q2 '26  ·  `Organizer` `Player`
 >
 > Placements, cancellation, social sharing, and pre-launch polish.
 >
@@ -115,7 +115,7 @@
 >
 > [Spec →]
 
-> **v1.0.0 — "General Availability"**  `Planned`  ·  Q4 '26  ·  `Organizer` `Player` `Spectator` `Venue`
+> **v1.0.0 — "General Availability"**  `Planned`  ·  Q2 '26  ·  `Organizer` `Player` `Spectator` `Venue`
 >
 > Production-hardened, first real Thailand padel tournament runs on Matchday.
 >
