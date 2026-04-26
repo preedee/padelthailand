@@ -24,7 +24,7 @@
 
 ---
 
-> **v0.1.0 — "Foundation"**
+> **v0.1.0 — "Foundation"** · `Shipped` · 2026-04-25
 >
 > Next.js + Supabase scaffold, magic-link auth, RLS baseline, realtime architecture spike.
 >
