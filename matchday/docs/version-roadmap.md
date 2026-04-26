@@ -3,6 +3,7 @@
 > **Status:** DRAFT v3 — simplified 2026-04-24.
 > **All versions:** `Planned` · target Q2 '26
 > **Format:** `Plans/version-anatomy.md` · **Decisions log:** `Plans/decisions.md`
+> **Feature checklist:** `- [x]` = shipped, `- [ ]` = pending. Per-version status pill is the headline; per-feature checkboxes show fine-grained progress.
 
 ---
 
@@ -28,13 +29,13 @@
 >
 > Next.js + Supabase scaffold, magic-link auth, RLS baseline, realtime architecture spike.
 >
-> - Next.js 15 + Tailwind 4 + shadcn/ui scaffold
-> - Supabase project + first migration
-> - RLS baseline + policy testing harness
-> - Auth: email magic link only
-> - i18n harness (TH + EN)
-> - Design system tokens from `matchday-design-system.md`
-> - **Realtime spike:** Supabase Realtime POC — broadcast/subscribe + payload size sanity check
+> - [x] Next.js 15 + Tailwind 4 + shadcn/ui scaffold
+> - [x] Supabase project + first migration
+> - [x] RLS baseline + policy testing harness
+> - [x] Auth: email magic link only
+> - [x] i18n harness (TH + EN)
+> - [x] Design system tokens from `matchday-design-system.md`
+> - [x] **Realtime spike:** Supabase Realtime POC — broadcast/subscribe + payload size sanity check
 >
 > **Done when:** Realtime POC validates 2-client round-trip <500ms; magic-link login + RLS gates on protected tables both work.
 
@@ -42,11 +43,11 @@
 >
 > Social auth, email infrastructure, player profile, authenticated home.
 >
-> - Social sign-in: Google + Facebook + Apple
-> - **Email infrastructure:** provider integration + transactional template engine + dev/prod sender separation
-> - Player profile: name, DOB, gender, city/country, phone/LINE/WhatsApp, hand/side
-> - `/me/settings` + `/me/registrations` (empty state)
-> - Player home `/`
+> - [ ] Social sign-in: Google + Facebook + Apple (code shipped, providers not yet configured)
+> - [ ] **Email infrastructure:** provider integration + transactional template engine + dev/prod sender separation
+> - [x] Player profile: name, DOB, gender, city/country, phone/LINE/WhatsApp, hand/side
+> - [x] `/me/settings` + `/me/registrations` (empty state)
+> - [x] Player home `/`
 >
 > **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain.
 
@@ -54,12 +55,12 @@
 >
 > TO onboarding, admin approval, venue management, draft tournament creation.
 >
-> - TO application flow (`/organizer/apply`, `/organizer/apply/status`)
-> - Admin dashboard + organizer applications list + detail (`/admin`, `/admin/organizer-applications`)
-> - Venue create/select (name, city, court count + names, address)
-> - Tournament create as `draft`: name, dates, venue, draw size, last-set rule
-> - Organizer dashboard + tournament management hub
-> - Organizer public profile `/organizer/[slug]`
+> - [ ] TO application flow (`/organizer/apply`, `/organizer/apply/status`)
+> - [ ] Admin dashboard + organizer applications list + detail (`/admin`, `/admin/organizer-applications`)
+> - [ ] Venue create/select (name, city, court count + names, address)
+> - [ ] Tournament create as `draft`: name, dates, venue, draw size, last-set rule
+> - [ ] Organizer dashboard + tournament management hub
+> - [ ] Organizer public profile `/organizer/[slug]`
 >
 > **Done when:** A player applies → admin approves → approved TO creates a venue + draft tournament invisible to the public.
 
@@ -67,12 +68,12 @@
 >
 > Solo + doubles registration with partner matching and waitlist.
 >
-> - Tournament lifecycle: `draft → registration_open → registration_closed`
-> - Solo registration
-> - Doubles registration + partner search modal + invite tokens
-> - `/invite/[token]` accept/decline flow
-> - TO registrations tab: auto-accept, waitlist, waitlist promotion email
-> - Withdrawal + add/remove partner
+> - [ ] Tournament lifecycle: `draft → registration_open → registration_closed`
+> - [ ] Solo registration
+> - [ ] Doubles registration + partner search modal + invite tokens
+> - [ ] `/invite/[token]` accept/decline flow
+> - [ ] TO registrations tab: auto-accept, waitlist, waitlist promotion email
+> - [ ] Withdrawal + add/remove partner
 >
 > **Done when:** Doubles team registers via partner-invite token; waitlist promotion email fires when a slot opens.
 
@@ -80,12 +81,12 @@
 >
 > Single-elim bracket generation with manual seeding, byes, and read-only public view.
 >
-> - Bracket sizing (4–128, top seeds get byes)
-> - Manual drag-drop seeding UI
-> - Bye placement algorithm
-> - Draw as persistent document (decoupled from tournament state)
-> - Publish draw → tournament `published`
-> - **Public read-only bracket view** at `/tournaments/[id]` (page refresh; realtime arrives v0.8)
+> - [ ] Bracket sizing (4–128, top seeds get byes)
+> - [ ] Manual drag-drop seeding UI
+> - [ ] Bye placement algorithm
+> - [ ] Draw as persistent document (decoupled from tournament state)
+> - [ ] Publish draw → tournament `published`
+> - [ ] **Public read-only bracket view** at `/tournaments/[id]` (page refresh; realtime arrives v0.8)
 >
 > **Done when:** A published bracket renders correctly to an unauthenticated viewer for both power-of-2 and non-power-of-2 draw sizes.
 
@@ -93,12 +94,12 @@
 >
 > TO score entry, bracket cascade, retirement, score-edit undo.
 >
-> - Per-set score entry (best-of-1 / best-of-3)
-> - Standard set + tiebreak + super tiebreak validation
-> - Retirement (partial scores → opponent advances)
-> - Bracket cascade: winner auto-advances
-> - Cascading undo for score edits + walkover undo
-> - Tournament `live` state on first match start
+> - [ ] Per-set score entry (best-of-1 / best-of-3)
+> - [ ] Standard set + tiebreak + super tiebreak validation
+> - [ ] Retirement (partial scores → opponent advances)
+> - [ ] Bracket cascade: winner auto-advances
+> - [ ] Cascading undo for score edits + walkover undo
+> - [ ] Tournament `live` state on first match start
 >
 > **Done when:** A mock 8-team tournament is scored end-to-end with cascade, retirement, and undo all passing E2E tests.
 
@@ -106,12 +107,12 @@
 >
 > Court × time grid scheduling with auto-schedule and conflict detection.
 >
-> - Court × time grid (15-min increments)
-> - Per-round duration config
-> - Auto-schedule algorithm + drag-drop manual adjustments
-> - Court availability blocking
-> - Conflict detection (player double-book, bracket dependency)
-> - Multi-day support
+> - [ ] Court × time grid (15-min increments)
+> - [ ] Per-round duration config
+> - [ ] Auto-schedule algorithm + drag-drop manual adjustments
+> - [ ] Court availability blocking
+> - [ ] Conflict detection (player double-book, bracket dependency)
+> - [ ] Multi-day support
 >
 > **Done when:** Auto-schedule produces a conflict-free schedule for a representative 16-team multi-day tournament.
 
@@ -119,11 +120,11 @@
 >
 > Supabase Realtime bracket updates and TV-friendly spectator mode.
 >
-> - Realtime channel design + broadcast triggers
-> - Live bracket view (~100 concurrent viewers)
-> - Match status indicators (upcoming / in progress / completed)
-> - Spectator mode `?spectator=true` (hides nav, enlarges bracket, TV-ready)
-> - Presence / viewer count
+> - [ ] Realtime channel design + broadcast triggers
+> - [ ] Live bracket view (~100 concurrent viewers)
+> - [ ] Match status indicators (upcoming / in progress / completed)
+> - [ ] Spectator mode `?spectator=true` (hides nav, enlarges bracket, TV-ready)
+> - [ ] Presence / viewer count
 >
 > **Done when:** 100 concurrent simulated viewers receive score updates within 1 second.
 
@@ -131,11 +132,11 @@
 >
 > Placements, cancellation, social sharing, pre-launch polish.
 >
-> - Placements auto-derived (1st/2nd/optional 3rd-place match)
-> - Manual placement override (audit-logged)
-> - Tournament cancellation flow (notify + void registrations)
-> - OpenGraph rich previews for LINE/WhatsApp sharing
-> - Email template inventory complete
+> - [ ] Placements auto-derived (1st/2nd/optional 3rd-place match)
+> - [ ] Manual placement override (audit-logged)
+> - [ ] Tournament cancellation flow (notify + void registrations)
+> - [ ] OpenGraph rich previews for LINE/WhatsApp sharing
+> - [ ] Email template inventory complete
 >
 > **Done when:** End-to-end mock tournament finishes with correct placements and a shared link renders an OG preview on LINE.
 
@@ -143,11 +144,11 @@
 >
 > Production-hardened, first real Thailand padel tournament runs on Matchday.
 >
-> - Performance pass (Lighthouse budgets met)
-> - Accessibility audit (WCAG AA)
-> - Security review (secrets, RLS coverage, audit log completeness)
-> - All v1 ISC criteria from build-prompt §15 met
-> - Pap on-site for first tournament
+> - [ ] Performance pass (Lighthouse budgets met)
+> - [ ] Accessibility audit (WCAG AA)
+> - [ ] Security review (secrets, RLS coverage, audit log completeness)
+> - [ ] All v1 ISC criteria from build-prompt §15 met
+> - [ ] Pap on-site for first tournament
 >
 > **Done when:** A real Thailand padel tournament runs end-to-end on Matchday without engineering intervention.
 
