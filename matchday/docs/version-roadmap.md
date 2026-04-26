@@ -38,7 +38,7 @@
 >
 > **Done when:** Realtime POC validates 2-client round-trip <500ms; magic-link login + RLS gates on protected tables both work.
 
-> **v0.2.0 — "Player Identity"**  ·  `Player`
+> **v0.2.0 — "Player Identity"** · `In Progress` · 2026-04-26 · `Player`
 >
 > Social auth, email infrastructure, player profile, authenticated home.
 >
