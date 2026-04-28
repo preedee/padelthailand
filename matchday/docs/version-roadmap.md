@@ -53,44 +53,44 @@
 >
 > **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain. **Ship-blocker (2026-04-27):** Pap-side prereqs only — domain (D1), Resend account + DKIM/SPF (P4-P6), Google + Facebook OAuth apps (P2-P3), Vercel deploy (P7).
 
-> **v0.3.0 — "Organizer + Venues + Admin"** · `In Progress` · 2026-04-28 · `Organizer` `Venue` `Admin`
+> **v0.3.0 — "Organizer + Venues + Admin"** · `Shipped` · 2026-04-28 · `Organizer` `Venue` `Admin`
 >
 > TO onboarding, admin approval, venue management, draft tournament creation.
 >
-> - [ ] TO application flow (`/organizer/apply`, `/organizer/apply/status`)
-> - [ ] Admin dashboard + organizer applications list + detail (`/admin`, `/admin/organizer-applications`)
-> - [ ] Venue create/select (name, city, court count + names, address)
-> - [ ] Tournament create as `draft`: name, dates, venue, draw size, last-set rule
-> - [ ] Organizer dashboard + tournament management hub
-> - [ ] Organizer public profile `/organizer/[slug]`
+> - [x] TO application flow (`/organizer/apply`, `/organizer/apply/status`)
+> - [x] Admin dashboard + organizer applications list + detail (`/admin`, `/admin/organizer-applications`)
+> - [x] Venue create/select (name, city, court count + names, address)
+> - [x] Tournament create as `draft`: name, dates, venue, draw size, last-set rule
+> - [x] Organizer dashboard + tournament management hub
+> - [x] Organizer public profile `/organizer/[slug]`
 >
 > **Done when:** A player applies → admin approves → approved TO creates a venue + draft tournament invisible to the public.
 
-> **v0.4.0 — "Registration"**  ·  `Player` `Organizer`
+> **v0.4.0 — "Registration"** · `Shipped` · 2026-04-28 · `Player` `Organizer`
 >
 > Solo + doubles registration with partner matching and waitlist.
 >
-> - [ ] Tournament lifecycle: `draft → registration_open → registration_closed`
-> - [ ] Solo registration
-> - [ ] Doubles registration + partner search modal + invite tokens
-> - [ ] `/invite/[token]` accept/decline flow
-> - [ ] TO registrations tab: auto-accept, waitlist, waitlist promotion email
-> - [ ] Withdrawal + add/remove partner
+> - [x] Tournament lifecycle: `draft → registration_open → registration_closed`
+> - [x] Solo registration
+> - [x] Doubles registration + partner search modal + invite tokens
+> - [x] `/invite/[token]` accept/decline flow
+> - [x] TO registrations tab: auto-accept, waitlist, waitlist promotion email
+> - [x] Withdrawal + add/remove partner
 >
 > **Done when:** Doubles team registers via partner-invite token; waitlist promotion email fires when a slot opens.
 
-> **v0.5.0 — "Draw Engine + Public Bracket"**  ·  `Organizer` `Spectator`
+> **v0.5.0 — "Draw Engine + Public Bracket"** · `Shipped` · 2026-04-28 · `Organizer` `Spectator`
 >
 > Single-elim bracket generation with manual seeding, byes, and read-only public view.
 >
-> - [ ] Bracket sizing (4–128, top seeds get byes)
-> - [ ] Manual drag-drop seeding UI
-> - [ ] Bye placement algorithm
-> - [ ] Draw as persistent document (decoupled from tournament state)
-> - [ ] Publish draw → tournament `published`
-> - [ ] **Public read-only bracket view** at `/tournaments/[id]` (page refresh; realtime arrives v0.8)
+> - [x] Bracket sizing (4–128, top seeds get byes)
+> - [x] Manual drag-drop seeding UI
+> - [x] Bye placement algorithm
+> - [x] Draw as persistent document (decoupled from tournament state)
+> - [x] Publish draw → tournament `published`
+> - [x] **Public read-only bracket view** at `/tournaments/[organizer-slug]/[tournament-slug]/bracket` (D11 vanity URL; UUID-fallback redirects to canonical slug; page refresh; realtime arrives v0.8)
 >
-> **Done when:** A published bracket renders correctly to an unauthenticated viewer for both power-of-2 and non-power-of-2 draw sizes.
+> **Done when:** A published bracket renders correctly to an unauthenticated viewer for both power-of-2 and non-power-of-2 draw sizes. **Phase A (B36-B47) + Phase B (W45-W54) shipped 2026-04-28; Phase C ship gate is DoD2 walkthrough by Pap (15 sub-checks: a-o).**
 
 > **v0.6.0 — "Live Scoring"**  ·  `Organizer`
 >

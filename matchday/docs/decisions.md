@@ -4,6 +4,43 @@ Living log of decisions made during roadmap planning. Most recent first.
 
 ---
 
+## 2026-04-28 — v0.5.0 Phase A + Phase B shipped (Draw Engine + Public Bracket)
+
+- **24 commits across both repos all on `main` and CI-green** (14 Phase A backend in `preedee/matchday-backend` + 10 Phase B web in `preedee/matchday-web`). Same Option C parallel-blitz cadence as v0.3/v0.4 — 3 worktree agents per wave, cherry-pick onto main, push, watch CI, advance the wave.
+- **Zero D-decision overrides.** All 15 D-decisions (D1-D15) accepted as DRAFT v3 recommended defaults; this is the first release where Pap took every default without an override (v0.4 had 4 overrides, v0.3 had 0 — D-tuning is converging).
+- **Phase A surface (matchday-backend SHAs):**
+  - B36 `48d53f2` draw + draw_seed tables (RLS: published-public / draft-organizer)
+  - B37 `b3d5c17` match table (D2 — full canonical shape, v0.6 columns nullable)
+  - B38 `d54bf4e` audit_action enum completeness check
+  - B39 `5cfbcff` upsert_draw_seed_rpc + B40 `1eb9983` remove_draw_seed_rpc + `b244aa3` perf fold-in (auth-into-tournament-FOR-UPDATE)
+  - B41 `80d1df8+2885eee` generate_draw_rpc — recursive-halving seed-to-slot + bye placement (the heaviest single commit; +slot-name fix `'a'/'b'` to match B37 CHECK)
+  - B42 `c076806` publish_draw_rpc (atomic publish + sweep_pending_partner_invites_rpc invocation + per-recipient email manifest)
+  - B43 `e334dc4` publish-draw Edge Function (per-recipient cascade with A-A19 idempotency-key-per-recipient)
+  - B44 `55f0f9d` generate-draw + B44a/B44b `0c6d0ca+6eb9ad2` upsert/remove-draw-seed Edge Functions (`extra:` field shape fix on capture)
+  - B45 `a0ed2bf` draw_published bilingual template + send-draw-email Edge Function
+  - B46 `d0ee4cf` RLS regression + Edge Function smoke tests (12-in-16 + 7-in-8 + 1-in-2 + 31-in-32 + 0-confirmed paths)
+  - B47 `b3307df` types regen via deploy.yml auto-step
+- **Phase B surface (matchday-web SHAs):**
+  - W45 `1bcc184` sync types (1076→1390 lines) + `bun add @g-loot/react-tournament-brackets` + `@dnd-kit/{core,sortable,utilities}`
+  - W46 `ddb3743` public bracket route `/[locale]/tournaments/[organizer-slug]/[tournament-slug]/bracket` + UUID-fallback redirect (W46a rolled in) + sr-only `<ol>` fallback for AT (D10 SSR shell + client SVG hybrid)
+  - W47 `ac845f9` Draw tab drag-drop seeding (dnd-kit PointerSensor + KeyboardSensor + native `<select>` "Set seed for [team]" dropdown D13 fallback; optimistic UI with reconciliation per P-F03/P-F10)
+  - W48 `3ef7216` Auto-fill / Generate buttons + bracket preview (TO-side @g-loot render — same component as W46 public route)
+  - W49 `04ac5cc` Publish draw button + AlertDialog confirm
+  - W50 `3908627` status pill update for `published`
+  - W51 `5f9f57d` bracket CTA on player detail page (visible when published)
+  - W52 `32bb395` i18n keys sweep + EN↔TH parity + shared `bracketRoundLabel` helper extracted to `src/i18n/round-label.ts` (TO preview labels match player-facing post-publish exactly)
+  - W53 `0897510` Sentry capture sweep on draw server actions (`function: draw.{upsertSeed|removeSeed|generate|publish}` tags; 5xx-only gate, PII allowlist preserved)
+  - W54 `c4071b8` manual a11y review + Lighthouse budget check (auto-axe deferred to OrbStack-era; bracket page conservatively estimated 180-230 KB gzipped, within 250 KB target — precise measurement deferred to post-deploy Lighthouse on Vercel)
+- **Notable cross-version patterns:**
+  - **Per-recipient email idempotency** (A-A19 amendment to B43): key `${tournament_id}:draw_published:${user_id}:v1` (NOT per-tournament) so partial-failure retries resume at the failed recipient instead of being short-circuited by the first success.
+  - **Worktree pollution discipline:** every wave's CI-clean lint run required removing the agents' `.claude/worktrees/*` after cherry-pick (their `.next/build/chunks/` artifacts trigger ESLint warnings on the orchestrator's tree). Established as part of the Wave-N cherry-pick → cleanup → push procedure.
+  - **Round-label dedup (W52):** the public W46 page and the TO W48 preview were both computing semantic round labels (Round N / QF / SF / Final) locally; W52's Simplify pass extracted the shared helper so the TO preview shows exactly what the player will see post-publish — single source of truth.
+- **Risks closed:** R1 (bracket non-power-of-2 correctness) — B46 fixture matrix covers 12-in-16 + 7-in-8 + 1-in-2 + 31-in-32. R9 (dnd-kit a11y) — KeyboardSensor + select fallback verified at structural level (W54). R10 (@g-loot bye edge cases) — library `WALK_OVER` state pattern works across all 4 fixtures. R15 (same-team-on-different-slot) — B39 DELETE-then-UPSERT + canonical `unique(draw_id, team_id)` constraint absorb out-of-order seeds.
+- **Risks deferred to v0.6+:** R12 (match table v0.6 ALTER) — D2 default puts canonical match shape down at B37 with v0.6 columns nullable; v0.6 just starts WRITING those columns. R11 (bracket caching ↔ v0.8 realtime intersection) — D10 default = no ISR, pure SSR per request; v0.8 adds Realtime subscription on top, no cache invalidation contract to break. R13 (regenerate-after-publish) — D6 publish-is-one-way + UI disables Generate when status='published'.
+- **Phase C ship gate (DoD verification + Pap walkthrough):** not yet started. DoD2 lists 15 sub-checks (a-o) — most load-bearing are (b) 12-in-16 bye placement, (e) publish + email cascade, (f) public-bracket-incognito, (h) keyboard-only seeding, (k) degenerate cases, (m) UUID-fallback, (n) re-add-different-partner orphan filter, (o) doubles two-row DISTINCT.
+
+---
+
 ## 2026-04-28 — v0.4.0 Phase A backend shipped to remote prod (parallel-blitz)
 
 - **22 Phase A backend commits + 5 fix-ups + auto-types-regen all on `main` and applied to remote prod ref `hqcwmjninvunoexccrbz`.** Same Option C parallel-blitz cadence as v0.3 (3 Wave 1 agents → cherry-pick + push + CI → 3 Wave 2 agents → push + CI → 1 Wave 3 agent → push + CI → trigger Deploy workflow → migrations + Edge Functions + types regen all green).
