@@ -53,7 +53,7 @@
 >
 > **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain. **Ship-blocker (2026-04-27):** Pap-side prereqs only — domain (D1), Resend account + DKIM/SPF (P4-P6), Google + Facebook OAuth apps (P2-P3), Vercel deploy (P7).
 
-> **v0.3.0 — "Organizer + Venues + Admin"**  ·  `Organizer` `Venue` `Admin`
+> **v0.3.0 — "Organizer + Venues + Admin"** · `In Progress` · 2026-04-28 · `Organizer` `Venue` `Admin`
 >
 > TO onboarding, admin approval, venue management, draft tournament creation.
 >
