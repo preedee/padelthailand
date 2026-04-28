@@ -39,17 +39,19 @@
 >
 > **Done when:** Realtime POC validates 2-client round-trip <500ms; magic-link login + RLS gates on protected tables both work.
 
-> **v0.2.0 — "Player Identity"** · `In Progress` · 2026-04-26 · `Player`
+> **v0.2.0 — "Player Identity"** · `In Progress` · 2026-04-27 · `Player`
 >
-> Social auth, email infrastructure, player profile, authenticated home.
+> Social auth, email infrastructure, player profile, authenticated home. **Code-complete as of 2026-04-27** — ship gate is Pap-side prereqs only (domain, Resend account, OAuth providers, Vercel deploy).
 >
 > - [ ] Social sign-in: Google + Facebook + Apple (code shipped, providers not yet configured)
-> - [ ] **Email infrastructure:** provider integration + transactional template engine + dev/prod sender separation
+> - [x] **Email infrastructure:** Resend wrapper + bilingual welcome template + send-welcome-email Edge Function (idempotent + rate-limited) + Resend webhook receiver (Svix-verified). matchday-web W4 server action invokes via `supabase.functions.invoke`. Activation gated on Pap creating Resend account + domain DKIM/SPF.
 > - [x] Player profile: name, DOB, gender, city/country, phone/LINE/WhatsApp, hand/side
 > - [x] `/me/settings` + `/me/registrations` (empty state)
 > - [x] Player home `/`
+> - [x] Cross-cutting DoD: a11y axe-verified clean on public routes (4.10.2, 0 violations); Sentry runtime + `withSentryConfig` build wrapper wired (env-var-gated); audit log emits `profile.*` + `email.*` rows; privacy notice + consent UI on `/onboard`.
+> - [⚠️] Native-Thai i18n review pending — checklist ready at `Plans/v02-th-i18n-review.md`.
 >
-> **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain.
+> **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain. **Ship-blocker (2026-04-27):** Pap-side prereqs only — domain (D1), Resend account + DKIM/SPF (P4-P6), Google + Facebook OAuth apps (P2-P3), Vercel deploy (P7).
 
 > **v0.3.0 — "Organizer + Venues + Admin"**  ·  `Organizer` `Venue` `Admin`
 >

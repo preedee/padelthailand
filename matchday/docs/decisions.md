@@ -4,6 +4,38 @@ Living log of decisions made during roadmap planning. Most recent first.
 
 ---
 
+## 2026-04-28 — v0.3.0 Phase A backend code-complete (parallel-blitz)
+
+- **14 of 14 Phase A backend commits landed in one session** via the parallel-agent-team blitz (Option C from session menu). Cadence: Wave 1 (3 parallel Engineer agents in worktrees) → cherry-pick + push + CI → Wave 2 (3 parallel agents) → push + CI → Wave 3 (1 agent for B15+B16) → push + CI → all green on `main`.
+- **Phase A commits on `main`:**
+  - B8 `6c8458d` (sql) organizer/venue/tournament tables + RLS — shipped earlier in session
+  - B8a `c784fd4` user table alters (slug, organizer_logo_url, payment-reserved cols) + `set_user_slug()` SECURITY DEFINER
+  - B9 `da7e923` `is_tournament_organizer(t_id)` helper
+  - B10 `d1fed5c` self-elevation BEFORE UPDATE trigger
+  - B11 `1e3f153` organizer-logos storage bucket + per-user-prefix policy
+  - B11a `42e7cd7` `validate-organizer-logo` Edge Function (magic-byte + dimension check)
+  - B12 `7eb9d77` audit emitters extended (organizer.*, tournament.*, venue.*)
+  - B12a `f25441e` `admin_activity_feed` SECURITY DEFINER view (PII-masked)
+  - B13 `9bf296e` 3 bilingual templates (received / approved / rejected)
+  - B14 `153cc0e` `send-organizer-application-email` (kind discriminator, idempotent)
+  - B14a `c4e3902` `check-slug-availability` (rate-limited, format + reserved + uniqueness)
+  - B15 `9639ecc` + simplify `1ec181a` `approve-organizer-application` (atomic txn + best-effort email)
+  - B16 `1fa8c38` `reject-organizer-application` (required reason ≤500 chars)
+  - B18 `b329976` self-elevation + storage RLS regression tests
+  - **fixup `211790f`** updated v0.2 `profile_update.test.ts` Assertion 4 to reflect the new B10 contract (was: "RLS does NOT block self-role updates" — Wave 1 CI caught it; the assertion now expects 42501 from the trigger).
+- **B17 (types regen) BLOCKED** — `supabase gen types typescript --project-id hqcwmjninvunoexccrbz` requires `SUPABASE_ACCESS_TOKEN` repo secret, which is unset (same blocker as B8 prod-deploy on the deploy.yml workflow). Pap-action: set the secret on `preedee/matchday-backend`, then either re-run "Deploy to Supabase prod" (which pushes migrations) AND/OR generate types locally and commit B17.
+- **Migration prod-push is parked** — same blocker. The 14 new migrations sit in `main` waiting for the secret.
+- **Phase A blitz lessons captured** — agent briefings must include legacy-test names that pin the OLD contract (the v0.2 `profile_update.test.ts` was outside the W1-Schema agent's scope but its Assertion 4 broke under B10 — should have been pre-flagged); /simplify findings should be respected at SQL syntax level (B8 fix-up forced by `cannot use subquery in DEFAULT` was the same class of issue).
+- **D-decision overrides applied to Phase A:** D1 cropperjs (W12 — pending), D2 user-chosen slug (B14a check-slug + B8a set_user_slug helper), D5 admin full edit + cancel (W28+W28a+W28b — Phase D), D8 IndexedDB blob auto-save (W15a — pending). Defaults: D3, D4, D6, D7, D9, D10, D11, D12.
+
+## 2026-04-28 — v0.2.0 Player Identity code-complete (final)
+
+- **Sign-in Sentry capture landed** — matchday-web `e1507dc` adds `Sentry.captureMessage` to the two error branches in `[locale]/sign-in/page.tsx` (signInWithOAuth → level=error, signInWithOtp → level=warning), mirroring the auth-callback pattern (71e91b1). PII guard preserved: full email never captured; only domain segment after `@`, dropped if `@` absent.
+- **Auth-flow Sentry coverage now complete** — every error path in v0.2.0's auth surface emits to Sentry: W4 onboard side-effects (`c328907`), 404 catch-all (`d708a71`), auth/callback missing_code + exchange_failed (`71e91b1`), sign-in oauth_failed + otp_failed (`e1507dc`). All use `function: auth.<name>` tag convention so the Sentry dashboard can split-by-function.
+- **v0.2.0 code surface = 29 algorithm runs** on matchday-web `main`, plus the matchday-backend Phase A.1 + A.2 + Sentry-edge work. No further code is required for v0.2.0 ship.
+- **Ship status unchanged** — still blocked on Pap external prereqs only (D1 domain, P2 Facebook OAuth, P3 Google OAuth, P4-P6 Resend + DKIM/SPF, P7 Vercel custom domain; P1 Apple optional per D2).
+- **Roadmap stays `In Progress`** — flips to `Shipped` only after Pap prereqs land + per-method DoD matrix (`Plans/v02-dod-evidence.md`) verifies on the prod URL.
+
 ## 2026-04-25 — v0.1.0 Foundation shipped
 
 - **Status flipped** `Planned` → `Shipped` for v0.1.0 in `version-roadmap.md`. All 5 Done-when criteria met (Realtime POC <500ms p95, magic-link + RLS, TH+EN locales, both CIs green, design tokens visible).
