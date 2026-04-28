@@ -4,6 +4,43 @@ Living log of decisions made during roadmap planning. Most recent first.
 
 ---
 
+## 2026-04-28 — v0.4.0 Phase A backend shipped to remote prod (parallel-blitz)
+
+- **22 Phase A backend commits + 5 fix-ups + auto-types-regen all on `main` and applied to remote prod ref `hqcwmjninvunoexccrbz`.** Same Option C parallel-blitz cadence as v0.3 (3 Wave 1 agents → cherry-pick + push + CI → 3 Wave 2 agents → push + CI → 1 Wave 3 agent → push + CI → trigger Deploy workflow → migrations + Edge Functions + types regen all green).
+- **Phase A surface (commit SHAs in `preedee/matchday-backend` main):**
+  - B14b `05830ad` `check-tournament-slug-availability` Edge Function (D12 vanity URL support)
+  - B19 `55dd14c` team + team_member tables (service-role-only writes)
+  - B19a `b01536a` tournament.slug column + set_tournament_slug SECURITY DEFINER + reserved blocklist
+  - B20 `b8f9978` registration table (D13 two-row mirror) + 5-state status enum + partial unique index + ON DELETE CASCADE on user FK
+  - B21 `964a422` partner_invite table + auth-required RLS (no anon-by-token per F05)
+  - B22 `db1ecdf+6c96cf5+53e0e3d+c17a18c` audit_log typed-FK migration + audit_action enum + emitter additions; **3 fix-ups** for view-and-index drop+recreate around column type cast (SQLSTATE 0A000) and partial-index revalidation (SQLSTATE 42883)
+  - B23 `9d75a96` 7 bilingual registration email templates
+  - B24 `83386f7` send-registration-email Edge Function (7-kind discriminator, idempotent)
+  - B25 `8aa1640+38201d2+84f25c0` register_solo_rpc + register-solo Edge Function; **2 fix-ups** for `status` OUT-parameter ambiguity (#variable_conflict use_column directive)
+  - B26 `2a503e3+4286d9f+7b993b6+3597168` register_doubles_invite_rpc + Edge Function; **3 fix-ups** for pgcrypto dependency (replaced with gen_random_uuid-based token) + use_column directive
+  - B26b `ce365ae` search-users-by-display-name Edge Function (rate-limited 30/min/IP, prefix match)
+  - B27 `958eb5a` respond_partner_invite_rpc + Edge Function (atomic both-confirm or both-waitlist; D13 two-row mirror)
+  - B28 `a99a6e8` withdraw_registration_rpc + Edge Function (status='registration_open' guard + pair-aware FOR UPDATE SKIP LOCKED auto-promote)
+  - B29 `1240826` promote-waitlist-manual (TO/admin override; no capacity check)
+  - B30 `0c415b8` add-partner-to-solo Edge Function + RPC
+  - B31 `3d73734` remove-partner-from-doubles Edge Function + RPC
+  - B32 `36c8a8f` tournament-status-transition (TO manual)
+  - B33 `0438efc` auto-close-tournaments cron Edge Function (with `pg_try_advisory_lock` per A03 stress-test)
+  - B33b `e66367c` sweep_pending_partner_invites_rpc (called by B32 + B33)
+  - B33c `0645c9f` cancel-tournament-with-registrations Edge Function + RPC (A04 stress-test fix)
+  - B34 `9fdf7a2` v0.4 RLS regression tests + CI step
+  - **enum completeness `edf53fb`** — added `tournament.updated`, `tournament.admin_edited`, `tournament.admin_cancelled` to `audit_action` enum (v0.3 W28a/W28b emitters needed these; the canonical-schema import in B22 had omitted them)
+  - B35 `92b89f4` (auto-regen by deploy.yml) — types/database.ts regenerated 633 → 1076 lines
+- **D-decision answers:** 14 of 15 = recommended defaults. **1 override:** D12 vanity URLs at `/tournaments/[organizer-slug]/[tournament-slug]` (added B19a + B14b + W33a).
+- **Stress-test findings applied:** 18 (6 critical, 12 important) from Plan + Architect agent reviews; 7 nits documented as accepted-with-rationale.
+- **Total wall-clock for Phase A:** ~3 hours including 5 fix-up CI cycles. ~600k tokens spent (7 agent invocations + orchestration).
+- **Lessons captured (added to MEMORY/LEARNING/REFLECTIONS/algorithm-reflections.jsonl):**
+  - Pre-flight every RPC migration with `#variable_conflict use_column` when RETURNS TABLE columns share names with real columns (caught B25 then B26/B27/B28 — same class of bug).
+  - Drop+recreate views AND partial indexes that reference a column before ALTER COLUMN TYPE; PG rejects revalidation otherwise.
+  - Validate audit_log enum completeness against ALL emitter call sites in matchday-web BEFORE the typed-FK cast lands (the v0.3 W28a/W28b miss bit us post-Phase-A).
+  - Avoid `gen_random_bytes` (pgcrypto-dependent); use `uuid_send(gen_random_uuid())` for token entropy (core PG, no extension).
+- **Ship status:** v0.4 Phase A complete + deployed to prod. v0.4 ship gate is now Phase B (matchday-web W32-W44) + DoD2 E2E walkthrough. Phase B in flight via parallel-blitz session.
+
 ## 2026-04-28 — v0.3.0 Phase A backend code-complete (parallel-blitz)
 
 - **14 of 14 Phase A backend commits landed in one session** via the parallel-agent-team blitz (Option C from session menu). Cadence: Wave 1 (3 parallel Engineer agents in worktrees) → cherry-pick + push + CI → Wave 2 (3 parallel agents) → push + CI → Wave 3 (1 agent for B15+B16) → push + CI → all green on `main`.
