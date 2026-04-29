@@ -41,9 +41,10 @@
 
 > **v0.2.0 — "Player Identity"** · `In Progress` · 2026-04-27 · `Player`
 >
-> Social auth, email infrastructure, player profile, authenticated home. **Code-complete as of 2026-04-27** — ship gate is Pap-side prereqs only (domain, Resend account, OAuth providers, Vercel deploy).
+> Magic-link auth, email infrastructure, player profile, authenticated home. **Scope amendment (2026-04-28):** Google + Facebook OAuth deferred to v0.2.1+ alongside Apple (gate D2 expanded to all three social providers). v0.2.0 ships with magic-link only; the social buttons are env-var-gated (`NEXT_PUBLIC_OAUTH_*_ENABLED`) and stay off until v0.2.1.
 >
-> - [ ] Social sign-in: Google + Facebook + Apple (code shipped, providers not yet configured)
+> - [x] Magic-link sign-in (email-only)
+> - [⏭️] Social sign-in: Google + Facebook + Apple — **deferred to v0.2.1+** (code shipped + button shells in place; providers not yet configured)
 > - [x] **Email infrastructure:** Resend wrapper + bilingual welcome template + send-welcome-email Edge Function (idempotent + rate-limited) + Resend webhook receiver (Svix-verified). matchday-web W4 server action invokes via `supabase.functions.invoke`. Activation gated on Pap creating Resend account + domain DKIM/SPF.
 > - [x] Player profile: name, DOB, gender, city/country, phone/LINE/WhatsApp, hand/side
 > - [x] `/me/settings` + `/me/registrations` (empty state)
@@ -51,7 +52,7 @@
 > - [x] Cross-cutting DoD: a11y axe-verified clean on public routes (4.10.2, 0 violations); Sentry runtime + `withSentryConfig` build wrapper wired (env-var-gated); audit log emits `profile.*` + `email.*` rows; privacy notice + consent UI on `/onboard`.
 > - [⚠️] Native-Thai i18n review pending — checklist ready at `Plans/v02-th-i18n-review.md`.
 >
-> **Done when:** All 4 sign-in methods work and a transactional email sends from the prod-configured domain. **Ship-blocker (2026-04-27):** Pap-side prereqs only — domain (D1), Resend account + DKIM/SPF (P4-P6), Google + Facebook OAuth apps (P2-P3), Vercel deploy (P7).
+> **Done when:** Magic-link sign-in works on prod and a transactional welcome email sends from the prod-configured domain. **Ship-blocker (2026-04-28):** Pap-side prereqs — Resend account + DKIM/SPF on `matchday.padelthailand.com` (P4-P6), Vercel deploy (P7). Domain (D1) resolved → `matchday.padelthailand.com`.
 
 > **v0.3.0 — "Organizer + Venues + Admin"** · `Shipped` · 2026-04-28 · `Organizer` `Venue` `Admin`
 >
@@ -92,7 +93,7 @@
 >
 > **Done when:** A published bracket renders correctly to an unauthenticated viewer for both power-of-2 and non-power-of-2 draw sizes. **Phase A (B36-B47) + Phase B (W45-W54) shipped 2026-04-28; Phase C ship gate is DoD2 walkthrough by Pap (15 sub-checks: a-o).**
 
-> **v0.6.0 — "Live Scoring"**  ·  `Organizer`
+> **v0.6.0 — "Live Scoring"** · `In Progress` · 2026-04-29 · `Organizer`
 >
 > TO score entry, bracket cascade, retirement, score-edit undo.
 >
@@ -105,7 +106,7 @@
 >
 > **Done when:** A mock 8-team tournament is scored end-to-end with cascade, retirement, and undo all passing E2E tests.
 
-> **v0.7.0 — "Scheduling"**  ·  `Organizer`
+> **v0.7.0 — "Scheduling"** · `In Progress` · 2026-04-29 · `Organizer`
 >
 > Court × time grid scheduling with auto-schedule and conflict detection.
 >
@@ -139,6 +140,7 @@
 > - [ ] Tournament cancellation flow (notify + void registrations)
 > - [ ] OpenGraph rich previews for LINE/WhatsApp sharing
 > - [ ] Email template inventory complete
+> - [ ] **Native-Thai i18n review** — replace all `[TH]` placeholders in `messages/th.json` with reviewed copy (carry-over obligation from v0.2.0+; checklist at `Plans/v02-th-i18n-review.md`)
 >
 > **Done when:** End-to-end mock tournament finishes with correct placements and a shared link renders an OG preview on LINE.
 

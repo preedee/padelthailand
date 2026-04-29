@@ -4,6 +4,37 @@ Living log of decisions made during roadmap planning. Most recent first.
 
 ---
 
+## 2026-04-28 — Native-Thai i18n review deferred to v0.9 polish pass
+
+- **Decision:** the carry-over obligation from v0.2 onward to replace `[TH]` placeholders in `messages/th.json` with reviewed Thai copy is parked in v0.9.0 "Placements + Polish" — the pre-launch polish version where all string surfaces are stable.
+- **Why now (not earlier):** every release v0.2-v0.5 has added more keys with placeholders; doing a review now means redoing it as v0.6-v0.8 add live-scoring, scheduling, and realtime strings. v0.9 catches the full corpus in one pass right before GA. The placeholder pattern is graceful (English fallback when a key is missing) so early bilingual testers can still use the product.
+- **Reviewer brief:** padel-fluent native Thai speaker walks `Plans/v02-th-i18n-review.md` checklist; ~600-800 keys at v0.5 cardinality, more by v0.9. Estimated 4-8 hours depending on domain literacy.
+- **How to apply:** treat any "TH copy not native" feedback in v0.2-v0.8 as known-not-blocking; defer to v0.9 unless a user explicitly blocks on it.
+
+---
+
+## 2026-04-28 — All social sign-in deferred to v0.2.1+ (D2 expanded)
+
+- **Decision:** Gate D2 (originally "defer Apple to v0.2.1+ given $99/yr Apple Developer Program enrollment") is **expanded** — Google + Facebook also deferred to v0.2.1+. v0.2.0 ships magic-link-only.
+- **Why:** v0.0 → v0.5 momentum is on the build side; spending an OAuth-app-creation afternoon (Google Cloud + Facebook Developer + Privacy Policy + Business verification) is a context switch that doesn't unblock the v0.3-v0.5 features already shipped. Magic-link covers the v1 acceptance criteria for "user can sign in" — social is convenience, not a blocker.
+- **Ship-blocker delta:** v0.2 ship gate is now "magic-link-only sign-in works on prod + welcome email sends from `matchday.padelthailand.com`". Removed prereqs P2 (Facebook Developer App) + P3 (Google Cloud OAuth client). Apple (P1) was already deferred.
+- **What's still in place:** the button shells render conditionally on `NEXT_PUBLIC_OAUTH_GOOGLE_ENABLED` / `NEXT_PUBLIC_OAUTH_FACEBOOK_ENABLED` / `NEXT_PUBLIC_OAUTH_APPLE_ENABLED` — leaving them unset (default) hides the buttons cleanly. v0.2.1's job is the OAuth dashboard config + flipping the flags.
+- **How to apply:** treat all social OAuth follow-ups as v0.2.1 work; do NOT block v0.2 ship on them. Item 4 of the v0.2 activation walkthrough is closed-as-deferred.
+
+---
+
+## 2026-04-28 — Production domain: `matchday.padelthailand.com` (D1 resolved)
+
+- **Decision:** v0.2.0 production domain (gate D1 in v0.2 build plan) is `matchday.padelthailand.com` — a subdomain of the existing `padelthailand.com` registered to Pap at NameSilo (DNS at `dnsowl.com`, site on GitHub Pages at `185.199.108-111.153`).
+- **Why subdomain over fresh registration:** zero registration cost, ships same-day, DKIM/SPF runs on the subdomain only (apex padelthailand.com email setup is unaffected), and the matchday brand may evolve — keeps the door open to migrate to a dedicated apex (e.g. `matchday.app`) without breaking links thanks to redirects.
+- **DNS impact map (for downstream activation):**
+  - Vercel: add CNAME `matchday.padelthailand.com → cname.vercel-dns.com` at NameSilo when Vercel project lands (v0.2 activation §4).
+  - Resend: add the Resend-generated MX + SPF + DKIM records on the `matchday` subdomain only — apex is untouched.
+  - OAuth callbacks: `https://matchday.padelthailand.com/auth/callback` for Google/Facebook OAuth providers.
+- **`RESEND_FROM_PROD` value:** `noreply@matchday.padelthailand.com` (set as GH secret in matchday-backend, auto-synced to Supabase function secrets via deploy.yml's "Sync Edge Function secrets" step).
+
+---
+
 ## 2026-04-28 — v0.5.0 Phase A + Phase B shipped (Draw Engine + Public Bracket)
 
 - **24 commits across both repos all on `main` and CI-green** (14 Phase A backend in `preedee/matchday-backend` + 10 Phase B web in `preedee/matchday-web`). Same Option C parallel-blitz cadence as v0.3/v0.4 — 3 worktree agents per wave, cherry-pick onto main, push, watch CI, advance the wave.
