@@ -39,7 +39,7 @@
 >
 > **Done when:** Realtime POC validates 2-client round-trip <500ms; magic-link login + RLS gates on protected tables both work.
 
-> **v0.2.0 — "Player Identity"** · `In Progress` · 2026-04-27 · `Player`
+> **v0.2.0 — "Player Identity"** · `Shipped` · 2026-05-07 · `Player`
 >
 > Magic-link auth, email infrastructure, player profile, authenticated home. **Scope amendment (2026-04-28):** Google + Facebook OAuth deferred to v0.2.1+ alongside Apple (gate D2 expanded to all three social providers). v0.2.0 ships with magic-link only; the social buttons are env-var-gated (`NEXT_PUBLIC_OAUTH_*_ENABLED`) and stay off until v0.2.1.
 >

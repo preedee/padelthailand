@@ -4,6 +4,24 @@ Living log of decisions made during roadmap planning. Most recent first.
 
 ---
 
+## 2026-05-07 — v0.2.0 Player Identity shipped
+
+- **Status flipped** `In Progress` → `Shipped` for v0.2.0 in `version-roadmap.md`. Both DoD criteria verified end-to-end on prod:
+  - ✅ Magic-link sign-in works on `https://matchday.padelthailand.com` (Pap completed sign-in flow in clean browser context — initial PKCE error was resolved by ensuring sign-in init + magic-link click happen in the same browser cookie jar, which is correct security behavior)
+  - ✅ Transactional welcome email sends from `noreply@matchday.padelthailand.com` (Resend pipeline confirmed via Gmail delivery + `audit_log` row `action='email.sent'` at 2026-05-07 15:09:05 UTC, target_id=53dbfe99-…)
+- **Pap-side activations completed today:**
+  - Resend account created + API key set as `RESEND_API_KEY` GH secret on `preedee/matchday-backend`
+  - DKIM/SPF DNS records added to `matchday.padelthailand.com` at NameSilo + verified green in Resend dashboard
+  - Resend webhook endpoint configured + signing secret as `RESEND_WEBHOOK_SECRET` GH secret
+  - `RESEND_FROM_PROD` GH secret = `noreply@matchday.padelthailand.com`
+  - Custom SMTP enabled at Supabase Studio → Authentication → Emails → uses Resend SMTP, removes the built-in 2-4/hour Supabase rate limit and unifies all auth + transactional email through the verified prod domain
+  - "Deploy to Supabase prod" workflow triggered (run 25454593033) — synced all 4 secrets to Supabase function secret store, redeployed all 41 Edge Functions, pushed 17 pending v0.6/v0.7/v0.8 backend migrations to remote prod
+- **Known carry-over to v0.9:** Native-Thai i18n review (the `[TH]` placeholder sweep) — already scheduled for v0.9 per the 2026-04-28 decision below.
+- **Known small bug surfaced during DoD test:** Country picker on `/onboard` doesn't accept typed search input — popover opens, input is rendered, but keystrokes don't appear in the input field (focus issue, likely the shadcn `InputGroup` wrapper interacting with Radix Popover focus traversal). Mouse click + scroll-to-Thailand still works. Workaround: APAC-priority countries are pinned at top, so click-without-typing works for the most common case. Patch deferred to a small `v02-fixes` PR.
+- **Social sign-in (Google + Facebook + Apple) status unchanged** — deferred to v0.2.1+ per 2026-04-28 scope amendment. Buttons render conditionally on `NEXT_PUBLIC_OAUTH_*_ENABLED` env vars (currently unset → buttons hidden). v0.2.1 will configure OAuth apps + flip the flags.
+
+---
+
 ## 2026-04-28 — Native-Thai i18n review deferred to v0.9 polish pass
 
 - **Decision:** the carry-over obligation from v0.2 onward to replace `[TH]` placeholders in `messages/th.json` with reviewed Thai copy is parked in v0.9.0 "Placements + Polish" — the pre-launch polish version where all string surfaces are stable.
