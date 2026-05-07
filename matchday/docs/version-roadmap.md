@@ -119,7 +119,7 @@
 >
 > **Done when:** Auto-schedule produces a conflict-free schedule for a representative 16-team multi-day tournament.
 
-> **v0.8.0 — "Realtime + Spectator"**  ·  `Spectator` `Player`
+> **v0.8.0 — "Realtime + Spectator"** · `In Progress` · 2026-05-07 · `Spectator` `Player`
 >
 > Supabase Realtime bracket updates and TV-friendly spectator mode.
 >
@@ -131,7 +131,7 @@
 >
 > **Done when:** 100 concurrent simulated viewers receive score updates within 1 second.
 
-> **v0.9.0 — "Placements + Polish"**  ·  `Organizer` `Player`
+> **v0.9.0 — "Placements + Polish"** · `In Progress` · 2026-05-07 · `Organizer` `Player`
 >
 > Placements, cancellation, social sharing, pre-launch polish.
 >
