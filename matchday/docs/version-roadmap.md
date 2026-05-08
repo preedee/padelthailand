@@ -140,7 +140,7 @@
 > - [ ] Tournament cancellation flow (notify + void registrations)
 > - [ ] OpenGraph rich previews for LINE/WhatsApp sharing
 > - [ ] Email template inventory complete
-> - [ ] **Native-Thai i18n review** — replace all `[TH]` placeholders in `messages/th.json` with reviewed copy (carry-over obligation from v0.2.0+; checklist at `Plans/v02-th-i18n-review.md`)
+> - [⏭️] ~~Native-Thai i18n review~~ — **DROPPED 2026-05-08:** v1 ships English-only per Pap decision; Thai (and other locales) deferred to post-v1. See `~/.claude/MEMORY/projects/-Users-preedee-Desktop-Cowork/project_matchday_v1_english_only.md`. The bilingual scaffolding remains in code (next-intl + message bundles) so re-enabling Thai post-v1 is a one-line restore in `routing.ts`.
 >
 > **Done when:** End-to-end mock tournament finishes with correct placements and a shared link renders an OG preview on LINE.
 
