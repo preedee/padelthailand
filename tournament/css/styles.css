@@ -1968,12 +1968,12 @@ body:has(.theme-dark) {
   border-bottom: 1px solid var(--dark-border, #2A3F35);
 }
 
-/* Column widths: Community 40%, the other three 20% each */
+/* Column widths: Community 31%, the other three 23% each */
 .cc-standings__col {
-  width: 20%;
+  width: 23%;
 }
 .cc-standings__col--community {
-  width: 40%;
+  width: 31%;
 }
 
 .cc-standings__row {
@@ -2019,8 +2019,13 @@ td.cc-standings__community {
   color: var(--dark-text, #E8F0EC);
   line-height: 1.25;
   text-align: left;
+  /* Force community name onto two lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   word-wrap: break-word;
-  max-width: 140px;
+  max-width: 130px;
 }
 
 .cc-standings__logo {
