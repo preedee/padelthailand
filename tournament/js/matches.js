@@ -170,9 +170,10 @@ const Matches = (() => {
       .join('');
 
     // Community Cup: show community logo + name instead of TBD pair strings,
-    // plus a Match Type badge in the header.
+    // and append match type to the round label (e.g. "Round 1 - Mixed").
     const ccMode = Data.isCommunityCupFormat && Data.isCommunityCupFormat();
-    let team1HTML, team2HTML, matchTypeBadge = '';
+    let team1HTML, team2HTML;
+    let roundLabel = match.round || '';
     if (ccMode) {
       const cA = Data.getCommunityById ? Data.getCommunityById(match.communityA) : null;
       const cB = Data.getCommunityById ? Data.getCommunityById(match.communityB) : null;
@@ -187,8 +188,10 @@ const Matches = (() => {
       team1HTML = `<div class="match-card__cc-team">${aLogo}<span class="match-card__team-name">${aLabel}</span></div>`;
       team2HTML = `<div class="match-card__cc-team">${bLogo}<span class="match-card__team-name">${bLabel}</span></div>`;
       if (match.matchType) {
-        const typeText = match.matchType + (match.matchSlot && parseInt(match.matchSlot, 10) > 1 ? ' #' + match.matchSlot : '');
-        matchTypeBadge = `<span class="match-card__type match-card__type--${match.matchType.toLowerCase()}">${typeText}</span>`;
+        const typeNames = { 'M': 'Male', 'F': 'Female', 'Mix': 'Mixed' };
+        const typeText = typeNames[match.matchType] || match.matchType;
+        const slotSuffix = match.matchSlot && parseInt(match.matchSlot, 10) > 1 ? ' #' + match.matchSlot : '';
+        roundLabel = `${roundLabel} - ${typeText}${slotSuffix}`;
       }
     } else {
       team1HTML = Data.getTeamStackedHTML(match.team1, 30);
@@ -197,12 +200,12 @@ const Matches = (() => {
 
     // Round label: avoid leading "—" when there's no division text (CC mode).
     const divisionHTML = match.division
-      ? `<span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span>`
-      : `<span class="match-card__round-name">${match.round}</span>`;
+      ? `<span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${roundLabel}</span>`
+      : `<span class="match-card__round-name">${roundLabel}</span>`;
 
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}">${divisionHTML}${matchTypeBadge}</span>
+        <span class="match-card__round ${roundLabelClass}">${divisionHTML}</span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">
