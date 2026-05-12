@@ -264,14 +264,25 @@ const Data = (() => {
     const t2 = row['Team 2'] || '';
     const t1Code = row['Team 1 Code'] || '';
     const t2Code = row['Team 2 Code'] || '';
+
+    // Community Cup: derive team names from per-player columns when present
+    function pair(p1, p2) {
+      const a = (p1 || '').trim();
+      const b = (p2 || '').trim();
+      if (a && b) return a + ' & ' + b;
+      return a || b || '';
+    }
+    const ccTeam1 = pair(row['Community A - Player 1 Name'], row['Community A - Player 2 Name']);
+    const ccTeam2 = pair(row['Community B - Player 1 Name'], row['Community B - Player 2 Name']);
+
     return {
       division: row['Division'] || '',
       round: row['Round'] || '',
       team1Code: t1Code,
-      team1: (t1 && t1 !== 'TBD') ? t1 : (t1Code || t1),
+      team1: (t1 && t1 !== 'TBD') ? t1 : (ccTeam1 || t1Code || t1),
       team1Id: row['Team 1 ID'] || '',
       team2Code: t2Code,
-      team2: (t2 && t2 !== 'TBD') ? t2 : (t2Code || t2),
+      team2: (t2 && t2 !== 'TBD') ? t2 : (ccTeam2 || t2Code || t2),
       team2Id: row['Team 2 ID'] || '',
       date: row['Date'] || '',
       time: row['Time'] || '',
