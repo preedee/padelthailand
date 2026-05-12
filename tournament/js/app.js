@@ -61,6 +61,13 @@ const App = (() => {
   function buildViews() {
     if (viewsBuilt) return;
 
+    // Community Cup mode uses a different nav/view structure (no divisions).
+    if (Data.isCommunityCupFormat && Data.isCommunityCupFormat()) {
+      buildCommunityCupViews();
+      viewsBuilt = true;
+      return;
+    }
+
     // Read divisions from config
     const divisionNames = Data.getConfigList('divisions');
     const standingsTabs = Data.getConfigList('standings_tabs');
@@ -389,6 +396,84 @@ const App = (() => {
     viewsBuilt = true;
   }
 
+  // ============================================================
+  // Community Cup view builder
+  // Replaces division-based nav with: Group A / Group B / Bracket / All Matches
+  // Renderers for standings + bracket land in M3c / M3d; this is the shell.
+  // ============================================================
+  function buildCommunityCupViews() {
+    const viewBar = document.getElementById('view-bar');
+    const mainContent = document.getElementById('main-content');
+
+    // View IDs (Live is first — most important during the event)
+    ALL_VIEWS = ['live', 'group-a-standings', 'group-b-standings', 'bracket', 'matches'];
+    VIEWS = ALL_VIEWS.slice();
+
+    // Build nav (single-row layout)
+    let tabsHTML = '';
+    tabsHTML += `<button class="view-bar__tab active" data-view="live">Live</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="group-a-standings">Group A</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="group-b-standings">Group B</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="bracket">Bracket</button>`;
+    tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
+    tabsHTML += `<div class="view-bar__dots">`;
+    VIEWS.forEach((_, i) => {
+      tabsHTML += `<span class="view-bar__dot${i === 0 ? ' active' : ''}"></span>`;
+    });
+    tabsHTML += `</div>`;
+    viewBar.innerHTML = tabsHTML;
+
+    // Build view sections
+    let viewsHTML = '';
+    viewsHTML += `<section class="view active" id="view-live">
+      <div class="loading">Loading live courts...</div>
+    </section>`;
+    viewsHTML += `<section class="view" id="view-group-a-standings">
+      <div class="loading">Group A standings</div>
+    </section>`;
+    viewsHTML += `<section class="view" id="view-group-b-standings">
+      <div class="loading">Group B standings</div>
+    </section>`;
+    viewsHTML += `<section class="view" id="view-bracket">
+      <div class="loading">Bracket</div>
+    </section>`;
+    viewsHTML += `<section class="view" id="view-matches">
+      <div class="loading">Loading matches...</div>
+    </section>`;
+    mainContent.innerHTML = viewsHTML;
+
+    // Wire tab clicks
+    viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const viewName = tab.dataset.view;
+        const idx = VIEWS.indexOf(viewName);
+        if (idx !== -1) {
+          switchToView(idx);
+          resetRotation();
+        }
+      });
+    });
+
+    // Rotation interval from config
+    const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
+    if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
+
+    // URL hash → initial view (and disable rotation)
+    const hash = window.location.hash.replace('#', '');
+    const hasHash = hash.length > 0;
+    if (hasHash && ALL_VIEWS.includes(hash)) {
+      const idx = VIEWS.indexOf(hash);
+      if (idx !== -1) switchToView(idx, true);
+    }
+
+    // Auto-rotation (desktop only)
+    const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile && autorotate && VIEWS.length > 1 && !hasHash) {
+      startRotation();
+    }
+  }
+
   function onDataUpdate(matches, lastUpdated, error) {
     if (error || !matches) {
       document.querySelectorAll('.view .loading').forEach(el => {
@@ -417,6 +502,31 @@ const App = (() => {
 
   function renderAllViews(matches) {
     if (!viewsBuilt) return;
+
+    // Community Cup renderers
+    if (Data.isCommunityCupFormat && Data.isCommunityCupFormat()) {
+      const liveEl = document.getElementById('view-live');
+      if (liveEl && typeof CCLive !== 'undefined') {
+        CCLive.renderLive(liveEl);
+      }
+      const groupAEl = document.getElementById('view-group-a-standings');
+      const groupBEl = document.getElementById('view-group-b-standings');
+      if (groupAEl && typeof CCStandings !== 'undefined') {
+        CCStandings.renderGroup(groupAEl, 'A');
+      }
+      if (groupBEl && typeof CCStandings !== 'undefined') {
+        CCStandings.renderGroup(groupBEl, 'B');
+      }
+      const bracketEl = document.getElementById('view-bracket');
+      if (bracketEl && typeof Series !== 'undefined') {
+        Series.renderBracket(bracketEl);
+      }
+      const matchesContainer = document.getElementById('view-matches');
+      if (matchesContainer) Matches.render(matchesContainer, matches);
+      const sidebarContent = document.querySelector('.sidebar__content');
+      if (sidebarContent) Matches.renderUpcoming(sidebarContent, matches);
+      return;
+    }
 
     // Render standings for each division
     divisions.forEach(d => {

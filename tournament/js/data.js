@@ -22,6 +22,8 @@ const Data = (() => {
   let standingsData = {};       // tab name → raw CSV lines
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
+  let communities = [];         // Community Cup: list of community objects (8 entries)
+  let seriesList = [];          // Community Cup: list of series objects (19 entries)
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
@@ -46,6 +48,11 @@ const Data = (() => {
   function getConfigList(key) {
     const val = getConfig(key, '');
     return val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+  }
+
+  // Community Cup format detection — gates all CC-specific parsing/fetching
+  function isCommunityCupFormat() {
+    return (getConfig('tournament_format', '') || '').toLowerCase() === 'community_cup';
   }
 
   function applyConfig() {
@@ -170,7 +177,13 @@ const Data = (() => {
 
     // Reveal dashboard now that config is applied
     const dashboard = document.querySelector('.dashboard');
-    if (dashboard) dashboard.classList.add('config-loaded');
+    if (dashboard) {
+      // Dark theme: explicit theme=dark in Config OR community_cup tournament format
+      const themeKey = (config.theme || '').toLowerCase();
+      const isDark = themeKey === 'dark' || isCommunityCupFormat();
+      if (isDark) dashboard.classList.add('theme-dark');
+      dashboard.classList.add('config-loaded');
+    }
   }
 
   // --- CSV Parser (handles quoted fields) ---
@@ -235,7 +248,7 @@ const Data = (() => {
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
       const values = splitCSVLine(lines[i]);
-      if (values.length < 3) continue;
+      if (values.length < 1) continue;
       const row = {};
       headers.forEach((h, idx) => {
         row[h.trim()] = (values[idx] || '').trim();
@@ -274,7 +287,13 @@ const Data = (() => {
         { a: parseInt(row['Set 3 - Team A']) || 0, b: parseInt(row['Set 3 - Team B']) || 0 }
       ],
       matchId: row['Match ID'] || '',
-      updatedAt: row['Updated At'] || ''
+      updatedAt: row['Updated At'] || '',
+      // Community Cup additions — empty strings for non-CC tournaments
+      seriesId: row['Series ID'] || '',
+      communityA: row['Community A'] || '',
+      communityB: row['Community B'] || '',
+      matchType: row['Match Type'] || '',
+      matchSlot: row['Match Slot'] || ''
     };
   }
 
@@ -594,6 +613,115 @@ const Data = (() => {
   }
 
   // ============================================================
+  // Community Cup — Communities tab parser
+  // Each row = one community (8 expected)
+  // Required columns: Community ID, Name. Others optional.
+  // ============================================================
+  function parseCommunitiesTab(rows) {
+    return rows
+      .filter(row => (row['Community ID'] || '').trim())
+      .map(row => ({
+        id: (row['Community ID'] || '').trim(),
+        name: (row['Name'] || '').trim(),
+        group: (row['Group'] || '').trim(),
+        color: (row['Color'] || '').trim(),
+        logoPath: (row['Logo Path'] || '').trim(),
+        captainM: {
+          name: (row['Captain M Name'] || '').trim(),
+          tpsId: (row['Captain M ID'] || '').trim(),
+          nationality: (row['Captain M Nationality'] || '').trim()
+        },
+        captainF: {
+          name: (row['Captain F Name'] || '').trim(),
+          tpsId: (row['Captain F ID'] || '').trim(),
+          nationality: (row['Captain F Nationality'] || '').trim()
+        }
+      }));
+  }
+
+  // ============================================================
+  // Community Cup — Series tab parser
+  // Each row = one series (19 expected: 12 R1 + 4 SF + 3 finals)
+  // Community A/B may hold angle-bracket placeholders like <A1>, <SF-1-W>
+  // until resolved by organizer post-R1.
+  // ============================================================
+  function parseSeriesTab(rows) {
+    return rows
+      .filter(row => (row['Series ID'] || '').trim())
+      .map(row => ({
+        id: (row['Series ID'] || '').trim(),
+        round: (row['Round'] || '').trim(),
+        group: (row['Group'] || '').trim(),
+        stage: (row['Stage'] || '').trim(),
+        communityA: (row['Community A'] || '').trim(),
+        communityB: (row['Community B'] || '').trim(),
+        startTime: (row['Start Time'] || '').trim(),
+        result: (row['Result'] || '').trim(),
+        winner: (row['Winner'] || '').trim(),
+        notes: (row['Notes'] || '').trim()
+      }));
+  }
+
+  // ============================================================
+  // Community Cup — derived helpers
+  // ============================================================
+  function getCommunityById(id) {
+    if (!id) return null;
+    return communities.find(c => c.id === id) || null;
+  }
+
+  function getSeriesById(seriesId) {
+    if (!seriesId) return null;
+    return seriesList.find(s => s.id === seriesId) || null;
+  }
+
+  function getMatchesBySeriesId(seriesId) {
+    if (!seriesId) return [];
+    return matches.filter(m => m.seriesId === seriesId);
+  }
+
+  // Compute series result from constituent match outcomes.
+  // Returns { aWins, bWins, label: "2-1", winnerCommunityId, complete }
+  // A series is complete when more than half the matches have results — but
+  // we report based on what's played so far. Complete is true when remaining
+  // matches cannot change the outcome.
+  function computeSeriesResult(seriesId) {
+    const series = getSeriesById(seriesId);
+    const seriesMatches = getMatchesBySeriesId(seriesId);
+    if (!series || seriesMatches.length === 0) {
+      return { aWins: 0, bWins: 0, label: '0-0', winnerCommunityId: '', complete: false };
+    }
+
+    let aWins = 0;
+    let bWins = 0;
+    seriesMatches.forEach(m => {
+      if (!hasScores(m)) return;
+      const winner = getWinner(m);  // 1 = team1, 2 = team2, null = tie/unfinished
+      if (winner === 1) aWins++;
+      else if (winner === 2) bWins++;
+    });
+
+    const totalMatches = seriesMatches.length;
+    const decided = aWins + bWins;
+    const remaining = totalMatches - decided;
+    const majority = Math.floor(totalMatches / 2) + 1;
+    const complete = aWins >= majority || bWins >= majority || decided === totalMatches;
+
+    let winnerCommunityId = '';
+    if (complete) {
+      winnerCommunityId = aWins > bWins ? series.communityA : (bWins > aWins ? series.communityB : '');
+    }
+
+    return {
+      aWins, bWins,
+      label: `${aWins}-${bWins}`,
+      winnerCommunityId,
+      complete,
+      remaining
+    };
+  }
+
+  // ============================================================
   // Player Avatars — parsed from "Teams and Players" tab
   // Dynamically finds avatar and name columns by header name
   // ============================================================
@@ -764,20 +892,31 @@ const Data = (() => {
       // Build tab names from config (with defaults)
       const matchesTab = getConfig('matches_tab', 'Matches');
       const playersTab = getConfig('players_tab', 'Teams and Players');
-      const standingsTabs = getConfigList('standings_tabs');
-      if (standingsTabs.length === 0) standingsTabs.push('Power Standings', 'Club Standings');
+      const ccMode = isCommunityCupFormat();
 
-      // Fetch matches + players + all standings tabs in parallel
+      // In Community Cup mode we don't fetch division standings — series scores
+      // and group standings are derived from the Series tab + Matches.
+      const standingsTabs = ccMode ? [] : getConfigList('standings_tabs');
+      if (!ccMode && standingsTabs.length === 0) {
+        standingsTabs.push('Power Standings', 'Club Standings');
+      }
+
+      // Community Cup extras: Communities + Series tabs
+      const ccTabs = ccMode ? ['Communities', 'Series'] : [];
+
+      // Fetch matches + players + standings + CC tabs in parallel
       const fetches = [
         fetch(sheetURL(matchesTab)),
         fetch(sheetURL(playersTab)),
-        ...standingsTabs.map(tab => fetch(sheetURL(tab)))
+        ...standingsTabs.map(tab => fetch(sheetURL(tab))),
+        ...ccTabs.map(tab => fetch(sheetURL(tab, '&headers=1')))
       ];
       const responses = await Promise.all(fetches);
 
       const matchRes = responses[0];
       const playersRes = responses[1];
-      const standingsResponses = responses.slice(2);
+      const standingsResponses = responses.slice(2, 2 + standingsTabs.length);
+      const ccResponses = responses.slice(2 + standingsTabs.length);
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
 
@@ -800,6 +939,19 @@ const Data = (() => {
         const text = await playersRes.text();
         const rows = parseCSVWithHeaders(text);
         playerAvatars = parsePlayersTab(rows);
+      }
+
+      // Community Cup: parse Communities and Series tabs
+      if (ccMode) {
+        const [communitiesRes, seriesRes] = ccResponses;
+        if (communitiesRes && communitiesRes.ok) {
+          const text = await communitiesRes.text();
+          communities = parseCommunitiesTab(parseCSVWithHeaders(text));
+        }
+        if (seriesRes && seriesRes.ok) {
+          const text = await seriesRes.text();
+          seriesList = parseSeriesTab(parseCSVWithHeaders(text));
+        }
       }
 
       lastUpdated = new Date();
@@ -847,6 +999,15 @@ const Data = (() => {
       const dates = new Set(matches.map(m => m.date).filter(Boolean));
       return dates.size > 1;
     },
+    // Community Cup API — empty/null/false in non-CC tournaments
+    isCommunityCupFormat,
+    get tournamentFormat() { return getConfig('tournament_format', 'divisions'); },
+    getCommunities: () => communities,
+    getCommunityById,
+    getSeries: () => seriesList,
+    getSeriesById,
+    getMatchesBySeriesId,
+    computeSeriesResult,
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; },
     get configLoaded() { return configLoaded; }

@@ -1674,3 +1674,487 @@ img.avatar {
     padding: 24px 16px;
   }
 }
+
+/* ============================================
+   DARK THEME (Community Cup mode)
+   Activated by .theme-dark class on .dashboard
+   ============================================ */
+.theme-dark {
+  --dark-bg: #0A1612;
+  --dark-surface: #122620;
+  --dark-border: #2A3F35;
+  --dark-text: #E8F0EC;
+  --dark-text-muted: #9CA3AF;
+  --dark-accent: #FFB703;
+}
+
+/* Base */
+body:has(.theme-dark) {
+  background: var(--dark-bg, #0A1612);
+  color: var(--dark-text, #E8F0EC);
+}
+
+.theme-dark .main-content {
+  background: var(--dark-bg);
+}
+
+.theme-dark .sidebar {
+  background: var(--dark-surface);
+  border-left-color: var(--dark-border);
+}
+
+.theme-dark .footer {
+  background: var(--dark-bg);
+  border-top-color: var(--dark-border);
+}
+
+/* Sidebar typography */
+.theme-dark .sidebar__title {
+  background: transparent;
+  color: var(--dark-accent);
+  border-bottom: 1px solid var(--dark-border);
+}
+
+.theme-dark .sidebar__match {
+  color: var(--dark-text);
+}
+
+.theme-dark .sidebar__court-label {
+  color: var(--dark-text-muted);
+}
+
+.theme-dark .sidebar__match-time,
+.theme-dark .sidebar__match-round,
+.theme-dark .sidebar__team--muted {
+  color: var(--dark-text-muted);
+}
+
+.theme-dark .sidebar__team--bold {
+  color: var(--dark-text);
+}
+
+/* View titles */
+.theme-dark .standings-division__title,
+.theme-dark .matches__title,
+.theme-dark .bracket__title {
+  color: var(--dark-accent);
+  border-bottom-color: var(--dark-accent);
+}
+
+.theme-dark .standings-footnote {
+  color: var(--dark-text-muted);
+}
+
+/* Bracket / standings cards default-ish — most use inline colors via Config */
+.theme-dark .standings-card,
+.theme-dark .bracket-match {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+
+/* Footer text legibility */
+.theme-dark .footer__powered-text,
+.theme-dark .footer__timestamp {
+  color: var(--dark-text-muted);
+}
+
+/* ============================================
+   COMMUNITY CUP — Bracket / Series cards
+   ============================================ */
+.cc-bracket {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 24px;
+}
+
+.cc-bracket__section-title {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dark-accent, #FFB703);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--dark-border, #2A3F35);
+}
+
+.cc-bracket__series-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.series-card {
+  background: var(--dark-surface, #122620);
+  border: 1px solid var(--dark-border, #2A3F35);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font);
+  color: var(--dark-text, #E8F0EC);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.series-card--consolation {
+  border-left: 3px solid #6B7280;
+}
+
+.series-card--main {
+  border-left: 3px solid var(--dark-accent, #FFB703);
+}
+
+.series-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--dark-text-muted, #9CA3AF);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.series-card__id {
+  font-weight: 700;
+}
+
+.series-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.series-card__community {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+.series-card__community--winning {
+  background: rgba(255, 183, 3, 0.12);
+  color: var(--dark-accent, #FFB703);
+  font-weight: 700;
+}
+
+.series-card__logo {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: inline-block;
+}
+
+.series-card__logo--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dark-border, #2A3F35);
+  color: var(--dark-text-muted, #9CA3AF);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.series-card__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.series-card__score {
+  font-weight: 700;
+  font-size: 18px;
+  min-width: 18px;
+  text-align: right;
+}
+
+.series-card__matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--dark-text-muted, #9CA3AF);
+}
+
+.series-card__matches--empty {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.series-card__match {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.series-card__match--pending {
+  opacity: 0.5;
+}
+
+/* ============================================
+   COMMUNITY CUP — Group standings table
+   ============================================ */
+.cc-standings {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px;
+  color: var(--dark-text, #E8F0EC);
+}
+
+.cc-standings__title {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dark-accent, #FFB703);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--dark-accent, #FFB703);
+}
+
+.cc-standings__pending {
+  font-family: var(--font);
+  font-size: 16px;
+  color: var(--dark-text-muted, #9CA3AF);
+  font-style: italic;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.cc-standings__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font);
+}
+
+.cc-standings__head th {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dark-text-muted, #9CA3AF);
+  font-weight: 700;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--dark-border, #2A3F35);
+}
+
+.cc-standings__row {
+  border-bottom: 1px solid var(--dark-border, #2A3F35);
+}
+
+.cc-standings__row td {
+  padding: 10px 12px;
+  font-size: 15px;
+  vertical-align: middle;
+}
+
+.cc-standings__rank {
+  font-weight: 700;
+  color: var(--dark-accent, #FFB703);
+  width: 32px;
+  font-family: monospace;
+  font-size: 16px;
+}
+
+.cc-standings__community {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+th.cc-standings__community {
+  display: table-cell;
+  font-weight: 700;
+}
+
+.cc-standings__logo {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.cc-standings__logo--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dark-border, #2A3F35);
+  color: var(--dark-text-muted, #9CA3AF);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cc-standings__cell {
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--dark-text, #E8F0EC);
+  width: 90px;
+  text-align: right;
+}
+
+th.cc-standings__cell {
+  text-align: right;
+  font-family: var(--font);
+}
+
+.cc-standings__footnote {
+  margin-top: 16px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--dark-text-muted, #9CA3AF);
+  letter-spacing: 0.5px;
+  font-style: italic;
+}
+
+/* ============================================
+   COMMUNITY CUP — Live courts grid
+   ============================================ */
+.cc-live {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  height: 100%;
+  align-content: start;
+  padding: 8px 4px;
+  color: var(--dark-text, #E8F0EC);
+}
+
+.court-card {
+  background: var(--dark-surface, #122620);
+  border: 1px solid var(--dark-border, #2A3F35);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 280px;
+}
+
+.court-card__header {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dark-accent, #FFB703);
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dark-border, #2A3F35);
+}
+
+.court-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.court-card__label {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dark-text-muted, #9CA3AF);
+}
+
+.court-card__slot {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.court-card__slot--empty {
+  color: var(--dark-text-muted, #9CA3AF);
+  font-style: italic;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.court-card__slot--current {
+  border-left: 3px solid #FF6B35;
+  background: rgba(255, 107, 53, 0.06);
+}
+
+.court-card__slot--next {
+  border-left: 3px solid var(--dark-border, #2A3F35);
+}
+
+.court-card__match-type {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dark-accent, #FFB703);
+}
+
+.court-card__team {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.court-card__team-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark-text, #E8F0EC);
+}
+
+.court-card__players {
+  font-size: 11px;
+  color: var(--dark-text-muted, #9CA3AF);
+  font-weight: 300;
+}
+
+.court-card__score {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-accent, #FFB703);
+  min-width: 24px;
+  text-align: right;
+}
+
+.court-card__time {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--dark-text-muted, #9CA3AF);
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+/* Mobile: courts stack vertically */
+@media (max-width: 768px) {
+  .cc-live {
+    grid-template-columns: 1fr;
+  }
+  .court-card {
+    min-height: auto;
+  }
+}
