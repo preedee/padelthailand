@@ -139,16 +139,20 @@ const Series = (() => {
       return;
     }
 
-    const r1A = allSeries.filter(s => s.id.startsWith('R1-A-'));
-    const r1B = allSeries.filter(s => s.id.startsWith('R1-B-'));
+    // Bracket view shows only knockout (Round 2+) — group stage lives in Standings
     const mainKO = allSeries.filter(s =>
       s.stage === 'main' && !s.id.startsWith('R1-')
     );
-    const consolation = allSeries.filter(s => s.stage === 'consolation');
+    const consolation = allSeries.filter(s =>
+      s.stage === 'consolation' && !s.id.startsWith('R1-')
+    );
+
+    if (mainKO.length === 0 && consolation.length === 0) {
+      container.innerHTML = `<div class="loading">Knockout bracket — fills in after Round 1</div>`;
+      return;
+    }
 
     let html = `<div class="cc-bracket">`;
-    html += renderSection('Round 1 — Group A', r1A);
-    html += renderSection('Round 1 — Group B', r1B);
     html += renderSection('Main Draw', mainKO);
     html += renderSection('Consolation', consolation);
     html += `</div>`;

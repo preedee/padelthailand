@@ -300,10 +300,14 @@ const Data = (() => {
     };
   }
 
-  // Derive series ID from a match ID by stripping the trailing -Mix/-M/-F.
+  // Derive series ID from a match ID by stripping the trailing -Mix/-M/-F
+  // and optional slot number. Examples:
+  //   "R1-A-1-Mix"  → "R1-A-1"
+  //   "SF-1-M1"     → "SF-1"
+  //   "SF-1-Mix"    → "SF-1"
   function deriveSeriesIdFromMatchId(matchId) {
     if (!matchId) return '';
-    const m = String(matchId).match(/^(.+)-(?:Mix|M|F)$/);
+    const m = String(matchId).match(/^(.+)-(?:Mix|M|F)\d*$/);
     return m ? m[1] : matchId;
   }
 

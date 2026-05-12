@@ -253,5 +253,66 @@ const Matches = (() => {
     container.innerHTML = sections;
   }
 
-  return { render, renderUpcoming };
+  // ============================================================
+  // Community Cup — All Matches table view
+  // Clean tabular layout: Time · Court · Community A · Type · Community B · Score · Round
+  // ============================================================
+  function renderCC(container, matches) {
+    if (!container) return;
+    if (!matches || matches.length === 0) {
+      container.innerHTML = '<div class="loading">No match data available</div>';
+      return;
+    }
+
+    const sorted = matches.slice().sort(sortByDateTime);
+
+    function communityCell(communityId, fallback) {
+      const c = Data.getCommunityById && Data.getCommunityById(communityId);
+      const label = c ? c.name : (communityId || fallback || 'TBD');
+      const logo = c && c.logoPath
+        ? `<img class="cc-matches__logo" src="${c.logoPath}" alt="${label}" onerror="this.style.display='none'">`
+        : `<span class="cc-matches__logo cc-matches__logo--fallback">${(label || '?').charAt(0).toUpperCase()}</span>`;
+      return `${logo}<span class="cc-matches__community-name">${label}</span>`;
+    }
+
+    const rows = sorted.map(m => {
+      const aCell = communityCell(m.communityA, m.team1);
+      const bCell = communityCell(m.communityB, m.team2);
+      const set = (m.sets && m.sets[0]) ? m.sets[0] : { a: 0, b: 0 };
+      const played = set.a > 0 || set.b > 0;
+      const score = played ? `${set.a}–${set.b}` : '—';
+      const typeText = m.matchType + (m.matchSlot && parseInt(m.matchSlot, 10) > 1 ? ' #' + m.matchSlot : '');
+      const typeClass = `cc-matches__type cc-matches__type--${(m.matchType || '').toLowerCase()}`;
+      return `<tr class="cc-matches__row">
+        <td class="cc-matches__time">${m.time || ''}</td>
+        <td class="cc-matches__court">${m.court || ''}</td>
+        <td class="cc-matches__community cc-matches__community--a">${aCell}</td>
+        <td class="cc-matches__type-cell"><span class="${typeClass}">${typeText}</span></td>
+        <td class="cc-matches__community cc-matches__community--b">${bCell}</td>
+        <td class="cc-matches__score">${score}</td>
+        <td class="cc-matches__round">${m.round || ''}</td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="cc-matches">
+        <table class="cc-matches__table">
+          <thead>
+            <tr class="cc-matches__head">
+              <th>Time</th>
+              <th>Court</th>
+              <th>Community</th>
+              <th>Type</th>
+              <th>Community</th>
+              <th>Score</th>
+              <th>Round</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  return { render, renderUpcoming, renderCC };
 })();
