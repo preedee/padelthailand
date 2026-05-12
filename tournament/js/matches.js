@@ -169,18 +169,49 @@ const Matches = (() => {
       .map(s => `<span class="match-card__set-score${s.b > s.a ? ' match-card__set-score--high' : ''}">${s.b}</span>`)
       .join('');
 
+    // Community Cup: show community logo + name instead of TBD pair strings,
+    // plus a Match Type badge in the header.
+    const ccMode = Data.isCommunityCupFormat && Data.isCommunityCupFormat();
+    let team1HTML, team2HTML, matchTypeBadge = '';
+    if (ccMode) {
+      const cA = Data.getCommunityById ? Data.getCommunityById(match.communityA) : null;
+      const cB = Data.getCommunityById ? Data.getCommunityById(match.communityB) : null;
+      const aLabel = cA ? cA.name : (match.communityA || 'TBD');
+      const bLabel = cB ? cB.name : (match.communityB || 'TBD');
+      const aLogo = cA && cA.logoPath
+        ? `<img class="match-card__cc-logo" src="${cA.logoPath}" alt="${aLabel}" onerror="this.style.display='none'">`
+        : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(aLabel || '?').charAt(0).toUpperCase()}</span>`;
+      const bLogo = cB && cB.logoPath
+        ? `<img class="match-card__cc-logo" src="${cB.logoPath}" alt="${bLabel}" onerror="this.style.display='none'">`
+        : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(bLabel || '?').charAt(0).toUpperCase()}</span>`;
+      team1HTML = `<div class="match-card__cc-team">${aLogo}<span class="match-card__team-name">${aLabel}</span></div>`;
+      team2HTML = `<div class="match-card__cc-team">${bLogo}<span class="match-card__team-name">${bLabel}</span></div>`;
+      if (match.matchType) {
+        const typeText = match.matchType + (match.matchSlot && parseInt(match.matchSlot, 10) > 1 ? ' #' + match.matchSlot : '');
+        matchTypeBadge = `<span class="match-card__type match-card__type--${match.matchType.toLowerCase()}">${typeText}</span>`;
+      }
+    } else {
+      team1HTML = Data.getTeamStackedHTML(match.team1, 30);
+      team2HTML = Data.getTeamStackedHTML(match.team2, 30);
+    }
+
+    // Round label: avoid leading "—" when there's no division text (CC mode).
+    const divisionHTML = match.division
+      ? `<span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span>`
+      : `<span class="match-card__round-name">${match.round}</span>`;
+
     return `<div class="match-card ${statusClass} ${roundClass}">
       <div class="match-card__status">
-        <span class="match-card__round ${roundLabelClass}"><span class="match-card__division">${match.division}</span> <span class="match-card__round-name">— ${match.round}</span></span>
+        <span class="match-card__round ${roundLabelClass}">${divisionHTML}${matchTypeBadge}</span>
         ${liveBadge || statusLabel}
       </div>
       <div class="match-card__teams">
         <div class="match-card__team ${team1Class}">
-          ${Data.getTeamStackedHTML(match.team1, 30)}
+          ${team1HTML}
           <div class="match-card__scores">${scores1}</div>
         </div>
         <div class="match-card__team ${team2Class}">
-          ${Data.getTeamStackedHTML(match.team2, 30)}
+          ${team2HTML}
           <div class="match-card__scores">${scores2}</div>
         </div>
       </div>

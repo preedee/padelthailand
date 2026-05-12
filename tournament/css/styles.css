@@ -1866,6 +1866,83 @@ body:has(.theme-dark) {
   box-shadow: 0 0 0 1px rgba(205, 127, 50, 0.2);
 }
 
+/* ============================================
+   DARK THEME — All Matches card overrides
+   ============================================ */
+.theme-dark .court-column__header {
+  color: var(--dark-accent, #FFB703);
+  border-bottom-color: var(--dark-accent, #FFB703);
+}
+
+.theme-dark .match-card {
+  background: var(--dark-surface, #122620);
+  border-color: var(--dark-border, #2A3F35);
+  color: var(--dark-text, #E8F0EC);
+}
+
+.theme-dark .match-card--upcoming {
+  opacity: 0.92;        /* much subtler than the 0.6 default */
+}
+
+.theme-dark .match-card__round,
+.theme-dark .match-card__time {
+  color: var(--dark-text-muted, #9CA3AF);
+}
+
+.theme-dark .match-card__team-name {
+  color: var(--dark-text, #E8F0EC);
+}
+
+.theme-dark .match-card__team + .match-card__team {
+  border-top-color: var(--dark-border, #2A3F35);
+}
+
+.theme-dark .match-card__set-score {
+  color: var(--dark-text, #E8F0EC);
+}
+
+/* Community Cup match-card additions */
+.match-card__cc-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.match-card__cc-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.match-card__cc-logo--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dark-border, #2A3F35);
+  color: var(--dark-text-muted, #9CA3AF);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.match-card__type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.match-card__type--m   { background: #CFD8DC; color: #263238; }
+.match-card__type--f   { background: #E1BEE7; color: #4A148C; }
+.match-card__type--mix { background: #D7CCC8; color: #3E2723; }
+
 /* Legacy CC-bracket styles kept for back-compat */
 .cc-bracket {
   display: flex;
