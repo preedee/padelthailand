@@ -1874,6 +1874,20 @@ body:has(.theme-dark) {
   border-bottom-color: var(--dark-accent, #FFB703);
 }
 
+.theme-dark .matches-grid__header-row {
+  background: var(--dark-bg, #0A1612);
+}
+
+.theme-dark .matches-day__header {
+  background: var(--dark-surface, #122620);
+  color: var(--dark-accent, #FFB703);
+  border: 1px solid var(--dark-border, #2A3F35);
+}
+
+.theme-dark .matches-day__header:hover {
+  background: var(--dark-border, #2A3F35);
+}
+
 .theme-dark .match-card {
   background: var(--dark-surface, #122620);
   border-color: var(--dark-border, #2A3F35);
