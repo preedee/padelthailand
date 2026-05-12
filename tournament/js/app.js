@@ -514,13 +514,7 @@ const App = (() => {
         Series.renderBracket(bracketEl);
       }
       const matchesContainer = document.getElementById('view-matches');
-      if (matchesContainer) {
-        if (typeof Matches.renderCC === 'function') {
-          Matches.renderCC(matchesContainer, matches);
-        } else {
-          Matches.render(matchesContainer, matches);
-        }
-      }
+      if (matchesContainer) Matches.render(matchesContainer, matches);
       const sidebarContent = document.querySelector('.sidebar__content');
       if (sidebarContent) Matches.renderUpcoming(sidebarContent, matches);
       return;
