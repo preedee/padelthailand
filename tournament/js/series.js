@@ -70,8 +70,9 @@ const Series = (() => {
     return `<div class="series-card__matches">${pills}</div>`;
   }
 
-  // Render a single series card.
-  function renderSeriesCard(series) {
+  // Render a single SERIES as a bracket-match card (RPA-style bracket layout).
+  // Uses the existing .bracket-match CSS hooks so styling is consistent.
+  function renderSeriesCard(series, extraClass) {
     const aLabel = resolveLabel(series.communityA);
     const bLabel = resolveLabel(series.communityB);
     const aLogo = resolveLogo(series.communityA);
@@ -80,57 +81,80 @@ const Series = (() => {
     const result = Data.computeSeriesResult(series.id);
     const aWins = result.aWins;
     const bWins = result.bWins;
-    const aWinning = aWins > bWins;
-    const bWinning = bWins > aWins;
+    const aWinning = result.complete && result.winnerCommunityId === series.communityA;
+    const bWinning = result.complete && result.winnerCommunityId === series.communityB;
+    const aTBD = !series.communityA || series.communityA === 'TBD' || series.communityA.startsWith('<');
+    const bTBD = !series.communityB || series.communityB === 'TBD' || series.communityB.startsWith('<');
 
-    const headerRight = series.startTime
-      ? `<span class="series-card__time">${series.startTime}</span>`
-      : '';
-
-    function renderLogo(logoPath, label) {
+    function logoHTML(logoPath, label) {
       if (logoPath) {
-        return `<img class="series-card__logo" src="${logoPath}" alt="${label}" onerror="this.style.display='none'">`;
+        return `<img class="bracket-match__logo" src="${logoPath}" alt="${label}" onerror="this.style.display='none'">`;
       }
       const initial = (label || '?').charAt(0).toUpperCase();
-      return `<span class="series-card__logo series-card__logo--fallback">${initial}</span>`;
+      return `<span class="bracket-match__logo bracket-match__logo--fallback">${initial}</span>`;
     }
 
-    return `
-      <div class="series-card series-card--${series.stage || 'main'}" data-series-id="${series.id}">
-        <div class="series-card__header">
-          <span class="series-card__id">${series.id}</span>
-          ${headerRight}
+    const t1Class = aWinning ? 'bracket-match__team--winner'
+                  : bWinning ? 'bracket-match__team--loser'
+                  : (aTBD ? 'bracket-match__team--tbd' : '');
+    const t2Class = bWinning ? 'bracket-match__team--winner'
+                  : aWinning ? 'bracket-match__team--loser'
+                  : (bTBD ? 'bracket-match__team--tbd' : '');
+
+    const meta = `${series.id}${series.startTime ? ' · ' + series.startTime : ''}`;
+
+    return `<div class="bracket-match ${extraClass || ''}" data-series-id="${series.id}">
+      <div class="bracket-match__datetime">${meta}</div>
+      <div class="bracket-match__team ${t1Class}">
+        <div class="bracket-match__community">
+          ${logoHTML(aLogo, aLabel)}
+          <span class="bracket-match__team-name">${aLabel}</span>
         </div>
-        <div class="series-card__body">
-          <div class="series-card__community${aWinning ? ' series-card__community--winning' : ''}">
-            ${renderLogo(aLogo, aLabel)}
-            <span class="series-card__name">${aLabel}</span>
-            <span class="series-card__score">${aWins}</span>
-          </div>
-          <div class="series-card__community${bWinning ? ' series-card__community--winning' : ''}">
-            ${renderLogo(bLogo, bLabel)}
-            <span class="series-card__name">${bLabel}</span>
-            <span class="series-card__score">${bWins}</span>
-          </div>
-        </div>
-        ${renderMatchPills(series.id)}
+        <div class="bracket-match__score"><span class="bracket-match__set${aWinning ? ' bracket-match__set--high' : ''}">${aWins}</span></div>
       </div>
-    `;
+      <div class="bracket-match__team ${t2Class}">
+        <div class="bracket-match__community">
+          ${logoHTML(bLogo, bLabel)}
+          <span class="bracket-match__team-name">${bLabel}</span>
+        </div>
+        <div class="bracket-match__score"><span class="bracket-match__set${bWinning ? ' bracket-match__set--high' : ''}">${bWins}</span></div>
+      </div>
+    </div>`;
   }
 
-  // Render a labeled section containing a grid of series cards.
-  function renderSection(title, seriesArray) {
-    if (seriesArray.length === 0) return '';
-    const cards = seriesArray.map(renderSeriesCard).join('');
-    return `
-      <section class="cc-bracket__section">
-        <h2 class="cc-bracket__section-title">${title}</h2>
-        <div class="cc-bracket__series-grid">${cards}</div>
-      </section>
-    `;
+  // Render one bracket tree (Semi-Finals column → Final/3rd Place column).
+  function renderBracketTree(title, sf, grandFinal, thirdPlace) {
+    if (sf.length === 0 && grandFinal.length === 0) return '';
+    const sfColumn = sf.length > 0 ? `
+      <div class="bracket__round">
+        <div class="bracket__round-title">Semi-Finals</div>
+        <div class="bracket__matches">
+          ${sf.map(s => renderSeriesCard(s)).join('')}
+        </div>
+      </div>` : '';
+
+    const hasThird = thirdPlace.length > 0;
+    const hasFinal = grandFinal.length > 0;
+    const finalLabel = hasThird && hasFinal ? 'Final / 3rd Place' : (hasFinal ? 'Final' : '3rd Place');
+    const finalColumn = (hasFinal || hasThird) ? `
+      <div class="bracket__round">
+        <div class="bracket__round-title">${finalLabel}</div>
+        <div class="bracket__matches">
+          ${grandFinal.map(s => renderSeriesCard(s, 'bracket-match--gold')).join('')}
+          ${thirdPlace.map(s => renderSeriesCard(s, 'bracket-match--bronze')).join('')}
+        </div>
+      </div>` : '';
+
+    return `<div class="bracket-single">
+      <div class="bracket-division__title">${title}</div>
+      <div class="bracket">
+        ${sfColumn}
+        ${finalColumn}
+      </div>
+    </div>`;
   }
 
-  // Main entry — render the bracket view.
+  // Main entry — render the Round 2 bracket view as two parallel trees.
   function renderBracket(container) {
     if (!container) return;
     const allSeries = Data.getSeries();
@@ -139,24 +163,21 @@ const Series = (() => {
       return;
     }
 
-    // Bracket view shows only knockout (Round 2+) — group stage lives in Standings
-    const mainKO = allSeries.filter(s =>
-      s.stage === 'main' && !s.id.startsWith('R1-')
-    );
-    const consolation = allSeries.filter(s =>
-      s.stage === 'consolation' && !s.id.startsWith('R1-')
-    );
+    const mainSF = allSeries.filter(s => s.id === 'SF-1' || s.id === 'SF-2');
+    const grandFinal = allSeries.filter(s => s.id === 'F');
+    const thirdPlace = allSeries.filter(s => s.id === '3P');
+    const consolationSF = allSeries.filter(s => s.id === 'CSF-1' || s.id === 'CSF-2');
+    const consolationFinal = allSeries.filter(s => s.id === 'CF');
 
-    if (mainKO.length === 0 && consolation.length === 0) {
+    if (mainSF.length === 0 && consolationSF.length === 0) {
       container.innerHTML = `<div class="loading">Knockout bracket — fills in after Round 1</div>`;
       return;
     }
 
-    let html = `<div class="cc-bracket">`;
-    html += renderSection('Main Draw', mainKO);
-    html += renderSection('Consolation', consolation);
-    html += `</div>`;
-    container.innerHTML = html;
+    const mainHTML = renderBracketTree('Main Draw', mainSF, grandFinal, thirdPlace);
+    const consolationHTML = renderBracketTree('Consolation', consolationSF, consolationFinal, []);
+
+    container.innerHTML = `<div class="cc-bracket-trees">${mainHTML}${consolationHTML}</div>`;
   }
 
   return {
