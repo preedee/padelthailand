@@ -104,6 +104,12 @@ const CCStandings = (() => {
       <div class="cc-standings">
         <h2 class="cc-standings__title">${heading}</h2>
         <table class="cc-standings__table">
+          <colgroup>
+            <col class="cc-standings__col cc-standings__col--community">
+            <col class="cc-standings__col">
+            <col class="cc-standings__col">
+            <col class="cc-standings__col">
+          </colgroup>
           <thead>
             <tr class="cc-standings__head">
               <th class="cc-standings__cell">Community</th>

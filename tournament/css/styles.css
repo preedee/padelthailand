@@ -1966,7 +1966,14 @@ body:has(.theme-dark) {
   text-align: center;
   padding: 8px 12px;
   border-bottom: 1px solid var(--dark-border, #2A3F35);
-  width: 25%;                   /* 4 equal columns */
+}
+
+/* Column widths: Community 40%, the other three 20% each */
+.cc-standings__col {
+  width: 20%;
+}
+.cc-standings__col--community {
+  width: 40%;
 }
 
 .cc-standings__row {
@@ -1984,7 +1991,6 @@ body:has(.theme-dark) {
   font-family: var(--font);
   font-size: 16px;
   color: var(--dark-text, #E8F0EC);
-  width: 25%;
 }
 
 /* Community cell: logo on left, name on right, pair centered in cell */
