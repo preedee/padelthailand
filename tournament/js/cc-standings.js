@@ -86,8 +86,10 @@ const CCStandings = (() => {
     const tbody = rows.map((row) => `
       <tr class="cc-standings__row">
         <td class="cc-standings__cell cc-standings__community">
-          ${renderLogo(row.community)}
-          <span class="cc-standings__name">${row.community.name}</span>
+          <span class="cc-standings__community-inner">
+            ${renderLogo(row.community)}
+            <span class="cc-standings__name">${row.community.name}</span>
+          </span>
         </td>
         <td class="cc-standings__cell cc-standings__cell--points">${row.matchesWon}</td>
         <td class="cc-standings__cell">${row.matchesWon}-${row.matchesLost}</td>

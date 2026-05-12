@@ -1987,30 +1987,34 @@ body:has(.theme-dark) {
   width: 25%;
 }
 
-/* Community cell: stack logo above name, centered */
+/* Community cell: logo on left, name on right, pair centered in cell */
 .cc-standings__community {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   font-weight: 400;             /* not bold */
 }
 
 td.cc-standings__community {
-  /* keep td display:table-cell for table layout; flex applies to its content via wrapper */
-  /* Override td display to flex column */
-  display: flex !important;
+  /* Center the inner flex pair both axes; padding via td default */
+  text-align: center;
+}
+
+/* Wrapper inside the td to hold the centered flex pair */
+.cc-standings__community-inner {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
 }
 
 .cc-standings__name {
   font-family: var(--font);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--dark-text, #E8F0EC);
-  line-height: 1.2;
+  line-height: 1.25;
+  text-align: left;
   word-wrap: break-word;
-  text-align: center;
+  max-width: 140px;
 }
 
 .cc-standings__logo {
