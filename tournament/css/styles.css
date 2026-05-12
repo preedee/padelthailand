@@ -1720,7 +1720,14 @@ body:has(.theme-dark) {
 }
 
 .theme-dark .sidebar__court-label {
-  color: var(--dark-text-muted);
+  color: var(--dark-accent, #FFB703);
+  background: var(--dark-surface, #122620);
+  border-radius: 4px;
+  border: 1px solid var(--dark-border, #2A3F35);
+}
+
+.theme-dark .sidebar__match-team {
+  color: var(--dark-text, #E8F0EC);
 }
 
 .theme-dark .sidebar__match-time,
@@ -1918,10 +1925,56 @@ body:has(.theme-dark) {
 /* Community Cup match-card additions */
 .match-card__cc-team {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   flex: 1;
   min-width: 0;
+}
+
+.match-card__cc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-card__cc-players {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 32px;
+}
+
+.match-card__cc-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--dark-text-muted, #9CA3AF);
+}
+
+.match-card__cc-player--tbd {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.match-card__cc-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dark-border, #2A3F35);
+  color: var(--dark-text, #E8F0EC);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.match-card__cc-player-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .match-card__cc-logo {

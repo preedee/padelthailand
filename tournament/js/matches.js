@@ -185,8 +185,25 @@ const Matches = (() => {
       const bLogo = cB && cB.logoPath
         ? `<img class="match-card__cc-logo" src="${cB.logoPath}" alt="${bLabel}" onerror="this.style.display='none'">`
         : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(bLabel || '?').charAt(0).toUpperCase()}</span>`;
-      team1HTML = `<div class="match-card__cc-team">${aLogo}<span class="match-card__team-name">${aLabel}</span></div>`;
-      team2HTML = `<div class="match-card__cc-team">${bLogo}<span class="match-card__team-name">${bLabel}</span></div>`;
+      function renderPlayer(name) {
+        const label = name || 'TBD';
+        const initial = (label || '?').charAt(0).toUpperCase();
+        const placeholderClass = name ? '' : ' match-card__cc-player--tbd';
+        return `<div class="match-card__cc-player${placeholderClass}">
+          <span class="match-card__cc-avatar">${initial}</span>
+          <span class="match-card__cc-player-name">${label}</span>
+        </div>`;
+      }
+      const t1Players = (match.team1Players || []).map(p => renderPlayer(p.name)).join('');
+      const t2Players = (match.team2Players || []).map(p => renderPlayer(p.name)).join('');
+      team1HTML = `<div class="match-card__cc-team">
+        <div class="match-card__cc-header">${aLogo}<span class="match-card__team-name">${aLabel}</span></div>
+        <div class="match-card__cc-players">${t1Players}</div>
+      </div>`;
+      team2HTML = `<div class="match-card__cc-team">
+        <div class="match-card__cc-header">${bLogo}<span class="match-card__team-name">${bLabel}</span></div>
+        <div class="match-card__cc-players">${t2Players}</div>
+      </div>`;
       if (match.matchType) {
         const typeNames = { 'M': 'Male', 'F': 'Female', 'Mix': 'Mixed' };
         const typeText = typeNames[match.matchType] || match.matchType;

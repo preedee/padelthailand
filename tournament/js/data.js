@@ -284,6 +284,15 @@ const Data = (() => {
       team2Code: t2Code,
       team2: (t2 && t2 !== 'TBD') ? t2 : (ccTeam2 || t2Code || t2),
       team2Id: row['Team 2 ID'] || '',
+      // Per-player breakdown for CC rendering (avatars + names)
+      team1Players: [
+        { name: (row['Community A - Player 1 Name'] || '').trim(), id: row['Community A - Player 1 ID'] || '' },
+        { name: (row['Community A - Player 2 Name'] || '').trim(), id: row['Community A - Player 2 ID'] || '' },
+      ],
+      team2Players: [
+        { name: (row['Community B - Player 1 Name'] || '').trim(), id: row['Community B - Player 1 ID'] || '' },
+        { name: (row['Community B - Player 2 Name'] || '').trim(), id: row['Community B - Player 2 ID'] || '' },
+      ],
       date: row['Date'] || '',
       time: row['Time'] || '',
       club: row['Club'] || '',
