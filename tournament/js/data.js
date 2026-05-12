@@ -288,13 +288,23 @@ const Data = (() => {
       ],
       matchId: row['Match ID'] || '',
       updatedAt: row['Updated At'] || '',
-      // Community Cup additions — empty strings for non-CC tournaments
-      seriesId: row['Series ID'] || '',
+      // Community Cup additions — empty strings for non-CC tournaments.
+      // If `Series ID` column was removed, derive it from `Match ID`
+      // (Match ID convention: "<seriesId>-<matchType>" e.g. "R1-A-1-Mix").
+      seriesId: (row['Series ID'] || '').trim()
+        || deriveSeriesIdFromMatchId(row['Match ID'] || ''),
       communityA: row['Community A'] || '',
       communityB: row['Community B'] || '',
       matchType: row['Match Type'] || '',
       matchSlot: row['Match Slot'] || ''
     };
+  }
+
+  // Derive series ID from a match ID by stripping the trailing -Mix/-M/-F.
+  function deriveSeriesIdFromMatchId(matchId) {
+    if (!matchId) return '';
+    const m = String(matchId).match(/^(.+)-(?:Mix|M|F)$/);
+    return m ? m[1] : matchId;
   }
 
   // --- Winner determination ---
