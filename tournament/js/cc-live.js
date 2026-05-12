@@ -19,24 +19,40 @@ const CCLive = (() => {
     return now.getHours() * 60 + now.getMinutes();
   }
 
+  // Today's date in the same format the Sheet uses (e.g. "12 May 2026").
+  function todayDateString() {
+    const d = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
   // Find current + next match for a given court.
-  // Current = a match whose scheduled time has passed and status isn't Complete.
-  // Next    = earliest match with scheduled time in the future.
+  // Current = a match scheduled for TODAY whose time has passed and status isn't Complete.
+  // Next    = earliest match scheduled for today (future) or any future day.
   function findCourtState(matches, court) {
+    const today = todayDateString();
     const courtMatches = matches
       .filter(m => m.court === court)
-      .map(m => ({ m, t: parseTimeToMinutes(m.time) }))
+      .map(m => ({ m, t: parseTimeToMinutes(m.time), isToday: m.date === today }))
       .filter(x => x.t !== null)
-      .sort((a, b) => a.t - b.t);
+      .sort((a, b) => {
+        // Today's matches first, then by time
+        if (a.isToday !== b.isToday) return a.isToday ? -1 : 1;
+        return a.t - b.t;
+      });
 
-    const now = getNowMinutes();
+    const nowMin = getNowMinutes();
     let current = null;
     let next = null;
-    for (const { m, t } of courtMatches) {
+    for (const { m, t, isToday } of courtMatches) {
       const status = (m.status || '').toLowerCase();
       if (status === 'complete') continue;
-      if (t <= now && !current) current = m;
-      else if (t > now && !next) { next = m; break; }
+      if (isToday && t <= nowMin && !current) {
+        current = m;
+      } else if (!next) {
+        next = m;
+        break;
+      }
     }
     return { current, next };
   }

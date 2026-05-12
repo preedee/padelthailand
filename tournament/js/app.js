@@ -406,14 +406,13 @@ const App = (() => {
     const mainContent = document.getElementById('main-content');
 
     // View IDs (Live is first — most important during the event)
-    ALL_VIEWS = ['live', 'group-a-standings', 'group-b-standings', 'bracket', 'matches'];
+    ALL_VIEWS = ['live', 'standings', 'bracket', 'matches'];
     VIEWS = ALL_VIEWS.slice();
 
     // Build nav (single-row layout)
     let tabsHTML = '';
     tabsHTML += `<button class="view-bar__tab active" data-view="live">Live</button>`;
-    tabsHTML += `<button class="view-bar__tab" data-view="group-a-standings">Group A</button>`;
-    tabsHTML += `<button class="view-bar__tab" data-view="group-b-standings">Group B</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="standings">Standings</button>`;
     tabsHTML += `<button class="view-bar__tab" data-view="bracket">Bracket</button>`;
     tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
     tabsHTML += `<div class="view-bar__dots">`;
@@ -428,11 +427,8 @@ const App = (() => {
     viewsHTML += `<section class="view active" id="view-live">
       <div class="loading">Loading live courts...</div>
     </section>`;
-    viewsHTML += `<section class="view" id="view-group-a-standings">
-      <div class="loading">Group A standings</div>
-    </section>`;
-    viewsHTML += `<section class="view" id="view-group-b-standings">
-      <div class="loading">Group B standings</div>
+    viewsHTML += `<section class="view" id="view-standings">
+      <div class="loading">Loading standings...</div>
     </section>`;
     viewsHTML += `<section class="view" id="view-bracket">
       <div class="loading">Bracket</div>
@@ -509,13 +505,9 @@ const App = (() => {
       if (liveEl && typeof CCLive !== 'undefined') {
         CCLive.renderLive(liveEl);
       }
-      const groupAEl = document.getElementById('view-group-a-standings');
-      const groupBEl = document.getElementById('view-group-b-standings');
-      if (groupAEl && typeof CCStandings !== 'undefined') {
-        CCStandings.renderGroup(groupAEl, 'A');
-      }
-      if (groupBEl && typeof CCStandings !== 'undefined') {
-        CCStandings.renderGroup(groupBEl, 'B');
+      const standingsEl = document.getElementById('view-standings');
+      if (standingsEl && typeof CCStandings !== 'undefined') {
+        CCStandings.renderAll(standingsEl);
       }
       const bracketEl = document.getElementById('view-bracket');
       if (bracketEl && typeof Series !== 'undefined') {

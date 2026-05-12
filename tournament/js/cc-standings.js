@@ -94,9 +94,12 @@ const CCStandings = (() => {
       </tr>
     `).join('');
 
+    // If groupLetter is a single character, prefix with "Group "; otherwise use as-is
+    const heading = /^[A-Z0-9]$/i.test(groupLetter) ? `Group ${groupLetter}` : groupLetter;
+
     container.innerHTML = `
       <div class="cc-standings">
-        <h2 class="cc-standings__title">Group ${groupLetter}</h2>
+        <h2 class="cc-standings__title">${heading}</h2>
         <table class="cc-standings__table">
           <thead>
             <tr class="cc-standings__head">
@@ -116,6 +119,43 @@ const CCStandings = (() => {
     `;
   }
 
-  return { renderGroup, computeRecord };
+  // Detect distinct group names from the Communities tab (column C / "Group").
+  // Returns names in sort order, excluding empty/TBD.
+  function getGroupNames() {
+    const names = Data.getCommunities()
+      .map(c => (c.group || '').trim())
+      .filter(g => g && g.toUpperCase() !== 'TBD');
+    return [...new Set(names)].sort();
+  }
+
+  // Render all groups side-by-side as columns in one container.
+  function renderAll(container) {
+    if (!container) return;
+    const groupNames = getGroupNames();
+
+    if (groupNames.length === 0) {
+      container.innerHTML = `
+        <div class="cc-standings">
+          <div class="cc-standings__pending">
+            Communities assigned to groups at draft — 20 May 2026
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Build a per-group column shell and let renderGroup fill each
+    const columnsHTML = groupNames
+      .map((name, i) => `<div class="cc-standings-col" data-group="${name}" id="cc-standings-col-${i}"></div>`)
+      .join('');
+    container.innerHTML = `<div class="cc-standings-multi" style="--cc-group-count: ${groupNames.length};">${columnsHTML}</div>`;
+
+    groupNames.forEach((name, i) => {
+      const col = container.querySelector(`#cc-standings-col-${i}`);
+      renderGroup(col, name);
+    });
+  }
+
+  return { renderGroup, renderAll, computeRecord, getGroupNames };
 
 })();

@@ -1905,8 +1905,22 @@ body:has(.theme-dark) {
 }
 
 /* ============================================
-   COMMUNITY CUP — Group standings table
+   COMMUNITY CUP — Standings (multi-group)
    ============================================ */
+
+/* Side-by-side group columns */
+.cc-standings-multi {
+  display: grid;
+  grid-template-columns: repeat(var(--cc-group-count, 2), 1fr);
+  gap: 32px;
+  height: 100%;
+  align-items: start;
+}
+
+.cc-standings-col {
+  min-width: 0;  /* allow ellipsis on long names */
+}
+
 .cc-standings {
   height: 100%;
   display: flex;
@@ -1984,8 +1998,8 @@ th.cc-standings__community {
 }
 
 .cc-standings__logo {
-  width: 28px;
-  height: 28px;
+  width: 84px;
+  height: 84px;
   flex-shrink: 0;
   object-fit: contain;
 }
@@ -1998,7 +2012,7 @@ th.cc-standings__community {
   color: var(--dark-text-muted, #9CA3AF);
   border-radius: 50%;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 42px;
 }
 
 .cc-standings__cell {
