@@ -66,11 +66,10 @@ const CCStandings = (() => {
       ...computeRecord(c.id, groupSeries)
     }));
 
-    // Sort: seriesWon desc → match diff desc → game diff desc → name asc
+    // Sort by Points (= match wins) per rules:
+    // Match wins → game differential → head-to-head → name
     rows.sort((a, b) => {
-      if (a.seriesWon !== b.seriesWon) return b.seriesWon - a.seriesWon;
-      const md = (b.matchesWon - b.matchesLost) - (a.matchesWon - a.matchesLost);
-      if (md !== 0) return md;
+      if (a.matchesWon !== b.matchesWon) return b.matchesWon - a.matchesWon;
       const gd = (b.gamesWon - b.gamesLost) - (a.gamesWon - a.gamesLost);
       if (gd !== 0) return gd;
       return a.community.name.localeCompare(b.community.name);
@@ -84,11 +83,13 @@ const CCStandings = (() => {
       return `<span class="cc-standings__logo cc-standings__logo--fallback">${initial}</span>`;
     }
 
-    const tbody = rows.map((row, i) => `
+    const tbody = rows.map((row) => `
       <tr class="cc-standings__row">
-        <td class="cc-standings__rank">${i + 1}</td>
-        <td class="cc-standings__community">${renderLogo(row.community)}<span>${row.community.name}</span></td>
-        <td class="cc-standings__cell">${row.seriesWon}-${row.seriesLost}</td>
+        <td class="cc-standings__cell cc-standings__community">
+          ${renderLogo(row.community)}
+          <span class="cc-standings__name">${row.community.name}</span>
+        </td>
+        <td class="cc-standings__cell cc-standings__cell--points">${row.matchesWon}</td>
         <td class="cc-standings__cell">${row.matchesWon}-${row.matchesLost}</td>
         <td class="cc-standings__cell">${row.gamesWon}-${row.gamesLost}</td>
       </tr>
@@ -103,9 +104,8 @@ const CCStandings = (() => {
         <table class="cc-standings__table">
           <thead>
             <tr class="cc-standings__head">
-              <th></th>
-              <th class="cc-standings__community">Community</th>
-              <th class="cc-standings__cell">Series</th>
+              <th class="cc-standings__cell">Community</th>
+              <th class="cc-standings__cell">Points</th>
               <th class="cc-standings__cell">Matches</th>
               <th class="cc-standings__cell">Games</th>
             </tr>

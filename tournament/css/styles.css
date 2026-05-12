@@ -1954,6 +1954,7 @@ body:has(.theme-dark) {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font);
+  table-layout: fixed;          /* equal column widths */
 }
 
 .cc-standings__head th {
@@ -1962,9 +1963,10 @@ body:has(.theme-dark) {
   text-transform: uppercase;
   color: var(--dark-text-muted, #9CA3AF);
   font-weight: 700;
-  text-align: left;
+  text-align: center;
   padding: 8px 12px;
   border-bottom: 1px solid var(--dark-border, #2A3F35);
+  width: 25%;                   /* 4 equal columns */
 }
 
 .cc-standings__row {
@@ -1972,29 +1974,43 @@ body:has(.theme-dark) {
 }
 
 .cc-standings__row td {
-  padding: 10px 12px;
+  padding: 12px 8px;
   font-size: 15px;
   vertical-align: middle;
+  text-align: center;
 }
 
-.cc-standings__rank {
-  font-weight: 700;
-  color: var(--dark-accent, #FFB703);
-  width: 32px;
-  font-family: monospace;
+.cc-standings__cell {
+  font-family: var(--font);
   font-size: 16px;
+  color: var(--dark-text, #E8F0EC);
+  width: 25%;
 }
 
+/* Community cell: stack logo above name, centered */
 .cc-standings__community {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 400;             /* not bold */
 }
 
-th.cc-standings__community {
-  display: table-cell;
-  font-weight: 700;
+td.cc-standings__community {
+  /* keep td display:table-cell for table layout; flex applies to its content via wrapper */
+  /* Override td display to flex column */
+  display: flex !important;
+}
+
+.cc-standings__name {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--dark-text, #E8F0EC);
+  line-height: 1.2;
+  word-wrap: break-word;
+  text-align: center;
 }
 
 .cc-standings__logo {
@@ -2015,17 +2031,10 @@ th.cc-standings__community {
   font-size: 42px;
 }
 
-.cc-standings__cell {
-  font-family: monospace;
-  font-size: 14px;
-  color: var(--dark-text, #E8F0EC);
-  width: 90px;
-  text-align: right;
-}
-
-th.cc-standings__cell {
-  text-align: right;
-  font-family: var(--font);
+.cc-standings__cell--points {
+  font-weight: 700;
+  color: var(--dark-accent, #FFB703);
+  font-size: 20px;
 }
 
 .cc-standings__footnote {
