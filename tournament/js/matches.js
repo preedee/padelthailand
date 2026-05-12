@@ -185,24 +185,26 @@ const Matches = (() => {
       const bLogo = cB && cB.logoPath
         ? `<img class="match-card__cc-logo" src="${cB.logoPath}" alt="${bLabel}" onerror="this.style.display='none'">`
         : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(bLabel || '?').charAt(0).toUpperCase()}</span>`;
-      function renderPlayer(name) {
-        const label = name || 'TBD';
-        const initial = (label || '?').charAt(0).toUpperCase();
-        const placeholderClass = name ? '' : ' match-card__cc-player--tbd';
-        return `<div class="match-card__cc-player${placeholderClass}">
-          <span class="match-card__cc-avatar">${initial}</span>
-          <span class="match-card__cc-player-name">${label}</span>
-        </div>`;
+      function renderAvatar(name) {
+        const initial = ((name || '?').charAt(0).toUpperCase());
+        return `<span class="match-card__cc-avatar">${initial}</span>`;
       }
-      const t1Players = (match.team1Players || []).map(p => renderPlayer(p.name)).join('');
-      const t2Players = (match.team2Players || []).map(p => renderPlayer(p.name)).join('');
-      team1HTML = `<div class="match-card__cc-team">
-        <div class="match-card__cc-header">${aLogo}<span class="match-card__team-name">${aLabel}</span></div>
-        <div class="match-card__cc-players">${t1Players}</div>
+      function renderName(name) {
+        const label = name || 'TBD';
+        const placeholderClass = name ? '' : ' match-card__cc-name--tbd';
+        return `<div class="match-card__cc-name-row${placeholderClass}">${label}</div>`;
+      }
+      const t1 = match.team1Players || [];
+      const t2 = match.team2Players || [];
+      team1HTML = `<div class="match-card__cc-team" aria-label="${aLabel}">
+        <div class="match-card__cc-logo-wrap">${aLogo}</div>
+        <div class="match-card__cc-avatars">${t1.map(p => renderAvatar(p.name)).join('')}</div>
+        <div class="match-card__cc-names">${t1.map(p => renderName(p.name)).join('')}</div>
       </div>`;
-      team2HTML = `<div class="match-card__cc-team">
-        <div class="match-card__cc-header">${bLogo}<span class="match-card__team-name">${bLabel}</span></div>
-        <div class="match-card__cc-players">${t2Players}</div>
+      team2HTML = `<div class="match-card__cc-team" aria-label="${bLabel}">
+        <div class="match-card__cc-logo-wrap">${bLogo}</div>
+        <div class="match-card__cc-avatars">${t2.map(p => renderAvatar(p.name)).join('')}</div>
+        <div class="match-card__cc-names">${t2.map(p => renderName(p.name)).join('')}</div>
       </div>`;
       if (match.matchType) {
         const typeNames = { 'M': 'Male', 'F': 'Female', 'Mix': 'Mixed' };

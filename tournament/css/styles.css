@@ -1922,39 +1922,43 @@ body:has(.theme-dark) {
   color: var(--dark-text, #E8F0EC);
 }
 
-/* Community Cup match-card additions */
+/* Community Cup match-card layout:
+   [Community Logo] [Stacked Avatars] [Stacked Names] */
 .match-card__cc-team {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
-.match-card__cc-header {
+.match-card__cc-logo-wrap {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
-.match-card__cc-players {
+.match-card__cc-logo {
+  width: 40px;             /* 2× the avatar size */
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.match-card__cc-avatars {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-left: 32px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.match-card__cc-player {
+.match-card__cc-names {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--dark-text-muted, #9CA3AF);
-}
-
-.match-card__cc-player--tbd {
-  font-style: italic;
-  opacity: 0.7;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .match-card__cc-avatar {
@@ -1971,17 +1975,19 @@ body:has(.theme-dark) {
   flex-shrink: 0;
 }
 
-.match-card__cc-player-name {
+.match-card__cc-name-row {
+  font-size: 13px;
+  color: var(--dark-text, #E8F0EC);
+  line-height: 20px;          /* match avatar height for row alignment */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.match-card__cc-logo {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  object-fit: contain;
+.match-card__cc-name--tbd {
+  font-style: italic;
+  color: var(--dark-text-muted, #9CA3AF);
+  opacity: 0.7;
 }
 
 .match-card__cc-logo--fallback {
