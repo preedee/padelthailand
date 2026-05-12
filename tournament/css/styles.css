@@ -1765,10 +1765,10 @@ body:has(.theme-dark) {
    with dark-theme overrides and community logos in place of avatars.
    ============================================ */
 
-/* Main + Consolation brackets side-by-side */
+/* Main on top, Consolation on bottom */
 .cc-bracket-trees {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 28px;
   height: 100%;
   overflow-y: auto;
