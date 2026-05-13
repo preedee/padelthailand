@@ -659,12 +659,11 @@ async function undoPick(pickId) {
     const pick = state.picks.find(p => p.id === pickId);
     if (!pick) return;
     await DraftSupabase.undoPick(pickId);
-    // Per spec: undo pauses the timer + decrements current_pick_number
-    await DraftSupabase.updateDraft(state.draft.id, {
-      current_pick_number: pick.pick_number,
-      status: 'paused',
-      is_timer_paused: true,
-    });
+    // Per spec: undo pauses the timer + decrements current_pick_number.
+    // Routed through pauseForUndo so the pause-start is recorded — when the
+    // commissioner resumes, the timer continues from where it stopped rather
+    // than jumping forward by however long the pause lasted.
+    await DraftSupabase.pauseForUndo(state.draft.id, pick.pick_number);
     await loadDraftState();
     showToast(`Pick #${pick.pick_number} undone — draft paused`);
   } catch (err) {

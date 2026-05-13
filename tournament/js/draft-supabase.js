@@ -160,9 +160,77 @@
     });
   }
 
-  // Convenience: pause/resume the timer.
+  // Pause / resume the timer.
+  //
+  // Why this is tricky: the schema has no `paused_at` column. If we only flip
+  // `is_timer_paused`, then on resume `timer_started_at` is still the original
+  // pick-window start — so subscribers compute `now - timer_started_at` and the
+  // timer "jumps forward" by the entire pause duration.
+  //
+  // Fix: stash the pause-start wall-clock in localStorage (per draft id, survives
+  // a commissioner reload). On resume, shift `timer_started_at` forward by the
+  // pause duration in a single atomic update. After the update the math works
+  // out: elapsed_at_resume == elapsed_at_pause, so the timer continues from
+  // where it stopped.
+  function _pauseKey(draftId) { return `tps_draft_pause_${draftId}`; }
+
+  function _recordPauseStart(draftId, atMs) {
+    try { localStorage.setItem(_pauseKey(draftId), String(atMs)); } catch (_) { /* private mode */ }
+  }
+  function _readPauseStart(draftId) {
+    try {
+      const v = localStorage.getItem(_pauseKey(draftId));
+      return v ? parseInt(v, 10) : null;
+    } catch (_) { return null; }
+  }
+  function _clearPauseStart(draftId) {
+    try { localStorage.removeItem(_pauseKey(draftId)); } catch (_) { /* */ }
+  }
+
   async function setPaused(draftId, paused) {
-    return updateDraft(draftId, { is_timer_paused: paused, status: paused ? 'paused' : 'active' });
+    if (paused) {
+      _recordPauseStart(draftId, Date.now());
+      return updateDraft(draftId, { is_timer_paused: true, status: 'paused' });
+    }
+    // Resume — shift timer_started_at forward by the pause duration so the
+    // visible remaining time continues from where it was when paused.
+    const pausedAtMs = _readPauseStart(draftId);
+    if (!pausedAtMs) {
+      // No record of pause-start (commissioner laptop changed, or storage cleared).
+      // Best we can do is a plain resume; the timer will jump forward by however
+      // long the pause lasted. Log so the operator knows.
+      console.warn('[DraftSupabase] setPaused(false) with no recorded pause-start — timer will not be shifted.');
+      return updateDraft(draftId, { is_timer_paused: false, status: 'active' });
+    }
+    // Fetch the current timer_started_at so we can shift it.
+    const { data, error } = await client()
+      .from('drafts')
+      .select('timer_started_at')
+      .eq('id', draftId)
+      .single();
+    if (error) throw error;
+
+    const pauseDurationMs = Date.now() - pausedAtMs;
+    const oldStartMs      = new Date(data.timer_started_at).getTime();
+    const newStartIso     = new Date(oldStartMs + pauseDurationMs).toISOString();
+    _clearPauseStart(draftId);
+
+    return updateDraft(draftId, {
+      is_timer_paused: false,
+      status: 'active',
+      timer_started_at: newStartIso,
+    });
+  }
+
+  // Pause when commissioner undoes a pick — reuses setPaused so the
+  // pause-start gets recorded for a later resume shift.
+  async function pauseForUndo(draftId, newCurrentPickNumber) {
+    _recordPauseStart(draftId, Date.now());
+    return updateDraft(draftId, {
+      current_pick_number: newCurrentPickNumber,
+      is_timer_paused: true,
+      status: 'paused',
+    });
   }
 
   // Convenience: complete the draft (status → complete).
@@ -175,6 +243,6 @@
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
     insertPick, undoPick, updateDraft,
-    startDraft, advancePick, setPaused, completeDraft,
+    startDraft, advancePick, setPaused, pauseForUndo, completeDraft,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
