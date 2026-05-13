@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tournament Draft — Projector</title>
+
+  <!-- JetBrains Mono for the "data" type role (per visual-intent spec) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/draft-projector.css" />
+</head>
+<body>
+
+<main class="projector" id="projector" aria-label="Live Draft Projector">
+
+  <!-- HEADER -->
+  <header class="top-strip">
+    <div class="header-left">
+      <img class="brand-logo" id="brandLogo" src="assets/monogram-white-on-green.png" alt="TPS" />
+    </div>
+    <div class="header-center">
+      <div class="tournament" id="tournamentName">TOURNAMENT DRAFT</div>
+    </div>
+    <div class="header-right">
+      <div class="reconnect" id="reconnect" role="status" aria-live="polite">
+        <span class="pulse"></span>
+        <span>Reconnecting…</span>
+      </div>
+      <div class="live-pill" aria-label="Live Draft">
+        <span class="dot"></span>
+        LIVE DRAFT
+      </div>
+      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Community Cup" />
+    </div>
+  </header>
+
+  <!-- MOMENT BLOCK (converging bars + next / on clock / timer) -->
+  <section class="moment-block state-green" id="momentBlock">
+    <div class="converge-bar"><span class="seg seg-left"></span><span class="seg seg-right"></span></div>
+
+    <div class="moment">
+      <div class="moment-cell next-cell">
+        <div class="nlogo" id="nextLogo">--</div>
+        <div class="info">
+          <div class="label" id="nextLabel">NEXT UP · PICK —</div>
+          <div class="tname" id="nextName">—</div>
+        </div>
+      </div>
+
+      <div class="moment-cell clock-cell">
+        <div class="clogo" id="clockLogo">--</div>
+        <div class="info">
+          <div class="label">ON THE CLOCK</div>
+          <div class="team-name" id="clockName">WAITING…</div>
+          <div class="pick-meta" id="clockMeta">PICK — · ROUND — OF 8</div>
+        </div>
+      </div>
+
+      <div class="moment-cell timer-cell">
+        <div class="timer-wrap">
+          <div class="timer-num" id="timerNum">0:45</div>
+          <div class="timer-label">Time Remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="converge-bar"><span class="seg seg-left"></span><span class="seg seg-right"></span></div>
+  </section>
+
+  <!-- TEAM GRID (8 cards, 4x2) -->
+  <section class="teams">
+    <div class="teams-grid" id="teamsGrid"><!-- populated by JS --></div>
+  </section>
+
+</main>
+
+<!-- ────── Scripts (order matters) ────── -->
+<!-- Sheet ID default — set BEFORE data.js so its module-init reads it.
+     Override via ?sheet=<id> URL param (handled inside data.js). -->
+<script>
+  (function () {
+    var p = new URLSearchParams(window.location.search);
+    if (!window.__SHEET_ID && !p.get('sheet')) {
+      window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';
+    }
+  })();
+</script>
+
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Public Supabase config (anon key only — safe to deploy) -->
+<script src="js/draft-config.js"></script>
+
+<!-- Pure logic helpers -->
+<script src="js/draft-utils.js"></script>
+
+<!-- Supabase client wrapper -->
+<script src="js/draft-supabase.js"></script>
+
+<!-- Existing Sheet data layer (for Communities) -->
+<script src="js/data.js"></script>
+
+<!-- Projector controller -->
+<script src="js/draft-projector.js"></script>
+
+</body>
+</html>

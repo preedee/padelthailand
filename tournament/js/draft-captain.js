@@ -1,0 +1,751 @@
+/* ============================================
+   Captain Phone — Pool + Team views
+   Read-only display for one captain during a live draft.
+
+   URL params:
+     community   — Community ID slug (required, e.g. coco-padel)
+     pool        — flag — open Pool view by default
+     team        — flag — open Team view by default (also the default if neither flag is given)
+     tournament  — draft slug in Supabase (default: community-cup)
+     sheet       — Google Sheet ID override (default: Community Cup sheet)
+
+   Examples:
+     captain.html?community=coco-padel              → Team view
+     captain.html?community=coco-padel&pool         → Pool view
+     captain.html?community=coco-padel&team         → Team view (explicit)
+
+   Data sources:
+     • Google Sheets gviz CSV — Communities + Teams and Players (roster + captains)
+     • Supabase Realtime      — drafts + draft_picks (live state)
+
+   Per architecture decision 4c, draft_picks is authoritative during the draft;
+   the Sheet's pre-draft Community ID is treated as stale.
+   ============================================ */
+
+(function () {
+  'use strict';
+
+  // -------- Config --------
+  const DEFAULT_SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';
+  const DEFAULT_TOURNAMENT_SLUG = 'community-cup';
+  const N_FEMALE_SLOTS = 5;
+  const N_MALE_SLOTS = 5;
+
+  // -------- URL params --------
+  const params = new URLSearchParams(window.location.search);
+  // Community slug — accept both ?community= and legacy ?team= (only when ?team= holds a slug).
+  const legacyTeamVal = (params.get('team') || '').trim();
+  const isTeamFlag = params.has('team') && legacyTeamVal === '';
+  const COMMUNITY_SLUG = ((params.get('community') || (isTeamFlag ? '' : legacyTeamVal)) || '').toLowerCase();
+  // View flag — explicit ?pool wins; ?team falls through to team; default = team.
+  const INITIAL_VIEW = params.has('pool') ? 'pool' : 'team';
+  const TOURNAMENT_SLUG = (params.get('tournament') || DEFAULT_TOURNAMENT_SLUG).trim();
+  const SHEET_ID = (params.get('sheet') || DEFAULT_SHEET_ID).trim();
+
+  // -------- DOM refs --------
+  const $app = document.getElementById('app');
+  const $reconnect = document.getElementById('cap-reconnect');
+  const $error = document.getElementById('cap-error');
+  const $tournamentLogo = document.getElementById('cap-tournament-logo');
+  const $teamHeader = document.getElementById('cap-team-header');
+  const $rosterFemale = document.getElementById('cap-roster-grid-female');
+  const $rosterMale = document.getElementById('cap-roster-grid-male');
+  const $poolList = document.getElementById('cap-pool-list');
+  const $search = document.getElementById('cap-search');
+  const $sortGroup = document.getElementById('cap-sort-group');
+  const $filterGroup = document.getElementById('cap-filter-group');
+
+  // -------- State --------
+  const state = {
+    view: INITIAL_VIEW,
+    communities: [],     // [{ id, name, color, logoPath, ... }]
+    players: [],         // [{ communityId, tpsId, name, avatar, rating, hand, side, gender, isCaptain }]
+    playersByTpsId: new Map(),  // tps_id -> player record (built once after sheet load)
+    draft: null,
+    picks: [],           // [{ id, draft_id, pick_number, team_id, player_id, is_undone }]
+    picksHash: '',       // signature of the picks list used to skip no-op rerenders
+    search: '',
+    sort: 'rating-desc',
+    filters: { gender: null, hand: null, side: null },
+  };
+
+  // Live resources we need to tear down on pagehide / visibility change.
+  const teardown = {
+    pollHandle: null,
+    channels: [],
+  };
+
+  // Label lookup tables (replace ternary chains).
+  const HAND_LABEL = { L: '✋L', R: '✋R', B: '✋B' };
+  const SIDE_LABEL = { L: '←L', R: '→R', B: '↔B' };
+
+  function handLabel(h) { return HAND_LABEL[h] || '—'; }
+  function sideLabel(s) { return SIDE_LABEL[s] || '—'; }
+  function ratingStr(r) { return r != null ? r.toFixed(1) : '—'; }
+  function picksSignature(picks) {
+    // Captures order + is_undone state so UPDATEs are detected even when length stays.
+    return picks.map(p => `${p.id}:${p.is_undone ? 1 : 0}:${p.pick_number}:${p.player_id}:${p.team_id}`).join('|');
+  }
+
+  // ============================================================
+  // Helpers — defensive parsers (per Phase 0 verification + brief)
+  // ============================================================
+
+  /** "Male"/"M"/"m" → "M",  "Female"/"F"/"f" → "F",  else "". */
+  function normalizeGender(g) {
+    const s = String(g || '').trim().toLowerCase();
+    if (!s) return '';
+    if (s === 'm' || s === 'male') return 'M';
+    if (s === 'f' || s === 'female') return 'F';
+    return '';
+  }
+
+  /** "right_handed"/"R"/"r" → "R", left → "L", both → "B". */
+  function normalizeHand(h) {
+    const s = String(h || '').trim().toLowerCase();
+    if (!s) return '';
+    if (s === 'r' || s === 'right' || s === 'right_handed') return 'R';
+    if (s === 'l' || s === 'left' || s === 'left_handed')  return 'L';
+    if (s === 'b' || s === 'both' || s === 'both_hands' || s === 'ambidextrous') return 'B';
+    return '';
+  }
+
+  /** "forehand" (right side) → "R", "backhand" → "L", "both_sides" → "B". */
+  function normalizeSide(s) {
+    const v = String(s || '').trim().toLowerCase();
+    if (!v) return '';
+    if (v === 'r' || v === 'right' || v === 'forehand') return 'R';
+    if (v === 'l' || v === 'left'  || v === 'backhand')  return 'L';
+    if (v === 'b' || v === 'both'  || v === 'both_sides' || v === 'either') return 'B';
+    return '';
+  }
+
+  /** Parse "3.04" or "2.6 - High Beginner" → 3.04 / 2.6, else null. */
+  function parseRating(v) {
+    if (v == null || v === '') return null;
+    const m = String(v).match(/^\s*([\d.]+)/);
+    if (!m) return null;
+    const n = parseFloat(m[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function firstName(full) {
+    return String(full || '').trim().split(/\s+/)[0] || '';
+  }
+
+  function initials(name, fallback = '?') {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return fallback;
+    return parts[0].slice(0, 1).toUpperCase();
+  }
+
+  function teamInitials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  // ============================================================
+  // Sheet fetch — gviz CSV → array of row-objects keyed by header
+  // ============================================================
+
+  function gvizUrl(tabName) {
+    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  }
+
+  /** Minimal CSV parser that handles quoted fields, doubled-quote escapes, and embedded commas. */
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i++; }
+          else inQuotes = false;
+        } else {
+          cur += c;
+        }
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ',') { row.push(cur); cur = ''; }
+        else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+        else if (c === '\r') { /* skip */ }
+        else cur += c;
+      }
+    }
+    if (cur !== '' || row.length > 0) { row.push(cur); rows.push(row); }
+    if (rows.length === 0) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1)
+      .filter(r => r.length > 0 && r.some(v => String(v).trim() !== ''))
+      .map(r => {
+        const o = {};
+        headers.forEach((h, idx) => { o[h] = r[idx] != null ? r[idx] : ''; });
+        return o;
+      });
+  }
+
+  async function fetchTabRows(tabName) {
+    const res = await fetch(gvizUrl(tabName), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Sheet fetch failed (${tabName}): HTTP ${res.status}`);
+    const text = await res.text();
+    return parseCSV(text);
+  }
+
+  function parseCommunities(rows) {
+    return rows
+      .filter(r => (r['Community ID'] || '').trim())
+      .map(r => ({
+        id: (r['Community ID'] || '').trim(),
+        name: (r['Name'] || '').trim(),
+        group: (r['Group'] || '').trim(),
+        color: (r['Color'] || '').trim() || '#ff8a3d',
+        logoPath: (r['Logo Path'] || '').trim(),
+        seed: parseInt((r['Seed'] || '').trim(), 10) || null,
+      }));
+  }
+
+  function parsePlayers(rows) {
+    return rows
+      .filter(r => (r['Community ID'] || '').trim())
+      .map(r => {
+        const tpsId = (r['TPS User ID'] || '').trim();
+        return {
+          communityId: (r['Community ID'] || '').trim(),
+          tpsId,
+          name: (r['Player Name'] || '').trim(),
+          avatar: (r['Avatar'] || r['Player Avatar'] || '').trim(),
+          rating: parseRating(r['Rating']),
+          hand: normalizeHand(r['Hand']),
+          side: normalizeSide(r['Side']),
+          gender: normalizeGender(r['Gender']),
+          isCaptain: (r['Is Captain'] || '').trim().toUpperCase() === 'Y',
+          nationality: (r['Nationality'] || '').trim(),
+          // A row is "real" if it has a TPS User ID (formulas resolved). Placeholders
+          // like "Coco Padel Male #2" have blank TPS User ID and no metadata.
+          isPlaceholder: !tpsId,
+        };
+      });
+  }
+
+  /** Parse the Registrations tab into the same player shape. The draft pool
+   *  is the set of paid registrants who aren't captains and haven't been
+   *  drafted yet. Per Phase 0 verification, the canonical roster lives here,
+   *  not in Teams and Players (which is captains-only until the post-draft
+   *  write-back populates it). */
+  function parseRegistrations(rows) {
+    return rows
+      .filter(r => (r['User ID'] || '').trim() && (r['Paid ?'] || '').trim().toUpperCase() === 'Y')
+      .map(r => ({
+        communityId: '',                                       // assigned by the draft, not by registration
+        tpsId: (r['User ID'] || '').trim(),
+        name: (r['Name'] || '').trim(),
+        avatar: '',                                            // not stored on Registrations; users-tab lookup is 2.7MB, skipped
+        rating: parseRating(r['Level (current)']),
+        hand: normalizeHand(r['Hand']),
+        side: normalizeSide(r['Side']),
+        gender: normalizeGender(r['Gender']),
+        isCaptain: false,
+        nationality: (r['Nationality'] || '').trim(),
+        isPlaceholder: false,
+      }));
+  }
+
+  // ============================================================
+  // Computed selectors
+  // ============================================================
+
+  function getCommunity() {
+    return state.communities.find(c => c.id === COMMUNITY_SLUG) || null;
+  }
+
+  /** Set of player_ids in non-undone picks. */
+  function pickedPlayerIds() {
+    const set = new Set();
+    for (const p of state.picks) {
+      if (!p.is_undone) set.add(p.player_id);
+    }
+    return set;
+  }
+
+  /** Captains for the given community (from Sheet — Is Captain=Y rows). */
+  function captainsFor(communityId) {
+    return state.players.filter(p => p.isCaptain && p.communityId === communityId && !p.isPlaceholder);
+  }
+
+  /** Players this team has drafted, oldest pick first, resolved to player records. */
+  function draftedFor(communityId) {
+    const teamPicks = state.picks
+      .filter(p => !p.is_undone && p.team_id === communityId)
+      .sort((a, b) => a.pick_number - b.pick_number);
+    const out = [];
+    for (const pk of teamPicks) {
+      const player = state.playersByTpsId.get(pk.player_id);
+      if (player) out.push(player);
+      else out.push({ tpsId: pk.player_id, name: `#${pk.player_id}`, gender: '', rating: null, hand: '', side: '', avatar: '', isCaptain: false });
+    }
+    return out;
+  }
+
+  /** Available pool: real (non-placeholder) non-captain players not yet drafted.
+   *  IGNORES Sheet's Community ID per architecture decision 4c — Supabase picks
+   *  are authoritative during a live draft. */
+  function availablePool() {
+    const picked = pickedPlayerIds();
+    const seen = new Set();
+    return state.players.filter(p => {
+      if (p.isPlaceholder) return false;
+      if (p.isCaptain) return false;
+      if (picked.has(p.tpsId)) return false;
+      if (seen.has(p.tpsId)) return false;  // de-dupe if a player appears twice
+      seen.add(p.tpsId);
+      return true;
+    });
+  }
+
+  /** Filter+sort+search applied to the pool. */
+  function visiblePool() {
+    let list = availablePool();
+    const q = state.search.trim().toLowerCase();
+    if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
+    if (state.filters.gender) {
+      list = list.filter(p => p.gender === state.filters.gender);
+    }
+    if (state.filters.hand) {
+      // Inclusive: filter L shows L AND B-hand players.
+      const target = state.filters.hand;
+      list = list.filter(p => p.hand === target || p.hand === 'B');
+    }
+    if (state.filters.side) {
+      const target = state.filters.side;
+      list = list.filter(p => p.side === target || p.side === 'B');
+    }
+    if (state.sort === 'rating-desc') {
+      list = list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
+    } else if (state.sort === 'name-asc') {
+      list = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }
+
+  // ============================================================
+  // Rendering
+  // ============================================================
+
+  function showError(message) {
+    $error.innerHTML = `<strong>UNABLE TO LOAD</strong>${escapeHtml(message)}`;
+    $error.hidden = false;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function setReconnecting(on) {
+    $reconnect.hidden = !on;
+  }
+
+  /** Walk any `<img data-fallback="X">` inside `root` and replace the image
+   *  with `X` as text content when it 404s or errors. Avoids the embedded
+   *  inline-`onerror` pattern (fragile with quotes / scripts in user content). */
+  function attachImgFallbacks(root) {
+    const imgs = root.querySelectorAll('img[data-fallback]');
+    for (const img of imgs) {
+      img.addEventListener('error', () => {
+        const fallback = img.getAttribute('data-fallback') || '';
+        const span = document.createElement('span');
+        span.textContent = fallback;
+        img.replaceWith(span);
+      }, { once: true });
+    }
+  }
+
+  function setView(next) {
+    state.view = next === 'pool' ? 'pool' : 'team';
+    $app.setAttribute('data-view', state.view);
+  }
+
+  function renderTournamentLogo() {
+    // We don't have a tournament logo URL in Communities. Use the community
+    // logo of the captain's own team as a stand-in, OR fall back to text.
+    const c = getCommunity();
+    const url = c && c.logoPath;
+    if (url) {
+      $tournamentLogo.innerHTML = `<img src="${escapeHtml(url)}" alt="" data-fallback="${escapeHtml(teamInitials(c.name))}">`;
+      attachImgFallbacks($tournamentLogo);
+    } else {
+      $tournamentLogo.innerHTML = `<span class="ph">${c ? escapeHtml(teamInitials(c.name)) : 'LOGO'}</span>`;
+    }
+  }
+
+  function pillHTML(currentView) {
+    return `<div class="captain__pill" role="tablist" aria-label="Switch view">
+      <button class="captain__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
+      <button class="captain__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
+    </div>`;
+  }
+
+  function renderTeamHeader() {
+    const c = getCommunity();
+    if (!c) {
+      $teamHeader.innerHTML = '';
+      return;
+    }
+    const pickNum = state.draft && state.draft.current_pick_number ? state.draft.current_pick_number : 1;
+    const teamColor = c.color || '#ff8a3d';
+    const fallback = teamInitials(c.name);
+    const logoHTML = c.logoPath
+      ? `<img src="${escapeHtml(c.logoPath)}" alt="${escapeHtml(c.name)}" data-fallback="${escapeHtml(fallback)}">`
+      : escapeHtml(fallback);
+    $teamHeader.style.setProperty('--team-color', teamColor);
+    $teamHeader.innerHTML = `
+      <div class="captain__team-logo" style="--team-color: ${escapeHtml(teamColor)}">${logoHTML}</div>
+      <div class="captain__team-info">
+        <div class="captain__team-name">${escapeHtml(c.name.toUpperCase())}</div>
+        <div class="captain__team-pick">PICK ${pickNum} / 64</div>
+      </div>
+      ${pillHTML('team')}
+    `;
+    attachImgFallbacks($teamHeader);
+  }
+
+  function rosterCellHTML(player, genderSlot, isCaptain) {
+    const cls = ['captain__roster-cell'];
+    cls.push(genderSlot === 'F' ? 'is-female' : 'is-male');
+    if (!player) {
+      cls.push('is-empty');
+      return `<div class="${cls.join(' ')}"></div>`;
+    }
+    cls.push(isCaptain ? 'is-captain' : 'is-filled');
+
+    const fallback = initials(player.name);
+    const avatarInner = player.avatar
+      ? `<img src="${escapeHtml(player.avatar)}" alt="" data-fallback="${escapeHtml(fallback)}">`
+      : escapeHtml(fallback);
+
+    return `
+      <div class="${cls.join(' ')}">
+        <div class="captain__cell-avatar">${avatarInner}</div>
+        <div class="captain__cell-fname">${escapeHtml(firstName(player.name))}</div>
+        <div class="captain__cell-rating">${escapeHtml(ratingStr(player.rating))}</div>
+        <div class="captain__cell-handside">
+          <span>${escapeHtml(handLabel(player.hand))}</span>
+          <span class="sep">·</span>
+          <span>${escapeHtml(sideLabel(player.side))}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderRoster() {
+    const c = getCommunity();
+    if (!c) return;
+    const captains = captainsFor(c.id);
+    const drafted = draftedFor(c.id);
+
+    // Female slots: female captains + female draftees, oldest first.
+    const femaleFilled = [
+      ...captains.filter(p => p.gender === 'F'),
+      ...drafted.filter(p => p.gender === 'F'),
+    ];
+    const maleFilled = [
+      ...captains.filter(p => p.gender === 'M'),
+      ...drafted.filter(p => p.gender === 'M'),
+    ];
+
+    function buildSection(filled, count, slot) {
+      const cells = [];
+      for (let i = 0; i < count; i++) {
+        const player = filled[i];
+        if (player) {
+          cells.push(rosterCellHTML(player, slot, !!player.isCaptain));
+        } else {
+          cells.push(rosterCellHTML(null, slot, false));
+        }
+      }
+      return cells.join('');
+    }
+
+    $rosterFemale.style.setProperty('--team-color', c.color || '#ff8a3d');
+    $rosterMale.style.setProperty('--team-color', c.color || '#ff8a3d');
+    $rosterFemale.innerHTML = buildSection(femaleFilled, N_FEMALE_SLOTS, 'F');
+    $rosterMale.innerHTML   = buildSection(maleFilled,   N_MALE_SLOTS,   'M');
+    attachImgFallbacks($rosterFemale);
+    attachImgFallbacks($rosterMale);
+  }
+
+  function renderPool() {
+    const players = visiblePool();
+    // Sort chip active states
+    $sortGroup.querySelectorAll('.captain__chip').forEach(b => {
+      b.classList.toggle('is-active-sort', b.dataset.sort === state.sort);
+    });
+    // Filter chip active states
+    $filterGroup.querySelectorAll('.captain__chip').forEach(b => {
+      const f = b.dataset.filter, v = b.dataset.value;
+      b.classList.toggle('is-active-filter', state.filters[f] === v);
+    });
+
+    if (players.length === 0) {
+      $poolList.innerHTML = `<div class="captain__pool-empty">No available players</div>`;
+      return;
+    }
+
+    // Mark top 3 (by current sort) with accent border.
+    const html = players.map((p, idx) => {
+      const isTop = state.sort === 'rating-desc' && idx < 3;
+      const rowCls = ['captain__player-row'];
+      if (isTop) rowCls.push('is-top');
+
+      const photoCls = ['captain__player-photo'];
+      if (p.gender === 'F') photoCls.push('captain__player-photo--female');
+      else if (p.gender === 'M') photoCls.push('captain__player-photo--male');
+      if (!p.avatar) photoCls.push('no-photo');
+
+      const fallback = initials(p.name);
+      const photoInner = p.avatar
+        ? `<img src="${escapeHtml(p.avatar)}" alt="" data-fallback="${escapeHtml(fallback)}">`
+        : escapeHtml(fallback);
+
+      const genderTag =
+        p.gender === 'F' ? `<div class="captain__row-tag captain__row-tag--gender-f">F</div>` :
+        p.gender === 'M' ? `<div class="captain__row-tag captain__row-tag--gender-m">M</div>` :
+                           `<div class="captain__row-tag">—</div>`;
+
+      return `
+        <div class="${rowCls.join(' ')}" role="listitem">
+          <div class="${photoCls.join(' ')}">${photoInner}</div>
+          <div class="captain__player-name">${escapeHtml(p.name)}</div>
+          ${genderTag}
+          <div class="captain__row-tag">${escapeHtml(handLabel(p.hand))}</div>
+          <div class="captain__row-tag">${escapeHtml(sideLabel(p.side))}</div>
+          <div class="captain__player-rating">${escapeHtml(ratingStr(p.rating))}</div>
+        </div>
+      `;
+    }).join('');
+    $poolList.innerHTML = html;
+    attachImgFallbacks($poolList);
+  }
+
+  function renderAll() {
+    setView(state.view);
+    renderTournamentLogo();
+    renderTeamHeader();
+    renderRoster();
+    renderPool();
+  }
+
+  // ============================================================
+  // Event wiring
+  // ============================================================
+
+  function onPillClick(e) {
+    const t = e.target.closest('[data-view-target]');
+    if (!t) return;
+    setView(t.dataset.viewTarget);
+  }
+
+  function onSortClick(e) {
+    const t = e.target.closest('[data-sort]');
+    if (!t) return;
+    state.sort = t.dataset.sort;
+    renderPool();
+  }
+
+  function onFilterClick(e) {
+    const t = e.target.closest('[data-filter]');
+    if (!t) return;
+    const f = t.dataset.filter;
+    const v = t.dataset.value;
+    // Toggle off when already active, else set.
+    state.filters[f] = (state.filters[f] === v) ? null : v;
+    renderPool();
+  }
+
+  function onSearchInput(e) {
+    state.search = e.target.value;
+    renderPool();
+  }
+
+  function wireEvents() {
+    // Pill toggles live in two places: the static one in Pool view's search row,
+    // and the dynamic one rebuilt by renderTeamHeader(). One delegated listener
+    // on the app root catches both.
+    $app.addEventListener('click', onPillClick);
+    $sortGroup.addEventListener('click', onSortClick);
+    $filterGroup.addEventListener('click', onFilterClick);
+    $search.addEventListener('input', onSearchInput);
+
+    // Online/offline plumbed to the RECONNECTING banner.
+    window.addEventListener('offline', () => setReconnecting(true));
+    window.addEventListener('online',  () => setReconnecting(false));
+
+    // Tear down channels + poll when the page is hidden/unloaded.
+    window.addEventListener('pagehide', teardownLive);
+  }
+
+  // ============================================================
+  // Bootstrap
+  // ============================================================
+
+  async function loadSheetData() {
+    const [commRows, playerRows, regRows] = await Promise.all([
+      fetchTabRows('Communities'),
+      fetchTabRows('Teams and Players'),
+      fetchTabRows('Registrations'),
+    ]);
+    state.communities = parseCommunities(commRows);
+
+    // Merge two sources by TPS User ID:
+    //  • Teams and Players gives us captains (richer record — has avatar + Is Captain flag)
+    //  • Registrations gives us the rest of the pool (rating/hand/side/gender)
+    // Captain rows from Teams and Players win on conflict.
+    const captainAndKnown = parsePlayers(playerRows);
+    const registrants = parseRegistrations(regRows);
+    const merged = [];
+    const seen = new Set();
+    for (const p of captainAndKnown) {
+      if (p.isPlaceholder) continue;
+      if (!p.tpsId || seen.has(p.tpsId)) continue;
+      seen.add(p.tpsId);
+      merged.push(p);
+    }
+    for (const p of registrants) {
+      if (!p.tpsId || seen.has(p.tpsId)) continue;
+      seen.add(p.tpsId);
+      merged.push(p);
+    }
+    state.players = merged;
+
+    state.playersByTpsId = new Map();
+    for (const p of state.players) {
+      state.playersByTpsId.set(p.tpsId, p);
+    }
+  }
+
+  async function loadDraftData() {
+    if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+      throw new Error('Supabase config missing — js/draft-config.js not loaded.');
+    }
+    if (!window.DraftSupabase) {
+      throw new Error('DraftSupabase not loaded — js/draft-supabase.js not loaded.');
+    }
+    window.DraftSupabase.init({
+      url: window.SUPABASE_URL,
+      key: window.SUPABASE_ANON_KEY,
+    });
+    const draft = await window.DraftSupabase.fetchDraft(TOURNAMENT_SLUG);
+    state.draft = draft;
+    if (draft) {
+      const picks = await window.DraftSupabase.fetchPicks(draft.id);
+      state.picks = picks;
+      state.picksHash = picksSignature(picks);
+    } else {
+      state.picks = [];
+      state.picksHash = '';
+    }
+  }
+
+  /** Re-fetch picks and rerender only when the signature actually changed.
+   *  Used by both realtime callbacks and the heartbeat poll. */
+  async function refreshPicks() {
+    if (!state.draft) return;
+    const fresh = await window.DraftSupabase.fetchPicks(state.draft.id);
+    const sig = picksSignature(fresh);
+    if (sig !== state.picksHash) {
+      state.picks = fresh;
+      state.picksHash = sig;
+      renderRoster();
+      renderPool();
+    }
+  }
+
+  function subscribeAll() {
+    if (!state.draft) return;
+    const draftId = state.draft.id;
+
+    teardown.channels.push(
+      window.DraftSupabase.subscribeToPicks(draftId, async () => {
+        try { await refreshPicks(); setReconnecting(false); }
+        catch (e) { console.warn('Picks refetch failed', e); setReconnecting(true); }
+      })
+    );
+
+    teardown.channels.push(
+      window.DraftSupabase.subscribeToDraft(draftId, (newDraft) => {
+        state.draft = newDraft;
+        renderTeamHeader();
+      })
+    );
+
+    // Heartbeat poll: belt-and-suspenders catch for missed realtime events
+    // (flaky wifi, dropped websocket). Skipped while page is hidden to save battery.
+    teardown.pollHandle = setInterval(async () => {
+      if (document.visibilityState === 'hidden') return;
+      try { await refreshPicks(); setReconnecting(false); }
+      catch (_) { setReconnecting(true); }
+    }, 20000);
+  }
+
+  function teardownLive() {
+    if (teardown.pollHandle) {
+      clearInterval(teardown.pollHandle);
+      teardown.pollHandle = null;
+    }
+    if (window.DraftSupabase && teardown.channels.length) {
+      const client = window.DraftSupabase.client();
+      for (const ch of teardown.channels) {
+        try { client.removeChannel(ch); } catch (_) { /* best-effort */ }
+      }
+      teardown.channels = [];
+    }
+  }
+
+  async function boot() {
+    wireEvents();
+    setView(state.view);
+
+    // Param validation
+    if (!COMMUNITY_SLUG) {
+      showError('Missing ?community=<community-id>. Bookmark e.g. captain.html?community=coco-padel (team view) or captain.html?community=coco-padel&pool (pool view).');
+      return;
+    }
+
+    try {
+      await loadSheetData();
+    } catch (e) {
+      console.error(e);
+      showError(`Could not load roster: ${e.message}`);
+      return;
+    }
+
+    if (!getCommunity()) {
+      const ids = state.communities.map(c => c.id).join(', ');
+      showError(`Unknown community "${COMMUNITY_SLUG}". Known: ${ids || '(none loaded)'}.`);
+      return;
+    }
+
+    try {
+      await loadDraftData();
+    } catch (e) {
+      console.warn('Draft data unavailable; rendering pre-draft state.', e);
+      setReconnecting(true);
+    }
+
+    renderAll();
+    subscribeAll();
+  }
+
+  // Run after DOM is ready (script is loaded at end of <body>, so DOM exists).
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

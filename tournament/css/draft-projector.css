@@ -1,0 +1,510 @@
+/* ============================================
+   Draft Projector — PadelThailand re-skin of projector-v12
+   Designed for 1920x1080 (16:9). Scales down for laptops.
+   ============================================ */
+
+:root {
+  /* PadelThailand brand tokens (re-skinned from v12 navy/yellow) */
+  --bg-deep:    #061712;                 /* deeper than primary, near-black green */
+  --bg-elev:    #0E2A1E;                 /* community_cup primary */
+  --line:       #1A3A2E;                 /* nav_bg from Config */
+  --line-bright:#3A5C36;                 /* green-support */
+  --ink:        #FFFFFF;
+  --ink-dim:    #C8D6CE;
+  --ink-faint:  #6B8276;
+
+  /* Accents */
+  --accent:      #FFB703;                /* brand-accent (ON CLOCK, brand mark) — community_cup accent */
+  --accent-warm: #FF8A3D;
+  --accent-cool: #7CC4E8;                /* NEXT */
+  --picked:      #3FD391;
+
+  /* Timer state colors */
+  --timer-green:  #3FD391;
+  --timer-orange: #FF8A3D;
+  --timer-red:    #FF5470;
+  --danger:       #FF5470;
+
+  /* Gender (load-bearing) */
+  --female: #FF85B8;
+  --male:   #5EC8FF;
+
+  --moment-grid: 1fr 1fr 1fr;
+  --bar-progress: 0%;
+}
+
+/* ---- Reset & shell ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background:
+    radial-gradient(ellipse at top, rgba(255,183,3,0.04) 0%, transparent 55%),
+    var(--bg-deep);
+  color: var(--ink);
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 300;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The page IS the projector — no chrome */
+.projector {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding: clamp(14px, 1.4vw, 28px) clamp(20px, 2.2vw, 44px);
+  gap: clamp(8px, 0.8vw, 16px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle grid overlay — broadcast feel without v12's heavy cross-hatch */
+.projector::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none; z-index: 0;
+}
+
+.projector > * { position: relative; z-index: 1; }
+
+/* ============== HEADER ============== */
+.top-strip {
+  display: grid;
+  grid-template-columns: var(--moment-grid);
+  gap: 16px;
+  align-items: center;
+  padding-bottom: clamp(8px, 0.8vw, 16px);
+  border-bottom: 1px solid var(--line);
+}
+.header-left   { display: flex; align-items: center; gap: 14px; }
+.header-center { display: flex; justify-content: center; align-items: center; }
+.header-right  { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+
+.brand-logo {
+  height: clamp(44px, 3.4vw, 64px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.tournament {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.4vw, 28px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--ink);
+}
+
+.live-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--danger);
+  padding: 6px 12px;
+  border: 1px solid var(--danger);
+  background: rgba(255,84,112,0.10);
+  text-transform: uppercase;
+  height: clamp(40px, 3vw, 50px);
+}
+.live-pill .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger);
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,84,112,0.6); }
+  50%      { opacity: 0.35; box-shadow: 0 0 0 6px rgba(255,84,112,0); }
+}
+
+.tournament-logo {
+  height: clamp(44px, 3.4vw, 64px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* RECONNECTING indicator — header right area, small */
+.reconnect {
+  display: none;
+  align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(9px, 0.7vw, 11px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  padding: 4px 10px;
+  border: 1px solid var(--accent-warm);
+  background: rgba(255,138,61,0.10);
+}
+.reconnect.show { display: inline-flex; }
+.reconnect .pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-warm);
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+/* ============== MOMENT BLOCK (with converging bars) ============== */
+.moment-block {
+  position: relative;
+  --timer-state: var(--timer-green);
+}
+.moment-block.state-green  { --timer-state: var(--timer-green); }
+.moment-block.state-orange { --timer-state: var(--timer-orange); }
+.moment-block.state-red    { --timer-state: var(--timer-red); }
+
+.converge-bar {
+  height: 6px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  overflow: visible; /* allow overshoot overlap to draw outside the 50/50 split */
+}
+.converge-bar .seg {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--timer-state);
+  transition: width 0.6s linear, background 0.4s ease;
+}
+.converge-bar .seg-left  { left:  0; width: var(--bar-progress, 0%); }
+.converge-bar .seg-right { right: 0; width: var(--bar-progress, 0%); }
+
+/* Overshoot: when --bar-progress > 50%, the two segments overlap.
+   We intensify the overlap visually via mix-blend-mode on a thin highlight stripe. */
+.moment-block.overshoot .converge-bar .seg {
+  box-shadow: 0 0 12px var(--timer-state);
+}
+
+/* Red-state pulse on bars */
+.moment-block.state-red .converge-bar .seg {
+  animation: bar-pulse 0.9s ease-in-out infinite;
+}
+@keyframes bar-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* MOMENT cells */
+.moment {
+  display: grid;
+  grid-template-columns: var(--moment-grid);
+  gap: clamp(12px, 1.2vw, 24px);
+  padding: clamp(14px, 1.4vw, 26px) clamp(8px, 0.8vw, 16px);
+  align-items: center;
+}
+.moment-cell { display: flex; align-items: center; min-width: 0; }
+
+/* NEXT cell — dimmed */
+.next-cell { opacity: 0.55; gap: clamp(10px, 0.9vw, 16px); padding-right: 12px; }
+.next-cell .nlogo {
+  width: clamp(40px, 3vw, 56px); aspect-ratio: 1;
+  background: var(--bg-elev);
+  border: 1px solid var(--line-bright);
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(15px, 1.1vw, 22px);
+  color: var(--ink);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.next-cell .nlogo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+.next-cell .info { display: flex; flex-direction: column; min-width: 0; }
+.next-cell .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.next-cell .tname {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.5vw, 28px);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+/* ON CLOCK cell — center, gold accent */
+.clock-cell { justify-content: center; gap: clamp(14px, 1.2vw, 22px); }
+.clock-cell .clogo {
+  width: clamp(60px, 4.4vw, 90px); aspect-ratio: 1;
+  background: var(--bg-elev);
+  border: 2px solid var(--accent);
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 1.8vw, 36px);
+  color: var(--accent);
+  flex-shrink: 0;
+  box-shadow: 0 0 30px rgba(255,183,3,0.32);
+  overflow: hidden;
+}
+.clock-cell .clogo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.clock-cell .info { display: flex; flex-direction: column; min-width: 0; }
+.clock-cell .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.clock-cell .team-name {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.4vw, 48px);
+  letter-spacing: 0.07em;
+  line-height: 0.95;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.clock-cell .pick-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  margin-top: 6px;
+}
+
+/* TIMER cell */
+.timer-cell { flex-direction: column; align-items: flex-end; justify-content: center; }
+.timer-wrap { display: flex; flex-direction: column; align-items: flex-end; }
+.timer-num {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(52px, 4.6vw, 96px);
+  line-height: 0.85;
+  letter-spacing: 0.04em;
+  color: var(--timer-state);
+  text-shadow: 0 0 28px var(--timer-shadow, rgba(63,211,145,0.35));
+  transition: font-size 0.35s ease-out, color 0.3s ease, text-shadow 0.3s ease;
+}
+.timer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.moment-block.state-green  .timer-cell { --timer-shadow: rgba(63,211,145,0.35); }
+.moment-block.state-orange .timer-cell { --timer-shadow: rgba(255,138,61,0.4); }
+.moment-block.state-red    .timer-cell { --timer-shadow: rgba(255,84,112,0.55); }
+.moment-block.state-red .timer-num {
+  font-size: clamp(68px, 5.6vw, 120px);
+  animation: timer-pulse 0.8s ease-in-out infinite;
+}
+@keyframes timer-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+
+/* ============== TEAM GRID ============== */
+.teams {
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(8px, 0.7vw, 14px);
+  min-height: 0;
+}
+
+.team-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  padding: clamp(8px, 0.7vw, 14px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: clamp(6px, 0.6vw, 12px);
+  position: relative;
+  min-height: 0;
+  --team-color: #6b7a99;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
+}
+
+.team-card.live {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(255,183,3,0.14), rgba(255,183,3,0.02));
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px rgba(255,183,3,0.28);
+}
+.team-card.live::before {
+  content: 'ON CLOCK';
+  position: absolute; top: -1px; right: -1px;
+  background: var(--accent); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+.team-card.next {
+  border-color: var(--accent-cool);
+  border-style: dashed;
+  background: linear-gradient(135deg, rgba(124,196,232,0.06), transparent);
+}
+.team-card.next::after {
+  content: 'NEXT';
+  position: absolute; top: -1px; right: -1px;
+  background: var(--accent-cool); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+.team-head {
+  display: grid;
+  grid-template-columns: 1fr auto;   /* name on left fills, logo pinned right */
+  align-items: center;
+  gap: 10px;
+}
+.head-left { text-align: left; min-width: 0; overflow: hidden; }
+.head-left .tname {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1vw, 18px);
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  color: var(--ink);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-logo {
+  width: clamp(48px, 3.5vw, 64px); aspect-ratio: 1;
+  background: transparent;
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.4vw, 24px);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.team-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+.team-card.live .team-logo {
+  /* No background or border on the logo itself — ON CLOCK state is signaled by
+     the card border + chip + glow. Keep a soft drop-shadow for emphasis. */
+  filter: drop-shadow(0 0 8px rgba(255,183,3,0.55));
+}
+
+/* Roster: 5 columns × 2 rows, female on top, male on bottom */
+.roster10 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(4px, 0.4vw, 8px);
+  min-height: 0;
+}
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.32vw, 6px);
+  padding: 2px 1px;
+  min-width: 0;
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+.row-female .slot.empty {
+  background: rgba(255,133,184,0.08);
+  border: 1px dashed rgba(255,133,184,0.32);
+}
+.row-male .slot.empty {
+  background: rgba(94,200,255,0.08);
+  border: 1px dashed rgba(94,200,255,0.32);
+}
+
+.slot .avatar {
+  width: clamp(40px, 3.4vw, 64px); aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--team-color);
+  color: white;
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.2vw, 22px);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1.5px transparent;
+  overflow: hidden;
+  position: relative;
+}
+.slot .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Gender rings — load-bearing */
+.row-female .slot .avatar { box-shadow: 0 0 0 1.5px var(--female); }
+.row-male   .slot .avatar { box-shadow: 0 0 0 1.5px var(--male); }
+
+/* Captain ring — load-bearing */
+.slot.captain .avatar {
+  box-shadow: 0 0 0 2px var(--accent) !important;
+}
+.slot.captain .fname { color: var(--accent); font-weight: 700; }
+
+.slot .fname {
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 500;
+  color: var(--ink-dim);
+  line-height: 1.2;             /* room for y / g / p / j descenders */
+  padding-bottom: 1px;          /* extra safety against overflow clip */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  max-width: 100%;
+  text-align: center;
+}
+.slot.filled .fname { color: var(--ink); }
+.slot.empty .avatar { display: none; }
+.slot.empty .fname  { display: none; }
+
+/* Just-picked fade-in (~300ms) */
+.slot[data-just-picked="1"] .avatar,
+.slot[data-just-picked="1"] .fname {
+  animation: avatar-in 0.3s ease-out;
+}
+@keyframes avatar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Reduce-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
+}

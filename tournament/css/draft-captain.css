@@ -1,0 +1,526 @@
+/* =====================================================================
+   Captain Phone — Pool + Team views
+   Reuses PadelThailand tokens from styles.css (.theme-dark):
+     --dark-bg, --dark-surface, --dark-border, --dark-text, --dark-text-muted, --dark-accent
+     --gold, --green, --silver, --radius, --transition
+
+   Load-bearing visual decisions preserved from 04-visual-intent.md:
+     #3 Gender ring on avatars      (pink F / blue M)
+     #4 Captain ring                (var(--dark-accent) — PadelThailand gold)
+     #5 Gender-tinted empty slots   (dashed border)
+     #9 Vertical pill toggle, symmetric Pool↔Team
+     #10 Tournament logo 40px top-right
+   ===================================================================== */
+
+:root {
+  --female: #ff85b8;
+  --male:   #5ec8ff;
+  --captain-danger: #ef4444;
+}
+
+/* ---------- Reset (page is the app — full-screen mobile) ---------- */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.captain {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+button { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
+input  { font: inherit; color: inherit; }
+
+/* ---------- App shell ---------- */
+.captain__app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Header ---------- */
+.captain__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--dark-surface);
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.captain__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+.captain__brand-logo {
+  height: 26px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+.captain__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.captain__header-right { display: flex; align-items: center; gap: 10px; }
+
+/* Tournament logo — 40px (visual decision #10) */
+.captain__tournament-logo {
+  width: 40px; height: 40px;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.captain__tournament-logo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.captain__tournament-logo .ph {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--dark-text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ---------- Reconnecting banner ---------- */
+.captain__reconnect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--captain-danger);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.30);
+  flex-shrink: 0;
+}
+.captain__reconnect[hidden] { display: none; }
+.captain__reconnect .pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--captain-danger);
+  animation: captain-pulse 1.2s ease-in-out infinite;
+}
+@keyframes captain-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* ---------- View visibility (driven by data-view on .captain__app) ---------- */
+.captain__app[data-view="pool"] #cap-view-pool { display: flex; }
+.captain__app[data-view="team"] #cap-view-team { display: flex; }
+.captain__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+
+/* ---------- Vertical pill toggle (POOL / TEAM) — load-bearing #9 ---------- */
+.captain__pill {
+  display: flex;
+  flex-direction: column;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.captain__pill-tab {
+  padding: 6px 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--dark-text-muted);
+  text-align: center;
+  border-radius: 3px;
+  text-transform: uppercase;
+  min-width: 56px;
+  transition: all 0.12s linear;
+}
+.captain__app[data-view="pool"] .captain__pill-tab[data-view-target="pool"],
+.captain__app[data-view="team"] .captain__pill-tab[data-view-target="team"] {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  font-weight: 700;
+}
+
+/* =====================================================================
+   POOL VIEW
+   ===================================================================== */
+.captain__pool-search-row {
+  padding: 12px 14px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.captain__search-input {
+  flex: 1;
+  padding: 11px 12px;
+  font-size: 14px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  color: var(--dark-text);
+  outline: none;
+  min-width: 0;
+  transition: border-color var(--transition);
+}
+.captain__search-input::placeholder { color: var(--dark-text-muted); }
+.captain__search-input:focus { border-color: var(--dark-accent); }
+
+.captain__filter-row {
+  padding: 0 14px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.captain__filter-row:last-of-type { padding-bottom: 10px; }
+.captain__filter-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: var(--dark-text-muted);
+  text-transform: uppercase;
+  min-width: 38px;
+  text-align: right;
+  padding-right: 4px;
+}
+.captain__chip-group {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  padding: 3px;
+  background: var(--dark-surface);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.captain__chip-group::-webkit-scrollbar { display: none; }
+.captain__chip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 0;
+  color: var(--dark-text-muted);
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.12s linear;
+}
+.captain__chip:hover { color: var(--dark-text); }
+.captain__chip.is-active-sort,
+.captain__chip.is-active-filter {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  font-weight: 700;
+}
+
+.captain__pool-list {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
+}
+
+.captain__player-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--dark-border);
+}
+.captain__player-row.is-top {
+  background: rgba(255, 183, 3, 0.08);
+  box-shadow: inset 0 0 0 1px var(--dark-accent);
+  border-bottom-color: transparent;
+}
+
+.captain__player-photo {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--silver);
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-text);
+  background: var(--dark-border);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.captain__player-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.captain__player-photo--female { border-color: var(--female); }
+.captain__player-photo--male   { border-color: var(--male); }
+
+.captain__player-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark-text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.captain__row-tag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  letter-spacing: 0.2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.captain__row-tag--gender-f { color: var(--female); font-weight: 700; }
+.captain__row-tag--gender-m { color: var(--male);   font-weight: 700; }
+.captain__player-rating {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark-text);
+  letter-spacing: 0.3px;
+  line-height: 1;
+  padding-left: 6px;
+}
+.captain__player-row.is-top .captain__player-rating { color: var(--dark-accent); }
+
+.captain__pool-empty {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  letter-spacing: 1.5px;
+  text-align: center;
+  padding: 40px 20px;
+  text-transform: uppercase;
+}
+
+/* =====================================================================
+   TEAM VIEW
+   ===================================================================== */
+.captain__team-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--dark-surface);
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.captain__team-info { flex: 1; min-width: 0; }
+.captain__team-logo {
+  width: 56px; height: 56px;
+  background: var(--dark-bg);
+  border: 2px solid var(--team-color, var(--dark-accent));
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-text);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.captain__team-logo img { width: 100%; height: 100%; object-fit: contain; }
+.captain__team-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+  color: var(--dark-text);
+}
+.captain__team-pick {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--dark-text-muted);
+  letter-spacing: 1.2px;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.captain__roster-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+}
+.captain__roster-section { padding: 14px 16px 6px; }
+.captain__roster-head { margin-bottom: 8px; }
+.captain__roster-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.captain__roster-lbl--female { color: var(--female); }
+.captain__roster-lbl--male   { color: var(--male); }
+
+.captain__roster-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.captain__roster-divider {
+  height: 1px;
+  background: var(--dark-border);
+  margin: 0 16px;
+}
+
+.captain__roster-cell {
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 8px 3px 10px;
+  position: relative;
+  min-height: 120px;
+}
+/* Empty cells — gender-tinted dashed border (load-bearing #5) */
+.captain__roster-cell.is-empty.is-female {
+  background: rgba(255, 133, 184, 0.06);
+  border: 1px dashed rgba(255, 133, 184, 0.30);
+}
+.captain__roster-cell.is-empty.is-male {
+  background: rgba(94, 200, 255, 0.06);
+  border: 1px dashed rgba(94, 200, 255, 0.30);
+}
+.captain__roster-cell.is-empty .captain__cell-avatar,
+.captain__roster-cell.is-empty .captain__cell-fname,
+.captain__roster-cell.is-empty .captain__cell-rating,
+.captain__roster-cell.is-empty .captain__cell-handside { display: none; }
+
+.captain__cell-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--dark-border);
+  color: var(--dark-text);
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  /* Gender ring — load-bearing #3 */
+  box-shadow: 0 0 0 1.5px var(--captain-cell-ring, var(--silver));
+  overflow: hidden;
+  position: relative;
+  margin-top: 2px;
+}
+.captain__cell-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.captain__roster-cell.is-female .captain__cell-avatar { --captain-cell-ring: var(--female); }
+.captain__roster-cell.is-male   .captain__cell-avatar { --captain-cell-ring: var(--male); }
+/* Captain ring — load-bearing #4 — uses PadelThailand gold */
+.captain__roster-cell.is-captain .captain__cell-avatar {
+  --captain-cell-ring: var(--dark-accent);
+  box-shadow: 0 0 0 2px var(--dark-accent);
+}
+
+.captain__cell-fname {
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  max-width: 100%;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+.captain__roster-cell.is-captain .captain__cell-fname { color: var(--dark-accent); }
+.captain__roster-cell.is-filled  .captain__cell-fname { color: var(--dark-text); }
+
+.captain__cell-rating {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.captain__roster-cell.is-captain .captain__cell-rating { color: var(--dark-accent); }
+.captain__roster-cell.is-filled  .captain__cell-rating { color: var(--dark-text); }
+
+.captain__cell-handside {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.2px;
+}
+.captain__cell-handside .sep {
+  color: var(--dark-border);
+  font-size: 8px;
+}
+
+/* ---------- Error block ---------- */
+.captain__error {
+  margin: 24px 16px;
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  border-radius: var(--radius);
+  color: var(--captain-danger);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.captain__error[hidden] { display: none; }
+.captain__error strong {
+  display: block;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+/* ---------- Small-viewport tuning ---------- */
+@media (max-width: 360px) {
+  .captain__roster-cell { min-height: 110px; }
+  .captain__cell-avatar { width: 32px; height: 32px; font-size: 13px; }
+  .captain__title       { font-size: 14px; }
+  .captain__search-input { padding: 10px; font-size: 13px; }
+}

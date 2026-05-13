@@ -22,6 +22,7 @@ const Data = (() => {
   let standingsData = {};       // tab name → raw CSV lines
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
+  let players = [];             // Community Cup: full Teams and Players rows (1 row per player)
   let communities = [];         // Community Cup: list of community objects (8 entries)
   let seriesList = [];          // Community Cup: list of series objects (19 entries)
   let lastUpdated = null;
@@ -973,6 +974,9 @@ const Data = (() => {
         const text = await playersRes.text();
         const rows = parseCSVWithHeaders(text);
         playerAvatars = parsePlayersTab(rows);
+        // Community Cup: also stash full rows for the draft feature.
+        // Schema: Community ID, TPS User ID, Player Name, Avatar, Rating, Hand, Side, Gender, Is Captain, Nationality
+        if (ccMode) players = rows;
       }
 
       // Community Cup: parse Communities and Series tabs
@@ -1038,6 +1042,7 @@ const Data = (() => {
     get tournamentFormat() { return getConfig('tournament_format', 'divisions'); },
     getCommunities: () => communities,
     getCommunityById,
+    getPlayers: () => players,
     getSeries: () => seriesList,
     getSeriesById,
     getMatchesBySeriesId,

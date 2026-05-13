@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0A1612" />
+  <title>Captain — Community Cup Draft</title>
+  <link rel="icon" href="assets/tps-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- PadelThailand base tokens first (defines .theme-dark palette), then captain overlay -->
+  <link rel="stylesheet" href="css/styles.css?v=1">
+  <link rel="stylesheet" href="css/draft-captain.css?v=2">
+</head>
+<body class="captain theme-dark">
+
+<div id="app" class="captain__app" data-view="team">
+
+  <!-- App header -->
+  <header class="captain__header" role="banner">
+    <div class="captain__header-left">
+      <img class="captain__brand-logo" src="assets/monogram-white-on-green.png" alt="TPS">
+      <h1 class="captain__title" id="captain-title">Community Cup</h1>
+    </div>
+    <div class="captain__header-right">
+      <div class="captain__tournament-logo" id="cap-tournament-logo" aria-label="Tournament logo">
+        <span class="ph">LOGO</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- RECONNECTING banner — hidden by default; shown on subscription/network drop -->
+  <div class="captain__reconnect" id="cap-reconnect" role="status" aria-live="polite" hidden>
+    <span class="pulse"></span>
+    <span>Reconnecting…</span>
+  </div>
+
+  <!-- ============ POOL VIEW ============ -->
+  <section class="captain__view captain__view--pool" data-view="pool" id="cap-view-pool" hidden>
+    <div class="captain__pool-search-row">
+      <input
+        type="search"
+        id="cap-search"
+        class="captain__search-input"
+        placeholder="Search players…"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <div class="captain__pill" role="tablist" aria-label="Switch view">
+        <button class="captain__pill-tab" role="tab" data-view-target="pool">POOL</button>
+        <button class="captain__pill-tab" role="tab" data-view-target="team">TEAM</button>
+      </div>
+    </div>
+
+    <div class="captain__filter-row">
+      <span class="captain__filter-label">SORT</span>
+      <div class="captain__chip-group" id="cap-sort-group" role="group" aria-label="Sort">
+        <button class="captain__chip" data-sort="rating-desc">RATING ↓</button>
+        <button class="captain__chip" data-sort="name-asc">NAME</button>
+      </div>
+    </div>
+    <div class="captain__filter-row">
+      <span class="captain__filter-label">FILTER</span>
+      <div class="captain__chip-group" id="cap-filter-group" role="group" aria-label="Filters">
+        <button class="captain__chip" data-filter="gender" data-value="F">F</button>
+        <button class="captain__chip" data-filter="gender" data-value="M">M</button>
+        <button class="captain__chip" data-filter="hand" data-value="L">✋L</button>
+        <button class="captain__chip" data-filter="hand" data-value="R">✋R</button>
+        <button class="captain__chip" data-filter="side" data-value="L">←L</button>
+        <button class="captain__chip" data-filter="side" data-value="R">→R</button>
+      </div>
+    </div>
+
+    <div class="captain__pool-list" id="cap-pool-list" role="list" aria-live="polite">
+      <!-- Player rows injected by draft-captain.js -->
+    </div>
+  </section>
+
+  <!-- ============ TEAM VIEW ============ -->
+  <section class="captain__view captain__view--team" data-view="team" id="cap-view-team" hidden>
+    <div class="captain__team-header" id="cap-team-header">
+      <!-- Team logo + name + pick + vertical pill injected by draft-captain.js -->
+    </div>
+
+    <div class="captain__roster-scroll">
+      <div class="captain__roster-section" id="cap-roster-female">
+        <div class="captain__roster-head">
+          <span class="captain__roster-lbl captain__roster-lbl--female">FEMALE PLAYERS</span>
+        </div>
+        <div class="captain__roster-grid" id="cap-roster-grid-female"></div>
+      </div>
+      <div class="captain__roster-divider"></div>
+      <div class="captain__roster-section" id="cap-roster-male">
+        <div class="captain__roster-head">
+          <span class="captain__roster-lbl captain__roster-lbl--male">MALE PLAYERS</span>
+        </div>
+        <div class="captain__roster-grid" id="cap-roster-grid-male"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inline error block (missing/invalid params, fetch failures, etc) -->
+  <div class="captain__error" id="cap-error" hidden></div>
+
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/draft-config.js?v=1"></script>
+<script defer src="js/draft-utils.js?v=1"></script>
+<script defer src="js/draft-supabase.js?v=1"></script>
+<script defer src="js/draft-captain.js?v=2"></script>
+
+</body>
+</html>
