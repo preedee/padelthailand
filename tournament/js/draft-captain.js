@@ -33,10 +33,28 @@
 
   // -------- URL params --------
   const params = new URLSearchParams(window.location.search);
-  // Community slug — accept both ?community= and legacy ?team= (only when ?team= holds a slug).
+  // Community slug — three sources, in priority order:
+  //   1. ?community=coco-padel             (explicit query)
+  //   2. /draft-dashboard/coco-padel       (last path segment — production clean URL)
+  //   3. ?team=coco-padel                  (legacy; only when ?team= holds a value, not used as flag)
+  // The path-segment source is what the QR codes on the projector encode.
   const legacyTeamVal = (params.get('team') || '').trim();
   const isTeamFlag = params.has('team') && legacyTeamVal === '';
-  const COMMUNITY_SLUG = ((params.get('community') || (isTeamFlag ? '' : legacyTeamVal)) || '').toLowerCase();
+  const pathSegment = (() => {
+    const m = window.location.pathname.match(/\/([^/]+)\/?$/);
+    if (!m) return '';
+    const seg = decodeURIComponent(m[1]).toLowerCase();
+    // Ignore segments that are file/page names — they're not community slugs.
+    if (/\.[a-z0-9]+$/i.test(seg)) return '';
+    if (seg === 'captain' || seg === 'draft-dashboard' || seg === 'projector' || seg === 'commissioner') return '';
+    return seg;
+  })();
+  const COMMUNITY_SLUG = (
+    params.get('community') ||
+    pathSegment ||
+    (isTeamFlag ? '' : legacyTeamVal) ||
+    ''
+  ).toLowerCase();
   // View flag — explicit ?pool wins; ?team falls through to team; default = team.
   const INITIAL_VIEW = params.has('pool') ? 'pool' : 'team';
   const TOURNAMENT_SLUG = (params.get('tournament') || DEFAULT_TOURNAMENT_SLUG).trim();

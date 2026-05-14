@@ -21,8 +21,46 @@
   const SLUG     = params.get('slug') || 'community-cup';
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
+  // ?qr=1 keeps the captain-phone QR codes visible after the draft starts
+  // (useful for late arrivals). ?qr=0 hides them entirely.
+  const FORCE_QR = params.get('qr');
   const N_TEAMS  = 8;
   const N_ROUNDS = 8;
+
+  // Captain phone URL — clean path style: append the community slug as a
+  // child segment of this page's URL.
+  //   /competitions/tps-may2026/draft-dashboard          (projector)
+  //   /competitions/tps-may2026/draft-dashboard/coco-padel   (captain — coco-padel)
+  // The deploy needs a rewrite that maps the slug path back to captain.html
+  // (or any URL where draft-captain.js runs); the JS reads the slug from
+  // either the last path segment or the legacy ?community= query.
+  function captainUrlFor(communitySlug) {
+    const origin = window.location.origin;
+    const path = window.location.pathname.replace(/\/+$/, '');
+    return `${origin}${path}/${encodeURIComponent(communitySlug)}`;
+  }
+
+  /** Render a QR for `text` as an SVG string. Empty string if qrcode-generator
+   *  failed to load (network-blocked CDN). Caller hides the badge in that case. */
+  function makeQrSvg(text) {
+    if (typeof qrcode !== 'function') return '';
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createSvgTag({ scalable: true, margin: 0 });
+    } catch (_) {
+      return '';
+    }
+  }
+  function captainQrVisible() {
+    if (FORCE_QR === '0') return false;
+    if (FORCE_QR === '1') return true;
+    // Default: show pre-draft only — once the draft is active or complete the
+    // captains are already on their phones, no need to clutter the cards.
+    const d = state.draft;
+    return !d || d.status === 'pending';
+  }
 
   const log = (...a) => DEBUG && console.log('[projector]', ...a);
 
@@ -300,6 +338,16 @@
       </div>`;
     }
 
+    const showQR = captainQrVisible();
+    const captainUrl = captainUrlFor(community.id);
+    const qrSvg = showQR ? makeQrSvg(captainUrl) : '';
+    const qrHtml = showQR && qrSvg
+      ? `<a class="captain-qr" href="${escapeHtml(captainUrl)}" target="_blank" rel="noopener" aria-label="Captain phone link for ${escapeHtml(community.name)}">
+          <div class="captain-qr__code">${qrSvg}</div>
+          <div class="captain-qr__label">CAPTAIN&nbsp;LINK</div>
+        </a>`
+      : '';
+
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <div class="team-head">
@@ -314,6 +362,7 @@
             ${M.map(p => slotHtml(p, 'M')).join('')}
           </div>
         </div>
+        ${qrHtml}
       </div>`;
   }
 

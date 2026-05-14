@@ -683,13 +683,13 @@ function renderControls() {
   let left = '';
   if (s === 'pending') {
     left += `<button class="btn btn--primary" id="ctrl-start">START DRAFT</button>`;
-    left += `<span class="loading">Pre-draft preview — pool is read-only until you start.</span>`;
+    left += `<span class="controls__hint">Pre-draft preview — pool is read-only until you start.</span>`;
   } else if (s === 'active') {
     left += `<button class="btn" id="ctrl-pause">PAUSE TIMER</button>`;
-    left += `<span class="loading">Timer running — submit picks in the pool.</span>`;
+    left += `<span class="controls__hint">Timer running — submit picks from the pool.</span>`;
   } else if (s === 'paused') {
     left += `<button class="btn btn--primary" id="ctrl-resume">RESUME</button>`;
-    left += `<span class="loading">Paused — click Resume to continue.</span>`;
+    left += `<span class="controls__hint">Paused — click Resume to continue.</span>`;
   } else if (s === 'complete') {
     left += `<span class="state__team-name">✓ DRAFT COMPLETE</span>`;
     left += `<button class="btn btn--primary" id="ctrl-writeback">WRITE BACK TO SHEETS</button>`;

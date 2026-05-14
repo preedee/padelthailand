@@ -492,6 +492,59 @@ html, body {
 .slot.empty .avatar { display: none; }
 .slot.empty .fname  { display: none; }
 
+/* ==========================================================
+   Captain phone QR badge — anchored to each team card.
+   Visible pre-draft (added by JS only when draft.status==='pending'),
+   so once the draft starts the cards return to their normal layout.
+   ========================================================== */
+.captain-qr {
+  position: absolute;
+  right: clamp(6px, 0.5vw, 10px);
+  bottom: clamp(6px, 0.5vw, 10px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: clamp(4px, 0.4vw, 6px);
+  background: var(--ink);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--bg-deep);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  /* Fade in once content's settled; quick polish, not load-bearing */
+  animation: captain-qr-in 0.4s ease-out;
+}
+.captain-qr__code {
+  width: clamp(64px, 6vw, 110px);
+  height: clamp(64px, 6vw, 110px);
+  background: var(--ink);
+  display: grid; place-items: center;
+}
+.captain-qr__code svg {
+  width: 100%; height: 100%;
+  display: block;
+  shape-rendering: crispEdges;     /* sharp QR modules at any size */
+}
+.captain-qr__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(7px, 0.5vw, 9px);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--bg-deep);
+  text-transform: uppercase;
+}
+@keyframes captain-qr-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Don't let the live/next pill collide with the QR — push QR a bit lower
+   when the chip is showing. */
+.team-card.live .captain-qr,
+.team-card.next .captain-qr {
+  bottom: clamp(6px, 0.5vw, 10px);
+}
+
 /* Just-picked fade-in (~300ms) */
 .slot[data-just-picked="1"] .avatar,
 .slot[data-just-picked="1"] .fname {

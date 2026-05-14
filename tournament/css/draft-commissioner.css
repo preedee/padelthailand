@@ -470,11 +470,31 @@ html, body {
   flex: 0 0 auto;
 }
 
-.controls__left,
+.controls__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .controls__right {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.controls__hint {
+  color: var(--dark-text-muted);
+  font-size: 12px;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .controls__warning {
@@ -484,6 +504,7 @@ html, body {
   text-transform: uppercase;
   color: var(--timer-warning);
   margin-right: 4px;
+  white-space: nowrap;
 }
 
 .btn {
