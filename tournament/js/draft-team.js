@@ -84,7 +84,7 @@
     picksHash: '',       // signature of the picks list used to skip no-op rerenders
     search: '',
     sort: 'rating-desc',
-    filters: { gender: null, hand: null, side: null },
+    filters: { gender: null, hand: null, side: null, prefs: null },
   };
 
   // Live resources we need to tear down on pagehide / visibility change.
@@ -425,6 +425,17 @@
     if (state.filters.side) {
       const target = state.filters.side;
       list = list.filter(p => p.side === target || p.side === 'B');
+    }
+    if (state.filters.prefs === 'mine') {
+      // Show only players who listed THIS captain's community among their
+      // up-to-3 preferred teams (Registrations "Community 1st/2nd/3rd").
+      const mine = getCommunity();
+      if (mine) {
+        list = list.filter(p => (p.prefs || []).some(prefName => {
+          const c = findCommunityByName(prefName);
+          return c && c.id === mine.id;
+        }));
+      }
     }
     if (state.sort === 'rating-desc') {
       list = list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));

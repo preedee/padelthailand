@@ -253,16 +253,22 @@ input  { font: inherit; color: inherit; }
   background: var(--male);
   color: var(--dark-bg);
 }
+/* "Prefers us" filter — highlight in brand accent; sits first in the row */
+.team__chip--prefs { color: var(--dark-accent); }
+.team__chip--prefs.is-active-filter {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+}
 
 .team__row-prefs {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   flex: 0 0 auto;
 }
 .team__pref-logo {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 1px solid var(--dark-border);
   background: var(--dark-surface);
@@ -270,10 +276,10 @@ input  { font: inherit; color: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--dark-text-muted);
-  flex: 0 0 18px;
+  flex: 0 0 15px;
 }
 .team__pref-logo--0 { opacity: 1; }
 .team__pref-logo--1 { opacity: 0.75; }
@@ -292,11 +298,12 @@ input  { font: inherit; color: inherit; }
 
 .team__player-row {
   display: grid;
-  /* photo · flag · name · prefs · gender · rating · hand · side */
-  grid-template-columns: 36px auto 1fr auto auto auto auto auto;
-  gap: 12px;
+  /* photo · flag · name · prefs · gender · rating · hand · side
+     Tight gaps + compact columns so the whole row fits one line at 360–390px. */
+  grid-template-columns: 32px auto minmax(0, 1fr) auto auto auto auto auto;
+  gap: 6px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 9px 10px;
   border-bottom: 1px solid var(--dark-border);
 }
 .team__player-row.is-top {
@@ -306,12 +313,12 @@ input  { font: inherit; color: inherit; }
 }
 
 .team__player-photo {
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   border: 1.5px solid var(--silver);
   display: grid; place-items: center;
   font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--dark-text);
   background: var(--dark-border);
@@ -325,16 +332,16 @@ input  { font: inherit; color: inherit; }
 
 .team__row-flag {
   flex: 0 0 auto;
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1;
-  width: 24px;
+  width: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .team__player-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--dark-text);
   line-height: 1.2;
@@ -345,22 +352,23 @@ input  { font: inherit; color: inherit; }
 }
 .team__row-tag {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--dark-text-muted);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   line-height: 1;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 .team__row-tag--gender-f { color: var(--female); font-weight: 700; }
 .team__row-tag--gender-m { color: var(--male);   font-weight: 700; }
 .team__player-rating {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--dark-text);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   line-height: 1;
-  padding-left: 6px;
+  white-space: nowrap;
 }
 .team__player-row.is-top .team__player-rating { color: var(--dark-accent); }
 
