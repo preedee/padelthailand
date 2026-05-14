@@ -10,6 +10,8 @@
 
 (function (root) {
   let _client = null;
+  let _url = null;
+  let _key = null;
 
   // Initialize with the project URL + a key.
   //   - Read-only screens (projector, captain phones): pass the ANON key.
@@ -21,15 +23,58 @@
     if (!url || !key) {
       throw new Error('DraftSupabase.init({ url, key }) requires both fields');
     }
+    _url = url;
+    _key = key;
     _client = root.supabase.createClient(url, key, {
       realtime: { params: { eventsPerSecond: 10 } },
     });
+    syncServerClock();  // fire-and-forget — serverNow() falls back to Date.now() until it resolves
     return _client;
   }
 
   function client() {
     if (!_client) throw new Error('DraftSupabase.init() must be called first');
     return _client;
+  }
+
+  // ── Server clock sync ─────────────────────────────────────────────
+  // The pick timer is computed as (now - timer_started_at). For the
+  // commissioner laptop and the projector to agree, `now` must reference the
+  // SAME clock — otherwise any skew between the two machines' system clocks
+  // shows up as a constant offset in the countdown. We sync to the Supabase
+  // server clock (its REST responses carry a `Date` header) and route every
+  // timer read/write through serverNow() so all devices share one reference.
+  //
+  // The HTTP `Date` header has 1-second resolution, so skew is accurate to
+  // ~±1s — enough to collapse a multi-second drift to sub-second.
+  let _clockSkewMs = 0;  // serverTime ≈ Date.now() - _clockSkewMs
+
+  async function syncServerClock() {
+    if (!_url || !_key) return;
+    let best = null;  // { skew, rtt } — keep the lowest-latency sample
+    for (let i = 0; i < 3; i++) {
+      const t0 = Date.now();
+      let res;
+      try {
+        res = await fetch(`${_url}/rest/v1/`, { method: 'HEAD', headers: { apikey: _key } });
+      } catch (_) {
+        return;  // offline — keep the last known skew
+      }
+      const t1 = Date.now();
+      const serverDate = res.headers.get('date');
+      if (!serverDate) return;
+      const rtt = t1 - t0;
+      // The server sampled its clock mid-flight; estimate it at t0 + rtt/2.
+      const skew = (t0 + rtt / 2) - new Date(serverDate).getTime();
+      if (!best || rtt < best.rtt) best = { skew, rtt };
+    }
+    if (best) _clockSkewMs = best.skew;
+  }
+
+  // Current time on the shared (server) clock. Use this — never Date.now()
+  // directly — anywhere a timer timestamp is read or written.
+  function serverNow() {
+    return Date.now() - _clockSkewMs;
   }
 
   // ── Reads ──────────────────────────────────────────────────────────
@@ -141,7 +186,7 @@
     if (!Array.isArray(teamSeedOrder) || teamSeedOrder.length !== 8) {
       throw new Error('teamSeedOrder must be an array of 8 community slugs');
     }
-    const now = new Date().toISOString();
+    const now = new Date(serverNow()).toISOString();
     return updateDraft(draftId, {
       status: 'active',
       team_seed_order: teamSeedOrder,
@@ -156,7 +201,7 @@
   async function advancePick(draftId, nextPickNumber) {
     return updateDraft(draftId, {
       current_pick_number: nextPickNumber,
-      timer_started_at: new Date().toISOString(),
+      timer_started_at: new Date(serverNow()).toISOString(),
     });
   }
 
@@ -189,7 +234,7 @@
 
   async function setPaused(draftId, paused) {
     if (paused) {
-      _recordPauseStart(draftId, Date.now());
+      _recordPauseStart(draftId, serverNow());
       return updateDraft(draftId, { is_timer_paused: true, status: 'paused' });
     }
     // Resume — shift timer_started_at forward by the pause duration so the
@@ -210,7 +255,7 @@
       .single();
     if (error) throw error;
 
-    const pauseDurationMs = Date.now() - pausedAtMs;
+    const pauseDurationMs = serverNow() - pausedAtMs;
     const oldStartMs      = new Date(data.timer_started_at).getTime();
     const newStartIso     = new Date(oldStartMs + pauseDurationMs).toISOString();
     _clearPauseStart(draftId);
@@ -225,7 +270,7 @@
   // Pause when commissioner undoes a pick — reuses setPaused so the
   // pause-start gets recorded for a later resume shift.
   async function pauseForUndo(draftId, newCurrentPickNumber) {
-    _recordPauseStart(draftId, Date.now());
+    _recordPauseStart(draftId, serverNow());
     return updateDraft(draftId, {
       current_pick_number: newCurrentPickNumber,
       is_timer_paused: true,
@@ -259,7 +304,7 @@
   }
 
   root.DraftSupabase = {
-    init, client,
+    init, client, serverNow,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
     insertPick, undoPick, updateDraft,

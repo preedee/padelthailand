@@ -19,6 +19,10 @@
   // ──────────────────────────────────────────────────────────
   const params   = new URLSearchParams(window.location.search);
   const SLUG     = params.get('slug') || 'community-cup';
+  // Per-competition stub sets window.__DRAFT_BASE (e.g. "/competitions/tps-may2026/draft").
+  // When present, team-name links point at the clean per-community URL under it;
+  // otherwise they fall back to the generic engine page (team.html?community=).
+  const DRAFT_BASE = (window.__DRAFT_BASE || '').replace(/\/+$/, '');
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
   const N_TEAMS  = 8;
@@ -413,6 +417,9 @@
       ? `<img src="${escapeHtml(community.logoPath)}" alt="${escapeHtml(community.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(tInitials)}'}))">`
       : escapeHtml(tInitials);
     const { F, M } = rosterFor(community.id);
+    const teamHref = DRAFT_BASE
+      ? `${DRAFT_BASE}/${escapeHtml(community.id)}`
+      : `team.html?community=${escapeHtml(community.id)}`;
 
     function slotHtml(player, row) {
       if (!player) return `<div class="slot empty"></div>`;
@@ -435,7 +442,7 @@
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <div class="team-head">
-          <div class="head-left"><a class="tname" href="team.html?community=${escapeHtml(community.id)}">${escapeHtml(community.name || community.id)}</a></div>
+          <div class="head-left"><a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a></div>
           <div class="team-logo">${logoHtml}</div>
         </div>
         <div class="roster10">
@@ -506,7 +513,7 @@
       state.pausedRendered = false;  // reset latch so a future pause will paint once
       const startMs = new Date(d.timer_started_at).getTime();
       const totalS  = d.pick_timer_seconds || 45;
-      const remS    = window.DraftUtils.remainingSeconds(startMs, totalS, Date.now());
+      const remS    = window.DraftUtils.remainingSeconds(startMs, totalS, window.DraftSupabase.serverNow());
 
       // Timer text
       elTimerNum.textContent = formatTimer(remS);
@@ -551,7 +558,7 @@
       if (!state.pausedRendered && d.timer_started_at) {
         const startMs = new Date(d.timer_started_at).getTime();
         const totalS  = d.pick_timer_seconds || 45;
-        const remS    = window.DraftUtils.remainingSeconds(startMs, totalS, Date.now());
+        const remS    = window.DraftUtils.remainingSeconds(startMs, totalS, window.DraftSupabase.serverNow());
         elTimerNum.textContent = formatTimer(remS);
         const stateName = window.DraftUtils.timerColorState(remS, totalS);
         elMomentBlock.classList.remove('state-green', 'state-orange', 'state-red');

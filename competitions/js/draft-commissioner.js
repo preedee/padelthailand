@@ -443,7 +443,7 @@ function updateTimer() {
 
   const total = state.draft.pick_timer_seconds;
   const startedMs = new Date(state.draft.timer_started_at).getTime();
-  const remaining = DraftUtils.remainingSeconds(startedMs, total, Date.now());
+  const remaining = DraftUtils.remainingSeconds(startedMs, total, DraftSupabase.serverNow());
 
   const sign = remaining < 0 ? '-' : '';
   const abs = Math.abs(remaining);

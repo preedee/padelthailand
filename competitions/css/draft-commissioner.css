@@ -68,11 +68,21 @@ html, body {
   display: block;
 }
 
+.commissioner__cc-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 .commissioner__title {
   margin: 0;
+  font-family: 'SuperBlue', Georgia, serif;
   font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
   flex: 0 0 auto;
 }
 

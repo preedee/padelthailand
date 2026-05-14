@@ -34,9 +34,9 @@
   // -------- URL params --------
   const params = new URLSearchParams(window.location.search);
   // Community slug — three sources, in priority order:
-  //   1. ?community=coco-padel             (explicit query)
-  //   2. /draft-dashboard/coco-padel       (last path segment — production clean URL)
-  //   3. ?team=coco-padel                  (legacy; only when ?team= holds a value, not used as flag)
+  //   1. ?community=coco-padel                          (explicit query)
+  //   2. /competitions/<comp>/draft/coco-padel          (last path segment — production clean URL)
+  //   3. ?team=coco-padel                               (legacy; only when ?team= holds a value, not used as flag)
   // The path-segment source is what the QR codes on the projector encode.
   const legacyTeamVal = (params.get('team') || '').trim();
   const isTeamFlag = params.has('team') && legacyTeamVal === '';
@@ -46,7 +46,7 @@
     const seg = decodeURIComponent(m[1]).toLowerCase();
     // Ignore segments that are file/page names — they're not community slugs.
     if (/\.[a-z0-9]+$/i.test(seg)) return '';
-    if (seg === 'team' || seg === 'draft-dashboard' || seg === 'projector' || seg === 'commissioner') return '';
+    if (seg === 'team' || seg === 'draft' || seg === 'projector' || seg === 'commissioner') return '';
     return seg;
   })();
   const COMMUNITY_SLUG = (

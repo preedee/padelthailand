@@ -28,7 +28,7 @@
       <img class="brand-logo" id="brandLogo" src="assets/monogram-white-on-green.png" alt="TPS" />
     </div>
     <div class="header-center">
-      <div class="tournament" id="tournamentName">TOURNAMENT DRAFT</div>
+      <div class="tournament" id="tournamentName">Bangkok Community Cup</div>
     </div>
     <div class="header-right">
       <div class="reconnect" id="reconnect" role="status" aria-live="polite">
@@ -39,7 +39,7 @@
         <span class="dot"></span>
         LIVE DRAFT
       </div>
-      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Community Cup" />
+      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Bangkok Community Cup" />
     </div>
   </header>
 
@@ -85,13 +85,15 @@
 
 <!-- ────── Scripts (order matters) ────── -->
 <!-- Sheet ID default — set BEFORE data.js so its module-init reads it.
-     Override via ?sheet=<id> URL param (handled inside data.js). -->
+     Override via ?sheet=<id> URL param (handled inside data.js).
+     __DRAFT_BASE — projector builds clean per-community links under this path. -->
 <script>
   (function () {
     var p = new URLSearchParams(window.location.search);
     if (!window.__SHEET_ID && !p.get('sheet')) {
       window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';
     }
+    window.__DRAFT_BASE = '/competitions/tps-may2026/draft';
   })();
 </script>
 
@@ -105,7 +107,7 @@
 <script src="js/draft-utils.js"></script>
 
 <!-- Supabase client wrapper -->
-<script src="js/draft-supabase.js"></script>
+<script src="js/draft-supabase.js?v=2"></script>
 
 <!-- Existing Sheet data layer (for Communities) -->
 <script src="js/data.js"></script>
