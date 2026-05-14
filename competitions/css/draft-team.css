@@ -252,6 +252,13 @@ input  { font: inherit; color: inherit; }
   color: var(--dark-bg);
   font-weight: 700;
 }
+/* Sort-direction arrow — fixed-width slot so the chip doesn't jump
+   as the arrow appears/disappears on the inactive sort button. */
+.team__sort-arrow {
+  display: inline-block;
+  width: 0.8em;
+  text-align: center;
+}
 .team__chip--female { color: var(--female); }
 .team__chip--male   { color: var(--male); }
 .team__chip--female.is-active-filter {

@@ -468,10 +468,13 @@
         return c && wanted.has(c.id);
       }));
     }
-    if (state.sort === 'rating-desc') {
-      list = list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
-    } else if (state.sort === 'name-asc') {
-      list = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+    // state.sort is "<field>-<dir>" — field ∈ rating|name, dir ∈ asc|desc.
+    const [sortField, sortDir] = state.sort.split('-');
+    const mult = sortDir === 'desc' ? -1 : 1;
+    if (sortField === 'rating') {
+      list = list.slice().sort((a, b) => mult * ((a.rating ?? -1) - (b.rating ?? -1)));
+    } else if (sortField === 'name') {
+      list = list.slice().sort((a, b) => mult * a.name.localeCompare(b.name));
     }
     return list;
   }
@@ -624,9 +627,13 @@
 
   function renderPool() {
     const players = visiblePool();
-    // Sort chip active states
+    // Sort chip active states + direction arrow (↓ desc / ↑ asc) on the active one.
+    const [sortField, sortDir] = state.sort.split('-');
     $sortGroup.querySelectorAll('.team__chip').forEach(b => {
-      b.classList.toggle('is-active-sort', b.dataset.sort === state.sort);
+      const active = b.dataset.sort === sortField;
+      b.classList.toggle('is-active-sort', active);
+      const arrow = b.querySelector('.team__sort-arrow');
+      if (arrow) arrow.textContent = active ? (sortDir === 'desc' ? '↓' : '↑') : '';
     });
     // Filter chip active states
     $filterGroup.querySelectorAll('.team__chip').forEach(b => {
@@ -706,7 +713,15 @@
   function onSortClick(e) {
     const t = e.target.closest('[data-sort]');
     if (!t) return;
-    state.sort = t.dataset.sort;
+    const field = t.dataset.sort;            // 'rating' | 'name'
+    const [curField, curDir] = state.sort.split('-');
+    if (curField === field) {
+      // Re-click the active field → flip direction.
+      state.sort = `${field}-${curDir === 'asc' ? 'desc' : 'asc'}`;
+    } else {
+      // Switch field → start at its natural default (rating high→low, name A→Z).
+      state.sort = field === 'rating' ? 'rating-desc' : 'name-asc';
+    }
     renderPool();
   }
 
