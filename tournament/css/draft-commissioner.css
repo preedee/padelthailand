@@ -339,6 +339,37 @@ html, body {
   font-weight: 500;
 }
 
+.pool-row__prefs {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 76px;
+  justify-content: flex-start;
+}
+.pref-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--dark-border);
+  background: var(--dark-surface);
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 22px;
+}
+.pref-logo--0 { opacity: 1; }
+.pref-logo--1 { opacity: 0.75; }
+.pref-logo--2 { opacity: 0.55; }
+.pref-logo--unknown {
+  border-style: dashed;
+  color: var(--dark-text-muted);
+}
+
 .pool-row__meta {
   display: flex;
   align-items: center;

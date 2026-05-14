@@ -254,6 +254,32 @@ input  { font: inherit; color: inherit; }
   color: var(--dark-bg);
 }
 
+.captain__row-prefs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+.captain__pref-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--dark-border);
+  background: var(--dark-surface);
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 18px;
+}
+.captain__pref-logo--0 { opacity: 1; }
+.captain__pref-logo--1 { opacity: 0.75; }
+.captain__pref-logo--2 { opacity: 0.55; }
+.captain__pref-logo--unknown { border-style: dashed; }
+
 .captain__pool-list {
   padding: 0 14px 14px;
   display: flex;

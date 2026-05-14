@@ -298,6 +298,28 @@ function flagEmoji(code) {
   return String.fromCodePoint(...cp);
 }
 
+// Registrations stores community preferences as display strings ("Sabai Sabai
+// Padel Collective", "Deuce", "Padel & Brew", ...). Match against communities
+// by exact or substring overlap so 'Deuce' → 'deuce-padel'.
+function findCommunityByName(input, communities) {
+  if (!input) return null;
+  const lc = String(input).trim().toLowerCase();
+  if (!lc) return null;
+  let m = communities.find(c => c.name && c.name.toLowerCase() === lc);
+  if (m) return m;
+  m = communities.find(c => {
+    const cn = (c.name || '').toLowerCase();
+    return cn && (cn.includes(lc) || lc.includes(cn));
+  });
+  if (m) return m;
+  // Token overlap fallback: any meaningful token in input matches a token in community name.
+  const tokens = lc.split(/\s+/).filter(t => t.length > 2);
+  return communities.find(c => {
+    const ct = (c.name || '').toLowerCase().split(/\s+/);
+    return tokens.some(t => ct.some(x => x.includes(t) || t.includes(x)));
+  }) || null;
+}
+
 // Side: forehand → F, backhand → B, both_sides/either → E.
 // Check "both" / "either" FIRST — otherwise "both_sides" matches the 'b'
 // prefix and returns B (backhand) by mistake.
@@ -535,6 +557,7 @@ function poolRowHTML(p, isTopMatch) {
       ${avatarHTML(p, 36)}
       <span class="pool-row__flag" title="${escapeHTML(p.nationality || '')}">${flagEmoji(countryCodeFor(p.nationality))}</span>
       <span class="pool-row__name">${escapeHTML(p.name)}</span>
+      <span class="pool-row__prefs">${prefsHTML(p)}</span>
       <span class="pool-row__meta">
         <span class="pool-row__cell">${ratingLabel}</span>
         <span class="pool-row__cell">${handLabel}</span>
@@ -543,6 +566,25 @@ function poolRowHTML(p, isTopMatch) {
       <span class="pool-row__chip">→ CLICK TO PICK</span>
     </div>
   `;
+}
+
+// Render up to 3 small community logos for the player's preferences (1st, 2nd, 3rd).
+// Each falls back to a text initial pill if the community has no logoPath.
+function prefsHTML(p) {
+  if (!p.prefs || !p.prefs.length) return '';
+  const ranks = ['1st', '2nd', '3rd'];
+  return p.prefs.slice(0, 3).map((prefName, i) => {
+    const community = findCommunityByName(prefName, state.communities);
+    if (!community) {
+      return `<span class="pref-logo pref-logo--unknown" title="${escapeHTML(ranks[i])}: ${escapeHTML(prefName)}">?</span>`;
+    }
+    const title = `${ranks[i]}: ${community.name}`;
+    if (community.logoPath) {
+      return `<img class="pref-logo pref-logo--${i}" src="${community.logoPath}" alt="" title="${escapeHTML(title)}">`;
+    }
+    const initial = (community.name || '?').charAt(0).toUpperCase();
+    return `<span class="pref-logo pref-logo--${i}" title="${escapeHTML(title)}">${initial}</span>`;
+  }).join('');
 }
 
 // Render <img> if a real avatar URL is known, else the gender-tinted initial fallback.

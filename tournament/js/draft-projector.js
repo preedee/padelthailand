@@ -426,8 +426,8 @@
         ? `<div class="flag" title="${escapeHtml(player.nationality || '')}">${flag}</div>`
         : '';
       return `<div class="${cls}"${justPicked ? ' data-just-picked="1"' : ''}>
-        ${flagHtml}
         <div class="avatar">${av}</div>
+        ${flagHtml}
         <div class="fname">${escapeHtml(firstName(player.name))}</div>
       </div>`;
     }

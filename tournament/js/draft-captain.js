@@ -208,6 +208,44 @@
     return String.fromCodePoint(...cp);
   }
 
+  // Map a Registrations community-preference string to a community record by
+  // exact, substring, or token-overlap match. Mirrors the commissioner logic.
+  function findCommunityByName(input) {
+    if (!input) return null;
+    const lc = String(input).trim().toLowerCase();
+    if (!lc) return null;
+    let m = state.communities.find(c => c.name && c.name.toLowerCase() === lc);
+    if (m) return m;
+    m = state.communities.find(c => {
+      const cn = (c.name || '').toLowerCase();
+      return cn && (cn.includes(lc) || lc.includes(cn));
+    });
+    if (m) return m;
+    const tokens = lc.split(/\s+/).filter(t => t.length > 2);
+    return state.communities.find(c => {
+      const ct = (c.name || '').toLowerCase().split(/\s+/);
+      return tokens.some(t => ct.some(x => x.includes(t) || t.includes(x)));
+    }) || null;
+  }
+
+  // Render up to 3 small community logos for the player's preferences.
+  function prefsHTML(player) {
+    if (!player.prefs || !player.prefs.length) return '';
+    const ranks = ['1st', '2nd', '3rd'];
+    return player.prefs.slice(0, 3).map((prefName, i) => {
+      const c = findCommunityByName(prefName);
+      if (!c) {
+        return `<span class="captain__pref-logo captain__pref-logo--unknown" title="${escapeHtml(ranks[i])}: ${escapeHtml(prefName)}">?</span>`;
+      }
+      const title = `${ranks[i]}: ${c.name}`;
+      if (c.logoPath) {
+        return `<img class="captain__pref-logo captain__pref-logo--${i}" src="${escapeHtml(c.logoPath)}" alt="" title="${escapeHtml(title)}">`;
+      }
+      const initial = (c.name || '?').charAt(0).toUpperCase();
+      return `<span class="captain__pref-logo captain__pref-logo--${i}" title="${escapeHtml(title)}">${initial}</span>`;
+    }).join('');
+  }
+
   // ============================================================
   // Sheet fetch — gviz CSV → array of row-objects keyed by header
   // ============================================================
@@ -313,6 +351,8 @@
         gender: normalizeGender(r['Gender']),
         isCaptain: false,
         nationality: (r['Nationality'] || '').trim(),
+        prefs: [r['Community 1st'], r['Community 2nd'], r['Community 3rd']]
+          .map(s => (s || '').trim()).filter(Boolean),
         isPlaceholder: false,
       }));
   }
@@ -592,6 +632,7 @@
           <div class="${photoCls.join(' ')}">${photoInner}</div>
           <span class="captain__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
           <div class="captain__player-name">${escapeHtml(p.name)}</div>
+          <span class="captain__row-prefs">${prefsHTML(p)}</span>
           ${genderTag}
           <div class="captain__row-tag">${escapeHtml(handLabel(p.hand))}</div>
           <div class="captain__row-tag">${escapeHtml(sideLabel(p.side))}</div>
