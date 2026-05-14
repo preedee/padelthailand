@@ -660,7 +660,8 @@ const Data = (() => {
         name: (row['Name'] || '').trim(),
         group: (row['Group'] || '').trim(),
         color: (row['Color'] || '').trim(),
-        logoPath: (row['Logo Path'] || '').trim(),
+        // ?v=2 cache-busts the GitHub Pages CDN after the logo artwork refresh.
+        logoPath: (row['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=2'),
         captainM: {
           name: (row['Captain M Name'] || '').trim(),
           tpsId: (row['Captain M ID'] || '').trim(),
