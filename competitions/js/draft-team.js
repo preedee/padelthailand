@@ -210,24 +210,32 @@
     return String.fromCodePoint(...cp);
   }
 
-  // Map a Registrations community-preference string to a community record by
-  // exact, substring, or token-overlap match. Mirrors the commissioner logic.
+  // Normalize a name for matching: lowercase, punctuation → spaces, collapse.
+  //   "Padel, Pa?"  → "padel pa"      "Padel & Brew" → "padel brew"
+  function normCommName(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
+  // Registration-form preference strings don't always match the Communities
+  // tab names. These are the known divergences (normalized form → community id).
+  // Everything else resolves by exact normalized match.
+  const PREF_ALIAS = {
+    'deuce': 'deuce-padel',                          // form lists just "Deuce"
+    'sabai sabai padel collective': 'sabai-sabai',   // form appends "Padel Collective"
+  };
+
+  // Map a Registrations community-preference string to a community record.
+  // Deterministic: exact normalized match, then the known-alias table. NO
+  // fuzzy/token matching — "Padel" appears in 5 of 8 names and collided
+  // (e.g. "Padel, Pa?" wrongly resolved to "Coco Padel").
   function findCommunityByName(input) {
-    if (!input) return null;
-    const lc = String(input).trim().toLowerCase();
-    if (!lc) return null;
-    let m = state.communities.find(c => c.name && c.name.toLowerCase() === lc);
+    const norm = normCommName(input);
+    if (!norm) return null;
+    let m = state.communities.find(c => normCommName(c.name) === norm);
     if (m) return m;
-    m = state.communities.find(c => {
-      const cn = (c.name || '').toLowerCase();
-      return cn && (cn.includes(lc) || lc.includes(cn));
-    });
-    if (m) return m;
-    const tokens = lc.split(/\s+/).filter(t => t.length > 2);
-    return state.communities.find(c => {
-      const ct = (c.name || '').toLowerCase().split(/\s+/);
-      return tokens.some(t => ct.some(x => x.includes(t) || t.includes(x)));
-    }) || null;
+    const aliasId = PREF_ALIAS[norm];
+    if (aliasId) return state.communities.find(c => c.id === aliasId) || null;
+    return null;
   }
 
   // Build the PREFERS filter row — one chip per community (logo + short name).
