@@ -178,7 +178,7 @@ function parseCommunities(rows) {
       group: (r['Group'] || '').trim(),
       color: (r['Color'] || '').trim(),
       // ?v=2 cache-busts the GitHub Pages CDN after the logo artwork refresh.
-      logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=2'),
+      logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=3'),
       seed: parseInt(r['Seed'], 10) || null,
     }));
 }

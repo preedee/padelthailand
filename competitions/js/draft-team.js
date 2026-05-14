@@ -337,7 +337,7 @@
         group: (r['Group'] || '').trim(),
         color: (r['Color'] || '').trim() || '#ff8a3d',
         // ?v=2 cache-busts the GitHub Pages CDN after the logo artwork refresh.
-        logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=2'),
+        logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=3'),
         seed: parseInt((r['Seed'] || '').trim(), 10) || null,
       }));
   }
