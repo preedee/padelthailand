@@ -168,6 +168,46 @@
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
+  // Country name → ISO 3166-1 alpha-2 code. Mirrors the table on the
+  // commissioner page so flags read identically across both surfaces.
+  const COUNTRY_CODE = {
+    'thailand': 'TH', 'th': 'TH',
+    'brazil': 'BR', 'br': 'BR',
+    'spain': 'ES', 'es': 'ES',
+    'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB', 'scotland': 'GB',
+    'turkey': 'TR', 'tr': 'TR',
+    'russia': 'RU', 'ru': 'RU',
+    'italy': 'IT', 'it': 'IT',
+    'united states': 'US', 'usa': 'US', 'us': 'US',
+    'france': 'FR', 'fr': 'FR',
+    'germany': 'DE', 'de': 'DE',
+    'india': 'IN', 'in': 'IN',
+    'japan': 'JP', 'jp': 'JP',
+    'china': 'CN', 'cn': 'CN',
+    'korea': 'KR', 'south korea': 'KR', 'kr': 'KR',
+    'argentina': 'AR', 'mexico': 'MX', 'chile': 'CL', 'colombia': 'CO', 'peru': 'PE',
+    'australia': 'AU', 'canada': 'CA', 'new zealand': 'NZ',
+    'netherlands': 'NL', 'belgium': 'BE', 'switzerland': 'CH', 'austria': 'AT',
+    'sweden': 'SE', 'norway': 'NO', 'denmark': 'DK', 'finland': 'FI',
+    'portugal': 'PT', 'poland': 'PL', 'czech republic': 'CZ', 'czechia': 'CZ',
+    'singapore': 'SG', 'malaysia': 'MY', 'indonesia': 'ID', 'philippines': 'PH',
+    'vietnam': 'VN', 'hong kong': 'HK', 'taiwan': 'TW',
+    'south africa': 'ZA', 'ireland': 'IE', 'greece': 'GR', 'israel': 'IL',
+    'uae': 'AE', 'united arab emirates': 'AE', 'saudi arabia': 'SA',
+    'ukraine': 'UA', 'romania': 'RO', 'hungary': 'HU', 'serbia': 'RS', 'croatia': 'HR',
+  };
+  function countryCodeFor(name) {
+    if (!name) return '';
+    const key = String(name).trim().toLowerCase();
+    return COUNTRY_CODE[key] || (key.length === 2 ? key.toUpperCase() : '');
+  }
+  // ISO alpha-2 → flag emoji via regional-indicator symbols. Empty when no code.
+  function flagEmoji(code) {
+    if (!code || code.length !== 2) return '';
+    const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
+    return String.fromCodePoint(...cp);
+  }
+
   // ============================================================
   // Sheet fetch — gviz CSV → array of row-objects keyed by header
   // ============================================================
@@ -451,10 +491,15 @@
       ? `<img src="${escapeHtml(player.avatar)}" alt="" data-fallback="${escapeHtml(fallback)}">`
       : escapeHtml(fallback);
 
+    const flag = flagEmoji(countryCodeFor(player.nationality));
+    const nameHTML = flag
+      ? `<span class="captain__cell-flag" title="${escapeHtml(player.nationality || '')}">${flag}</span> ${escapeHtml(firstName(player.name))}`
+      : escapeHtml(firstName(player.name));
+
     return `
       <div class="${cls.join(' ')}">
         <div class="captain__cell-avatar">${avatarInner}</div>
-        <div class="captain__cell-fname">${escapeHtml(firstName(player.name))}</div>
+        <div class="captain__cell-fname">${nameHTML}</div>
         <div class="captain__cell-rating">${escapeHtml(ratingStr(player.rating))}</div>
         <div class="captain__cell-handside">
           <span>${escapeHtml(handLabel(player.hand))}</span>
@@ -540,9 +585,12 @@
         p.gender === 'M' ? `<div class="captain__row-tag captain__row-tag--gender-m">M</div>` :
                            `<div class="captain__row-tag">—</div>`;
 
+      const flag = flagEmoji(countryCodeFor(p.nationality));
+
       return `
         <div class="${rowCls.join(' ')}" role="listitem">
           <div class="${photoCls.join(' ')}">${photoInner}</div>
+          <span class="captain__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
           <div class="captain__player-name">${escapeHtml(p.name)}</div>
           ${genderTag}
           <div class="captain__row-tag">${escapeHtml(handLabel(p.hand))}</div>

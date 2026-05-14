@@ -266,7 +266,7 @@ input  { font: inherit; color: inherit; }
 
 .captain__player-row {
   display: grid;
-  grid-template-columns: 36px 1fr auto auto auto auto;
+  grid-template-columns: 36px auto 1fr auto auto auto auto;
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
@@ -295,6 +295,16 @@ input  { font: inherit; color: inherit; }
 .captain__player-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .captain__player-photo--female { border-color: var(--female); }
 .captain__player-photo--male   { border-color: var(--male); }
+
+.captain__row-flag {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+  width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .captain__player-name {
   font-size: 14px;
@@ -476,6 +486,13 @@ input  { font: inherit; color: inherit; }
   font-weight: 600;
   margin-top: 4px;
   padding: 0 2px;
+}
+.captain__cell-flag {
+  font-size: 12px;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 2px;
 }
 .captain__roster-cell.is-captain .captain__cell-fname { color: var(--dark-accent); }
 .captain__roster-cell.is-filled  .captain__cell-fname { color: var(--dark-text); }
