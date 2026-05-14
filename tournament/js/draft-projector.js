@@ -89,34 +89,33 @@
     return (neg ? '-' : '') + m + ':' + String(s).padStart(2, '0');
   }
 
-  // ──────────────────────────────────────────────────────────
-  // 5a. Nationality → flag emoji
-  // ──────────────────────────────────────────────────────────
+  // Country name → ISO 3166-1 alpha-2 code. Mirrors the table on the
+  // commissioner + captain pages so flags read identically everywhere.
   const COUNTRY_CODE = {
-    'thailand':'TH','th':'TH',
-    'brazil':'BR','br':'BR',
-    'spain':'ES','es':'ES',
-    'united kingdom':'GB','uk':'GB','great britain':'GB','england':'GB','scotland':'GB',
-    'turkey':'TR','tr':'TR',
-    'russia':'RU','ru':'RU',
-    'italy':'IT','it':'IT',
-    'united states':'US','usa':'US','us':'US',
-    'france':'FR','fr':'FR',
-    'germany':'DE','de':'DE',
-    'india':'IN','in':'IN',
-    'japan':'JP','jp':'JP',
-    'china':'CN','cn':'CN',
-    'korea':'KR','south korea':'KR','kr':'KR',
-    'argentina':'AR','mexico':'MX','chile':'CL','colombia':'CO','peru':'PE',
-    'australia':'AU','canada':'CA','new zealand':'NZ',
-    'netherlands':'NL','belgium':'BE','switzerland':'CH','austria':'AT',
-    'sweden':'SE','norway':'NO','denmark':'DK','finland':'FI',
-    'portugal':'PT','poland':'PL','czech republic':'CZ','czechia':'CZ',
-    'singapore':'SG','malaysia':'MY','indonesia':'ID','philippines':'PH',
-    'vietnam':'VN','hong kong':'HK','taiwan':'TW',
-    'south africa':'ZA','ireland':'IE','greece':'GR','israel':'IL',
-    'uae':'AE','united arab emirates':'AE','saudi arabia':'SA',
-    'ukraine':'UA','romania':'RO','hungary':'HU','serbia':'RS','croatia':'HR',
+    'thailand': 'TH', 'th': 'TH',
+    'brazil': 'BR', 'br': 'BR',
+    'spain': 'ES', 'es': 'ES',
+    'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB', 'scotland': 'GB',
+    'turkey': 'TR', 'tr': 'TR',
+    'russia': 'RU', 'ru': 'RU',
+    'italy': 'IT', 'it': 'IT',
+    'united states': 'US', 'usa': 'US', 'us': 'US',
+    'france': 'FR', 'fr': 'FR',
+    'germany': 'DE', 'de': 'DE',
+    'india': 'IN', 'in': 'IN',
+    'japan': 'JP', 'jp': 'JP',
+    'china': 'CN', 'cn': 'CN',
+    'korea': 'KR', 'south korea': 'KR', 'kr': 'KR',
+    'argentina': 'AR', 'mexico': 'MX', 'chile': 'CL', 'colombia': 'CO', 'peru': 'PE',
+    'australia': 'AU', 'canada': 'CA', 'new zealand': 'NZ',
+    'netherlands': 'NL', 'belgium': 'BE', 'switzerland': 'CH', 'austria': 'AT',
+    'sweden': 'SE', 'norway': 'NO', 'denmark': 'DK', 'finland': 'FI',
+    'portugal': 'PT', 'poland': 'PL', 'czech republic': 'CZ', 'czechia': 'CZ',
+    'singapore': 'SG', 'malaysia': 'MY', 'indonesia': 'ID', 'philippines': 'PH',
+    'vietnam': 'VN', 'hong kong': 'HK', 'taiwan': 'TW',
+    'south africa': 'ZA', 'ireland': 'IE', 'greece': 'GR', 'israel': 'IL',
+    'uae': 'AE', 'united arab emirates': 'AE', 'saudi arabia': 'SA',
+    'ukraine': 'UA', 'romania': 'RO', 'hungary': 'HU', 'serbia': 'RS', 'croatia': 'HR',
   };
   function countryCodeFor(name) {
     if (!name) return '';
@@ -167,28 +166,68 @@
       return row;
     });
   }
-  async function fetchPlayersFromSheet() {
-    // Resolve sheet ID the same way data.js does.
+  function gvizUrl(tabName) {
     const urlParams = new URLSearchParams(window.location.search);
     const sheetId = window.__SHEET_ID || urlParams.get('sheet') ||
                     '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ'; // TPS community cup default
-    const tabName = 'Teams and Players';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Players HTTP ' + res.status);
-      const text = await res.text();
-      const rows = parseCSV(text);
-      return rows.map(r => ({
-        communityId: r['Community ID'] || '',
-        playerId:    r['TPS User ID']  || '',
-        name:        r['Player Name']  || '',
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  }
+  async function fetchTabRows(tabName) {
+    const res = await fetch(gvizUrl(tabName));
+    if (!res.ok) throw new Error(`${tabName} HTTP ${res.status}`);
+    return parseCSV(await res.text());
+  }
+  // Reads the 80-row Teams and Players tab — the 16 captain rows have full
+  // metadata via the sheet's INDEX/MATCH formulas; the other 64 rows are
+  // placeholder slots (blank TPS User ID) and are dropped.
+  function parseTeamsAndPlayers(rows) {
+    return rows.map(r => ({
+      communityId: r['Community ID'] || '',
+      playerId:    r['TPS User ID']  || '',
+      name:        r['Player Name']  || '',
+      gender:      normalizeGender(r['Gender']),
+      isCaptain:   String(r['Is Captain'] || '').trim().toUpperCase() === 'Y',
+      avatar:      (r['Avatar'] && r['Avatar'] !== 'null') ? r['Avatar'] : '',
+      level:       parseRating(r['Level'] || r['Rating']),
+      nationality: (r['Nationality'] || '').trim(),
+    })).filter(p => p.communityId && p.playerId);   // drop placeholder rows
+  }
+  // Reads the Registrations tab — the canonical roster for non-captain
+  // players. The projector falls back to this when a drafted player's
+  // TPS User ID isn't in Teams and Players (which is true for every
+  // non-captain pick mid-draft).
+  function parseRegistrations(rows) {
+    return rows
+      .filter(r => (r['User ID'] || '').trim() && (r['Paid ?'] || '').trim().toUpperCase() === 'Y')
+      .map(r => ({
+        communityId: '',
+        playerId:    (r['User ID'] || '').trim(),
+        name:        (r['Name'] || '').trim(),
         gender:      normalizeGender(r['Gender']),
-        isCaptain:   String(r['Is Captain'] || '').trim().toUpperCase() === 'Y',
-        avatar:      (r['Avatar'] && r['Avatar'] !== 'null') ? r['Avatar'] : '',
-        level:       parseRating(r['Level'] || r['Rating']),
+        isCaptain:   false,
+        avatar:      '',
+        level:       parseRating(r['Level (current)']),
         nationality: (r['Nationality'] || '').trim(),
-      })).filter(p => p.communityId);
+      }));
+  }
+  async function fetchPlayersFromSheet() {
+    try {
+      const [teamsRows, regRows] = await Promise.all([
+        fetchTabRows('Teams and Players'),
+        fetchTabRows('Registrations'),
+      ]);
+      const captains = parseTeamsAndPlayers(teamsRows);
+      const registrants = parseRegistrations(regRows);
+      // Merge by playerId — captain rows (richer: have community+avatar+isCaptain) win.
+      const seen = new Set();
+      const merged = [];
+      for (const p of captains) {
+        if (!seen.has(p.playerId)) { seen.add(p.playerId); merged.push(p); }
+      }
+      for (const p of registrants) {
+        if (!seen.has(p.playerId)) { seen.add(p.playerId); merged.push(p); }
+      }
+      return merged;
     } catch (err) {
       console.warn('[projector] failed to fetch players from sheet:', err);
       return [];
@@ -340,8 +379,8 @@
         ? `<div class="flag" title="${escapeHtml(player.nationality || '')}">${flag}</div>`
         : '';
       return `<div class="${cls}"${justPicked ? ' data-just-picked="1"' : ''}>
-        <div class="avatar">${av}</div>
         ${flagHtml}
+        <div class="avatar">${av}</div>
         <div class="fname">${escapeHtml(firstName(player.name))}</div>
       </div>`;
     }
