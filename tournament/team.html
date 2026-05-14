@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0A1612" />
+  <title>Team — Community Cup Draft</title>
+  <link rel="icon" href="assets/tps-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
+  <link rel="stylesheet" href="css/styles.css?v=1">
+  <link rel="stylesheet" href="css/draft-team.css?v=4">
+</head>
+<body class="team theme-dark">
+
+<div id="app" class="team__app" data-view="team">
+
+  <!-- App header -->
+  <header class="team__header" role="banner">
+    <div class="team__header-left">
+      <img class="team__brand-logo" src="assets/monogram-white-on-green.png" alt="TPS">
+      <h1 class="team__title" id="team-title">Community Cup</h1>
+    </div>
+    <div class="team__header-right">
+      <div class="team__tournament-logo" id="team-tournament-logo" aria-label="Tournament logo">
+        <span class="ph">LOGO</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- RECONNECTING banner — hidden by default; shown on subscription/network drop -->
+  <div class="team__reconnect" id="team-reconnect" role="status" aria-live="polite" hidden>
+    <span class="pulse"></span>
+    <span>Reconnecting…</span>
+  </div>
+
+  <!-- ============ POOL VIEW ============ -->
+  <section class="team__view team__view--pool" data-view="pool" id="team-view-pool" hidden>
+    <div class="team__pool-search-row">
+      <input
+        type="search"
+        id="team-search"
+        class="team__search-input"
+        placeholder="Search players…"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <div class="team__pill" role="tablist" aria-label="Switch view">
+        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
+        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
+      </div>
+    </div>
+
+    <div class="team__filter-row">
+      <span class="team__filter-label">SORT</span>
+      <div class="team__chip-group" id="team-sort-group" role="group" aria-label="Sort">
+        <button class="team__chip" data-sort="rating-desc">RATING ↓</button>
+        <button class="team__chip" data-sort="name-asc">NAME</button>
+      </div>
+    </div>
+    <div class="team__filter-row">
+      <span class="team__filter-label">FILTER</span>
+      <div class="team__chip-group" id="team-filter-group" role="group" aria-label="Filters">
+        <button class="team__chip team__chip--female" data-filter="gender" data-value="F">♀ F</button>
+        <button class="team__chip team__chip--male"   data-filter="gender" data-value="M">♂ M</button>
+        <button class="team__chip" data-filter="hand" data-value="L">L 🫲</button>
+        <button class="team__chip" data-filter="hand" data-value="R">🫱 R</button>
+        <button class="team__chip" data-filter="side" data-value="L">L ⬅️</button>
+        <button class="team__chip" data-filter="side" data-value="R">➡️ R</button>
+      </div>
+    </div>
+
+    <div class="team__pool-list" id="team-pool-list" role="list" aria-live="polite">
+      <!-- Player rows injected by draft-team.js -->
+    </div>
+  </section>
+
+  <!-- ============ TEAM VIEW ============ -->
+  <section class="team__view team__view--team" data-view="team" id="team-view-team" hidden>
+    <div class="team__team-header" id="team-team-header">
+      <!-- Team logo + name + pick + vertical pill injected by draft-team.js -->
+    </div>
+
+    <div class="team__roster-scroll">
+      <div class="team__roster-section" id="team-roster-female">
+        <div class="team__roster-head">
+          <span class="team__roster-lbl team__roster-lbl--female">FEMALE PLAYERS</span>
+        </div>
+        <div class="team__roster-grid" id="team-roster-grid-female"></div>
+      </div>
+      <div class="team__roster-divider"></div>
+      <div class="team__roster-section" id="team-roster-male">
+        <div class="team__roster-head">
+          <span class="team__roster-lbl team__roster-lbl--male">MALE PLAYERS</span>
+        </div>
+        <div class="team__roster-grid" id="team-roster-grid-male"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inline error block (missing/invalid params, fetch failures, etc) -->
+  <div class="team__error" id="team-error" hidden></div>
+
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/draft-config.js?v=1"></script>
+<script defer src="js/draft-utils.js?v=1"></script>
+<script defer src="js/draft-supabase.js?v=1"></script>
+<script defer src="js/draft-team.js?v=4"></script>
+
+</body>
+</html>

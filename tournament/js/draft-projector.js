@@ -435,7 +435,7 @@
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <div class="team-head">
-          <div class="head-left"><a class="tname" href="captain.html?community=${escapeHtml(community.id)}">${escapeHtml(community.name || community.id)}</a></div>
+          <div class="head-left"><a class="tname" href="team.html?community=${escapeHtml(community.id)}">${escapeHtml(community.name || community.id)}</a></div>
           <div class="team-logo">${logoHtml}</div>
         </div>
         <div class="roster10">

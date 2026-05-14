@@ -1,5 +1,5 @@
 /* ============================================
-   Captain Phone — Pool + Team views
+   Team Page — Pool + Team views
    Read-only display for one captain during a live draft.
 
    URL params:
@@ -10,9 +10,9 @@
      sheet       — Google Sheet ID override (default: Community Cup sheet)
 
    Examples:
-     captain.html?community=coco-padel              → Team view
-     captain.html?community=coco-padel&pool         → Pool view
-     captain.html?community=coco-padel&team         → Team view (explicit)
+     team.html?community=coco-padel              → Team view
+     team.html?community=coco-padel&pool         → Pool view
+     team.html?community=coco-padel&team         → Team view (explicit)
 
    Data sources:
      • Google Sheets gviz CSV — Communities + Teams and Players (roster + captains)
@@ -46,7 +46,7 @@
     const seg = decodeURIComponent(m[1]).toLowerCase();
     // Ignore segments that are file/page names — they're not community slugs.
     if (/\.[a-z0-9]+$/i.test(seg)) return '';
-    if (seg === 'captain' || seg === 'draft-dashboard' || seg === 'projector' || seg === 'commissioner') return '';
+    if (seg === 'team' || seg === 'draft-dashboard' || seg === 'projector' || seg === 'commissioner') return '';
     return seg;
   })();
   const COMMUNITY_SLUG = (
@@ -62,16 +62,16 @@
 
   // -------- DOM refs --------
   const $app = document.getElementById('app');
-  const $reconnect = document.getElementById('cap-reconnect');
-  const $error = document.getElementById('cap-error');
-  const $tournamentLogo = document.getElementById('cap-tournament-logo');
-  const $teamHeader = document.getElementById('cap-team-header');
-  const $rosterFemale = document.getElementById('cap-roster-grid-female');
-  const $rosterMale = document.getElementById('cap-roster-grid-male');
-  const $poolList = document.getElementById('cap-pool-list');
-  const $search = document.getElementById('cap-search');
-  const $sortGroup = document.getElementById('cap-sort-group');
-  const $filterGroup = document.getElementById('cap-filter-group');
+  const $reconnect = document.getElementById('team-reconnect');
+  const $error = document.getElementById('team-error');
+  const $tournamentLogo = document.getElementById('team-tournament-logo');
+  const $teamHeader = document.getElementById('team-team-header');
+  const $rosterFemale = document.getElementById('team-roster-grid-female');
+  const $rosterMale = document.getElementById('team-roster-grid-male');
+  const $poolList = document.getElementById('team-pool-list');
+  const $search = document.getElementById('team-search');
+  const $sortGroup = document.getElementById('team-sort-group');
+  const $filterGroup = document.getElementById('team-filter-group');
 
   // -------- State --------
   const state = {
@@ -235,14 +235,14 @@
     return player.prefs.slice(0, 3).map((prefName, i) => {
       const c = findCommunityByName(prefName);
       if (!c) {
-        return `<span class="captain__pref-logo captain__pref-logo--unknown" title="${escapeHtml(ranks[i])}: ${escapeHtml(prefName)}">?</span>`;
+        return `<span class="team__pref-logo team__pref-logo--unknown" title="${escapeHtml(ranks[i])}: ${escapeHtml(prefName)}">?</span>`;
       }
       const title = `${ranks[i]}: ${c.name}`;
       if (c.logoPath) {
-        return `<img class="captain__pref-logo captain__pref-logo--${i}" src="${escapeHtml(c.logoPath)}" alt="" title="${escapeHtml(title)}">`;
+        return `<img class="team__pref-logo team__pref-logo--${i}" src="${escapeHtml(c.logoPath)}" alt="" title="${escapeHtml(title)}">`;
       }
       const initial = (c.name || '?').charAt(0).toUpperCase();
-      return `<span class="captain__pref-logo captain__pref-logo--${i}" title="${escapeHtml(title)}">${initial}</span>`;
+      return `<span class="team__pref-logo team__pref-logo--${i}" title="${escapeHtml(title)}">${initial}</span>`;
     }).join('');
   }
 
@@ -487,9 +487,9 @@
   }
 
   function pillHTML(currentView) {
-    return `<div class="captain__pill" role="tablist" aria-label="Switch view">
-      <button class="captain__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
-      <button class="captain__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
+    return `<div class="team__pill" role="tablist" aria-label="Switch view">
+      <button class="team__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
+      <button class="team__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
     </div>`;
   }
 
@@ -507,10 +507,10 @@
       : escapeHtml(fallback);
     $teamHeader.style.setProperty('--team-color', teamColor);
     $teamHeader.innerHTML = `
-      <div class="captain__team-logo" style="--team-color: ${escapeHtml(teamColor)}">${logoHTML}</div>
-      <div class="captain__team-info">
-        <div class="captain__team-name">${escapeHtml(c.name.toUpperCase())}</div>
-        <div class="captain__team-pick">PICK ${pickNum} / 64</div>
+      <div class="team__team-logo" style="--team-color: ${escapeHtml(teamColor)}">${logoHTML}</div>
+      <div class="team__team-info">
+        <div class="team__team-name">${escapeHtml(c.name.toUpperCase())}</div>
+        <div class="team__team-pick">PICK ${pickNum} / 64</div>
       </div>
       ${pillHTML('team')}
     `;
@@ -518,7 +518,7 @@
   }
 
   function rosterCellHTML(player, genderSlot, isCaptain) {
-    const cls = ['captain__roster-cell'];
+    const cls = ['team__roster-cell'];
     cls.push(genderSlot === 'F' ? 'is-female' : 'is-male');
     if (!player) {
       cls.push('is-empty');
@@ -533,15 +533,15 @@
 
     const flag = flagEmoji(countryCodeFor(player.nationality));
     const nameHTML = flag
-      ? `<span class="captain__cell-flag" title="${escapeHtml(player.nationality || '')}">${flag}</span> ${escapeHtml(firstName(player.name))}`
+      ? `<span class="team__cell-flag" title="${escapeHtml(player.nationality || '')}">${flag}</span> ${escapeHtml(firstName(player.name))}`
       : escapeHtml(firstName(player.name));
 
     return `
       <div class="${cls.join(' ')}">
-        <div class="captain__cell-avatar">${avatarInner}</div>
-        <div class="captain__cell-fname">${nameHTML}</div>
-        <div class="captain__cell-rating">${escapeHtml(ratingStr(player.rating))}</div>
-        <div class="captain__cell-handside">
+        <div class="team__cell-avatar">${avatarInner}</div>
+        <div class="team__cell-fname">${nameHTML}</div>
+        <div class="team__cell-rating">${escapeHtml(ratingStr(player.rating))}</div>
+        <div class="team__cell-handside">
           <span>${escapeHtml(handLabel(player.hand))}</span>
           <span class="sep">·</span>
           <span>${escapeHtml(sideLabel(player.side))}</span>
@@ -590,29 +590,29 @@
   function renderPool() {
     const players = visiblePool();
     // Sort chip active states
-    $sortGroup.querySelectorAll('.captain__chip').forEach(b => {
+    $sortGroup.querySelectorAll('.team__chip').forEach(b => {
       b.classList.toggle('is-active-sort', b.dataset.sort === state.sort);
     });
     // Filter chip active states
-    $filterGroup.querySelectorAll('.captain__chip').forEach(b => {
+    $filterGroup.querySelectorAll('.team__chip').forEach(b => {
       const f = b.dataset.filter, v = b.dataset.value;
       b.classList.toggle('is-active-filter', state.filters[f] === v);
     });
 
     if (players.length === 0) {
-      $poolList.innerHTML = `<div class="captain__pool-empty">No available players</div>`;
+      $poolList.innerHTML = `<div class="team__pool-empty">No available players</div>`;
       return;
     }
 
     // Mark top 3 (by current sort) with accent border.
     const html = players.map((p, idx) => {
       const isTop = state.sort === 'rating-desc' && idx < 3;
-      const rowCls = ['captain__player-row'];
+      const rowCls = ['team__player-row'];
       if (isTop) rowCls.push('is-top');
 
-      const photoCls = ['captain__player-photo'];
-      if (p.gender === 'F') photoCls.push('captain__player-photo--female');
-      else if (p.gender === 'M') photoCls.push('captain__player-photo--male');
+      const photoCls = ['team__player-photo'];
+      if (p.gender === 'F') photoCls.push('team__player-photo--female');
+      else if (p.gender === 'M') photoCls.push('team__player-photo--male');
       if (!p.avatar) photoCls.push('no-photo');
 
       const fallback = initials(p.name);
@@ -621,22 +621,22 @@
         : escapeHtml(fallback);
 
       const genderTag =
-        p.gender === 'F' ? `<div class="captain__row-tag captain__row-tag--gender-f">F</div>` :
-        p.gender === 'M' ? `<div class="captain__row-tag captain__row-tag--gender-m">M</div>` :
-                           `<div class="captain__row-tag">—</div>`;
+        p.gender === 'F' ? `<div class="team__row-tag team__row-tag--gender-f">F</div>` :
+        p.gender === 'M' ? `<div class="team__row-tag team__row-tag--gender-m">M</div>` :
+                           `<div class="team__row-tag">—</div>`;
 
       const flag = flagEmoji(countryCodeFor(p.nationality));
 
       return `
         <div class="${rowCls.join(' ')}" role="listitem">
           <div class="${photoCls.join(' ')}">${photoInner}</div>
-          <span class="captain__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
-          <div class="captain__player-name">${escapeHtml(p.name)}</div>
-          <span class="captain__row-prefs">${prefsHTML(p)}</span>
+          <span class="team__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
+          <div class="team__player-name">${escapeHtml(p.name)}</div>
+          <span class="team__row-prefs">${prefsHTML(p)}</span>
           ${genderTag}
-          <div class="captain__row-tag">${escapeHtml(handLabel(p.hand))}</div>
-          <div class="captain__row-tag">${escapeHtml(sideLabel(p.side))}</div>
-          <div class="captain__player-rating">${escapeHtml(ratingStr(p.rating))}</div>
+          <div class="team__player-rating">${escapeHtml(ratingStr(p.rating))}</div>
+          <div class="team__row-tag">${escapeHtml(handLabel(p.hand))}</div>
+          <div class="team__row-tag">${escapeHtml(sideLabel(p.side))}</div>
         </div>
       `;
     }).join('');
@@ -824,7 +824,7 @@
 
     // Param validation
     if (!COMMUNITY_SLUG) {
-      showError('Missing ?community=<community-id>. Bookmark e.g. captain.html?community=coco-padel (team view) or captain.html?community=coco-padel&pool (pool view).');
+      showError('Missing ?community=<community-id>. Bookmark e.g. team.html?community=coco-padel (team view) or team.html?community=coco-padel&pool (pool view).');
       return;
     }
 
