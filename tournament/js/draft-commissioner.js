@@ -678,23 +678,31 @@ function renderControls() {
   const el = document.getElementById('commissioner-controls');
   if (!state.draft) { el.innerHTML = ''; return; }
   const s = state.draft.status;
-  let html = '';
+
+  // Left side — primary, status-dependent action(s)
+  let left = '';
   if (s === 'pending') {
-    html += `<button class="btn btn--primary" id="ctrl-start">START DRAFT</button>`;
-    html += `<span class="loading">Pre-draft preview — pool is read-only until you start.</span>`;
+    left += `<button class="btn btn--primary" id="ctrl-start">START DRAFT</button>`;
+    left += `<span class="loading">Pre-draft preview — pool is read-only until you start.</span>`;
   } else if (s === 'active') {
-    html += `<button class="btn" id="ctrl-pause">PAUSE TIMER</button>`;
-    html += `<button class="btn btn--danger" id="ctrl-complete">FORCE COMPLETE</button>`;
+    left += `<button class="btn" id="ctrl-pause">PAUSE TIMER</button>`;
+    left += `<span class="loading">Timer running — submit picks in the pool.</span>`;
   } else if (s === 'paused') {
-    html += `<button class="btn btn--primary" id="ctrl-resume">RESUME</button>`;
-    html += `<button class="btn btn--danger" id="ctrl-complete">FORCE COMPLETE</button>`;
+    left += `<button class="btn btn--primary" id="ctrl-resume">RESUME</button>`;
+    left += `<span class="loading">Paused — click Resume to continue.</span>`;
   } else if (s === 'complete') {
-    html += `<span class="state__team-name">✓ DRAFT COMPLETE</span>`;
-    html += `<button class="btn btn--primary" id="ctrl-writeback">WRITE BACK TO SHEETS</button>`;
+    left += `<span class="state__team-name">✓ DRAFT COMPLETE</span>`;
+    left += `<button class="btn btn--primary" id="ctrl-writeback">WRITE BACK TO SHEETS</button>`;
   }
-  // Reset always available (with confirmation) — useful between demo runs.
-  html += `<button class="btn btn--danger" id="ctrl-reset" style="margin-left:auto">RESET DRAFT</button>`;
-  el.innerHTML = html;
+
+  // Right side — danger group: Force Complete (only while active/paused) + Reset (always)
+  let right = `<span class="controls__warning" title="These actions cannot be undone">⚠️ Cannot be undone</span>`;
+  if (s === 'active' || s === 'paused') {
+    right += `<button class="btn btn--danger" id="ctrl-complete">⚠️ FORCE COMPLETE</button>`;
+  }
+  right += `<button class="btn btn--danger" id="ctrl-reset">⚠️ RESET DRAFT</button>`;
+
+  el.innerHTML = `<div class="controls__left">${left}</div><div class="controls__right">${right}</div>`;
   bindCtrl('ctrl-start', startDraft);
   bindCtrl('ctrl-pause', () => DraftSupabase.setPaused(state.draft.id, true).then(loadDraftState));
   bindCtrl('ctrl-resume', () => DraftSupabase.setPaused(state.draft.id, false).then(loadDraftState));
