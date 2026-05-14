@@ -404,10 +404,17 @@ html, body {
 }
 .head-left a.tname:hover { text-decoration: underline; }
 
+/* Fixed square box for every team logo. New logo artwork has wildly
+   different aspect ratios (Sabai Sabai is tall portrait, Deuce/Wall
+   Whackers are wide landscape). object-fit: contain + flex centering
+   makes them all sit at the same size + vertical position. */
 .team-logo {
-  width: clamp(48px, 3.5vw, 64px); aspect-ratio: 1;
+  width: clamp(48px, 3.5vw, 64px);
+  height: clamp(48px, 3.5vw, 64px);
   background: transparent;
-  display: grid; place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
   font-size: clamp(18px, 1.4vw, 24px);
@@ -416,7 +423,14 @@ html, body {
   flex-shrink: 0;
   overflow: hidden;
 }
-.team-logo img { width: 100%; height: 100%; object-fit: contain; }
+.team-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
 
 .team-card.live .team-logo {
   /* No background or border on the logo itself — ON CLOCK state is signaled by
