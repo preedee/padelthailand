@@ -72,6 +72,7 @@
   const $search = document.getElementById('team-search');
   const $sortGroup = document.getElementById('team-sort-group');
   const $filterGroup = document.getElementById('team-filter-group');
+  const $prefsGroup = document.getElementById('team-prefs-group');
 
   // -------- State --------
   const state = {
@@ -84,7 +85,8 @@
     picksHash: '',       // signature of the picks list used to skip no-op rerenders
     search: '',
     sort: 'rating-desc',
-    filters: { gender: null, hand: null, side: null, prefs: null },
+    // gender/hand/side are single-value; prefs is a multi-select array of community ids.
+    filters: { gender: null, hand: null, side: null, prefs: [] },
   };
 
   // Live resources we need to tear down on pagehide / visibility change.
@@ -226,6 +228,28 @@
       const ct = (c.name || '').toLowerCase().split(/\s+/);
       return tokens.some(t => ct.some(x => x.includes(t) || t.includes(x)));
     }) || null;
+  }
+
+  // Build the PREFERS filter row — one chip per community (logo + short name).
+  // Multi-select. The captain's own community is marked with an accent ring.
+  function renderPrefsFilterRow() {
+    if (!$prefsGroup) return;
+    const mine = getCommunity();
+    $prefsGroup.innerHTML = state.communities.map(c => {
+      const isMine = mine && c.id === mine.id;
+      const cls = ['team__chip', 'team__prefs-chip'];
+      if (isMine) cls.push('team__prefs-chip--mine');
+      const logo = c.logoPath
+        ? `<img class="team__prefs-chip-logo" src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml((c.name || '?').charAt(0).toUpperCase())}">`
+        : `<span class="team__prefs-chip-logo">${escapeHtml((c.name || '?').charAt(0).toUpperCase())}</span>`;
+      // Full name — "Padel & Brew" vs "Padel Pa?" only differ past the first
+      // word, so first-word abbreviation collides. The row scrolls if needed.
+      const label = c.name || c.id;
+      return `<button class="${cls.join(' ')}" data-pref-id="${escapeHtml(c.id)}" title="${escapeHtml(label)}">
+        ${logo}<span class="team__prefs-chip-name">${escapeHtml(label)}</span>
+      </button>`;
+    }).join('');
+    attachImgFallbacks($prefsGroup);
   }
 
   // Render up to 3 small community logos for the player's preferences.
@@ -426,16 +450,14 @@
       const target = state.filters.side;
       list = list.filter(p => p.side === target || p.side === 'B');
     }
-    if (state.filters.prefs === 'mine') {
-      // Show only players who listed THIS captain's community among their
+    if (state.filters.prefs.length) {
+      // Show players who listed ANY of the selected communities among their
       // up-to-3 preferred teams (Registrations "Community 1st/2nd/3rd").
-      const mine = getCommunity();
-      if (mine) {
-        list = list.filter(p => (p.prefs || []).some(prefName => {
-          const c = findCommunityByName(prefName);
-          return c && c.id === mine.id;
-        }));
-      }
+      const wanted = new Set(state.filters.prefs);
+      list = list.filter(p => (p.prefs || []).some(prefName => {
+        const c = findCommunityByName(prefName);
+        return c && wanted.has(c.id);
+      }));
     }
     if (state.sort === 'rating-desc') {
       list = list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
@@ -485,16 +507,9 @@
   }
 
   function renderTournamentLogo() {
-    // We don't have a tournament logo URL in Communities. Use the community
-    // logo of the captain's own team as a stand-in, OR fall back to text.
-    const c = getCommunity();
-    const url = c && c.logoPath;
-    if (url) {
-      $tournamentLogo.innerHTML = `<img src="${escapeHtml(url)}" alt="" data-fallback="${escapeHtml(teamInitials(c.name))}">`;
-      attachImgFallbacks($tournamentLogo);
-    } else {
-      $tournamentLogo.innerHTML = `<span class="ph">${c ? escapeHtml(teamInitials(c.name)) : 'LOGO'}</span>`;
-    }
+    // Header-right mark is the tournament logo (Bangkok Community Cup) — same
+    // on every draft page for visual consistency, not the captain's community.
+    $tournamentLogo.innerHTML = `<img src="assets/cc-logo.png" alt="Bangkok Community Cup">`;
   }
 
   function pillHTML(currentView) {
@@ -609,6 +624,12 @@
       const f = b.dataset.filter, v = b.dataset.value;
       b.classList.toggle('is-active-filter', state.filters[f] === v);
     });
+    // Prefs chip active states (multi-select)
+    if ($prefsGroup) {
+      $prefsGroup.querySelectorAll('[data-pref-id]').forEach(b => {
+        b.classList.toggle('is-active-filter', state.filters.prefs.includes(b.dataset.prefId));
+      });
+    }
 
     if (players.length === 0) {
       $poolList.innerHTML = `<div class="team__pool-empty">No available players</div>`;
@@ -690,6 +711,17 @@
     renderPool();
   }
 
+  function onPrefsClick(e) {
+    const t = e.target.closest('[data-pref-id]');
+    if (!t) return;
+    const id = t.dataset.prefId;
+    const arr = state.filters.prefs;
+    const idx = arr.indexOf(id);
+    if (idx >= 0) arr.splice(idx, 1);   // toggle off
+    else arr.push(id);                  // toggle on (multi-select)
+    renderPool();
+  }
+
   function onSearchInput(e) {
     state.search = e.target.value;
     renderPool();
@@ -702,6 +734,7 @@
     $app.addEventListener('click', onPillClick);
     $sortGroup.addEventListener('click', onSortClick);
     $filterGroup.addEventListener('click', onFilterClick);
+    if ($prefsGroup) $prefsGroup.addEventListener('click', onPrefsClick);
     $search.addEventListener('input', onSearchInput);
 
     // Online/offline plumbed to the RECONNECTING banner.
@@ -868,6 +901,8 @@
       showError(`Unknown community "${COMMUNITY_SLUG}". Known: ${ids || '(none loaded)'}.`);
       return;
     }
+
+    renderPrefsFilterRow();   // communities are loaded — build the PREFERS chips
 
     try {
       await loadDraftData();

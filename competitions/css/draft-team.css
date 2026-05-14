@@ -104,7 +104,9 @@ input  { font: inherit; color: inherit; }
 }
 .team__tournament-logo img {
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 3px;
+  box-sizing: border-box;
 }
 .team__tournament-logo .ph {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -260,11 +262,42 @@ input  { font: inherit; color: inherit; }
   background: var(--male);
   color: var(--dark-bg);
 }
-/* "Prefers us" filter — highlight in brand accent; sits first in the row */
-.team__chip--prefs { color: var(--dark-accent); }
-.team__chip--prefs.is-active-filter {
+/* PREFERS filter row — one chip per community (logo + short name), multi-select */
+.team__prefs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 3px;
+}
+.team__prefs-chip-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 18px;
+}
+.team__prefs-chip-name {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+/* The captain's own community — accent ring so they spot it instantly */
+.team__prefs-chip--mine {
+  box-shadow: inset 0 0 0 1px var(--dark-accent);
+}
+.team__prefs-chip.is-active-filter {
   background: var(--dark-accent);
   color: var(--dark-bg);
+}
+.team__prefs-chip.is-active-filter .team__prefs-chip-logo {
+  border-color: var(--dark-bg);
 }
 
 .team__row-prefs {
