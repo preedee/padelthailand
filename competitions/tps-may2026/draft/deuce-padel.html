@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
   <link rel="stylesheet" href="css/styles.css?v=1">
-  <link rel="stylesheet" href="css/draft-team.css?v=8">
+  <link rel="stylesheet" href="css/draft-team.css?v=9">
   <!-- Community is derived from the URL path segment by draft-team.js. -->
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
@@ -73,7 +73,6 @@
     <div class="team__filter-row">
       <span class="team__filter-label">FILTER</span>
       <div class="team__chip-group" id="team-filter-group" role="group" aria-label="Filters">
-        <button class="team__chip team__chip--prefs" data-filter="prefs" data-value="mine">★ Prefers us</button>
         <button class="team__chip team__chip--female" data-filter="gender" data-value="F">♀ F</button>
         <button class="team__chip team__chip--male"   data-filter="gender" data-value="M">♂ M</button>
         <button class="team__chip" data-filter="hand" data-value="L">L 🫲</button>
@@ -81,6 +80,10 @@
         <button class="team__chip" data-filter="side" data-value="L">L ⬅️</button>
         <button class="team__chip" data-filter="side" data-value="R">➡️ R</button>
       </div>
+    </div>
+    <div class="team__filter-row">
+      <span class="team__filter-label">PREFERS</span>
+      <div class="team__chip-group" id="team-prefs-group" role="group" aria-label="Filter by preferred community"></div>
     </div>
 
     <div class="team__pool-list" id="team-pool-list" role="list" aria-live="polite">
@@ -120,7 +123,7 @@
 <script defer src="js/draft-config.js?v=1"></script>
 <script defer src="js/draft-utils.js?v=1"></script>
 <script defer src="js/draft-supabase.js?v=2"></script>
-<script defer src="js/draft-team.js?v=8"></script>
+<script defer src="js/draft-team.js?v=9"></script>
 
 </body>
 </html>
