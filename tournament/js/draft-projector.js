@@ -234,6 +234,53 @@
     }
   }
 
+  // The Users tab is the system-wide directory (~14k rows, ~2.7MB). We only
+  // want it as a fallback for drafted players who aren't in Registrations
+  // (commissioner picked a TPS user directly). Lazy + cached + single-flight.
+  let _usersPromise = null;
+  function fetchUsersFromSheet() {
+    if (_usersPromise) return _usersPromise;
+    _usersPromise = (async () => {
+      try {
+        const rows = await fetchTabRows('Users');
+        return rows
+          .filter(r => (r['id'] || '').trim())
+          .map(r => ({
+            communityId: '',
+            playerId:    (r['id'] || '').trim(),
+            name:        (r['full_name'] || '').trim(),
+            gender:      normalizeGender(r['gender']),
+            isCaptain:   false,
+            avatar:      (r['avatar'] && r['avatar'] !== 'null') ? r['avatar'] : '',
+            level:       parseRating(r['level']),
+            nationality: (r['country'] || '').trim(),
+          }));
+      } catch (err) {
+        console.warn('[projector] Users tab fetch failed:', err);
+        return [];
+      }
+    })();
+    return _usersPromise;
+  }
+
+  // After the initial render, if any pick's player_id wasn't resolved by
+  // Registrations + Teams and Players, fall back to Users and merge those
+  // records in. Triggers one rerender on success.
+  async function maybeResolveMissingPicksFromUsers() {
+    const known = new Set(state.players.map(p => p.playerId));
+    const missing = state.picks
+      .filter(p => !p.is_undone && !known.has(p.player_id))
+      .map(p => p.player_id);
+    if (missing.length === 0) return false;
+    const users = await fetchUsersFromSheet();
+    if (!users.length) return false;
+    const wanted = new Set(missing);
+    const additions = users.filter(u => wanted.has(u.playerId));
+    if (!additions.length) return false;
+    state.players = state.players.concat(additions);
+    return true;
+  }
+
   // ──────────────────────────────────────────────────────────
   // 6. Audio chime — Web Audio API, single-fire per pick window
   // Lazily created on first user interaction (autoplay policy).
@@ -575,6 +622,10 @@
       console.warn('[projector] fetchPicks failed:', err);
     }
     renderAll();
+    // Fallback path: if a pick references a player not in Registrations
+    // (commissioner picked a TPS user directly), lazily fetch Users and
+    // rerender once those rows are merged in.
+    maybeResolveMissingPicksFromUsers().then(changed => { if (changed) renderAll(); });
 
     // Subscribe
     const draftChan = window.DraftSupabase.subscribeToDraft(draftRow.id, (newRow) => {
@@ -599,6 +650,7 @@
         }
       }
       renderAll();
+      maybeResolveMissingPicksFromUsers().then(changed => { if (changed) renderAll(); });
     });
 
     // ───── Polling fallback ─────
