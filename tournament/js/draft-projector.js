@@ -21,46 +21,8 @@
   const SLUG     = params.get('slug') || 'community-cup';
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
-  // ?qr=1 keeps the captain-phone QR codes visible after the draft starts
-  // (useful for late arrivals). ?qr=0 hides them entirely.
-  const FORCE_QR = params.get('qr');
   const N_TEAMS  = 8;
   const N_ROUNDS = 8;
-
-  // Captain phone URL — clean path style: append the community slug as a
-  // child segment of this page's URL.
-  //   /competitions/tps-may2026/draft-dashboard          (projector)
-  //   /competitions/tps-may2026/draft-dashboard/coco-padel   (captain — coco-padel)
-  // The deploy needs a rewrite that maps the slug path back to captain.html
-  // (or any URL where draft-captain.js runs); the JS reads the slug from
-  // either the last path segment or the legacy ?community= query.
-  function captainUrlFor(communitySlug) {
-    const origin = window.location.origin;
-    const path = window.location.pathname.replace(/\/+$/, '');
-    return `${origin}${path}/${encodeURIComponent(communitySlug)}`;
-  }
-
-  /** Render a QR for `text` as an SVG string. Empty string if qrcode-generator
-   *  failed to load (network-blocked CDN). Caller hides the badge in that case. */
-  function makeQrSvg(text) {
-    if (typeof qrcode !== 'function') return '';
-    try {
-      const qr = qrcode(0, 'M');
-      qr.addData(text);
-      qr.make();
-      return qr.createSvgTag({ scalable: true, margin: 0 });
-    } catch (_) {
-      return '';
-    }
-  }
-  function captainQrVisible() {
-    if (FORCE_QR === '0') return false;
-    if (FORCE_QR === '1') return true;
-    // Default: show pre-draft only — once the draft is active or complete the
-    // captains are already on their phones, no need to clutter the cards.
-    const d = state.draft;
-    return !d || d.status === 'pending';
-  }
 
   const log = (...a) => DEBUG && console.log('[projector]', ...a);
 
@@ -355,29 +317,6 @@
       </div>`;
   }
 
-  /** Render the 8-up captain-phone QR strip at the bottom of the projector.
-   *  Each cell: small QR + community name beneath. Hidden once draft starts. */
-  function renderCaptainQrStrip() {
-    const el = document.getElementById('captainQrStrip');
-    if (!el) return;
-    if (!captainQrVisible()) {
-      el.innerHTML = '';
-      el.hidden = true;
-      return;
-    }
-    el.hidden = false;
-    el.innerHTML = state.communities.slice(0, N_TEAMS).map(c => {
-      const url = captainUrlFor(c.id);
-      const svg = makeQrSvg(url);
-      if (!svg) return '';
-      return `<a class="captain-qr" href="${escapeHtml(url)}" target="_blank" rel="noopener"
-                 aria-label="Captain phone link for ${escapeHtml(c.name)}">
-        <div class="captain-qr__code">${svg}</div>
-        <div class="captain-qr__name">${escapeHtml(c.name || c.id)}</div>
-      </a>`;
-    }).join('');
-  }
-
   function renderMomentZone() {
     const liveId = currentTeamId();
     const nextId = nextTeamId();
@@ -422,7 +361,6 @@
   function renderAll() {
     renderMomentZone();
     renderTeamGrid();
-    renderCaptainQrStrip();
     // Clear just-picked latch so subsequent renders don't re-animate
     state.justPicked = null;
   }

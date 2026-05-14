@@ -53,7 +53,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr;
   padding: clamp(14px, 1.4vw, 28px) clamp(20px, 2.2vw, 44px);
   gap: clamp(8px, 0.8vw, 16px);
   position: relative;
@@ -491,66 +491,6 @@ html, body {
 .slot.filled .fname { color: var(--ink); }
 .slot.empty .avatar { display: none; }
 .slot.empty .fname  { display: none; }
-
-/* ==========================================================
-   Captain phone QR strip — single horizontal row at the bottom
-   of the projector. One cell per community, labeled with the
-   community name. Hidden by JS once the draft is active.
-   ========================================================== */
-.captain-qr-strip {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: clamp(6px, 0.6vw, 14px);
-  padding: clamp(6px, 0.6vw, 12px) 0 clamp(2px, 0.3vw, 6px);
-  align-items: end;
-  justify-items: center;
-}
-.captain-qr-strip[hidden] { display: none; }
-
-.captain-qr {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(4px, 0.35vw, 6px);
-  padding: clamp(4px, 0.4vw, 8px);
-  background: var(--ink);
-  border-radius: 4px;
-  text-decoration: none;
-  color: var(--bg-deep);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  animation: captain-qr-in 0.4s ease-out;
-  width: 100%;
-  max-width: clamp(96px, 9vw, 160px);
-}
-.captain-qr__code {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: var(--ink);
-  display: grid; place-items: center;
-}
-.captain-qr__code svg {
-  width: 100%; height: 100%;
-  display: block;
-  shape-rendering: crispEdges;
-}
-.captain-qr__name {
-  font-family: 'SuperBlue', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(10px, 0.85vw, 14px);
-  letter-spacing: 0.04em;
-  color: var(--bg-deep);
-  text-align: center;
-  line-height: 1.1;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 2px;
-}
-@keyframes captain-qr-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 /* Just-picked fade-in (~300ms) */
 .slot[data-just-picked="1"] .avatar,

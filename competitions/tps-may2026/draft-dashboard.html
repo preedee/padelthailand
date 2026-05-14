@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/draft-projector.css?v=3" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=4" />
 </head>
 <body>
 
@@ -81,9 +81,6 @@
     <div class="teams-grid" id="teamsGrid"><!-- populated by JS --></div>
   </section>
 
-  <!-- CAPTAIN PHONE QR STRIP (8-up, bottom of page) -->
-  <section class="captain-qr-strip" id="captainQrStrip" aria-label="Captain phone links" hidden><!-- populated by JS --></section>
-
 </main>
 
 <!-- ────── Scripts (order matters) ────── -->
@@ -97,9 +94,6 @@
     }
   })();
 </script>
-
-<!-- QR code generator (pre-draft captain phone links on team cards) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
 <!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -117,7 +111,7 @@
 <script src="js/data.js"></script>
 
 <!-- Projector controller -->
-<script src="js/draft-projector.js?v=3"></script>
+<script src="js/draft-projector.js?v=4"></script>
 
 </body>
 </html>
