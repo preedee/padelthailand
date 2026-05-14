@@ -95,11 +95,11 @@
 
   // Label lookup tables (replace ternary chains).
   const HAND_LABEL = { L: 'L 🫲', R: '🫱 R', B: 'LR' };
-  const SIDE_LABEL = { L: 'L', R: 'R', B: 'LR' };
+  const SIDE_LABEL = { L: '⬅️ L', R: 'R ➡️', B: '↔️ LR' };
 
   function handLabel(h) { return HAND_LABEL[h] || '—'; }
   function sideLabel(s) { return SIDE_LABEL[s] || '—'; }
-  function ratingStr(r) { return r != null ? r.toFixed(1) : '—'; }
+  function ratingStr(r) { return r != null ? `⭐ ${r.toFixed(1)}` : '—'; }
   function picksSignature(picks) {
     // Captures order + is_undone state so UPDATEs are detected even when length stays.
     return picks.map(p => `${p.id}:${p.is_undone ? 1 : 0}:${p.pick_number}:${p.player_id}:${p.team_id}`).join('|');

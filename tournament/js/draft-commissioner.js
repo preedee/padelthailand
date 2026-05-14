@@ -399,7 +399,7 @@ function renderPoolFilters() {
   el.innerHTML = `
     ${filterGroup('gender', [['F', '♀ F'], ['M', '♂ M']])}
     ${filterGroup('hand', [['L', 'L 🫲'], ['R', '🫱 R']])}
-    ${filterGroup('side', [['F', 'L'], ['B', 'R']])}
+    ${filterGroup('side', [['F', '⬅️ L'], ['B', 'R ➡️']])}
     <div class="pool__sort">
       ${sortChip('rating-desc', 'BY RATING')}
       ${sortChip('name-asc', 'BY NAME')}
@@ -485,15 +485,15 @@ function renderPool() {
 
 function poolRowHTML(p, isTopMatch) {
   const handLabel = p.hand === 'L' ? 'L 🫲' : p.hand === 'R' ? '🫱 R' : p.hand === 'B' ? 'LR' : '';
-  // Side: forehand→L (left court), backhand→R (right court), either→LR.
-  // Captains think in court positions, not stroke names.
-  const sideLabel = p.side === 'F' ? 'L' : p.side === 'B' ? 'R' : p.side === 'E' ? 'LR' : '';
+  // Side: court position with arrow + letter. Forehand=left court, backhand=right.
+  const sideLabel = p.side === 'F' ? '⬅️ L' : p.side === 'B' ? 'R ➡️' : p.side === 'E' ? '↔️ LR' : '';
+  const ratingLabel = p.level != null ? `⭐ ${p.level.toFixed(2)}` : '—';
   return `
     <div class="pool-row ${isTopMatch ? 'pool-row--top-match' : ''}" data-user-id="${p.userId}">
       ${avatarHTML(p, 36)}
       <span class="pool-row__name">${escapeHTML(p.name)}</span>
       <span class="pool-row__meta">
-        <span class="pool-row__cell">${p.level != null ? p.level.toFixed(2) : '—'}</span>
+        <span class="pool-row__cell">${ratingLabel}</span>
         <span class="pool-row__cell">${handLabel}</span>
         <span class="pool-row__cell">${sideLabel}</span>
       </span>
@@ -587,7 +587,8 @@ function openConfirmModal(player) {
   state.pendingPick = { player, community, pickNumber: state.draft.current_pick_number };
   const logoSrc = community.logoPath || '';
   const handLabel = player.hand === 'L' ? 'L 🫲' : player.hand === 'R' ? '🫱 R' : '';
-  const sideLabel = player.side === 'F' ? 'L' : player.side === 'B' ? 'R' : player.side === 'E' ? 'LR' : '';
+  const sideLabel = player.side === 'F' ? '⬅️ L' : player.side === 'B' ? 'R ➡️' : player.side === 'E' ? '↔️ LR' : '';
+  const ratingLabel = player.level != null ? `⭐ ${player.level.toFixed(2)}` : '—';
   const modalEl = document.getElementById('confirm-modal');
   const contentEl = document.getElementById('confirm-modal-content');
   contentEl.innerHTML = `
@@ -596,7 +597,7 @@ function openConfirmModal(player) {
       <div class="confirm-modal__player">
         ${avatarHTML(player, 90)}
         <div class="confirm-modal__name">${escapeHTML(player.name)}</div>
-        <div class="confirm-modal__sub">Lvl ${player.level != null ? player.level.toFixed(2) : '—'} · ${handLabel} · ${sideLabel}</div>
+        <div class="confirm-modal__sub">${ratingLabel} · ${handLabel} · ${sideLabel}</div>
       </div>
       <div class="confirm-modal__arrow">→</div>
       <div class="confirm-modal__team">
