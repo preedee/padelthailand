@@ -717,12 +717,23 @@
   // ============================================================
 
   async function loadSheetData() {
-    const [commRows, playerRows, regRows] = await Promise.all([
+    const [commRows, playerRows, regRows, userRows] = await Promise.all([
       fetchTabRows('Communities'),
       fetchTabRows('Teams and Players'),
       fetchTabRows('Registrations'),
+      // Users tab holds avatar URLs keyed by user id. Non-fatal if it fails —
+      // avatars just fall back to initials.
+      fetchTabRows('Users').catch(() => []),
     ]);
     state.communities = parseCommunities(commRows);
+
+    // userId → avatar URL (mirrors the commissioner's parseAvatarsByUserId).
+    const avatarById = {};
+    for (const r of userRows) {
+      const id = String(r['id'] || '').trim();
+      const url = String(r['avatar'] || '').trim();
+      if (id && url && url !== 'null' && url !== '#N/A') avatarById[id] = url;
+    }
 
     // Merge two sources by TPS User ID:
     //  • Teams and Players gives us captains (richer record — has avatar + Is Captain flag)
@@ -742,6 +753,11 @@
       if (!p.tpsId || seen.has(p.tpsId)) continue;
       seen.add(p.tpsId);
       merged.push(p);
+    }
+    // Backfill avatars for anyone without one — registration players especially,
+    // since Registrations doesn't carry an avatar column.
+    for (const p of merged) {
+      if (!p.avatar && avatarById[p.tpsId]) p.avatar = avatarById[p.tpsId];
     }
     state.players = merged;
 
