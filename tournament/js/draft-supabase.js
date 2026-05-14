@@ -238,11 +238,31 @@
     return updateDraft(draftId, { status: 'complete', completed_at: new Date().toISOString() });
   }
 
+  // Reset the draft to a fresh `pending` state: delete all picks, clear timer,
+  // wipe team_seed_order. Subscribed clients (projector + captain phones) see
+  // the empty state via Realtime within ~500ms.
+  async function resetDraft(draftId) {
+    const c = client();
+    const { error: delErr } = await c.from('draft_picks').delete().eq('draft_id', draftId);
+    if (delErr) throw delErr;
+    const reset = await updateDraft(draftId, {
+      status: 'pending',
+      current_pick_number: 1,
+      timer_started_at: null,
+      is_timer_paused: false,
+      team_seed_order: [],
+      started_at: null,
+      completed_at: null,
+    });
+    _clearPauseStart(draftId);
+    return reset;
+  }
+
   root.DraftSupabase = {
     init, client,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
     insertPick, undoPick, updateDraft,
-    startDraft, advancePick, setPaused, pauseForUndo, completeDraft,
+    startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

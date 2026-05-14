@@ -692,12 +692,15 @@ function renderControls() {
     html += `<span class="state__team-name">✓ DRAFT COMPLETE</span>`;
     html += `<button class="btn btn--primary" id="ctrl-writeback">WRITE BACK TO SHEETS</button>`;
   }
+  // Reset always available (with confirmation) — useful between demo runs.
+  html += `<button class="btn btn--danger" id="ctrl-reset" style="margin-left:auto">RESET DRAFT</button>`;
   el.innerHTML = html;
   bindCtrl('ctrl-start', startDraft);
   bindCtrl('ctrl-pause', () => DraftSupabase.setPaused(state.draft.id, true).then(loadDraftState));
   bindCtrl('ctrl-resume', () => DraftSupabase.setPaused(state.draft.id, false).then(loadDraftState));
   bindCtrl('ctrl-complete', forceComplete);
   bindCtrl('ctrl-writeback', writeBackToSheets);
+  bindCtrl('ctrl-reset', resetDraft);
 }
 
 function bindCtrl(id, fn) {
@@ -749,6 +752,22 @@ async function forceComplete() {
 
 function writeBackToSheets() {
   showToast('Write-back is not implemented yet — see docs/draft-architecture.md §4c', 'error');
+}
+
+async function resetDraft() {
+  const pickCount = state.picks.filter(p => !p.is_undone).length;
+  const msg = pickCount > 0
+    ? `Reset the draft? This will DELETE ${pickCount} pick(s) and rewind to "pending". Cannot be undone.`
+    : 'Reset the draft to "pending"? (No picks to delete.)';
+  if (!confirm(msg)) return;
+  try {
+    await DraftSupabase.resetDraft(state.draft.id);
+    await loadDraftState();
+    showToast('Draft reset to pending');
+  } catch (err) {
+    console.error('resetDraft failed:', err);
+    showToast(`Reset failed: ${err.message || err}`, 'error');
+  }
 }
 
 // ── REALTIME SUBSCRIPTIONS ────────────────────────────────────────
