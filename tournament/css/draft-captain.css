@@ -243,6 +243,16 @@ input  { font: inherit; color: inherit; }
   color: var(--dark-bg);
   font-weight: 700;
 }
+.captain__chip--female { color: var(--female); }
+.captain__chip--male   { color: var(--male); }
+.captain__chip--female.is-active-filter {
+  background: var(--female);
+  color: var(--dark-bg);
+}
+.captain__chip--male.is-active-filter {
+  background: var(--male);
+  color: var(--dark-bg);
+}
 
 .captain__pool-list {
   padding: 0 14px 14px;

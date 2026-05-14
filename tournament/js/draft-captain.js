@@ -76,8 +76,8 @@
   };
 
   // Label lookup tables (replace ternary chains).
-  const HAND_LABEL = { L: '✋L', R: '✋R', B: '✋B' };
-  const SIDE_LABEL = { L: '←L', R: '→R', B: '↔B' };
+  const HAND_LABEL = { L: 'L 🫲', R: '🫱 R', B: 'LR' };
+  const SIDE_LABEL = { L: 'L', R: 'R', B: 'LR' };
 
   function handLabel(h) { return HAND_LABEL[h] || '—'; }
   function sideLabel(s) { return SIDE_LABEL[s] || '—'; }
@@ -110,13 +110,16 @@
     return '';
   }
 
-  /** "forehand" (right side) → "R", "backhand" → "L", "both_sides" → "B". */
+  /** Court-side preference. Forehand → "L" (left/deuce court, where a
+   *  right-handed player's forehand naturally lands). Backhand → "R".
+   *  both_sides/either → "B". Check "both"/"either" FIRST so "both_sides"
+   *  doesn't slip into the 'b' prefix as backhand. */
   function normalizeSide(s) {
     const v = String(s || '').trim().toLowerCase();
     if (!v) return '';
-    if (v === 'r' || v === 'right' || v === 'forehand') return 'R';
-    if (v === 'l' || v === 'left'  || v === 'backhand')  return 'L';
-    if (v === 'b' || v === 'both'  || v === 'both_sides' || v === 'either') return 'B';
+    if (v === 'b' || v.includes('both')  || v.includes('either')) return 'B';
+    if (v === 'l' || v === 'left'  || v === 'forehand') return 'L';
+    if (v === 'r' || v === 'right' || v === 'backhand') return 'R';
     return '';
   }
 
