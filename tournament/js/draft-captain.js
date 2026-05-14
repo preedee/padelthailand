@@ -94,8 +94,9 @@
   };
 
   // Label lookup tables (replace ternary chains).
-  const HAND_LABEL = { L: 'L 🫲', R: '🫱 R', B: 'LR' };
-  const SIDE_LABEL = { L: '⬅️ L', R: 'R ➡️', B: '↔️ LR' };
+  // Letter-flanks-icon convention: position of the letter mirrors the court side.
+  const HAND_LABEL = { L: 'L 🫲', R: '🫱 R', B: 'L 🤲 R' };
+  const SIDE_LABEL = { L: 'L ⬅️', R: '➡️ R', B: 'L ↔️ R' };
 
   function handLabel(h) { return HAND_LABEL[h] || '—'; }
   function sideLabel(s) { return SIDE_LABEL[s] || '—'; }

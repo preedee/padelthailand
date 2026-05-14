@@ -460,23 +460,23 @@ html, body {
 /* ── CONTROLS ───────────────────────────────────────────────────── */
 
 .commissioner__controls {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  padding: 14px 20px;
+  padding: 14px 24px;
   background: var(--dark-surface);
   border-top: 1px solid var(--dark-border);
   flex: 0 0 auto;
+  box-sizing: border-box;
 }
 
 .controls__left {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  overflow: hidden;
 }
 
 .controls__right {
@@ -484,7 +484,7 @@ html, body {
   align-items: center;
   gap: 10px;
   flex: 0 0 auto;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .controls__hint {

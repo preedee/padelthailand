@@ -338,16 +338,6 @@
       </div>`;
     }
 
-    const showQR = captainQrVisible();
-    const captainUrl = captainUrlFor(community.id);
-    const qrSvg = showQR ? makeQrSvg(captainUrl) : '';
-    const qrHtml = showQR && qrSvg
-      ? `<a class="captain-qr" href="${escapeHtml(captainUrl)}" target="_blank" rel="noopener" aria-label="Captain phone link for ${escapeHtml(community.name)}">
-          <div class="captain-qr__code">${qrSvg}</div>
-          <div class="captain-qr__label">CAPTAIN&nbsp;LINK</div>
-        </a>`
-      : '';
-
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <div class="team-head">
@@ -362,8 +352,30 @@
             ${M.map(p => slotHtml(p, 'M')).join('')}
           </div>
         </div>
-        ${qrHtml}
       </div>`;
+  }
+
+  /** Render the 8-up captain-phone QR strip at the bottom of the projector.
+   *  Each cell: small QR + community name beneath. Hidden once draft starts. */
+  function renderCaptainQrStrip() {
+    const el = document.getElementById('captainQrStrip');
+    if (!el) return;
+    if (!captainQrVisible()) {
+      el.innerHTML = '';
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.innerHTML = state.communities.slice(0, N_TEAMS).map(c => {
+      const url = captainUrlFor(c.id);
+      const svg = makeQrSvg(url);
+      if (!svg) return '';
+      return `<a class="captain-qr" href="${escapeHtml(url)}" target="_blank" rel="noopener"
+                 aria-label="Captain phone link for ${escapeHtml(c.name)}">
+        <div class="captain-qr__code">${svg}</div>
+        <div class="captain-qr__name">${escapeHtml(c.name || c.id)}</div>
+      </a>`;
+    }).join('');
   }
 
   function renderMomentZone() {
@@ -410,6 +422,7 @@
   function renderAll() {
     renderMomentZone();
     renderTeamGrid();
+    renderCaptainQrStrip();
     // Clear just-picked latch so subsequent renders don't re-animate
     state.justPicked = null;
   }

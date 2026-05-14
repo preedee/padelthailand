@@ -399,7 +399,7 @@ function renderPoolFilters() {
   el.innerHTML = `
     ${filterGroup('gender', [['F', '♀ F'], ['M', '♂ M']])}
     ${filterGroup('hand', [['L', 'L 🫲'], ['R', '🫱 R']])}
-    ${filterGroup('side', [['F', '⬅️ L'], ['B', 'R ➡️']])}
+    ${filterGroup('side', [['F', 'L ⬅️'], ['B', '➡️ R']])}
     <div class="pool__sort">
       ${sortChip('rating-desc', 'BY RATING')}
       ${sortChip('name-asc', 'BY NAME')}
@@ -484,9 +484,9 @@ function renderPool() {
 }
 
 function poolRowHTML(p, isTopMatch) {
-  const handLabel = p.hand === 'L' ? 'L 🫲' : p.hand === 'R' ? '🫱 R' : p.hand === 'B' ? 'LR' : '';
-  // Side: court position with arrow + letter. Forehand=left court, backhand=right.
-  const sideLabel = p.side === 'F' ? '⬅️ L' : p.side === 'B' ? 'R ➡️' : p.side === 'E' ? '↔️ LR' : '';
+  // Letter-flanks-icon convention: position of the letter mirrors the court side.
+  const handLabel = p.hand === 'L' ? 'L 🫲' : p.hand === 'R' ? '🫱 R' : p.hand === 'B' ? 'L 🤲 R' : '';
+  const sideLabel = p.side === 'F' ? 'L ⬅️' : p.side === 'B' ? '➡️ R' : p.side === 'E' ? 'L ↔️ R' : '';
   const ratingLabel = p.level != null ? `⭐ ${p.level.toFixed(2)}` : '—';
   return `
     <div class="pool-row ${isTopMatch ? 'pool-row--top-match' : ''}" data-user-id="${p.userId}">
@@ -586,8 +586,8 @@ function openConfirmModal(player) {
 
   state.pendingPick = { player, community, pickNumber: state.draft.current_pick_number };
   const logoSrc = community.logoPath || '';
-  const handLabel = player.hand === 'L' ? 'L 🫲' : player.hand === 'R' ? '🫱 R' : '';
-  const sideLabel = player.side === 'F' ? '⬅️ L' : player.side === 'B' ? 'R ➡️' : player.side === 'E' ? '↔️ LR' : '';
+  const handLabel = player.hand === 'L' ? 'L 🫲' : player.hand === 'R' ? '🫱 R' : player.hand === 'B' ? 'L 🤲 R' : '';
+  const sideLabel = player.side === 'F' ? 'L ⬅️' : player.side === 'B' ? '➡️ R' : player.side === 'E' ? 'L ↔️ R' : '';
   const ratingLabel = player.level != null ? `⭐ ${player.level.toFixed(2)}` : '—';
   const modalEl = document.getElementById('confirm-modal');
   const contentEl = document.getElementById('confirm-modal-content');
