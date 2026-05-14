@@ -256,6 +256,48 @@ function normalizeHandSide(v) {
   return '';
 }
 
+// Country name → ISO 3166-1 alpha-2 code. Covers the registrations seen
+// in Community Cup; missing names fall back to no flag.
+const COUNTRY_CODE = {
+  'thailand': 'TH', 'th': 'TH',
+  'brazil': 'BR', 'br': 'BR',
+  'spain': 'ES', 'es': 'ES',
+  'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB', 'scotland': 'GB',
+  'turkey': 'TR', 'tr': 'TR',
+  'russia': 'RU', 'ru': 'RU',
+  'italy': 'IT', 'it': 'IT',
+  'united states': 'US', 'usa': 'US', 'us': 'US',
+  'france': 'FR', 'fr': 'FR',
+  'germany': 'DE', 'de': 'DE',
+  'india': 'IN', 'in': 'IN',
+  'japan': 'JP', 'jp': 'JP',
+  'china': 'CN', 'cn': 'CN',
+  'korea': 'KR', 'south korea': 'KR', 'kr': 'KR',
+  'argentina': 'AR', 'mexico': 'MX', 'chile': 'CL', 'colombia': 'CO', 'peru': 'PE',
+  'australia': 'AU', 'canada': 'CA', 'new zealand': 'NZ',
+  'netherlands': 'NL', 'belgium': 'BE', 'switzerland': 'CH', 'austria': 'AT',
+  'sweden': 'SE', 'norway': 'NO', 'denmark': 'DK', 'finland': 'FI',
+  'portugal': 'PT', 'poland': 'PL', 'czech republic': 'CZ', 'czechia': 'CZ',
+  'singapore': 'SG', 'malaysia': 'MY', 'indonesia': 'ID', 'philippines': 'PH',
+  'vietnam': 'VN', 'hong kong': 'HK', 'taiwan': 'TW',
+  'south africa': 'ZA', 'ireland': 'IE', 'greece': 'GR', 'israel': 'IL',
+  'uae': 'AE', 'united arab emirates': 'AE', 'saudi arabia': 'SA',
+  'ukraine': 'UA', 'romania': 'RO', 'hungary': 'HU', 'serbia': 'RS', 'croatia': 'HR',
+};
+
+function countryCodeFor(name) {
+  if (!name) return '';
+  const key = String(name).trim().toLowerCase();
+  return COUNTRY_CODE[key] || (key.length === 2 ? key.toUpperCase() : '');
+}
+
+// 2-letter ISO code → flag emoji via regional indicator symbols.
+function flagEmoji(code) {
+  if (!code || code.length !== 2) return '';
+  const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
+  return String.fromCodePoint(...cp);
+}
+
 // Side: forehand → F, backhand → B, both_sides/either → E.
 // Check "both" / "either" FIRST — otherwise "both_sides" matches the 'b'
 // prefix and returns B (backhand) by mistake.
@@ -491,6 +533,7 @@ function poolRowHTML(p, isTopMatch) {
   return `
     <div class="pool-row ${isTopMatch ? 'pool-row--top-match' : ''}" data-user-id="${p.userId}">
       ${avatarHTML(p, 36)}
+      <span class="pool-row__flag" title="${escapeHTML(p.nationality || '')}">${flagEmoji(countryCodeFor(p.nationality))}</span>
       <span class="pool-row__name">${escapeHTML(p.name)}</span>
       <span class="pool-row__meta">
         <span class="pool-row__cell">${ratingLabel}</span>

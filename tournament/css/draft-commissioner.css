@@ -323,6 +323,16 @@ html, body {
   font-weight: 600;
 }
 
+.pool-row__flag {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+  width: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .pool-row__name {
   flex: 1 1 auto;
   font-size: 15px;

@@ -389,17 +389,20 @@ html, body {
 }
 .head-left { text-align: left; min-width: 0; overflow: hidden; }
 .head-left .tname {
+  display: block;
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
   font-size: clamp(13px, 1vw, 18px);
   letter-spacing: 0.06em;
   line-height: 1.1;
   color: var(--ink);
+  text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.head-left a.tname:hover { text-decoration: underline; }
 
 .team-logo {
   width: clamp(48px, 3.5vw, 64px); aspect-ratio: 1;
@@ -474,6 +477,14 @@ html, body {
   box-shadow: 0 0 0 2px var(--accent) !important;
 }
 .slot.captain .fname { color: var(--accent); font-weight: 700; }
+
+.slot .flag {
+  font-size: clamp(11px, 0.9vw, 16px);
+  line-height: 1;
+  margin-top: 2px;
+  text-align: center;
+}
+.slot.empty .flag { display: none; }
 
 .slot .fname {
   font-size: clamp(9px, 0.7vw, 12px);

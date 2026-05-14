@@ -90,6 +90,46 @@
   }
 
   // ──────────────────────────────────────────────────────────
+  // 5a. Nationality → flag emoji
+  // ──────────────────────────────────────────────────────────
+  const COUNTRY_CODE = {
+    'thailand':'TH','th':'TH',
+    'brazil':'BR','br':'BR',
+    'spain':'ES','es':'ES',
+    'united kingdom':'GB','uk':'GB','great britain':'GB','england':'GB','scotland':'GB',
+    'turkey':'TR','tr':'TR',
+    'russia':'RU','ru':'RU',
+    'italy':'IT','it':'IT',
+    'united states':'US','usa':'US','us':'US',
+    'france':'FR','fr':'FR',
+    'germany':'DE','de':'DE',
+    'india':'IN','in':'IN',
+    'japan':'JP','jp':'JP',
+    'china':'CN','cn':'CN',
+    'korea':'KR','south korea':'KR','kr':'KR',
+    'argentina':'AR','mexico':'MX','chile':'CL','colombia':'CO','peru':'PE',
+    'australia':'AU','canada':'CA','new zealand':'NZ',
+    'netherlands':'NL','belgium':'BE','switzerland':'CH','austria':'AT',
+    'sweden':'SE','norway':'NO','denmark':'DK','finland':'FI',
+    'portugal':'PT','poland':'PL','czech republic':'CZ','czechia':'CZ',
+    'singapore':'SG','malaysia':'MY','indonesia':'ID','philippines':'PH',
+    'vietnam':'VN','hong kong':'HK','taiwan':'TW',
+    'south africa':'ZA','ireland':'IE','greece':'GR','israel':'IL',
+    'uae':'AE','united arab emirates':'AE','saudi arabia':'SA',
+    'ukraine':'UA','romania':'RO','hungary':'HU','serbia':'RS','croatia':'HR',
+  };
+  function countryCodeFor(name) {
+    if (!name) return '';
+    const key = String(name).trim().toLowerCase();
+    return COUNTRY_CODE[key] || (key.length === 2 ? key.toUpperCase() : '');
+  }
+  function flagEmoji(code) {
+    if (!code || code.length !== 2) return '';
+    const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
+    return String.fromCodePoint(...cp);
+  }
+
+  // ──────────────────────────────────────────────────────────
   // 5. Mini CSV fetcher — Teams and Players tab
   // Data layer (js/data.js) only exposes player avatars today; we need
   // full roster (name, gender, captain flag). Self-contained to avoid
@@ -147,6 +187,7 @@
         isCaptain:   String(r['Is Captain'] || '').trim().toUpperCase() === 'Y',
         avatar:      (r['Avatar'] && r['Avatar'] !== 'null') ? r['Avatar'] : '',
         level:       parseRating(r['Level'] || r['Rating']),
+        nationality: (r['Nationality'] || '').trim(),
       })).filter(p => p.communityId);
     } catch (err) {
       console.warn('[projector] failed to fetch players from sheet:', err);
@@ -294,8 +335,13 @@
       const av = player.avatar
         ? `<img src="${escapeHtml(player.avatar)}" alt="${escapeHtml(player.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(player.name))}'}))">`
         : escapeHtml(initials(player.name));
+      const flag = flagEmoji(countryCodeFor(player.nationality));
+      const flagHtml = flag
+        ? `<div class="flag" title="${escapeHtml(player.nationality || '')}">${flag}</div>`
+        : '';
       return `<div class="${cls}"${justPicked ? ' data-just-picked="1"' : ''}>
         <div class="avatar">${av}</div>
+        ${flagHtml}
         <div class="fname">${escapeHtml(firstName(player.name))}</div>
       </div>`;
     }
@@ -303,7 +349,7 @@
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <div class="team-head">
-          <div class="head-left"><div class="tname">${escapeHtml(community.name || community.id)}</div></div>
+          <div class="head-left"><a class="tname" href="captain.html?community=${escapeHtml(community.id)}">${escapeHtml(community.name || community.id)}</a></div>
           <div class="team-logo">${logoHtml}</div>
         </div>
         <div class="roster10">
