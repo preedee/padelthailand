@@ -347,6 +347,11 @@ html, body {
 .team-card > .team-logo  { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
 .team-card > .roster10   { grid-column: 1 / -1; grid-row: 3; }
 
+/* Mobile-only adornments. Hidden on the broadcast/projector view; the
+   @media block below re-enables them with explicit grid placement. */
+.team-card > .team-card-summary,
+.team-card > .team-card-chevron { display: none; }
+
 .team-card.live {
   border-color: var(--accent);
   background: linear-gradient(135deg, rgba(255,183,3,0.14), rgba(255,183,3,0.02));
@@ -836,6 +841,28 @@ html, body {
   animation: pick-exit 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ── Undo variant ─────────────────────────────────────────────────────
+   Same skeleton as a pick reveal, but recolored red and the header stays
+   visible (it carries the "UNDONE" message instead of being replaced by
+   the LOCKED stamp). Triggered together with .is-revealed.
+*/
+.pick-overlay.is-undone .pick-overlay__header        { color: var(--danger); }
+.pick-overlay.is-undone.is-revealed .pick-overlay__header { opacity: 1; }   /* don't fade out */
+
+.pick-overlay.is-undone .pick-overlay__sub           { color: var(--danger); }
+.pick-overlay.is-undone .pick-overlay__arrow         { color: var(--danger); }
+.pick-overlay.is-undone.is-revealed .pick-overlay__arrow { color: var(--danger); }
+
+.pick-overlay.is-undone .pick-overlay__stamp {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* Red shine sweep instead of gold. */
+.pick-overlay.is-undone .pick-overlay__block::after {
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 84, 112, 0.45) 50%, transparent 60%);
+}
+
 /* ── Keyframes ──────────────────────────────────────────────────────── */
 @keyframes pick-backdrop-in {
   from { opacity: 0; }
@@ -903,4 +930,342 @@ html, body {
   *,
   *::before,
   *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
+}
+
+/* ============================================================
+   MOBILE / PORTRAIT (max-width: 900px)
+   The projector is designed for 1920x1080 broadcast. For remote viewers
+   on a phone, reflow into a single-column scrollable view: simplified
+   header, sticky moment block at the top, and a 1×8 list of compact
+   team cards (tap to expand the full roster). Desktop layout above is
+   untouched.
+   ============================================================ */
+@media (max-width: 900px) {
+  /* Shell — allow page-scroll, drop the 16:9 viewport lock */
+  html, body { overflow: auto; height: auto; }
+  body { min-height: 100%; }
+
+  .projector {
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    grid-template-rows: auto auto auto;
+    padding: 10px 12px 24px;
+    gap: 10px;
+    overflow: visible;
+  }
+  .projector::before { background-size: 32px 32px; }   /* tighter grid on small screens */
+
+  /* ============== HEADER — single row, drops the second logo ============== */
+  .top-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+  .header-left,
+  .header-center,
+  .header-right { display: flex; align-items: center; }
+  .header-left   { flex: 0 0 auto; }
+  .header-center { flex: 1 1 auto; justify-content: center; min-width: 0; }
+  .header-right  { flex: 0 0 auto; gap: 6px; }
+
+  .brand-logo      { height: 32px; }
+  .tournament-logo { display: none; }   /* save space on phone */
+  .tournament {
+    font-size: 13px;
+    letter-spacing: 0.10em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .live-pill {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    padding: 3px 7px;
+    height: 22px;
+  }
+  .live-pill .dot { width: 6px; height: 6px; }
+  .reconnect {
+    font-size: 9px;
+    padding: 3px 7px;
+    letter-spacing: 0.12em;
+  }
+
+  /* ============== MOMENT BLOCK — sticky, vertical stack ============== */
+  .moment-block {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Bleed left/right edge-to-edge so the sticky band feels intentional. */
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    /* Solid bg so cards scrolling underneath are occluded. */
+    background:
+      radial-gradient(ellipse at top, rgba(255,183,3,0.05) 0%, transparent 60%),
+      var(--bg-deep);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .moment {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px 4px 8px;
+    align-items: stretch;
+  }
+  .moment-cell { width: 100%; }
+  .converge-bar { height: 4px; }
+
+  /* NEXT — small chip row at top of the stack */
+  .next-cell {
+    order: 1;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 4px 0 6px;
+    opacity: 0.6;
+  }
+  .next-cell .nlogo {
+    width: 26px;
+    font-size: 12px;
+  }
+  .next-cell .label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    margin-bottom: 1px;
+  }
+  .next-cell .tname {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ON CLOCK — hero row */
+  .clock-cell {
+    order: 2;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .clock-cell .clogo {
+    width: 54px;
+    font-size: 22px;
+  }
+  .clock-cell .label {
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    margin-bottom: 2px;
+  }
+  .clock-cell .team-name {
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .clock-cell .pick-meta {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-top: 3px;
+  }
+
+  /* TIMER — full-width row beneath, big number on the right */
+  .timer-cell {
+    order: 3;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 4px 0 2px;
+    border-top: 1px dashed var(--line);
+  }
+  .timer-wrap {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .timer-num {
+    font-size: 40px;
+    line-height: 0.85;
+  }
+  .timer-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    margin-top: 0;
+  }
+
+  /* ============== TEAM GRID — 1 col × 8 rows, compact cards ============== */
+  .teams {
+    grid-template-rows: auto;
+    overflow: visible;
+  }
+  .teams-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 8px;
+  }
+
+  /* Reflow each card: logo | name+summary | chevron, with stats/roster
+     hidden until `.is-expanded` is added by the tap handler. */
+  .team-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 1px;
+    padding: 10px 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .team-card > .team-logo {
+    grid-column: 1; grid-row: 1 / span 2;
+    height: 44px; width: 44px;
+    aspect-ratio: 1;
+    max-width: none;
+    align-self: center;
+  }
+  .team-card > .tname {
+    grid-column: 2; grid-row: 1;
+    align-self: end;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+  .team-card > .team-card-summary {
+    display: block;
+    grid-column: 2; grid-row: 2;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+  }
+  .team-card > .team-card-summary .count {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .team-card > .team-card-summary .sep {
+    color: var(--ink-faint);
+    margin: 0 6px;
+  }
+  .team-card > .team-card-chevron {
+    display: block;
+    grid-column: 3; grid-row: 1 / span 2;
+    align-self: center;
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 200ms ease;
+    padding: 6px;       /* generous tap target */
+  }
+  .team-card.is-expanded > .team-card-chevron {
+    transform: rotate(90deg);
+    color: var(--ink);
+  }
+
+  /* Hide stats + roster by default on mobile; reveal when expanded. */
+  .team-card > .team-stats,
+  .team-card > .roster10 { display: none; }
+
+  .team-card.is-expanded > .team-stats {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 10px;
+  }
+  .team-card.is-expanded > .roster10 {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 6px;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+  }
+  .team-card.is-expanded .slot .avatar {
+    width: 36px;
+    font-size: 12px;
+  }
+  .team-card.is-expanded .slot .avatar .flag {
+    width: 12px; height: 9px;
+  }
+  .team-card.is-expanded .slot .fname {
+    font-size: 9px;
+    letter-spacing: 0.02em;
+  }
+  .team-card.is-expanded .team-stats .stat-label,
+  .team-card.is-expanded .team-stats .stat-val {
+    font-size: 11px;
+  }
+
+  /* The desktop status chips overlap the team-name on a compact card.
+     The sticky moment-block already shows ON CLOCK / NEXT — drop the
+     per-card badges and let the border glow carry the state. */
+  .team-card.live::before,
+  .team-card.next::after { content: none; }
+
+  /* ============== PICK OVERLAY — portrait stack ============== */
+  .pick-overlay__inner {
+    width: 100%;
+    max-height: 92vh;
+    gap: 18px;
+    padding: 14px 14px 18px;
+  }
+  .pick-overlay__header {
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  .pick-overlay__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .pick-overlay__block {
+    padding: 18px 14px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+  .pick-overlay__avatar,
+  .pick-overlay__logo-img,
+  .pick-overlay__logo-fallback {
+    width: 72px;
+    height: 72px;
+  }
+  .pick-overlay__logo-fallback { font-size: 32px; }
+  .pick-overlay__name {
+    font-size: 22px;
+    white-space: normal;       /* allow wrap on narrow screens */
+    line-height: 1.15;
+  }
+  .pick-overlay__stat,
+  .pick-overlay__sub { font-size: 12px; }
+  /* Rotate the arrow indicator from → to ↓ by hiding the inline glyph
+     and rendering a vertical one via ::before. Avoids fighting the
+     existing scaleX entry animation. */
+  .pick-overlay__arrow {
+    font-size: 0;
+    animation: none !important;
+    transform: none !important;
+    opacity: 1;
+    height: 28px;
+  }
+  .pick-overlay__arrow::before {
+    content: '↓';
+    display: block;
+    font-size: 32px;
+    line-height: 1;
+    color: inherit;
+  }
+  .pick-overlay.is-revealed .pick-overlay__arrow::before { color: var(--accent); }
+  .pick-overlay.is-undone   .pick-overlay__arrow::before,
+  .pick-overlay.is-undone.is-revealed .pick-overlay__arrow::before { color: var(--danger); }
+
+  .pick-overlay__stamp {
+    font-size: 13px;
+    padding: 5px 9px;
+    letter-spacing: 1.5px;
+  }
 }

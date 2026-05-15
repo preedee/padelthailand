@@ -62,7 +62,27 @@
     lastPickNumber: 0,   // detect pick-window transitions to reset chime latch
     pendingOverlay: null, // {playerId, teamId, …} while a confirm modal is open
     overlayPhase:   null, // 'suspense' | 'revealed' | 'exiting' | null
+    expandedTeams:  new Set(), // mobile only — which team cards are tap-expanded
   };
+
+  // Mobile-only tap-to-expand. The desktop projector ignores this listener
+  // because the media query that hides .roster10 only fires at <=900px wide,
+  // and we early-out on viewport width here too so .team-card stays purely
+  // informational on the broadcast display.
+  document.addEventListener('click', (e) => {
+    if (!window.matchMedia('(max-width: 900px)').matches) return;
+    if (e.target.closest('a')) return;  // let team-name link navigate
+    const card = e.target.closest('.team-card[data-team-id]');
+    if (!card) return;
+    const teamId = card.getAttribute('data-team-id');
+    if (state.expandedTeams.has(teamId)) {
+      state.expandedTeams.delete(teamId);
+      card.classList.remove('is-expanded');
+    } else {
+      state.expandedTeams.add(teamId);
+      card.classList.add('is-expanded');
+    }
+  });
 
   // ──────────────────────────────────────────────────────────
   // 4. Helpers — normalization
@@ -419,12 +439,29 @@
     }[ch]));
   }
 
+  // Mobile compact-card summary: pick count + most recent pick name. Reads
+  // straight from state.picks (already filtered to non-undone in the caller).
+  function summaryFor(teamId) {
+    const picks = (state.picks || [])
+      .filter(p => p.team_id === teamId && !p.is_undone)
+      .sort((a, b) => a.pick_number - b.pick_number);
+    const count = picks.length;
+    let lastName = '';
+    if (count) {
+      const last = picks[picks.length - 1];
+      const player = (state.players || []).find(p => p.playerId === last.player_id);
+      lastName = firstName((player && player.name) || last.player_id || '');
+    }
+    return { count, lastName };
+  }
+
   function renderTeamCard(community, isLive, isNext) {
     if (!community) {
       return `<div class="team-card"><div class="tname">—</div><div class="team-logo">?</div></div>`;
     }
     const isBackToBack = isLive && isNext;
-    const cls = ['team-card', isLive && 'live', isNext && 'next', isBackToBack && 'back-to-back'].filter(Boolean).join(' ');
+    const isExpanded = state.expandedTeams.has(community.id);
+    const cls = ['team-card', isLive && 'live', isNext && 'next', isBackToBack && 'back-to-back', isExpanded && 'is-expanded'].filter(Boolean).join(' ');
     const teamColor = community.color || '#6b7a99';
     const tInitials = initials(community.name || community.id);
     const logoHtml = community.logoPath
@@ -457,9 +494,20 @@
       </div>`;
     }
 
+    // Mobile-only compact summary + chevron. Hidden by CSS on desktop —
+    // .team-card-summary and .team-card-chevron only get grid cells inside
+    // the @media (max-width: 900px) block, so on the broadcast view they
+    // sit invisibly outside the visible grid area.
+    const { count: pickCount, lastName: lastPickName } = summaryFor(community.id);
+    const summaryHtml = pickCount
+      ? `<span class="count">${pickCount}/10</span><span class="sep">·</span>Last: ${escapeHtml(lastPickName) || '—'}`
+      : `<span class="count">0/10</span><span class="sep">·</span>No picks yet`;
+
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
         <a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a>
+        <div class="team-card-summary">${summaryHtml}</div>
+        <div class="team-card-chevron" aria-hidden="true">▸</div>
         <div class="team-stats">
           <div class="stat stat-female"><span class="stat-label" aria-label="Female">♀</span><span class="stat-val">${avgFemale}</span></div>
           <div class="stat stat-team"><span class="stat-label" aria-label="Team">⚥</span><span class="stat-val">${avgTeam}</span></div>
@@ -628,17 +676,96 @@
     if (!elPickOverlay || !state.overlayPhase) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
     state.overlayPhase = 'exiting';
-    elPickOverlay.classList.remove('is-suspense', 'is-revealed');
+    elPickOverlay.classList.remove('is-suspense', 'is-revealed', 'is-undone');
     elPickOverlay.classList.add('is-exiting');
     setTimeout(() => {
       elPickOverlay.hidden = true;
       elPickOverlay.setAttribute('aria-hidden', 'true');
-      elPickOverlay.classList.remove('is-exiting');
+      elPickOverlay.classList.remove('is-exiting', 'is-undone');
       elPickOverlay.innerHTML = '';
       state.pendingOverlay = null;
       state.overlayPhase   = null;
       log('overlay → hidden');
     }, 420);
+  }
+
+  // ── Undo overlay ────────────────────────────────────────────────────
+  // Mirrors the pick overlay but for the commissioner's UNDO action.
+  // No suspense phase — undo on the commissioner is instant — so we go
+  // straight to a "revealed" state with the .is-undone modifier (red
+  // theme, "UNDONE" labels) and auto-exit on the same hold timer.
+
+  function _undoOverlayHTML(p) {
+    const ratingTxt = p.rating != null ? ('⭐ ' + p.rating) : '—';
+    const hand = p.hand === 'L' ? 'L 🫲'
+               : p.hand === 'R' ? '🫱 R'
+               : p.hand === 'B' ? 'L 🤲 R' : '';
+    const side = p.side === 'F' ? 'L ⬅️'
+               : p.side === 'B' ? '➡️ R'
+               : p.side === 'E' ? 'L ↔️ R' : '';
+    const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
+    const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'
+                      : p.gender === 'M' ? 'pick-overlay__avatar--m' : '';
+    const avatarSrc = p.playerAvatar || '';
+    const avatar = avatarSrc
+      ? `<img class="pick-overlay__avatar ${genderClass}" src="${escapeHtml(avatarSrc)}" alt="">`
+      : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
+    const logo = p.teamLogo
+      ? `<img class="pick-overlay__logo-img" src="${escapeHtml(p.teamLogo)}" alt="">`
+      : `<div class="pick-overlay__logo-fallback">${escapeHtml(initials(p.teamName))}</div>`;
+    return `
+      <div class="pick-overlay__backdrop"></div>
+      <div class="pick-overlay__inner">
+        <div class="pick-overlay__header">PICK #${p.pickNumber} UNDONE</div>
+        <div class="pick-overlay__row">
+          <div class="pick-overlay__block pick-overlay__player">
+            ${avatar}
+            <div class="pick-overlay__name">${escapeHtml(p.playerName || '')}</div>
+            <div class="pick-overlay__stat">${escapeHtml(statBits)}</div>
+          </div>
+          <div class="pick-overlay__arrow">←</div>
+          <div class="pick-overlay__block pick-overlay__team">
+            ${logo}
+            <div class="pick-overlay__name">${escapeHtml(p.teamName || '')}</div>
+            <div class="pick-overlay__sub">Player returned to pool</div>
+          </div>
+          <div class="pick-overlay__stamp">PICK #${p.pickNumber} CANCELLED</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function _buildUndoPayload(pickRow) {
+    if (!pickRow || !pickRow.player_id || !pickRow.team_id) return null;
+    const community = (state.communities || []).find(c => c.id === pickRow.team_id) || {};
+    const player    = (state.players    || []).find(p => p.playerId === pickRow.player_id) || {};
+    return {
+      pickNumber:   pickRow.pick_number,
+      playerId:     pickRow.player_id,
+      playerName:   player.name || pickRow.player_id,
+      playerAvatar: player.avatar || '',
+      gender:       player.gender || '',
+      rating:       player.level || null,
+      hand:         player.hand || '',
+      side:         player.side || '',
+      teamId:       pickRow.team_id,
+      teamName:     community.name || pickRow.team_id,
+      teamLogo:     community.logoPath || '',
+    };
+  }
+
+  function showUndoOverlay(payload) {
+    if (!payload || !elPickOverlay) return;
+    if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    state.pendingOverlay = payload;
+    state.overlayPhase   = 'revealed';                 // skip suspense
+    elPickOverlay.innerHTML = _undoOverlayHTML(payload);
+    elPickOverlay.classList.remove('is-suspense', 'is-exiting');
+    elPickOverlay.classList.add('is-undone', 'is-revealed');
+    elPickOverlay.hidden = false;
+    elPickOverlay.setAttribute('aria-hidden', 'false');
+    log('overlay → undo revealed (pick #' + payload.pickNumber + ')');
+    _overlayHoldTimer = setTimeout(exitPickOverlay, OVERLAY_HOLD_MS);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -794,8 +921,15 @@
         // Could be an is_undone flip
         const idx = state.picks.findIndex(p => p.id === newRow.id);
         if (idx >= 0) {
-          if (newRow.is_undone) state.picks.splice(idx, 1);
-          else state.picks[idx] = newRow;
+          if (newRow.is_undone) {
+            // Pick was undone — fire the cancellation overlay before removing
+            // it from state so the rendered roster updates after the show.
+            const undoPayload = _buildUndoPayload(newRow);
+            state.picks.splice(idx, 1);
+            if (undoPayload) showUndoOverlay(undoPayload);
+          } else {
+            state.picks[idx] = newRow;
+          }
         } else if (!newRow.is_undone) {
           state.picks.push(newRow);
         }
@@ -830,9 +964,23 @@
         if (changed) {
           log('poll-fallback: reconciling state',
               { paused: d.is_timer_paused, status: d.status, pick: d.current_pick_number, picks: p.length });
+          // Detect picks that disappeared since last poll → they were undone.
+          // Fire the undo overlay for them, using the old state.picks entry to
+          // build the payload (fetchPicks filters is_undone=false, so the new
+          // poll result no longer has the row).
+          const newIds = new Set(p.map(x => x.id));
+          const undoneByPoll = (state.picks || []).filter(x => !newIds.has(x.id));
           state.draft = d;
           state.picks = p;
           renderAll();
+          // Fire overlays after state is updated so the team grid renders correctly
+          // behind the overlay. Only one overlay can show at a time; pick the
+          // most recent (highest pick_number) so multi-undo poll catches the latest.
+          if (undoneByPoll.length && state.overlayPhase == null) {
+            undoneByPoll.sort((a, b) => (b.pick_number || 0) - (a.pick_number || 0));
+            const payload = _buildUndoPayload(undoneByPoll[0]);
+            if (payload) showUndoOverlay(payload);
+          }
         }
       } catch (err) {
         // Network blip — show reconnecting and let next interval try again.
@@ -887,8 +1035,10 @@
       elTournamentName.textContent = tname.toUpperCase();
       document.title = tname + ' — Live Draft';
     }
-    // Left: TPS monogram from header_logo_left; Right: Community Cup mark from header_logo_right.
-    const leftLogo  = Data.getConfig('header_logo_left', '');
+    // Left: TPS monogram from draft_brand_logo (draft-specific override, falls
+    // back to the HTML literal when unset). Right: Community Cup mark from
+    // header_logo_right (shared with the main dashboard).
+    const leftLogo  = Data.getConfig('draft_brand_logo', '');
     const rightLogo = Data.getConfig('header_logo_right', '');
     if (leftLogo && !leftLogo.includes('example.com')) {
       elBrandLogo.src = leftLogo;
@@ -980,8 +1130,29 @@
           state.draft = { ...state.draft, current_pick_number: 1, timer_started_at: new Date().toISOString() };
           state.picks = [];
           renderAll();
+        } else if (e.key === 'u') {
+          _previewUndoOverlay();
         }
       });
+
+      // Auto-fire the undo preview if ?undoDemo=1 is set (used by headless screenshots).
+      if (params.get('undoDemo') === '1') {
+        setTimeout(_previewUndoOverlay, 800);
+      }
+
+      function _previewUndoOverlay() {
+        const last = state.picks[state.picks.length - 1];
+        if (last) {
+          showUndoOverlay(_buildUndoPayload(last));
+        } else {
+          showUndoOverlay({
+            pickNumber: 7, playerName: 'Methawee K.', playerAvatar: null,
+            rating: '3.20', hand: 'L', side: 'B', gender: 'F',
+            teamId: 'wall-whackers', teamName: 'Wall Whackers',
+            teamLogo: 'assets/communities/wall-whackers.png',
+          });
+        }
+      }
     }
   }
 

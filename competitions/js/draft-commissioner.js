@@ -686,7 +686,9 @@ function openConfirmModal(player) {
     DraftSupabase.broadcastPendingPick(state.draft.id, {
       playerId: player.userId,
       playerName: player.name,
-      playerAvatar: player.avatar || null,
+      // Registrations player rows don't carry an avatar field — pull it from
+      // the Users-tab map keyed by TPS User ID (state.avatarsByUserId).
+      playerAvatar: state.avatarsByUserId[player.userId] || null,
       rating: player.level != null ? player.level.toFixed(2) : null,
       hand: player.hand || null,
       side: player.side || null,
