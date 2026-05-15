@@ -630,19 +630,19 @@ html, body {
 
 .pick-overlay__inner {
   position: relative;
-  width: min(1600px, 92vw);
+  width: min(780px, 90vw);
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 56px;
+  gap: 28px;
 }
 
 .pick-overlay__header {
-  font-size: 32px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 4px;
+  letter-spacing: 1.5px;
   color: var(--ink-dim);
   text-align: center;
   opacity: 0;
@@ -660,32 +660,31 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 80px;
+  gap: 24px;
   width: 100%;
 }
 
 .pick-overlay__block {
   position: relative;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  padding: 48px;
+  gap: 10px;
+  padding: 20px;
   background: var(--bg-elev);
   border: 1px solid var(--line);
   border-radius: 12px;
-  min-width: 420px;
   overflow: hidden;
   opacity: 0;
 }
 
 .pick-overlay__player {
-  transform: translateX(-48px) scale(0.94);
+  transform: translateX(-20px) scale(0.94);
   animation: pick-block-in-left 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards;
 }
 .pick-overlay__team {
-  transform: translateX(48px) scale(0.94);
+  transform: translateX(20px) scale(0.94);
   animation: pick-block-in-right 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 600ms forwards;
 }
 
@@ -695,10 +694,10 @@ html, body {
   object-fit: cover;
 }
 .pick-overlay__avatar {
-  width: 220px;
-  height: 220px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  border: 6px solid var(--line-bright);
+  border: 3px solid var(--line-bright);
 }
 .pick-overlay__avatar--f { border-color: var(--female); --pick-ring: rgba(255, 133, 184, 0.35); }
 .pick-overlay__avatar--m { border-color: var(--male);   --pick-ring: rgba(94,  200, 255, 0.35); }
@@ -709,46 +708,46 @@ html, body {
 }
 
 .pick-overlay__logo-img {
-  width: 200px;
-  height: 200px;
-  border-radius: 24px;
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
   background: var(--bg-deep);
   border: 2px solid var(--line);
 }
 /* Letter fallback when no logo image is available. */
 .pick-overlay__logo-fallback {
-  width: 200px;
-  height: 200px;
-  border-radius: 24px;
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
   background: var(--bg-deep);
   border: 2px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 96px;
+  font-size: 40px;
   font-weight: 700;
   color: var(--ink);
 }
 
 .pick-overlay__name {
-  font-size: 96px;
+  font-size: 33px;
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.5px;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
   color: var(--ink);
   text-align: center;
 }
-.pick-overlay__team .pick-overlay__name { font-size: 64px; }
+.pick-overlay__team .pick-overlay__name { font-size: 33px; }
 
 .pick-overlay__stat {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 28px;
+  font-size: 14px;
   color: var(--ink-dim);
   text-align: center;
 }
 .pick-overlay__sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 24px;
+  font-size: 14px;
   color: var(--accent);
   text-align: center;
   letter-spacing: 1px;
@@ -756,12 +755,10 @@ html, body {
 
 .pick-overlay__arrow {
   flex: 0 0 auto;
-  width: 140px;
-  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 120px;
+  font-size: 64px;
   line-height: 1;
   color: var(--ink-dim);
   opacity: 0;
