@@ -47,6 +47,7 @@
   const elClockMeta      = $('clockMeta');
   const elTimerNum       = $('timerNum');
   const elTeamsGrid      = $('teamsGrid');
+  const elPickOverlay    = $('pickOverlay');
 
   // ──────────────────────────────────────────────────────────
   // 3. State
@@ -59,6 +60,8 @@
     justPicked:  null,   // {player_id, team_id} from last INSERT; cleared after render
     chimeFired:  false,  // latched once per pick window
     lastPickNumber: 0,   // detect pick-window transitions to reset chime latch
+    pendingOverlay: null, // {playerId, teamId, …} while a confirm modal is open
+    overlayPhase:   null, // 'suspense' | 'revealed' | 'exiting' | null
   };
 
   // ──────────────────────────────────────────────────────────
@@ -91,6 +94,15 @@
     const m = Math.floor(abs / 60);
     const s = Math.floor(abs % 60);
     return (neg ? '-' : '') + m + ':' + String(s).padStart(2, '0');
+  }
+  // Mean of the numeric `level` field across roster slots (player objects or
+  // nulls). Returns a 1-decimal string, or '—' when no slot has a level.
+  function averageLevel(slots) {
+    const levels = slots
+      .filter(p => p && typeof p.level === 'number' && !isNaN(p.level))
+      .map(p => p.level);
+    if (!levels.length) return '—';
+    return (levels.reduce((a, b) => a + b, 0) / levels.length).toFixed(1);
   }
 
   // Country name → ISO 3166-1 alpha-2 code. Mirrors the table on the
@@ -410,7 +422,7 @@
 
   function renderTeamCard(community, isLive, isNext) {
     if (!community) {
-      return `<div class="team-card"><div class="team-head"><div class="head-left"><div class="tname">—</div></div><div class="team-logo">?</div></div></div>`;
+      return `<div class="team-card"><div class="tname">—</div><div class="team-logo">?</div></div>`;
     }
     const cls = ['team-card', isLive && 'live', isNext && 'next'].filter(Boolean).join(' ');
     const teamColor = community.color || '#6b7a99';
@@ -422,6 +434,11 @@
     const teamHref = DRAFT_BASE
       ? `${DRAFT_BASE}/${escapeHtml(community.id)}`
       : `team.html?community=${escapeHtml(community.id)}`;
+
+    // Average levels — recomputed every render, so they track drafts live.
+    const avgTeam   = averageLevel(F.concat(M));
+    const avgFemale = averageLevel(F);
+    const avgMale   = averageLevel(M);
 
     function slotHtml(player, row) {
       if (!player) return `<div class="slot empty"></div>`;
@@ -435,18 +452,20 @@
         ? `<div class="flag" title="${escapeHtml(player.nationality || '')}">${flag}</div>`
         : '';
       return `<div class="${cls}"${justPicked ? ' data-just-picked="1"' : ''}>
-        <div class="avatar">${av}</div>
-        ${flagHtml}
+        <div class="avatar">${av}${flagHtml}</div>
         <div class="fname">${escapeHtml(firstName(player.name))}</div>
       </div>`;
     }
 
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
-        <div class="team-head">
-          <div class="head-left"><a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a></div>
-          <div class="team-logo">${logoHtml}</div>
+        <a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a>
+        <div class="team-stats">
+          <div class="stat stat-female"><span class="stat-label" aria-label="Female">♀</span><span class="stat-val">${avgFemale}</span></div>
+          <div class="stat stat-team"><span class="stat-label" aria-label="Team">⚥</span><span class="stat-val">${avgTeam}</span></div>
+          <div class="stat stat-male"><span class="stat-label" aria-label="Male">♂</span><span class="stat-val">${avgMale}</span></div>
         </div>
+        <div class="team-logo">${logoHtml}</div>
         <div class="roster10">
           <div class="row-female" style="display:contents">
             ${F.map(p => slotHtml(p, 'F')).join('')}
@@ -504,6 +523,108 @@
     renderTeamGrid();
     // Clear just-picked latch so subsequent renders don't re-animate
     state.justPicked = null;
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // 8b. Pick overlay — full-screen suspense + reveal
+  //
+  // The commissioner broadcasts `pending` the instant their confirm modal opens
+  // and `clear` if they cancel; the projector listens and runs this state
+  // machine. The authoritative reveal is driven by the existing draft_picks
+  // INSERT subscription — when a row arrives whose player matches the pending
+  // overlay, we swap from suspense to revealed, then auto-exit. This avoids
+  // any race between a broadcast event and the DB write.
+  // ──────────────────────────────────────────────────────────
+  const OVERLAY_HOLD_MS = 3300;  // stamp settles ~700ms + 2600ms hold
+  let _overlayHoldTimer = null;
+
+  function _overlayHTML(p) {
+    const ratingTxt = p.rating != null ? ('⭐ ' + p.rating) : '—';
+    const hand = p.hand === 'L' ? 'L 🫲'
+               : p.hand === 'R' ? '🫱 R'
+               : p.hand === 'B' ? 'L 🤲 R' : '';
+    const side = p.side === 'F' ? 'L ⬅️'
+               : p.side === 'B' ? '➡️ R'
+               : p.side === 'E' ? 'L ↔️ R' : '';
+    const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
+    const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'
+                      : p.gender === 'M' ? 'pick-overlay__avatar--m' : '';
+    const avatarSrc = p.playerAvatar || '';
+    const avatar = avatarSrc
+      ? `<img class="pick-overlay__avatar ${genderClass}" src="${escapeHtml(avatarSrc)}" alt="">`
+      : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
+    const logo = p.teamLogo
+      ? `<img class="pick-overlay__logo-img" src="${escapeHtml(p.teamLogo)}" alt="">`
+      : `<div class="pick-overlay__logo-fallback">${escapeHtml(initials(p.teamName))}</div>`;
+    return `
+      <div class="pick-overlay__backdrop"></div>
+      <div class="pick-overlay__inner">
+        <div class="pick-overlay__header" data-suspense-text="CONFIRM PICK #${p.pickNumber}" data-revealed-text="PICK #${p.pickNumber} LOCKED IN">CONFIRM PICK #${p.pickNumber}</div>
+        <div class="pick-overlay__row">
+          <div class="pick-overlay__block pick-overlay__player">
+            ${avatar}
+            <div class="pick-overlay__name">${escapeHtml(p.playerName || '')}</div>
+            <div class="pick-overlay__stat">${escapeHtml(statBits)}</div>
+          </div>
+          <div class="pick-overlay__arrow">→</div>
+          <div class="pick-overlay__block pick-overlay__team">
+            ${logo}
+            <div class="pick-overlay__name">${escapeHtml(p.teamName || '')}</div>
+            <div class="pick-overlay__sub">Pick #${p.pickNumber}${p.gender ? '  ·  ' + escapeHtml(p.gender) : ''}</div>
+          </div>
+          <div class="pick-overlay__stamp">PICK #${p.pickNumber} LOCKED</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function showPendingOverlay(payload) {
+    if (!payload || !elPickOverlay) return;
+    if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    state.pendingOverlay = payload;
+    state.overlayPhase   = 'suspense';
+    elPickOverlay.innerHTML = _overlayHTML(payload);
+    elPickOverlay.classList.remove('is-revealed', 'is-exiting');
+    elPickOverlay.classList.add('is-suspense');
+    elPickOverlay.hidden = false;
+    elPickOverlay.setAttribute('aria-hidden', 'false');
+    log('overlay → suspense');
+  }
+
+  function revealPickOverlay() {
+    if (!elPickOverlay || state.overlayPhase !== 'suspense') return;
+    state.overlayPhase = 'revealed';
+    const headerEl = elPickOverlay.querySelector('.pick-overlay__header');
+    if (headerEl && headerEl.dataset.revealedText) headerEl.textContent = headerEl.dataset.revealedText;
+    elPickOverlay.classList.remove('is-suspense');
+    elPickOverlay.classList.add('is-revealed');
+    log('overlay → revealed');
+    _overlayHoldTimer = setTimeout(exitPickOverlay, OVERLAY_HOLD_MS);
+  }
+
+  // Cancel path — the suspense moment is over without a reveal. If we're
+  // already in `revealed`, ignore (the auto-exit will handle it).
+  function clearPendingOverlay() {
+    if (!elPickOverlay) return;
+    if (state.overlayPhase === 'revealed' || state.overlayPhase === 'exiting') return;
+    exitPickOverlay();
+  }
+
+  function exitPickOverlay() {
+    if (!elPickOverlay || !state.overlayPhase) return;
+    if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    state.overlayPhase = 'exiting';
+    elPickOverlay.classList.remove('is-suspense', 'is-revealed');
+    elPickOverlay.classList.add('is-exiting');
+    setTimeout(() => {
+      elPickOverlay.hidden = true;
+      elPickOverlay.setAttribute('aria-hidden', 'true');
+      elPickOverlay.classList.remove('is-exiting');
+      elPickOverlay.innerHTML = '';
+      state.pendingOverlay = null;
+      state.overlayPhase   = null;
+      log('overlay → hidden');
+    }, 420);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -648,6 +769,13 @@
       if (eventType === 'INSERT' && !newRow.is_undone) {
         state.picks = state.picks.concat([newRow]);
         state.justPicked = { player_id: newRow.player_id, team_id: newRow.team_id };
+        // If the audience is watching a pending overlay for this pick, the
+        // INSERT IS the lock-in signal — swap suspense → reveal.
+        if (state.pendingOverlay
+            && state.overlayPhase === 'suspense'
+            && String(state.pendingOverlay.playerId) === String(newRow.player_id)) {
+          revealPickOverlay();
+        }
       } else if (eventType === 'UPDATE') {
         // Could be an is_undone flip
         const idx = state.picks.findIndex(p => p.id === newRow.id);
@@ -724,6 +852,15 @@
     // Browser online/offline as a coarse fallback
     window.addEventListener('offline', () => showReconnecting(true));
     window.addEventListener('online',  () => showReconnecting(false));
+
+    // Pending-pick broadcast — the commissioner's confirm modal mirrored here
+    // as a full-screen overlay. Reveal/exit is driven by the INSERT subscription
+    // above; this channel only handles the *start* of suspense and the *cancel*.
+    const pendingChan = window.DraftSupabase.subscribeToPendingPick(draftRow.id, {
+      onPending: (payload) => { log('pending', payload && payload.playerName); showPendingOverlay(payload); },
+      onClear:   ()         => { log('pending cleared'); clearPendingOverlay(); },
+    });
+    watchChannel(pendingChan);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -762,8 +899,8 @@
     ];
     const mockPlayers = [];
     mockCommunities.forEach((c, ci) => {
-      mockPlayers.push({ communityId: c.id, playerId: c.id+'-cap-f', name: 'Capt F'+(ci+1), gender:'F', isCaptain:true,  avatar:'' });
-      mockPlayers.push({ communityId: c.id, playerId: c.id+'-cap-m', name: 'Capt M'+(ci+1), gender:'M', isCaptain:true,  avatar:'' });
+      mockPlayers.push({ communityId: c.id, playerId: c.id+'-cap-f', name: 'Capt F'+(ci+1), gender:'F', isCaptain:true,  avatar:'', level: 3.5 + (ci % 3) * 0.5 });
+      mockPlayers.push({ communityId: c.id, playerId: c.id+'-cap-m', name: 'Capt M'+(ci+1), gender:'M', isCaptain:true,  avatar:'', level: 4.0 + (ci % 3) * 0.5 });
     });
     state.communities = mockCommunities;
     state.players     = mockPlayers;
@@ -786,12 +923,31 @@
       { id:'mp1', draft_id:'mock-draft', pick_number:1, team_id:'coco-padel',     player_id:'p-coco-1',  is_undone:false },
       { id:'mp2', draft_id:'mock-draft', pick_number:2, team_id:'deuce-padel',    player_id:'p-deuce-1', is_undone:false },
     ];
-    mockPlayers.push({ communityId:'coco-padel',  playerId:'p-coco-1',  name:'Aida T',  gender:'F', isCaptain:false, avatar:'' });
-    mockPlayers.push({ communityId:'deuce-padel', playerId:'p-deuce-1', name:'Boom K',  gender:'M', isCaptain:false, avatar:'' });
+    mockPlayers.push({ communityId:'coco-padel',  playerId:'p-coco-1',  name:'Aida T',  gender:'F', isCaptain:false, avatar:'', level: 4.25 });
+    mockPlayers.push({ communityId:'deuce-padel', playerId:'p-deuce-1', name:'Boom K',  gender:'M', isCaptain:false, avatar:'', level: 3.75 });
 
-    // Demo keyboard controls (debug): n = simulate next pick, r = reset
+    // Demo keyboard controls (debug):
+    //   n = simulate next pick
+    //   r = reset
+    //   p = trigger a mock pending → reveal overlay sequence (no Supabase needed)
     if (DEBUG) {
       window.addEventListener('keydown', (e) => {
+        if (e.key === 'p') {
+          const mockPick = state.draft ? state.draft.current_pick_number || 1 : 1;
+          showPendingOverlay({
+            playerId:    'debug-player',
+            playerName:  'Ferran Tadeo',
+            playerAvatar: null,
+            rating: '3.60', hand: 'R', side: 'E', gender: 'M',
+            teamId: 'social-rally', teamName: 'Social Rally',
+            teamLogo: 'assets/communities/social-rally.png',
+            pickNumber: mockPick,
+          });
+          // Auto-reveal after a short suspense so the whole sequence is visible
+          // without needing a fake pick INSERT.
+          setTimeout(revealPickOverlay, 2000);
+          return;
+        }
         if (e.key === 'n' && state.draft.current_pick_number < 64) {
           const nextNum = state.draft.current_pick_number + 1;
           state.picks.push({
@@ -801,7 +957,7 @@
           });
           mockPlayers.push({
             communityId: window.DraftUtils.teamForPick(state.draft.current_pick_number, state.draft.team_seed_order),
-            playerId:'p-sim-'+nextNum, name:'Sim '+nextNum, gender: (nextNum % 2 ? 'F' : 'M'), isCaptain:false, avatar:''
+            playerId:'p-sim-'+nextNum, name:'Sim '+nextNum, gender: (nextNum % 2 ? 'F' : 'M'), isCaptain:false, avatar:'', level: 3.0 + (nextNum % 5) * 0.5
           });
           state.justPicked = { player_id: 'p-sim-'+nextNum };
           state.draft = { ...state.draft, current_pick_number: nextNum, timer_started_at: new Date().toISOString() };

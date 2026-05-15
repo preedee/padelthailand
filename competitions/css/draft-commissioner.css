@@ -633,7 +633,7 @@ html, body {
   padding: 40px;
   width: 780px;
   max-width: 90vw;
-  animation: scale-in 0.25s ease-out;
+  animation: confirm-spring-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
@@ -642,9 +642,46 @@ html, body {
   to   { opacity: 1; }
 }
 
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
+/* Spring-in card: opacity + scale + small translateY rise. */
+@keyframes confirm-spring-in {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Per-block staggered reveals — overshoot spring on the side blocks,
+   quick scale-in on the arrow. transform/opacity only, no reflow. */
+@keyframes confirm-stagger-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+@keyframes confirm-stagger-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+@keyframes confirm-arrow-in {
+  from { opacity: 0; transform: scaleX(0.4); }
+  to   { opacity: 1; transform: scaleX(1);   }
+}
+
+/* Living arrow at rest — gentle horizontal nudge in sync with opacity. */
+@keyframes confirm-arrow-idle {
+  0%, 100% { transform: translateX(0);   opacity: 0.85; }
+  50%      { transform: translateX(6px); opacity: 1;    }
+}
+
+/* Avatar ring breathing glow — gender accent expands and fades.
+   The accent color is set per-instance via --ring-glow. */
+@keyframes confirm-ring-breathe {
+  from { box-shadow: 0 0 0 0 var(--ring-glow, transparent); }
+  to   { box-shadow: 0 0 14px 2px var(--ring-glow, transparent); }
+}
+
+/* Expanding-ring attention pulse on the primary button — a ring of accent
+   color expands outward and fades. No size change to the button itself. */
+@keyframes confirm-btn-attention {
+  0%   { box-shadow: 0 0 0 0   rgba(255, 183, 3, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(255, 183, 3, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(255, 183, 3, 0);    }
 }
 
 .confirm-modal__header {
@@ -674,16 +711,22 @@ html, body {
   text-align: center;
 }
 
+/* Staggered reveals — player from the left, team from the right. */
+.confirm-modal__player { animation: confirm-stagger-left  280ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both; }
+.confirm-modal__team   { animation: confirm-stagger-right 280ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both; }
+
 .confirm-modal__avatar {
   width: 90px;
   height: 90px;
   border-radius: 50%;
   border: 3px solid var(--silver);
   object-fit: cover;
+  /* Subtle breathing glow that follows the gender-accent ring color. */
+  animation: confirm-ring-breathe 2200ms ease-in-out infinite alternate;
 }
 
-.confirm-modal__avatar--f { border-color: var(--female); }
-.confirm-modal__avatar--m { border-color: var(--male); }
+.confirm-modal__avatar--f { border-color: var(--female); --ring-glow: rgba(255, 133, 184, 0.45); }
+.confirm-modal__avatar--m { border-color: var(--male);   --ring-glow: rgba(94,  200, 255, 0.45); }
 
 .confirm-modal__logo {
   width: 90px;
@@ -712,6 +755,12 @@ html, body {
   color: var(--dark-accent);
   flex: 0 0 auto;
   line-height: 1;
+  transform-origin: left center;
+  /* Entrance (one-shot) handed off into the idle loop. The loop runs forever
+     once the entrance delay is up. */
+  animation:
+    confirm-arrow-in   320ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both,
+    confirm-arrow-idle 1600ms ease-in-out 600ms infinite;
 }
 
 .confirm-modal__actions {
@@ -724,6 +773,48 @@ html, body {
   padding: 14px 32px;
   font-size: 14px;
   min-width: 160px;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 160ms ease,
+              border-color 160ms ease,
+              color 160ms ease;
+}
+
+/* CONFIRM PICK at rest — a softly expanding ring of dark-accent invites the
+   click without moving the button itself. */
+.confirm-modal__actions .btn--primary {
+  animation: confirm-btn-attention 2000ms ease-out 700ms infinite;
+}
+
+.confirm-modal__actions .btn--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 183, 3, 0.35);
+  animation-play-state: paused;
+}
+
+.confirm-modal__actions .btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+  transition-duration: 90ms;
+}
+
+/* Honor user motion preferences — collapse to a plain opacity fade and kill
+   every infinite loop. Static endings keep their final state. */
+@media (prefers-reduced-motion: reduce) {
+  .confirm-modal__content,
+  .confirm-modal__player,
+  .confirm-modal__team,
+  .confirm-modal__arrow {
+    animation: fade-in 180ms linear both !important;
+    transform: none !important;
+  }
+  .confirm-modal__avatar,
+  .confirm-modal__actions .btn--primary {
+    animation: none !important;
+  }
+  .confirm-modal__actions .btn--primary:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 /* ── TOAST ──────────────────────────────────────────────────────── */

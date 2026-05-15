@@ -11,7 +11,7 @@
      - PoolFilterBar  : gender/hand/side chips + sort + count
      - HistoryPanel   : reverse-chronological picks; UNDO on most recent only
      - ConfirmModal   : oversized commit dialog
-     - ControlsBar    : start/pause/resume/complete/writeback
+     - ControlsBar    : start/pause/resume/complete/reset
      - Timer          : 4 Hz tick → display update; no DB writes
      - Subscriptions  : Realtime drafts + draft_picks → state mutations
    ============================================ */
@@ -677,6 +677,23 @@ function openConfirmModal(player) {
   const handLabel = player.hand === 'L' ? 'L 🫲' : player.hand === 'R' ? '🫱 R' : player.hand === 'B' ? 'L 🤲 R' : '';
   const sideLabel = player.side === 'F' ? 'L ⬅️' : player.side === 'B' ? '➡️ R' : player.side === 'E' ? 'L ↔️ R' : '';
   const ratingLabel = player.level != null ? `⭐ ${player.level.toFixed(2)}` : '—';
+  // Mirror the suspense moment to the projector (fire-and-forget — the
+  // commissioner flow proceeds even if the broadcast fails).
+  try {
+    DraftSupabase.broadcastPendingPick(state.draft.id, {
+      playerId: player.userId,
+      playerName: player.name,
+      playerAvatar: player.avatar || null,
+      rating: player.level != null ? player.level.toFixed(2) : null,
+      hand: player.hand || null,
+      side: player.side || null,
+      gender: player.gender || null,
+      teamId: community.id,
+      teamName: community.name,
+      teamLogo: logoSrc || null,
+      pickNumber: state.pendingPick.pickNumber,
+    });
+  } catch (e) { console.warn('broadcastPendingPick failed:', e); }
   const modalEl = document.getElementById('confirm-modal');
   const contentEl = document.getElementById('confirm-modal-content');
   contentEl.innerHTML = `
@@ -707,7 +724,15 @@ function openConfirmModal(player) {
   setTimeout(() => document.getElementById('confirm-submit').focus(), 100);
 }
 
-function closeConfirmModal() {
+// `opts.skipBroadcast` is set when the close is part of a successful submit:
+// the pick INSERT itself will drive the projector reveal, so we must NOT tell
+// the projector to clear — that would race the reveal away.
+function closeConfirmModal(opts) {
+  const skipBroadcast = !!(opts && opts.skipBroadcast);
+  if (!skipBroadcast && state.pendingPick && state.draft) {
+    try { DraftSupabase.broadcastClearPending(state.draft.id); }
+    catch (e) { console.warn('broadcastClearPending failed:', e); }
+  }
   state.pendingPick = null;
   const modalEl = document.getElementById('confirm-modal');
   modalEl.classList.add('hidden');
@@ -717,7 +742,7 @@ function closeConfirmModal() {
 async function submitPendingPick() {
   if (!state.pendingPick) return;
   const { player, community, pickNumber } = state.pendingPick;
-  closeConfirmModal();
+  closeConfirmModal({ skipBroadcast: true });  // the INSERT drives the projector reveal
   try {
     await DraftSupabase.insertPick({
       draftId: state.draft.id,
@@ -781,7 +806,6 @@ function renderControls() {
     left += `<span class="controls__hint">Paused — click Resume to continue.</span>`;
   } else if (s === 'complete') {
     left += `<span class="state__team-name">✓ DRAFT COMPLETE</span>`;
-    left += `<button class="btn btn--primary" id="ctrl-writeback">WRITE BACK TO SHEETS</button>`;
   }
 
   // Right side — danger group: Force Complete (only while active/paused) + Reset (always)
@@ -796,7 +820,6 @@ function renderControls() {
   bindCtrl('ctrl-pause', () => DraftSupabase.setPaused(state.draft.id, true).then(loadDraftState));
   bindCtrl('ctrl-resume', () => DraftSupabase.setPaused(state.draft.id, false).then(loadDraftState));
   bindCtrl('ctrl-complete', forceComplete);
-  bindCtrl('ctrl-writeback', writeBackToSheets);
   bindCtrl('ctrl-reset', resetDraft);
 }
 
@@ -845,10 +868,6 @@ async function forceComplete() {
   } catch (err) {
     showToast(`Complete failed: ${err.message || err}`, 'error');
   }
-}
-
-function writeBackToSheets() {
-  showToast('Write-back is not implemented yet — see docs/draft-architecture.md §4c', 'error');
 }
 
 async function resetDraft() {

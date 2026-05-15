@@ -139,6 +139,38 @@
       .subscribe();
   }
 
+  // ── Pending-pick broadcast (ephemeral, no DB row) ──────────────────
+  // Commissioner sends a `pending` event the instant the confirm modal opens
+  // so the projector can mirror the suspense moment. A `clear` event covers
+  // both the cancel path and the moment the commissioner submits (the
+  // authoritative reveal is then driven by the draft_picks INSERT). One
+  // channel per draft, joined lazily on first send.
+  const _broadcastChannels = Object.create(null);
+  function _broadcastChannel(draftId) {
+    if (_broadcastChannels[draftId]) return _broadcastChannels[draftId];
+    const ch = client().channel(`pending_pick:${draftId}`).subscribe();
+    _broadcastChannels[draftId] = ch;
+    return ch;
+  }
+
+  function broadcastPendingPick(draftId, payload) {
+    return _broadcastChannel(draftId).send({ type: 'broadcast', event: 'pending', payload });
+  }
+
+  function broadcastClearPending(draftId) {
+    return _broadcastChannel(draftId).send({ type: 'broadcast', event: 'clear', payload: {} });
+  }
+
+  // Receiver. handlers = { onPending(payload), onClear() }.
+  function subscribeToPendingPick(draftId, handlers) {
+    const { onPending, onClear } = handlers || {};
+    return client()
+      .channel(`pending_pick:${draftId}`)
+      .on('broadcast', { event: 'pending' }, ({ payload }) => { if (onPending) onPending(payload); })
+      .on('broadcast', { event: 'clear'   }, ()             => { if (onClear)   onClear(); })
+      .subscribe();
+  }
+
   // ── Commissioner mutations (require service_role key) ─────────────
 
   // Insert a new pick. Server-side guards (per spec edge case #4):
@@ -307,6 +339,7 @@
     init, client, serverNow,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
+    broadcastPendingPick, broadcastClearPending, subscribeToPendingPick,
     insertPick, undoPick, updateDraft,
     startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
   };
