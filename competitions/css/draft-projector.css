@@ -351,10 +351,10 @@ html, body {
    @media block below re-enables them with explicit grid placement. */
 .team-card > .team-card-summary,
 .team-card > .team-card-chevron { display: none; }
-/* The 3×4 expanded-roster plaque (logo + team name in the center cells).
-   Hidden by default — the @media block re-enables it. */
+/* The 3×4 expanded-roster plaque (logo + stats in the two center cells).
+   Hidden by default on the broadcast view — the @media block re-enables them. */
 .roster10 > .roster-plaque-logo,
-.roster10 > .roster-plaque-text { display: none; }
+.roster10 > .roster-plaque-stats { display: none; }
 
 .team-card.live {
   border-color: var(--accent);
@@ -1121,7 +1121,7 @@ html, body {
     user-select: none;
   }
   .team-card > .team-logo {
-    grid-column: 1; grid-row: 1 / span 2;
+    grid-column: 1; grid-row: 1;
     height: 44px; width: 44px;
     aspect-ratio: 1;
     max-width: none;
@@ -1129,7 +1129,7 @@ html, body {
   }
   .team-card > .tname {
     grid-column: 2; grid-row: 1;
-    align-self: end;
+    align-self: center;          /* vertically centered alongside the logo */
     font-size: 14px;
     letter-spacing: 0.04em;
   }
@@ -1156,7 +1156,7 @@ html, body {
   }
   .team-card > .team-card-chevron {
     display: block;
-    grid-column: 3; grid-row: 1 / span 2;
+    grid-column: 3; grid-row: 1;
     align-self: center;
     color: var(--ink-faint);
     font-family: 'JetBrains Mono', monospace;
@@ -1177,31 +1177,36 @@ html, body {
   .team-card > .team-stats,
   .team-card > .roster10 { display: none; }
 
-  .team-card.is-expanded > .team-stats {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-row: 3;
-    margin-top: 10px;
-  }
-  /* Roster: 3 columns × 4 rows. The two inside cells (col 2, rows 2-3) hold
-     the team logo and team-name plaque; the 10 player slots auto-flow
-     around them in DOM order — F1..F5 then M1..M5:
-        [F1] [F2 ] [F3]      row 1
-        [F4] [LOGO] [F5]     row 2
-        [M1] [TEXT] [M2]     row 3
-        [M3] [M4 ] [M5]      row 4
-     Slots stay stacked (avatar over name) to fit the wider/squarer cells. */
+  /* The outer .team-stats (sibling of .roster10) used to render as a separate
+     row above the expanded roster. With the stats now living inside the
+     roster grid at cell (col 2, row 3), the outer one stays hidden. */
+  .team-card.is-expanded > .team-stats { display: none; }
+
+  /* Roster: 3 columns × 4 rows of uniform squares. The two inner cells
+     (col 2, rows 2-3) hold the team logo and the gender-averages plaque;
+     the 10 player slots auto-flow around them in DOM order:
+        [F1]   [F2   ]  [F3]    row 1
+        [F4]   [LOGO ]  [F5]    row 2
+        [M1]   [STATS]  [M2]    row 3
+        [M3]   [M4   ]  [M5]    row 4
+     `aspect-ratio: 1` on every grid item locks each cell to a perfect
+     square sized by the column width. Slots stay stacked (avatar over name). */
   .team-card.is-expanded > .roster10 {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 8px;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(4, auto);
+    grid-auto-rows: 1fr;
     gap: 6px;
   }
+  .team-card.is-expanded .slot,
+  .team-card.is-expanded .roster-plaque-logo,
+  .team-card.is-expanded .roster-plaque-stats {
+    aspect-ratio: 1;
+    min-height: 0;
+  }
   .team-card.is-expanded .slot {
-    min-height: 60px;
     padding: 4px 2px;
     gap: 4px;
   }
@@ -1217,15 +1222,14 @@ html, body {
     letter-spacing: 0.02em;
     max-width: 100%;
   }
-  /* Center plaque: logo cell + text cell. */
+  /* Center plaque: logo cell (row 2) + ratings cell (row 3). */
   .team-card.is-expanded .roster-plaque-logo {
     display: flex;
     grid-column: 2;
     grid-row: 2;
     align-items: center;
     justify-content: center;
-    min-height: 60px;
-    padding: 2px;
+    padding: 6px;
   }
   .team-card.is-expanded .roster-plaque-logo img {
     max-width: 100%;
@@ -1234,29 +1238,50 @@ html, body {
     height: auto;
     object-fit: contain;
   }
-  .team-card.is-expanded .roster-plaque-text {
+  /* Gender-averages plaque — three stacked rows (♀ / ⚥ / ♂) read vertically
+     inside the square cell. Mirrors the .stat-* colour scheme so the inner
+     plaque matches the desktop stats row. */
+  .team-card.is-expanded .roster-plaque-stats {
     display: flex;
+    flex-direction: column;
     grid-column: 2;
     grid-row: 3;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    min-height: 32px;
-    padding: 0 4px;
-    font-family: 'SuperBlue', Georgia, serif;
-    font-weight: 700;
+    gap: 3px;
+    padding: 4px 6px;
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    padding: 2px 4px;
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid var(--ink-faint);
+    min-width: 0;
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat-female { border-top-color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   { border-top-color: var(--male); }
+  .team-card.is-expanded .roster-plaque-stats .stat-label {
+    font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
     font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink);
-    text-align: center;
-    line-height: 1.1;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1;
+    color: var(--ink-faint);
   }
-  .team-card.is-expanded .team-stats .stat-label,
-  .team-card.is-expanded .team-stats .stat-val {
+  .team-card.is-expanded .roster-plaque-stats .stat-female .stat-label { color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-label { color: var(--male); }
+  .team-card.is-expanded .roster-plaque-stats .stat-team   .stat-label { color: var(--ink); }
+  .team-card.is-expanded .roster-plaque-stats .stat-val {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
   }
+  .team-card.is-expanded .roster-plaque-stats .stat-female .stat-val { color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-val { color: var(--male); }
 
   /* The desktop status chips overlap the team-name on a compact card.
      The sticky moment-block already shows ON CLOCK / NEXT — drop the
@@ -1325,4 +1350,72 @@ html, body {
     padding: 5px 9px;
     letter-spacing: 1.5px;
   }
+}
+
+/* ── START GATE ──────────────────────────────────────────────────────
+   Covers the projector until the first user click. Required by browser
+   autoplay policy so the audio chime at 0:00 can play. Doubles as a
+   visible "projector ready" check for the operator before doors open.
+*/
+#startGate {
+  position: fixed; inset: 0; z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(ellipse at top, rgba(255,183,3,0.06) 0%, transparent 55%),
+    var(--bg-deep);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#startGate.is-hidden { display: none; }
+.start-gate__inner {
+  text-align: center; padding: 60px 80px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line-bright);
+  border-radius: 18px;
+  box-shadow: 0 0 80px rgba(255,183,3,0.18);
+  max-width: 640px;
+}
+.start-gate__title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.4vw, 44px);
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.start-gate__sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.9vw, 15px);
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+}
+.start-gate__btn {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.8vw, 32px);
+  letter-spacing: 0.14em;
+  padding: 22px 56px;
+  background: var(--accent);
+  color: var(--bg-deep);
+  border: none; border-radius: 8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 0 rgba(255,183,3,0.6);
+}
+.start-gate__btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(255,183,3,0.45);
+}
+.start-gate__btn:active { transform: scale(0.99); }
+.start-gate__hint {
+  margin-top: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.7vw, 12px);
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+  line-height: 1.6;
 }

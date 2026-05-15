@@ -57,6 +57,8 @@
     picks:       [],     // Supabase draft_picks (non-undone)
     communities: [],     // Sheet — [{id,name,group,color,logoPath,captainM,captainF}]
     players:     [],     // Sheet — [{communityId,playerId,name,gender,isCaptain,avatar,level}]
+    avatarsByUserId: {}, // Users tab — userId → avatar URL (independent fallback when
+                         //              broadcast payload's playerAvatar is missing)
     justPicked:  null,   // {player_id, team_id} from last INSERT; cleared after render
     chimeFired:  false,  // latched once per pick window
     lastPickNumber: 0,   // detect pick-window transitions to reset chime latch
@@ -342,6 +344,30 @@
   window.addEventListener('keydown', unlockAudio);
   window.addEventListener('touchstart', unlockAudio);
 
+  // Start gate — the projector page sits behind a "click to start" overlay
+  // until the operator clicks. This satisfies the browser's autoplay policy
+  // so the 0:00 chime can play, and gives a visible "ready" check before
+  // doors open. Suppressed via ?nogate=1 for headless screenshots / dev.
+  (function () {
+    const gate = document.getElementById('startGate');
+    if (!gate) return;
+    if (params.get('nogate') === '1' || MOCK) {
+      gate.classList.add('is-hidden');
+      return;
+    }
+    const dismiss = () => {
+      unlockAudio();
+      gate.classList.add('is-hidden');
+      // Remove from DOM after the fade so subsequent overlays render cleanly.
+      setTimeout(() => gate.remove(), 200);
+    };
+    const btn = document.getElementById('startGateBtn');
+    if (btn) btn.addEventListener('click', dismiss);
+    // Also accept any click anywhere on the gate (large click target on a
+    // projector display where mouse precision is questionable).
+    gate.addEventListener('click', dismiss);
+  })();
+
   function playChime() {
     const ctx = ensureAudio();
     if (!ctx || ctx.state === 'suspended') return;
@@ -516,7 +542,11 @@
             ${M.map(p => slotHtml(p, 'M')).join('')}
           </div>
           <div class="roster-plaque-logo" aria-hidden="true">${logoHtml}</div>
-          <div class="roster-plaque-text">${escapeHtml(community.name || community.id)}</div>
+          <div class="roster-plaque-stats" aria-hidden="true">
+            <div class="stat stat-female"><span class="stat-label">♀</span><span class="stat-val">${avgFemale}</span></div>
+            <div class="stat stat-team"><span class="stat-label">⚥</span><span class="stat-val">${avgTeam}</span></div>
+            <div class="stat stat-male"><span class="stat-label">♂</span><span class="stat-val">${avgMale}</span></div>
+          </div>
         </div>
       </div>`;
   }
@@ -591,6 +621,20 @@
   const OVERLAY_HOLD_MS = 3300;  // stamp settles ~700ms + 2600ms hold
   let _overlayHoldTimer = null;
 
+  // Avatar resolution for overlay payloads. Order:
+  //   1. broadcast payload (commissioner-provided URL)
+  //   2. local avatarsByUserId map (Users-tab prefetch)
+  //   3. state.players[].avatar (Teams and Players sheet, captains only)
+  // Returns '' when no URL is known — caller renders the initials fallback.
+  function resolveAvatar(p) {
+    if (p && p.playerAvatar) return p.playerAvatar;
+    const id = p && p.playerId;
+    if (!id) return '';
+    if (state.avatarsByUserId && state.avatarsByUserId[id]) return state.avatarsByUserId[id];
+    const localPlayer = (state.players || []).find(pl => pl.playerId === id);
+    return (localPlayer && localPlayer.avatar) || '';
+  }
+
   function _overlayHTML(p) {
     const ratingTxt = p.rating != null ? ('⭐ ' + p.rating) : '—';
     const hand = p.hand === 'L' ? 'L 🫲'
@@ -602,7 +646,7 @@
     const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
     const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'
                       : p.gender === 'M' ? 'pick-overlay__avatar--m' : '';
-    const avatarSrc = p.playerAvatar || '';
+    const avatarSrc = resolveAvatar(p);
     const avatar = avatarSrc
       ? `<img class="pick-overlay__avatar ${genderClass}" src="${escapeHtml(avatarSrc)}" alt="">`
       : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
@@ -702,7 +746,7 @@
     const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
     const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'
                       : p.gender === 'M' ? 'pick-overlay__avatar--m' : '';
-    const avatarSrc = p.playerAvatar || '';
+    const avatarSrc = resolveAvatar(p);
     const avatar = avatarSrc
       ? `<img class="pick-overlay__avatar ${genderClass}" src="${escapeHtml(avatarSrc)}" alt="">`
       : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
@@ -1175,6 +1219,20 @@
     });
 
     const playersReady = fetchPlayersFromSheet().then(ps => { state.players = ps; });
+
+    // Eagerly fetch Users tab in parallel — gives the pick-confirm overlay a
+    // reliable avatar source even when the commissioner's broadcast payload
+    // doesn't include playerAvatar. Non-blocking: a slow Users fetch must NOT
+    // delay first paint. The lazy single-flight cache in fetchUsersFromSheet
+    // means maybeResolveMissingPicksFromUsers later reuses this result.
+    fetchUsersFromSheet().then(usersList => {
+      const map = {};
+      for (const u of usersList) {
+        if (u.playerId && u.avatar) map[u.playerId] = u.avatar;
+      }
+      state.avatarsByUserId = map;
+      log('avatarsByUserId loaded:', Object.keys(map).length, 'entries');
+    }).catch(err => console.warn('[projector] avatar prefetch failed:', err));
 
     await Promise.all([dataReady, playersReady]);
     log('Sheet data loaded:', state.communities.length, 'communities,', state.players.length, 'players');

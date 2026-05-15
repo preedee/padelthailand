@@ -173,6 +173,38 @@
 
   // ── Commissioner mutations (require service_role key) ─────────────
 
+  // ── Webhook event logging — best-effort forensic trail ─────────────
+  // If commissioner-config.local.js (or any other script) has set
+  // window.DRAFT_WEBHOOK_URL, every commissioner mutation fires a fire-and-
+  // forget POST to that URL with a small JSON envelope. Never blocks the
+  // mutation, never throws, 100ms timeout. Use it to pipe events to Slack /
+  // Discord / Logflare for a post-event log if anything goes weird.
+  function _logEvent(event, detail) {
+    try {
+      const url = (root && root.DRAFT_WEBHOOK_URL) || null;
+      if (!url) return;
+      const body = JSON.stringify({
+        ts:    new Date().toISOString(),
+        event,
+        ...detail,
+      });
+      // AbortController gives us a hard 100ms cap so a hanging webhook can't
+      // slow down the commissioner UI.
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 100);
+      fetch(url, {
+        method:  'POST',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+        signal:  ctrl.signal,
+        // No-cors so webhook receivers that don't return CORS headers
+        // (like Discord webhooks) still accept the post.
+        mode: 'no-cors',
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) { /* best-effort: never block, never throw */ }
+  }
+
   // Insert a new pick. Server-side guards (per spec edge case #4):
   //   - UNIQUE(draft_id, pick_number) catches out-of-order writes
   //   - UNIQUE(draft_id, player_id) WHERE is_undone=false catches duplicates
@@ -196,6 +228,7 @@
       .select()
       .single();
     if (error) throw error;
+    _logEvent('pick_undone', { pickId, pickNumber: data && data.pick_number, teamId: data && data.team_id, playerId: data && data.player_id });
     return data;
   }
 
@@ -219,7 +252,7 @@
       throw new Error('teamSeedOrder must be an array of 8 community slugs');
     }
     const now = new Date(serverNow()).toISOString();
-    return updateDraft(draftId, {
+    const result = await updateDraft(draftId, {
       status: 'active',
       team_seed_order: teamSeedOrder,
       current_pick_number: 1,
@@ -227,6 +260,8 @@
       is_timer_paused: false,
       started_at: now,
     });
+    _logEvent('draft_started', { draftId, teamSeedOrder });
+    return result;
   }
 
   // Convenience: advance to the next pick window (post-confirmation).
@@ -235,6 +270,31 @@
       current_pick_number: nextPickNumber,
       timer_started_at: new Date(serverNow()).toISOString(),
     });
+  }
+
+  // Atomic pick commit — calls the commit_pick RPC which inserts the pick AND
+  // advances current_pick_number (or completes on pick 64) in a single
+  // transaction with server-side order validation. Preferred over
+  // insertPick + advancePick from the client; those remain available for tooling.
+  //
+  // Server-raised exceptions surface as PostgrestError; check err.message:
+  //   - 'pick_out_of_order'    : client's pick_number didn't match server expected
+  //   - 'draft_not_active'     : draft is paused/complete/pending
+  //   - 'draft_not_found'      : bad draftId
+  //   - duplicate-key (23505)  : player already picked (rare race after frontend filter)
+  async function commitPick({ draftId, pickNumber, teamId, playerId }) {
+    const { data, error } = await client().rpc('commit_pick', {
+      p_draft_id:    draftId,
+      p_pick_number: pickNumber,
+      p_team_id:     teamId,
+      p_player_id:   playerId,
+    });
+    if (error) {
+      _logEvent('pick_failed', { pickNumber, teamId, playerId, error: error.message });
+      throw error;
+    }
+    _logEvent('pick_committed', { pickNumber, teamId, playerId });
+    return data;  // the inserted draft_picks row
   }
 
   // Pause / resume the timer.
@@ -267,8 +327,10 @@
   async function setPaused(draftId, paused) {
     if (paused) {
       _recordPauseStart(draftId, serverNow());
+      _logEvent('timer_paused', { draftId });
       return updateDraft(draftId, { is_timer_paused: true, status: 'paused' });
     }
+    _logEvent('timer_resumed', { draftId });
     // Resume — shift timer_started_at forward by the pause duration so the
     // visible remaining time continues from where it was when paused.
     const pausedAtMs = _readPauseStart(draftId);
@@ -312,6 +374,7 @@
 
   // Convenience: complete the draft (status → complete).
   async function completeDraft(draftId) {
+    _logEvent('draft_completed', { draftId });
     return updateDraft(draftId, { status: 'complete', completed_at: new Date().toISOString() });
   }
 
@@ -332,6 +395,7 @@
       completed_at: null,
     });
     _clearPauseStart(draftId);
+    _logEvent('draft_reset', { draftId });
     return reset;
   }
 
@@ -340,7 +404,7 @@
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
     broadcastPendingPick, broadcastClearPending, subscribeToPendingPick,
-    insertPick, undoPick, updateDraft,
+    insertPick, commitPick, undoPick, updateDraft,
     startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -746,28 +746,44 @@ function closeConfirmModal(opts) {
 
 async function submitPendingPick() {
   if (!state.pendingPick) return;
+  // Idempotency guard — double-tap on Confirm during a network blip is a real
+  // draft-day risk. Block re-entry until the RPC resolves.
+  if (state._inflightPick) return;
+  state._inflightPick = true;
+  const submitBtn = document.getElementById('confirm-submit');
+  if (submitBtn) submitBtn.disabled = true;
+
   const { player, community, pickNumber } = state.pendingPick;
   closeConfirmModal({ skipBroadcast: true });  // the INSERT drives the projector reveal
   try {
-    await DraftSupabase.insertPick({
-      draftId: state.draft.id,
+    // Atomic RPC — insert pick AND advance (or complete) in one transaction,
+    // server-side order validation under FOR UPDATE lock. Replaces the previous
+    // insertPick + advancePick / completeDraft two-write sequence that could
+    // split-brain mid-event if the second write failed.
+    await DraftSupabase.commitPick({
+      draftId:    state.draft.id,
       pickNumber,
-      teamId: community.id,
-      playerId: player.userId,
+      teamId:     community.id,
+      playerId:   player.userId,
     });
-    // Advance pick OR complete the draft
-    if (pickNumber >= DraftUtils.TOTAL_PICKS) {
-      await DraftSupabase.completeDraft(state.draft.id);
-    } else {
-      await DraftSupabase.advancePick(state.draft.id, pickNumber + 1);
-    }
     // Realtime subscription will update state.draft; for instant feedback we
     // optimistically re-fetch state.
     await loadDraftState();
     showToast(`Pick #${pickNumber} confirmed`);
   } catch (err) {
     console.error('submitPendingPick failed:', err);
-    showToast(`Pick failed: ${err.message || err}`, 'error');
+    // The RPC raises specific exceptions; surface them clearly to the operator.
+    const msg = err && err.message ? err.message : String(err);
+    let toastMsg = `Pick failed: ${msg}`;
+    if (msg.includes('pick_out_of_order')) {
+      toastMsg = `Pick failed: server expected a different pick number — refresh and try again`;
+    } else if (msg.includes('draft_not_active')) {
+      toastMsg = `Pick failed: draft is paused or complete — resume first`;
+    }
+    showToast(toastMsg, 'error');
+  } finally {
+    state._inflightPick = false;
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -838,22 +854,120 @@ async function startDraft() {
     showToast('Communities not loaded yet — wait for Sheet polling', 'error');
     return;
   }
-  // Snapshot the seed order: sort communities by their Seed column (already
-  // in Communities tab F-K formulas). We don't have a clean accessor in
-  // Data; pull via a fresh CSV fetch with the seed column visible.
+  // Build the seed-ordered list locally for preview, BEFORE writing to the DB.
+  // Once status=active is written the team_seed_order is locked in — there's
+  // no clean undo path other than Reset Draft. The preview modal lets the
+  // operator confirm seeding is right (e.g. Milly's level discrepancy) before
+  // committing.
+  const seeded = state.communities
+    .filter(c => c.seed != null && c.id)
+    .sort((a, b) => a.seed - b.seed);
+  if (seeded.length !== 8) {
+    showToast(`Seed order has ${seeded.length} teams; need 8`, 'error');
+    return;
+  }
+
+  const confirmed = await previewSeedOrderAndConfirm(seeded);
+  if (!confirmed) return;
+
   try {
-    const seedOrder = await fetchSeedOrder();
-    if (seedOrder.length !== 8) {
-      showToast(`Seed order has ${seedOrder.length} teams; need 8`, 'error');
-      return;
-    }
-    await DraftSupabase.startDraft(state.draft.id, seedOrder);
+    await DraftSupabase.startDraft(state.draft.id, seeded.map(c => c.id));
     await loadDraftState();
     showToast('Draft started');
   } catch (err) {
     console.error('startDraft failed:', err);
     showToast(`Start failed: ${err.message || err}`, 'error');
   }
+}
+
+// Preview modal — shows the 8 communities in seed order with their averages,
+// captain levels, and the implied round-1 pick order. Operator confirms
+// before any DB write. Returns a Promise<boolean>.
+function previewSeedOrderAndConfirm(seeded) {
+  return new Promise((resolve) => {
+    const existing = document.getElementById('seed-preview-backdrop');
+    if (existing) existing.remove();
+
+    const rows = seeded.map((c, i) => {
+      const seedNum = i + 1;
+      const captains = [];
+      if (c.captainF && c.captainF.name) {
+        const lvl = c.captainF.level != null ? c.captainF.level.toFixed(2) : '—';
+        captains.push(`${c.captainF.name} <span style="color:#FF85B8;">F ${lvl}</span>`);
+      }
+      if (c.captainM && c.captainM.name) {
+        const lvl = c.captainM.level != null ? c.captainM.level.toFixed(2) : '—';
+        captains.push(`${c.captainM.name} <span style="color:#5EC8FF;">M ${lvl}</span>`);
+      }
+      const avg = c.averageLevel != null ? c.averageLevel.toFixed(2) : '—';
+      return `
+        <tr style="border-bottom:1px solid #1A3A2E;">
+          <td style="padding:10px 14px;font-family:monospace;color:#FFB703;font-weight:700;font-size:18px;">${seedNum}</td>
+          <td style="padding:10px 14px;font-weight:700;">${escapeHtml(c.name)}</td>
+          <td style="padding:10px 14px;font-family:monospace;color:#C8D6CE;text-align:right;">avg ${avg}</td>
+          <td style="padding:10px 14px;color:#C8D6CE;font-size:13px;">${captains.join('  ·  ')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const div = document.createElement('div');
+    div.id = 'seed-preview-backdrop';
+    div.style.cssText = `
+      position:fixed;inset:0;background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(6px);z-index:9999;
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--font, system-ui), sans-serif;
+    `;
+    div.innerHTML = `
+      <div style="background:#0E2A1E;color:#FFFFFF;border:1px solid #FFB703;
+                  padding:32px 40px;border-radius:14px;max-width:720px;width:92vw;
+                  max-height:90vh;overflow-y:auto;
+                  box-shadow:0 0 40px rgba(255,183,3,0.25);">
+        <div style="font-size:22px;font-weight:700;letter-spacing:0.06em;
+                    color:#FFB703;text-transform:uppercase;margin-bottom:6px;">
+          Preview Seed Order
+        </div>
+        <div style="font-size:13px;color:#C8D6CE;line-height:1.5;margin-bottom:18px;">
+          This is the snake-draft order Draftday will lock in.
+          Lower seed picks first; round 2 reverses (snake).
+          Confirm captain ratings look right — once the draft starts the order is fixed.
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+          <thead>
+            <tr style="border-bottom:1px solid #3A5C36;">
+              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
+              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
+              <th style="text-align:right;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">AVG</th>
+              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">CAPTAINS</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button id="seed-preview-cancel" style="
+            padding:12px 24px;font-size:14px;font-weight:700;
+            background:transparent;color:#C8D6CE;
+            border:1px solid #3A5C36;border-radius:6px;cursor:pointer;">
+            Cancel
+          </button>
+          <button id="seed-preview-confirm" style="
+            padding:12px 28px;font-size:14px;font-weight:700;
+            background:#FFB703;color:#0E2A1E;
+            border:none;border-radius:6px;cursor:pointer;letter-spacing:0.06em;">
+            CONFIRM &amp; START DRAFT
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(div);
+    const ok     = document.getElementById('seed-preview-confirm');
+    const cancel = document.getElementById('seed-preview-cancel');
+    const close = (val) => { div.remove(); resolve(val); };
+    ok.addEventListener('click',     () => close(true));
+    cancel.addEventListener('click', () => close(false));
+    div.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(false); });
+    setTimeout(() => ok.focus(), 50);
+  });
 }
 
 async function fetchSeedOrder() {
@@ -865,7 +979,14 @@ async function fetchSeedOrder() {
 }
 
 async function forceComplete() {
-  if (!confirm('Force-complete the draft? This will mark it complete without finishing all picks.')) return;
+  // Destructive, irreversible. Type-to-confirm rather than a one-click prompt —
+  // the friction is the point.
+  if (!await typeToConfirm({
+    title:   'Force-Complete Draft',
+    message: 'This will mark the draft complete without finishing all picks. ' +
+             'The remaining slots stay empty in the rosters.',
+    keyword: 'COMPLETE',
+  })) return;
   try {
     await DraftSupabase.completeDraft(state.draft.id);
     await loadDraftState();
@@ -877,10 +998,14 @@ async function forceComplete() {
 
 async function resetDraft() {
   const pickCount = state.picks.filter(p => !p.is_undone).length;
-  const msg = pickCount > 0
-    ? `Reset the draft? This will DELETE ${pickCount} pick(s) and rewind to "pending". Cannot be undone.`
-    : 'Reset the draft to "pending"? (No picks to delete.)';
-  if (!confirm(msg)) return;
+  const detail = pickCount > 0
+    ? `This will DELETE ${pickCount} pick(s) and rewind the draft to "pending". Cannot be undone.`
+    : 'This will rewind the draft to "pending". (No picks to delete.)';
+  if (!await typeToConfirm({
+    title:   'Reset Draft',
+    message: detail,
+    keyword: 'RESET',
+  })) return;
   try {
     await DraftSupabase.resetDraft(state.draft.id);
     await loadDraftState();
@@ -889,6 +1014,78 @@ async function resetDraft() {
     console.error('resetDraft failed:', err);
     showToast(`Reset failed: ${err.message || err}`, 'error');
   }
+}
+
+// Type-to-confirm modal. Operator must type the keyword exactly before the
+// Confirm button enables. Used for destructive, irreversible actions
+// (Reset, Force Complete). Returns a Promise<boolean>.
+function typeToConfirm({ title, message, keyword }) {
+  return new Promise((resolve) => {
+    const backdropId = 'type-confirm-backdrop';
+    const existing = document.getElementById(backdropId);
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.id = backdropId;
+    div.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(6px); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font, system-ui), sans-serif;
+    `;
+    div.innerHTML = `
+      <div style="background:#0E2A1E;color:#FFFFFF;border:1px solid #FF5470;
+                  padding:32px 40px;border-radius:14px;max-width:520px;width:90vw;
+                  box-shadow:0 0 40px rgba(255,84,112,0.35);">
+        <div style="font-size:22px;font-weight:700;letter-spacing:0.04em;
+                    color:#FF5470;text-transform:uppercase;margin-bottom:14px;">
+          ⚠ ${title}
+        </div>
+        <div style="font-size:15px;color:#C8D6CE;line-height:1.5;margin-bottom:22px;">
+          ${message}
+        </div>
+        <div style="font-size:13px;color:#FFB703;margin-bottom:8px;letter-spacing:0.04em;">
+          Type <strong>${keyword}</strong> to confirm:
+        </div>
+        <input id="type-confirm-input" type="text" autocomplete="off"
+               style="width:100%;padding:10px 14px;font-size:18px;
+                      background:#061712;border:1px solid #3A5C36;
+                      color:#FFFFFF;border-radius:6px;font-family:monospace;
+                      letter-spacing:0.05em;margin-bottom:20px;" />
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button id="type-confirm-cancel" style="
+            padding:10px 22px;font-size:14px;font-weight:700;
+            background:transparent;color:#C8D6CE;
+            border:1px solid #3A5C36;border-radius:6px;cursor:pointer;">
+            Cancel
+          </button>
+          <button id="type-confirm-ok" disabled style="
+            padding:10px 22px;font-size:14px;font-weight:700;
+            background:#FF5470;color:#0E2A1E;border:none;border-radius:6px;
+            cursor:not-allowed;opacity:0.4;">
+            ${title}
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(div);
+    const input = document.getElementById('type-confirm-input');
+    const ok    = document.getElementById('type-confirm-ok');
+    const cancel = document.getElementById('type-confirm-cancel');
+    input.focus();
+    input.addEventListener('input', () => {
+      const armed = input.value.trim().toUpperCase() === keyword.toUpperCase();
+      ok.disabled = !armed;
+      ok.style.cursor  = armed ? 'pointer' : 'not-allowed';
+      ok.style.opacity = armed ? '1' : '0.4';
+    });
+    const close = (val) => { div.remove(); resolve(val); };
+    ok.addEventListener('click',     () => close(true));
+    cancel.addEventListener('click', () => close(false));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close(false);
+      if (e.key === 'Enter' && !ok.disabled) close(true);
+    });
+  });
 }
 
 // ── REALTIME SUBSCRIPTIONS ────────────────────────────────────────
@@ -908,6 +1105,40 @@ function subscribeToRealtime() {
     state.picks = await DraftSupabase.fetchPicksWithUndone(state.draft.id);
     renderAll();
   });
+
+  // 5-second polling fallback. Realtime events can be dropped silently
+  // (WebSocket reconnect, RLS hiccup, tab throttling). The commissioner is
+  // the writer and the most state-critical screen — projector and team pages
+  // both have this; commissioner needs it too. Skipped when tab is hidden.
+  if (state._pollIntervalId) clearInterval(state._pollIntervalId);
+  state._pollIntervalId = setInterval(async () => {
+    if (document.hidden) return;
+    try {
+      const [d, p] = await Promise.all([
+        DraftSupabase.fetchDraft(TOURNAMENT_SLUG),
+        DraftSupabase.fetchPicksWithUndone(state.draft.id),
+      ]);
+      if (!d) return;
+      // Shallow diff on the fields that actually drive the UI. Avoids
+      // needless re-renders + flicker.
+      const drift =
+        !state.draft ||
+        state.draft.is_timer_paused     !== d.is_timer_paused ||
+        state.draft.status              !== d.status ||
+        state.draft.current_pick_number !== d.current_pick_number ||
+        state.draft.timer_started_at    !== d.timer_started_at ||
+        state.draft.pick_timer_seconds  !== d.pick_timer_seconds ||
+        state.picks.length              !== p.length;
+      if (drift) {
+        console.log('[commissioner] poll-fallback reconciled state',
+          { paused: d.is_timer_paused, status: d.status,
+            pick: d.current_pick_number, picks: p.length });
+        state.draft = d;
+        state.picks = p;
+        renderAll();
+      }
+    } catch (_) { /* network blip — next interval retries */ }
+  }, 5000);
 }
 
 // ── GLOBAL EVENTS ─────────────────────────────────────────────────
