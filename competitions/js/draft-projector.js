@@ -515,6 +515,8 @@
           <div class="row-male" style="display:contents">
             ${M.map(p => slotHtml(p, 'M')).join('')}
           </div>
+          <div class="roster-plaque-logo" aria-hidden="true">${logoHtml}</div>
+          <div class="roster-plaque-text">${escapeHtml(community.name || community.id)}</div>
         </div>
       </div>`;
   }
@@ -607,11 +609,11 @@
     const logo = p.teamLogo
       ? `<img class="pick-overlay__logo-img" src="${escapeHtml(p.teamLogo)}" alt="">`
       : `<div class="pick-overlay__logo-fallback">${escapeHtml(initials(p.teamName))}</div>`;
-    // Team-relative pick index. Each team has 2 captains (#1, #2), then 8
-    // drafted players (#3–#10). The pending pick isn't in state.picks yet
-    // during suspense, so +1 for this one + 2 for the captains.
+    // Team-relative drafted-pick index (1..8). Captains are excluded from the
+    // count shown on the projector. The pending pick isn't in state.picks yet
+    // during suspense, so +1 for this one.
     const teamPicksSoFar = (state.picks || []).filter(pk => pk.team_id === p.teamId && !pk.is_undone).length;
-    const playerNumber = teamPicksSoFar + 1 + 2;
+    const playerNumber = teamPicksSoFar + 1;
     return `
       <div class="pick-overlay__backdrop"></div>
       <div class="pick-overlay__inner">
@@ -626,7 +628,7 @@
           <div class="pick-overlay__block pick-overlay__team">
             ${logo}
             <div class="pick-overlay__name">${escapeHtml(p.teamName || '')}</div>
-            <div class="pick-overlay__sub">Player #${playerNumber} of 10</div>
+            <div class="pick-overlay__sub">Player #${playerNumber} of 8</div>
           </div>
           <div class="pick-overlay__stamp">PICK #${p.pickNumber} LOCKED</div>
         </div>

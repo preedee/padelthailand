@@ -351,6 +351,10 @@ html, body {
    @media block below re-enables them with explicit grid placement. */
 .team-card > .team-card-summary,
 .team-card > .team-card-chevron { display: none; }
+/* The 3×4 expanded-roster plaque (logo + team name in the center cells).
+   Hidden by default — the @media block re-enables it. */
+.roster10 > .roster-plaque-logo,
+.roster10 > .roster-plaque-text { display: none; }
 
 .team-card.live {
   border-color: var(--accent);
@@ -1179,42 +1183,75 @@ html, body {
     grid-row: 3;
     margin-top: 10px;
   }
-  /* Roster: 2 columns (F left, M right) × 5 rows. The slot DOM order is
-     F1..F5 then M1..M5 — with `grid-auto-flow: column` the first 5 items
-     fill column 1 top-to-bottom, the next 5 fill column 2. Each slot
-     becomes a horizontal row: avatar on the left, name beside it. */
+  /* Roster: 3 columns × 4 rows. The two inside cells (col 2, rows 2-3) hold
+     the team logo and team-name plaque; the 10 player slots auto-flow
+     around them in DOM order — F1..F5 then M1..M5:
+        [F1] [F2 ] [F3]      row 1
+        [F4] [LOGO] [F5]     row 2
+        [M1] [TEXT] [M2]     row 3
+        [M3] [M4 ] [M5]      row 4
+     Slots stay stacked (avatar over name) to fit the wider/squarer cells. */
   .team-card.is-expanded > .roster10 {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 8px;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(5, auto);
-    grid-auto-flow: column;
-    gap: 6px 10px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, auto);
+    gap: 6px;
   }
   .team-card.is-expanded .slot {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 3px 6px;
-    min-height: 38px;
+    min-height: 60px;
+    padding: 4px 2px;
+    gap: 4px;
   }
   .team-card.is-expanded .slot .avatar {
-    width: 32px;
-    font-size: 12px;
-    flex-shrink: 0;
+    width: 40px;
+    font-size: 14px;
   }
   .team-card.is-expanded .slot .avatar .flag {
-    width: 12px; height: 9px;
+    width: 13px; height: 10px;
   }
   .team-card.is-expanded .slot .fname {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.02em;
-    text-align: left;
-    flex: 1 1 auto;
-    min-width: 0;
+    max-width: 100%;
+  }
+  /* Center plaque: logo cell + text cell. */
+  .team-card.is-expanded .roster-plaque-logo {
+    display: flex;
+    grid-column: 2;
+    grid-row: 2;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    padding: 2px;
+  }
+  .team-card.is-expanded .roster-plaque-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .team-card.is-expanded .roster-plaque-text {
+    display: flex;
+    grid-column: 2;
+    grid-row: 3;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 4px;
+    font-family: 'SuperBlue', Georgia, serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .team-card.is-expanded .team-stats .stat-label,
   .team-card.is-expanded .team-stats .stat-val {

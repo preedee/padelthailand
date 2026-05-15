@@ -841,9 +841,9 @@ html, body {
 
 .toast {
   position: fixed;
-  bottom: 96px;
+  bottom: 36px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 50%);
   padding: 12px 20px;
   background: var(--dark-accent);
   color: var(--dark-bg);
