@@ -561,10 +561,15 @@
     const avatarSrc = p.playerAvatar || '';
     const avatar = avatarSrc
       ? `<img class="pick-overlay__avatar ${genderClass}" src="${escapeHtml(avatarSrc)}" alt="">`
-      : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
+      : `<div class="pick-overlay__avatar ${genderClass}" style="display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;background:var(--bg-deep);color:var(--ink);">${escapeHtml(initials(p.playerName))}</div>`;
     const logo = p.teamLogo
       ? `<img class="pick-overlay__logo-img" src="${escapeHtml(p.teamLogo)}" alt="">`
       : `<div class="pick-overlay__logo-fallback">${escapeHtml(initials(p.teamName))}</div>`;
+    // Team-relative pick index. Each team has 2 captains (#1, #2), then 8
+    // drafted players (#3–#10). The pending pick isn't in state.picks yet
+    // during suspense, so +1 for this one + 2 for the captains.
+    const teamPicksSoFar = (state.picks || []).filter(pk => pk.team_id === p.teamId && !pk.is_undone).length;
+    const playerNumber = teamPicksSoFar + 1 + 2;
     return `
       <div class="pick-overlay__backdrop"></div>
       <div class="pick-overlay__inner">
@@ -579,7 +584,7 @@
           <div class="pick-overlay__block pick-overlay__team">
             ${logo}
             <div class="pick-overlay__name">${escapeHtml(p.teamName || '')}</div>
-            <div class="pick-overlay__sub">Pick #${p.pickNumber}${p.gender ? '  ·  ' + escapeHtml(p.gender) : ''}</div>
+            <div class="pick-overlay__sub">Player #${playerNumber} of 10</div>
           </div>
           <div class="pick-overlay__stamp">PICK #${p.pickNumber} LOCKED</div>
         </div>

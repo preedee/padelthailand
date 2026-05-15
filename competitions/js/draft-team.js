@@ -102,7 +102,12 @@
 
   function handLabel(h) { return HAND_LABEL[h] || '—'; }
   function sideLabel(s) { return SIDE_LABEL[s] || '—'; }
-  function ratingStr(r) { return r != null ? `⭐ ${r.toFixed(1)}` : '—'; }
+  // Returns HTML (two flex-aligned spans) so the star icon + digits line up
+  // on the row baseline. Callers must NOT escapeHtml the result.
+  function ratingStr(r) {
+    if (r == null) return '—';
+    return `<span class="rating-star">⭐</span><span class="rating-val">${r.toFixed(1)}</span>`;
+  }
   function picksSignature(picks) {
     // Captures order + is_undone state so UPDATEs are detected even when length stays.
     return picks.map(p => `${p.id}:${p.is_undone ? 1 : 0}:${p.pick_number}:${p.player_id}:${p.team_id}`).join('|');
@@ -603,7 +608,7 @@
       <div class="${cls.join(' ')}">
         <div class="team__cell-avatar">${avatarInner}</div>
         <div class="team__cell-fname">${nameHTML}</div>
-        <div class="team__cell-rating">${escapeHtml(ratingStr(player.rating))}</div>
+        <div class="team__cell-rating">${ratingStr(player.rating)}</div>
         <div class="team__cell-handside">
           <span>${escapeHtml(handLabel(player.hand))}</span>
           <span class="sep">·</span>
@@ -707,7 +712,7 @@
           <div class="team__player-name">${escapeHtml(p.name)}</div>
           <span class="team__row-prefs">${prefsHTML(p)}</span>
           ${genderTag}
-          <div class="team__player-rating">${escapeHtml(ratingStr(p.rating))}</div>
+          <div class="team__player-rating">${ratingStr(p.rating)}</div>
           <div class="team__row-tag">${escapeHtml(handLabel(p.hand))}</div>
           <div class="team__row-tag">${escapeHtml(sideLabel(p.side))}</div>
         </div>

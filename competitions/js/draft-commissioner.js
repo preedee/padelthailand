@@ -553,7 +553,9 @@ function poolRowHTML(p, isTopMatch) {
   // Letter-flanks-icon convention: position of the letter mirrors the court side.
   const handLabel = p.hand === 'L' ? 'L 🫲' : p.hand === 'R' ? '🫱 R' : p.hand === 'B' ? 'L 🤲 R' : '';
   const sideLabel = p.side === 'F' ? 'L ⬅️' : p.side === 'B' ? '➡️ R' : p.side === 'E' ? 'L ↔️ R' : '';
-  const ratingLabel = p.level != null ? `⭐ ${p.level.toFixed(2)}` : '—';
+  const ratingLabel = p.level != null
+    ? `<span class="rating-star">⭐</span><span class="rating-val">${p.level.toFixed(2)}</span>`
+    : '—';
   return `
     <div class="pool-row ${isTopMatch ? 'pool-row--top-match' : ''}" data-user-id="${p.userId}">
       ${avatarHTML(p, 36)}
@@ -675,7 +677,9 @@ function openConfirmModal(player) {
   const logoSrc = community.logoPath || '';
   const handLabel = player.hand === 'L' ? 'L 🫲' : player.hand === 'R' ? '🫱 R' : player.hand === 'B' ? 'L 🤲 R' : '';
   const sideLabel = player.side === 'F' ? 'L ⬅️' : player.side === 'B' ? '➡️ R' : player.side === 'E' ? 'L ↔️ R' : '';
-  const ratingLabel = player.level != null ? `⭐ ${player.level.toFixed(2)}` : '—';
+  const ratingLabel = player.level != null
+    ? `<span class="rating-star">⭐</span><span class="rating-val">${player.level.toFixed(2)}</span>`
+    : '—';
   // Mirror the suspense moment to the projector (fire-and-forget — the
   // commissioner flow proceeds even if the broadcast fails).
   try {
