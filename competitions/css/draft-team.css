@@ -389,12 +389,17 @@ input  { font: inherit; color: inherit; }
 
 .team__row-flag {
   flex: 0 0 auto;
-  font-size: 15px;
   line-height: 1;
-  width: 18px;
+  width: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.team__row-flag .fi {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .team__player-name {
@@ -580,11 +585,17 @@ input  { font: inherit; color: inherit; }
   padding: 0 2px;
 }
 .team__cell-flag {
-  font-size: 12px;
   line-height: 1;
   display: inline-block;
   vertical-align: middle;
-  margin-right: 2px;
+  margin-right: 4px;
+}
+.team__cell-flag .fi {
+  width: 13px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .team__roster-cell.is-captain .team__cell-fname { color: var(--dark-accent); }
 .team__roster-cell.is-filled  .team__cell-fname { color: var(--dark-text); }

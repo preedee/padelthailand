@@ -259,10 +259,10 @@ html, body {
 .clock-cell .info { display: flex; flex-direction: column; min-width: 0; }
 .clock-cell .label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(10px, 0.8vw, 13px);
+  font-size: clamp(12px, 0.95vw, 16px);
   font-weight: 700;
   letter-spacing: 0.28em;
-  color: var(--accent);
+  color: var(--ink-dim);
   text-transform: uppercase;
   margin-bottom: 4px;
   line-height: 1;
@@ -278,10 +278,10 @@ html, body {
 }
 .clock-cell .pick-meta {
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(10px, 0.8vw, 13px);
+  font-size: clamp(12px, 0.95vw, 16px);
   font-weight: 500;
   letter-spacing: 0.18em;
-  color: var(--ink-faint);
+  color: var(--ink-dim);
   margin-top: 6px;
 }
 
@@ -381,11 +381,17 @@ html, body {
   z-index: 2;
 }
 
+/* Snake-draft round boundary: one team is both ON CLOCK and NEXT. Replace
+   the two overlapping badges with a single BACK-TO-BACK chip. Source order
+   matters — these rules ride on top of `.live::before` and `.next::after`. */
+.team-card.back-to-back::before { content: 'BACK-TO-BACK'; }
+.team-card.back-to-back::after  { content: none; }
+
 .team-card > .tname {
   display: block;
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(13px, 1vw, 18px);
+  font-size: clamp(14px, 1.05vw, 19px);
   letter-spacing: 0.06em;
   line-height: 1.1;
   color: var(--ink);
@@ -540,20 +546,28 @@ html, body {
 }
 .slot.captain .fname { color: var(--accent); font-weight: 700; }
 
-/* Flag sits on the avatar's bottom-left corner as a small overlay badge.
-   The avatar is the positioned ancestor; the dark halo keeps the emoji
-   readable against any avatar background. */
+/* Flag sits on the avatar's bottom-left corner as a small rectangular badge
+   rendered by the flag-icons SVG library. A thin outline + faint shadow
+   keeps it legible against any avatar background. */
 .slot .avatar .flag {
   position: absolute;
   bottom: -2px;
   left: -2px;
-  font-size: clamp(14px, 1.05vw, 18px);
-  line-height: 1;
-  padding: 1px;
-  border-radius: 50%;
-  background: var(--bg-deep);
-  box-shadow: 0 0 0 1px var(--line);
+  width: clamp(14px, 1.05vw, 18px);
+  height: clamp(10px, 0.78vw, 13px);
+  line-height: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
   z-index: 2;
+}
+.slot .avatar .flag .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
 }
 .slot.empty .flag { display: none; }
 

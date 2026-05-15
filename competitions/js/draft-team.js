@@ -205,11 +205,11 @@
     const key = String(name).trim().toLowerCase();
     return COUNTRY_CODE[key] || (key.length === 2 ? key.toUpperCase() : '');
   }
-  // ISO alpha-2 → flag emoji via regional-indicator symbols. Empty when no code.
+  // ISO alpha-2 → flag-icons SVG span. Empty when no code. Rectangular,
+  // OS-independent rendering via the flag-icons CSS library.
   function flagEmoji(code) {
     if (!code || code.length !== 2) return '';
-    const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
-    return String.fromCodePoint(...cp);
+    return `<span class="fi fi-${code.toLowerCase()}"></span>`;
   }
 
   // Normalize a name for matching: lowercase, punctuation → spaces, collapse.

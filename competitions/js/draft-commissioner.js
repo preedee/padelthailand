@@ -294,11 +294,10 @@ function countryCodeFor(name) {
   return COUNTRY_CODE[key] || (key.length === 2 ? key.toUpperCase() : '');
 }
 
-// 2-letter ISO code → flag emoji via regional indicator symbols.
+// 2-letter ISO code → flag-icons SVG span. Rectangular, consistent across OSes.
 function flagEmoji(code) {
   if (!code || code.length !== 2) return '';
-  const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
-  return String.fromCodePoint(...cp);
+  return `<span class="fi fi-${code.toLowerCase()}"></span>`;
 }
 
 // Registrations stores community preferences as display strings ("Sabai Sabai

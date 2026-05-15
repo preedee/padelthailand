@@ -142,8 +142,7 @@
   }
   function flagEmoji(code) {
     if (!code || code.length !== 2) return '';
-    const cp = [...code.toUpperCase()].map(c => 0x1F1E6 - 65 + c.charCodeAt(0));
-    return String.fromCodePoint(...cp);
+    return `<span class="fi fi-${code.toLowerCase()}"></span>`;
   }
 
   // ──────────────────────────────────────────────────────────
@@ -424,7 +423,8 @@
     if (!community) {
       return `<div class="team-card"><div class="tname">—</div><div class="team-logo">?</div></div>`;
     }
-    const cls = ['team-card', isLive && 'live', isNext && 'next'].filter(Boolean).join(' ');
+    const isBackToBack = isLive && isNext;
+    const cls = ['team-card', isLive && 'live', isNext && 'next', isBackToBack && 'back-to-back'].filter(Boolean).join(' ');
     const teamColor = community.color || '#6b7a99';
     const tInitials = initials(community.name || community.id);
     const logoHtml = community.logoPath
@@ -493,8 +493,17 @@
       : escapeHtml(initials((liveCommunity && liveCommunity.name) || '?'));
 
     if (nextCommunity) {
-      elNextLabel.textContent = `NEXT UP · PICK ${pickN + 1}`;
-      elNextName.textContent  = nextCommunity.name || nextCommunity.id;
+      const sameTeamBackToBack = liveId && nextId === liveId;
+      // Snake-draft round boundary: the same team is on the clock now AND
+      // gets the next pick. Repeating their name in the NEXT-UP cell is
+      // visual noise — replace it with a meaningful "back-to-back" tag and
+      // foreground the upcoming pick number.
+      elNextLabel.textContent = sameTeamBackToBack
+        ? 'BACK-TO-BACK'
+        : `NEXT UP · PICK ${pickN + 1}`;
+      elNextName.textContent  = sameTeamBackToBack
+        ? `PICK ${pickN + 1}`
+        : (nextCommunity.name || nextCommunity.id);
       elNextLogo.innerHTML = nextCommunity.logoPath
         ? `<img src="${escapeHtml(nextCommunity.logoPath)}" alt="">`
         : escapeHtml(initials(nextCommunity.name));
