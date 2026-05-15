@@ -518,6 +518,29 @@
     $app.setAttribute('data-view', state.view);
   }
 
+  // Build the URL for a given view, preserving every other query param.
+  //   team → no flag        e.g. .../draft/coco-padel
+  //   pool → bare ?pool     e.g. .../draft/coco-padel?pool
+  function viewUrl(view) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('pool');
+    url.searchParams.delete('team');   // legacy flag, kept out of the canonical URL
+    let qs = url.searchParams.toString();
+    if (view === 'pool') qs = qs ? qs + '&pool' : 'pool';
+    url.search = qs ? '?' + qs : '';
+    return url.toString();
+  }
+
+  // Switch view AND update the address bar so Pool/Team are separately
+  // bookmarkable and browser back/forward moves between them.
+  function navigateToView(view) {
+    setView(view);
+    const target = viewUrl(view);
+    if (target !== window.location.href) {
+      history.pushState({ view: state.view }, '', target);
+    }
+  }
+
   function renderTournamentLogo() {
     // Header-right mark is the tournament logo (Bangkok Community Cup) — same
     // on every draft page for visual consistency, not the captain's community.
@@ -707,7 +730,14 @@
   function onPillClick(e) {
     const t = e.target.closest('[data-view-target]');
     if (!t) return;
-    setView(t.dataset.viewTarget);
+    navigateToView(t.dataset.viewTarget);
+  }
+
+  // Browser back/forward — re-derive the view from the (now-changed) URL.
+  function onPopState() {
+    const view = new URLSearchParams(window.location.search).has('pool') ? 'pool' : 'team';
+    setView(view);
+    renderAll();
   }
 
   function onSortClick(e) {
@@ -764,6 +794,9 @@
     // Online/offline plumbed to the RECONNECTING banner.
     window.addEventListener('offline', () => setReconnecting(true));
     window.addEventListener('online',  () => setReconnecting(false));
+
+    // Browser back/forward between the Pool and Team URLs.
+    window.addEventListener('popstate', onPopState);
 
     // Tear down channels + poll when the page is hidden/unloaded.
     window.addEventListener('pagehide', teardownLive);
