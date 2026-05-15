@@ -841,7 +841,7 @@ html, body {
 
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: 96px;
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 20px;
@@ -849,6 +849,7 @@ html, body {
   color: var(--dark-bg);
   border-radius: 8px;
   font-weight: 600;
+  text-align: center;
   z-index: 200;
   animation: fade-in 0.2s ease-out;
 }

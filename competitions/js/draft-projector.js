@@ -439,20 +439,15 @@
     }[ch]));
   }
 
-  // Mobile compact-card summary: pick count + most recent pick name. Reads
-  // straight from state.picks (already filtered to non-undone in the caller).
+  // Mobile compact-card summary: drafted-player count + picks remaining.
+  // Each team drafts 8 players (the 2 captains are pre-assigned), so the
+  // denominator is 8, not 10.
   function summaryFor(teamId) {
-    const picks = (state.picks || [])
+    const PICKS_PER_TEAM = 8;
+    const made = (state.picks || [])
       .filter(p => p.team_id === teamId && !p.is_undone)
-      .sort((a, b) => a.pick_number - b.pick_number);
-    const count = picks.length;
-    let lastName = '';
-    if (count) {
-      const last = picks[picks.length - 1];
-      const player = (state.players || []).find(p => p.playerId === last.player_id);
-      lastName = firstName((player && player.name) || last.player_id || '');
-    }
-    return { count, lastName };
+      .length;
+    return { made, remaining: Math.max(0, PICKS_PER_TEAM - made), total: PICKS_PER_TEAM };
   }
 
   function renderTeamCard(community, isLive, isNext) {
@@ -497,11 +492,10 @@
     // Mobile-only compact summary + chevron. Hidden by CSS on desktop —
     // .team-card-summary and .team-card-chevron only get grid cells inside
     // the @media (max-width: 900px) block, so on the broadcast view they
-    // sit invisibly outside the visible grid area.
-    const { count: pickCount, lastName: lastPickName } = summaryFor(community.id);
-    const summaryHtml = pickCount
-      ? `<span class="count">${pickCount}/10</span><span class="sep">·</span>Last: ${escapeHtml(lastPickName) || '—'}`
-      : `<span class="count">0/10</span><span class="sep">·</span>No picks yet`;
+    // sit invisibly outside the visible grid area. Also hidden by CSS when
+    // the card is expanded (the full roster makes these stats redundant).
+    const { made: picksMade, remaining: picksRemaining, total: picksTotal } = summaryFor(community.id);
+    const summaryHtml = `<span class="count">${picksMade}/${picksTotal} Players</span><span class="sep">·</span>${picksRemaining} Remaining Picks`;
 
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">

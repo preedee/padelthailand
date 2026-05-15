@@ -1165,6 +1165,9 @@ html, body {
     transform: rotate(90deg);
     color: var(--ink);
   }
+  /* When expanded, the full roster + stats below carry the same info, so
+     hide the compact summary to avoid duplication. */
+  .team-card.is-expanded > .team-card-summary { display: none; }
 
   /* Hide stats + roster by default on mobile; reveal when expanded. */
   .team-card > .team-stats,
@@ -1176,25 +1179,42 @@ html, body {
     grid-row: 3;
     margin-top: 10px;
   }
+  /* Roster: 2 columns (F left, M right) × 5 rows. The slot DOM order is
+     F1..F5 then M1..M5 — with `grid-auto-flow: column` the first 5 items
+     fill column 1 top-to-bottom, the next 5 fill column 2. Each slot
+     becomes a horizontal row: avatar on the left, name beside it. */
   .team-card.is-expanded > .roster10 {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 4;
-    margin-top: 6px;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: 1fr 1fr;
-    gap: 4px;
+    margin-top: 8px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(5, auto);
+    grid-auto-flow: column;
+    gap: 6px 10px;
+  }
+  .team-card.is-expanded .slot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 3px 6px;
+    min-height: 38px;
   }
   .team-card.is-expanded .slot .avatar {
-    width: 36px;
+    width: 32px;
     font-size: 12px;
+    flex-shrink: 0;
   }
   .team-card.is-expanded .slot .avatar .flag {
     width: 12px; height: 9px;
   }
   .team-card.is-expanded .slot .fname {
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 0.02em;
+    text-align: left;
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .team-card.is-expanded .team-stats .stat-label,
   .team-card.is-expanded .team-stats .stat-val {
