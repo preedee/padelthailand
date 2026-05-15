@@ -284,6 +284,8 @@ const COUNTRY_CODE = {
   'south africa': 'ZA', 'ireland': 'IE', 'greece': 'GR', 'israel': 'IL',
   'uae': 'AE', 'united arab emirates': 'AE', 'saudi arabia': 'SA',
   'ukraine': 'UA', 'romania': 'RO', 'hungary': 'HU', 'serbia': 'RS', 'croatia': 'HR',
+  'bangladesh': 'BD', 'sri lanka': 'LK', 'luxembourg': 'LU',
+  'myanmar': 'MM', 'burma': 'MM', 'myanmar [burma]': 'MM',
 };
 
 function countryCodeFor(name) {
