@@ -691,6 +691,7 @@
   function showPendingOverlay(payload) {
     if (!payload || !elPickOverlay) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    _cancelOverlayTeardown();  // orphan teardown from a prior overlay must NOT wipe this one
     state.pendingOverlay = payload;
     state.overlayPhase   = 'suspense';
     elPickOverlay.innerHTML = _overlayHTML(payload);
@@ -720,9 +721,22 @@
     exitPickOverlay();
   }
 
+  // Tracks the in-flight teardown setTimeout so a fast-arriving new overlay
+  // (back-to-back round-boundary picks) can cancel the orphan teardown
+  // before it nulls innerHTML on top of the new overlay. (M3 fix.)
+  let _overlayTeardownTimer = null;
+
+  function _cancelOverlayTeardown() {
+    if (_overlayTeardownTimer) {
+      clearTimeout(_overlayTeardownTimer);
+      _overlayTeardownTimer = null;
+    }
+  }
+
   function exitPickOverlay() {
     if (!elPickOverlay || !state.overlayPhase) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    _cancelOverlayTeardown();  // prior teardown still pending? cancel it
     // Hand-off cue: flash the destination team card so the audience's eye
     // follows from the closing popup to the card that just got a new player.
     // Skip on undo (no team to celebrate). Read teamId before we null the
@@ -733,14 +747,19 @@
     state.overlayPhase = 'exiting';
     elPickOverlay.classList.remove('is-suspense', 'is-revealed', 'is-undone');
     elPickOverlay.classList.add('is-exiting');
-    setTimeout(() => {
-      elPickOverlay.hidden = true;
-      elPickOverlay.setAttribute('aria-hidden', 'true');
-      elPickOverlay.classList.remove('is-exiting', 'is-undone');
-      elPickOverlay.innerHTML = '';
-      state.pendingOverlay = null;
-      state.overlayPhase   = null;
-      log('overlay → hidden');
+    _overlayTeardownTimer = setTimeout(() => {
+      _overlayTeardownTimer = null;
+      try {
+        elPickOverlay.hidden = true;
+        elPickOverlay.setAttribute('aria-hidden', 'true');
+        elPickOverlay.classList.remove('is-exiting', 'is-undone');
+        elPickOverlay.innerHTML = '';
+        state.pendingOverlay = null;
+        state.overlayPhase   = null;
+        log('overlay → hidden');
+      } catch (err) {
+        console.warn('[projector] overlay teardown threw:', err);
+      }
     }, 420);
   }
 
@@ -827,6 +846,7 @@
   function showUndoOverlay(payload) {
     if (!payload || !elPickOverlay) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    _cancelOverlayTeardown();  // orphan teardown from a prior overlay must NOT wipe this one
     state.pendingOverlay = payload;
     state.overlayPhase   = 'revealed';                 // skip suspense
     elPickOverlay.innerHTML = _undoOverlayHTML(payload);

@@ -145,20 +145,62 @@
   // both the cancel path and the moment the commissioner submits (the
   // authoritative reveal is then driven by the draft_picks INSERT). One
   // channel per draft, joined lazily on first send.
+  // Each cache entry is { ch, ready: Promise<void> } so callers can await
+  // SUBSCRIBED before sending. Supabase broadcast silently DROPS sends fired
+  // while the channel is still in the JOINING state — that was the original
+  // bug where the first pick of the draft would broadcast a pending event
+  // that never reached the projector (M4 fix). Subsequent sends were fine
+  // because the channel had finished joining.
   const _broadcastChannels = Object.create(null);
   function _broadcastChannel(draftId) {
     if (_broadcastChannels[draftId]) return _broadcastChannels[draftId];
-    const ch = client().channel(`pending_pick:${draftId}`).subscribe();
-    _broadcastChannels[draftId] = ch;
-    return ch;
+    let resolveReady;
+    const ready = new Promise((res) => { resolveReady = res; });
+    const ch = client()
+      .channel(`pending_pick:${draftId}`)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') resolveReady();
+        // Other states (CHANNEL_ERROR, TIMED_OUT, CLOSED) leave `ready`
+        // unresolved. Callers race against a short timeout (below), so the
+        // first send falls through to a best-effort fire and we don't hang
+        // the commissioner waiting for a channel that won't come up.
+      });
+    const entry = { ch, ready };
+    _broadcastChannels[draftId] = entry;
+    return entry;
+  }
+
+  // Eager pre-warm — call this once at commissioner bootstrap so the channel
+  // is joined long before the first send. Returns a Promise that resolves on
+  // SUBSCRIBED or rejects on a 2s timeout.
+  function prewarmBroadcastChannel(draftId) {
+    const { ready } = _broadcastChannel(draftId);
+    return Promise.race([
+      ready,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('broadcast subscribe timed out')), 2000)),
+    ]);
+  }
+
+  // Awaits SUBSCRIBED with a tight 250ms deadline before sending. On miss,
+  // sends anyway (best-effort) so a flaky channel doesn't block picks.
+  async function _sendWithReady(draftId, event, payload) {
+    const { ch, ready } = _broadcastChannel(draftId);
+    try {
+      await Promise.race([
+        ready,
+        new Promise((_, reject) => setTimeout(() => reject(), 250)),
+      ]);
+    } catch (_) { /* fall through to best-effort send */ }
+    return ch.send({ type: 'broadcast', event, payload });
   }
 
   function broadcastPendingPick(draftId, payload) {
-    return _broadcastChannel(draftId).send({ type: 'broadcast', event: 'pending', payload });
+    return _sendWithReady(draftId, 'pending', payload);
   }
 
   function broadcastClearPending(draftId) {
-    return _broadcastChannel(draftId).send({ type: 'broadcast', event: 'clear', payload: {} });
+    return _sendWithReady(draftId, 'clear', {});
   }
 
   // Receiver. handlers = { onPending(payload), onClear() }.
@@ -403,7 +445,7 @@
     init, client, serverNow,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
-    broadcastPendingPick, broadcastClearPending, subscribeToPendingPick,
+    broadcastPendingPick, broadcastClearPending, subscribeToPendingPick, prewarmBroadcastChannel,
     insertPick, commitPick, undoPick, updateDraft,
     startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
   };

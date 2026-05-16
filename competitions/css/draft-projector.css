@@ -1002,7 +1002,7 @@ html, body {
   /* ============== HEADER — single row, brand left / tournament logo right ============== */
   .top-strip {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;          /* keep brand + name + live + logo on one row */
     align-items: center;
     gap: 8px;
     padding-bottom: 8px;

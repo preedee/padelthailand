@@ -59,6 +59,16 @@ async function boot() {
     setLoadingMsg('Fetching Sheet data…');
     await loadSheetData();          // parallel direct fetch — no Data.startPolling needed
     subscribeToRealtime();
+    // M4 fix: eagerly join the pending-pick broadcast channel and wait for
+    // SUBSCRIBED. Without this, the first pick's broadcast can fire while
+    // the channel is still JOINING and silently drop (Supabase doesn't
+    // buffer broadcast sends pre-subscribe). Best-effort with 2s timeout —
+    // if the channel can't subscribe we boot anyway; sends fall through to
+    // the existing best-effort path in _sendWithReady.
+    if (state.draft) {
+      DraftSupabase.prewarmBroadcastChannel(state.draft.id)
+        .catch(err => console.warn('[commissioner] broadcast prewarm:', err && err.message));
+    }
     startTimerTick();
     bindGlobalEvents();
     state.loaded.sheet = true;
@@ -94,6 +104,7 @@ async function loadSheetData() {
 
   state.communities = parseCommunities(communityRows);
   state.captainUserIds = parseCaptainIds(playerRows);
+  state.captainsByCommunity = parseCaptainsByCommunity(playerRows);
   state.registrations = regRows;
   state.avatarsByUserId = parseAvatarsByUserId(userRows);
 
@@ -103,6 +114,25 @@ async function loadSheetData() {
     registrations: state.registrations.length,
     avatars: Object.keys(state.avatarsByUserId).length,
   });
+}
+
+// Captains grouped by Community ID. Used by the gender-slot guard so we
+// can count the captain's gender against the 5-per-gender team limit
+// without round-tripping through Data.getPlayers() (which is unpopulated
+// in commissioner — see boot()).
+function parseCaptainsByCommunity(playerRows) {
+  const map = {};
+  for (const r of playerRows) {
+    if (String(r['Is Captain'] || '').trim().toUpperCase() !== 'Y') continue;
+    const communityId = String(r['Community ID'] || '').trim();
+    if (!communityId) continue;
+    if (!map[communityId]) map[communityId] = [];
+    map[communityId].push({
+      userId:  String(r['TPS User ID'] || '').trim(),
+      gender:  normalizeGender(r['Gender']),
+    });
+  }
+  return map;
 }
 
 function parseAvatarsByUserId(rows) {
@@ -661,11 +691,16 @@ function openConfirmModal(player) {
     const r = state.registrations.find(r => r.userId === p.player_id);
     return r && r.gender === player.gender;
   }).length;
-  const captainSameGender = [...state.captainUserIds].some(uid => {
-    const tpRow = Data.getPlayers().find(p => String(p['TPS User ID']).trim() === uid && String(p['Community ID']).trim() === currentTeamId);
-    if (!tpRow) return false;
-    return normalizeGender(tpRow['Gender']) === player.gender;
-  });
+  // M2 fix: the previous version called Data.getPlayers() which is always []
+  // here because boot() does not call Data.startPolling() — the commissioner
+  // pulls Sheets via its own direct fetch path. The result was that the
+  // captain's same-gender count was always 0, allowing a 6th same-gender
+  // player on a roster (5 drafted + 1 captain) by late rounds.
+  //
+  // state.captainsByCommunity is populated in loadSheetData from the same
+  // playerRows that build state.captainUserIds. Cheap O(1) lookup.
+  const teamCaptains = state.captainsByCommunity[currentTeamId] || [];
+  const captainSameGender = teamCaptains.some(cap => cap.gender === player.gender);
   const slotLimit = 5;
   const usedSlots = sameGenderCount + (captainSameGender ? 1 : 0);
   if (usedSlots >= slotLimit) {
@@ -723,8 +758,10 @@ function openConfirmModal(player) {
   `;
   modalEl.classList.remove('hidden');
   modalEl.setAttribute('aria-hidden', 'false');
+  // NOTE: confirm-modal-backdrop is bound once at boot in bindGlobalEvents.
+  // Cancel + submit buttons are inside the innerHTML-replaced content, so
+  // they must be re-bound per open.
   document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
-  document.getElementById('confirm-modal-backdrop').addEventListener('click', closeConfirmModal);
   document.getElementById('confirm-submit').addEventListener('click', submitPendingPick);
   setTimeout(() => document.getElementById('confirm-submit').focus(), 100);
 }
@@ -749,13 +786,15 @@ async function submitPendingPick() {
   // Idempotency guard — double-tap on Confirm during a network blip is a real
   // draft-day risk. Block re-entry until the RPC resolves.
   if (state._inflightPick) return;
-  state._inflightPick = true;
   const submitBtn = document.getElementById('confirm-submit');
-  if (submitBtn) submitBtn.disabled = true;
 
   const { player, community, pickNumber } = state.pendingPick;
-  closeConfirmModal({ skipBroadcast: true });  // the INSERT drives the projector reveal
   try {
+    // Latch inside the try so an exception between here and the await can
+    // never leave _inflightPick stuck true (the finally always fires).
+    state._inflightPick = true;
+    if (submitBtn) submitBtn.disabled = true;
+    closeConfirmModal({ skipBroadcast: true });  // the INSERT drives the projector reveal
     // Atomic RPC — insert pick AND advance (or complete) in one transaction,
     // server-side order validation under FOR UPDATE lock. Replaces the previous
     // insertPick + advancePick / completeDraft two-write sequence that could
@@ -781,6 +820,11 @@ async function submitPendingPick() {
       toastMsg = `Pick failed: draft is paused or complete — resume first`;
     }
     showToast(toastMsg, 'error');
+    // The confirm modal was closed with skipBroadcast:true on the assumption
+    // that the pick INSERT would drive the projector's overlay reveal. On
+    // failure no INSERT happened, so we must tell the projector to clear its
+    // suspense overlay or it sits frozen on "CONFIRM PICK #N" forever.
+    try { DraftSupabase.broadcastClearPending(state.draft.id); } catch (_) {}
   } finally {
     state._inflightPick = false;
     if (submitBtn) submitBtn.disabled = false;
@@ -837,11 +881,14 @@ function renderControls() {
   right += `<button class="btn btn--danger" id="ctrl-reset">⚠️ RESET DRAFT</button>`;
 
   el.innerHTML = `<div class="controls__left">${left}</div><div class="controls__right">${right}</div>`;
-  bindCtrl('ctrl-start', startDraft);
-  bindCtrl('ctrl-pause', () => DraftSupabase.setPaused(state.draft.id, true).then(loadDraftState));
-  bindCtrl('ctrl-resume', () => DraftSupabase.setPaused(state.draft.id, false).then(loadDraftState));
-  bindCtrl('ctrl-complete', forceComplete);
-  bindCtrl('ctrl-reset', resetDraft);
+  // Null-guard every control callback — a single TypeError mid-event would
+  // wedge the laptop UI. state.draft can be momentarily null if realtime
+  // delivers a reset or if a callback fires before loadDraftState completes.
+  bindCtrl('ctrl-start',    () => state.draft && startDraft());
+  bindCtrl('ctrl-pause',    () => state.draft && DraftSupabase.setPaused(state.draft.id, true).then(loadDraftState));
+  bindCtrl('ctrl-resume',   () => state.draft && DraftSupabase.setPaused(state.draft.id, false).then(loadDraftState));
+  bindCtrl('ctrl-complete', () => state.draft && forceComplete());
+  bindCtrl('ctrl-reset',    () => state.draft && resetDraft());
 }
 
 function bindCtrl(id, fn) {
@@ -1163,6 +1210,17 @@ function bindGlobalEvents() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && state.pendingPick) closeConfirmModal();
   });
+  // Bind backdrop dismiss ONCE here, not in openConfirmModal. The backdrop
+  // element is static in commissioner.html (not replaced by innerHTML); the
+  // per-open re-bind that was here previously leaked one listener per pick.
+  // By pick 64 a single backdrop click fired broadcastClearPending 64 times,
+  // tripping Realtime's 10 events/sec rate limit.
+  const backdrop = document.getElementById('confirm-modal-backdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', () => {
+      if (state.pendingPick) closeConfirmModal();
+    });
+  }
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────
