@@ -206,7 +206,7 @@ html, body {
 .timer-display--expired {
   color: var(--timer-urgent);
   transform: none;
-  animation: timer-blink 0.7s steps(1, end) infinite;
+  animation: timer-blink 1.4s steps(1, end) infinite;
 }
 
 @keyframes timer-pulse {
