@@ -121,11 +121,12 @@
     return ((parts[0]||'')[0] || '?').toUpperCase();
   }
   function formatTimer(seconds) {
-    const neg = seconds < 0;
-    const abs = Math.abs(seconds);
-    const m = Math.floor(abs / 60);
-    const s = Math.floor(abs % 60);
-    return (neg ? '-' : '') + m + ':' + String(s).padStart(2, '0');
+    // Clamp at zero — never show negative. Past zero, the .expired class on
+    // .moment-block drives the blink (see draft-projector.css).
+    const shown = Math.max(0, seconds);
+    const m = Math.floor(shown / 60);
+    const s = Math.floor(shown % 60);
+    return m + ':' + String(s).padStart(2, '0');
   }
   // Mean of the numeric `level` field across roster slots (player objects or
   // nulls). Returns a 1-decimal string, or '—' when no slot has a level.
@@ -892,6 +893,7 @@
       const stateName = window.DraftUtils.timerColorState(remS, totalS);
       elMomentBlock.classList.remove('state-green', 'state-orange', 'state-red');
       elMomentBlock.classList.add('state-' + stateName);
+      elMomentBlock.classList.toggle('expired', remS <= 0);
 
       // Bar progress: 0% at full time → 50% at exactly 0:00 → past 50% on overshoot
       // Map remaining/total: 1.0 → 0%; 0.0 → 50%; negative → grows past 50%

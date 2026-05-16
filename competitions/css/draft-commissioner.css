@@ -200,9 +200,23 @@ html, body {
   animation: timer-pulse 0.8s ease-in-out infinite;
 }
 
+/* Expired (remaining hit zero) — clamp text to 0:00 in JS and blink here.
+   Override the red scale pulse with a steady-size opacity blink for a
+   clearer "time's up" signal. */
+.timer-display--expired {
+  color: var(--timer-urgent);
+  transform: none;
+  animation: timer-blink 0.7s steps(1, end) infinite;
+}
+
 @keyframes timer-pulse {
   0%, 100% { transform: scale(1.06); }
   50%      { transform: scale(1.09); }
+}
+
+@keyframes timer-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
 }
 
 /* ── MAIN ───────────────────────────────────────────────────────── */
@@ -327,6 +341,72 @@ html, body {
   font-size: 11px;
   color: var(--dark-text-muted);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* PREFERS filter row — one chip per community (logo + name), multi-select */
+.pool__prefs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex: 0 0 auto;
+}
+
+.pool__prefs-label {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--dark-text-muted);
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.pool__prefs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 3px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 999px;
+  color: var(--dark-text-muted);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  transition: all 0.12s linear;
+}
+
+.pool__prefs-chip:hover {
+  color: var(--dark-text);
+  border-color: var(--dark-text-muted);
+}
+
+.pool__prefs-chip-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 18px;
+}
+
+.pool__prefs-chip.is-active-filter {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  border-color: var(--dark-accent);
+  font-weight: 600;
+}
+
+.pool__prefs-chip.is-active-filter .pool__prefs-chip-logo {
+  border-color: var(--dark-bg);
 }
 
 .pool__list {
@@ -517,6 +597,42 @@ html, body {
   color: var(--dark-text-muted);
   font-size: 13px;
   padding: 24px;
+}
+
+/* Rec #8 — "ON DECK" preview of the next 2 commissioners up in the
+   snake-draft order. Lives below the history list inside the same
+   .commissioner__history aside. Hidden by JS during pending/complete. */
+.upcoming-picks {
+  flex-shrink: 0;
+  padding: 12px 14px 14px;
+  margin-top: 8px;
+  border-top: 1px dashed var(--dark-border);
+}
+.upcoming-picks__title {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dark-text-muted);
+  margin: 0 0 8px;
+}
+.upcoming-pick {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 4px 0;
+}
+.upcoming-pick__num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  min-width: 28px;
+}
+.upcoming-pick__team {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-accent);
 }
 
 .history-row {

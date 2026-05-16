@@ -31,7 +31,7 @@ const state = {
   registrations: [],                // Registrations tab (the draft pool source)
   avatarsByUserId: {},              // Users tab — userId → avatar URL
   captainUserIds: new Set(),        // TPS User IDs of captains (excluded from pool)
-  filters: { gender: null, hand: null, side: null },
+  filters: { gender: null, hand: null, side: null, prefs: [] },
   sort: 'rating-desc',
   search: '',
   pendingPick: null,                // player obj when modal open
@@ -432,6 +432,15 @@ function getDisplayedPool() {
   // Inclusive hand/side: a player labeled "B" (ambi) or "E" (either) matches either filter
   if (f.hand) list = list.filter(p => p.hand === f.hand || p.hand === 'B');
   if (f.side) list = list.filter(p => p.side === f.side || p.side === 'E');
+  if (f.prefs && f.prefs.length) {
+    // Show players who listed ANY of the selected communities among their
+    // up-to-3 preferred teams (Registrations "Community 1st/2nd/3rd").
+    const wanted = new Set(f.prefs);
+    list = list.filter(p => (p.prefs || []).some(prefName => {
+      const c = findCommunityByName(prefName, state.communities);
+      return c && wanted.has(c.id);
+    }));
+  }
   if (state.search) {
     const q = state.search.toLowerCase();
     list = list.filter(p => p.name.toLowerCase().includes(q));
@@ -504,14 +513,16 @@ function updateTimer() {
   const startedMs = new Date(state.draft.timer_started_at).getTime();
   const remaining = DraftUtils.remainingSeconds(startedMs, total, DraftSupabase.serverNow());
 
-  const sign = remaining < 0 ? '-' : '';
-  const abs = Math.abs(remaining);
-  const mins = Math.floor(abs / 60);
-  const secs = Math.floor(abs % 60);
-  el.textContent = `${sign}${mins}:${String(secs).padStart(2, '0')}`;
+  // Clamp display at 0 — never show negative time. Past zero, blink via
+  // .timer-display--expired (CSS) while the pick window stays open.
+  const shown = Math.max(0, remaining);
+  const mins = Math.floor(shown / 60);
+  const secs = Math.floor(shown % 60);
+  el.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
 
   const color = DraftUtils.timerColorState(remaining, total);
-  el.className = `timer-display timer-display--${color}`;
+  const expired = remaining <= 0 ? ' timer-display--expired' : '';
+  el.className = `timer-display timer-display--${color}${expired}`;
 }
 
 // ── POOL FILTER BAR ───────────────────────────────────────────────
@@ -575,10 +586,42 @@ function sortChip(value, label) {
   return `<button class="filter-chip ${active}" data-group="sort" data-value="${value}">${label}${arrow}</button>`;
 }
 
+// PREFERS filter row — one chip per community (logo + name), multi-select.
+function renderPoolPrefs() {
+  const el = document.getElementById('pool-prefs');
+  if (!el) return;
+  if (!state.communities || !state.communities.length) {
+    el.innerHTML = '';
+    return;
+  }
+  const selected = new Set(state.filters.prefs || []);
+  el.innerHTML = `<span class="pool__prefs-label">PREFERS</span>` + state.communities.map(c => {
+    const active = selected.has(c.id) ? 'is-active-filter' : '';
+    const initial = (c.name || '?').charAt(0).toUpperCase();
+    const logo = c.logoPath
+      ? `<img class="pool__prefs-chip-logo" src="${escapeHTML(c.logoPath)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'pool__prefs-chip-logo',textContent:'${initial}'}))">`
+      : `<span class="pool__prefs-chip-logo">${initial}</span>`;
+    return `<button class="pool__prefs-chip ${active}" data-pref-id="${escapeHTML(c.id)}" title="${escapeHTML(c.name)}">
+      ${logo}<span class="pool__prefs-chip-name">${escapeHTML(c.name)}</span>
+    </button>`;
+  }).join('');
+  el.querySelectorAll('[data-pref-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.prefId;
+      const arr = state.filters.prefs;
+      const idx = arr.indexOf(id);
+      if (idx >= 0) arr.splice(idx, 1);
+      else arr.push(id);
+      renderPool();
+    });
+  });
+}
+
 // ── POOL LIST ─────────────────────────────────────────────────────
 
 function renderPool() {
   renderPoolFilters();
+  renderPoolPrefs();
   const listEl = document.getElementById('pool-list');
   if (!state.loaded.sheet) {
     listEl.innerHTML = `<div class="loading">Loading players…</div>`;
@@ -667,6 +710,43 @@ function avatarHTML(p, size) {
 
 // ── HISTORY PANEL ─────────────────────────────────────────────────
 
+/** Returns the next `count` upcoming picks per the seeded snake-draft order.
+ *  Empty array if the draft hasn't started or has completed. */
+function getUpcomingPicks(count) {
+  if (!state.draft) return [];
+  if (state.draft.status === 'pending' || state.draft.status === 'complete') return [];
+  if (!state.draft.team_seed_order || state.draft.team_seed_order.length !== 8) return [];
+  const out = [];
+  for (let i = 1; i <= count; i++) {
+    const n = state.draft.current_pick_number + i;
+    if (n > DraftUtils.TOTAL_PICKS) break;
+    out.push({
+      pickNumber: n,
+      teamId: DraftUtils.teamForPick(n, state.draft.team_seed_order),
+    });
+  }
+  return out;
+}
+
+/** Rec #8 — render the "ON DECK" preview below the history list. */
+function renderUpcomingPicks() {
+  const el = document.getElementById('upcoming-picks');
+  if (!el) return;
+  const picks = getUpcomingPicks(2);
+  if (picks.length === 0) { el.hidden = true; return; }
+  el.hidden = false;
+  const rows = picks.map(p => {
+    const community = getTeamCommunity(p.teamId);
+    const name = community ? community.name : p.teamId;
+    return `
+      <div class="upcoming-pick">
+        <span class="upcoming-pick__num">#${p.pickNumber}</span>
+        <span class="upcoming-pick__team">${escapeHTML(name)}</span>
+      </div>`;
+  }).join('');
+  el.innerHTML = `<div class="upcoming-picks__title">On deck</div>${rows}`;
+}
+
 function renderHistory() {
   const listEl = document.getElementById('history-list');
   const countEl = document.getElementById('history-count');
@@ -679,6 +759,7 @@ function renderHistory() {
   });
   if (sorted.length === 0) {
     listEl.innerHTML = `<div class="history-list__empty">No picks yet</div>`;
+    renderUpcomingPicks();
     return;
   }
   // Find most-recent non-undone pick for UNDO eligibility
@@ -700,6 +781,7 @@ function renderHistory() {
   listEl.querySelectorAll('.history-row__undo').forEach(btn => {
     btn.addEventListener('click', () => undoPick(btn.dataset.pickId));
   });
+  renderUpcomingPicks();
 }
 
 // ── CONFIRM MODAL ─────────────────────────────────────────────────

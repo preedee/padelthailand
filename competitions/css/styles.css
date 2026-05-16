@@ -29,7 +29,11 @@
 /* --- CSS Custom Properties --- */
 :root {
   --black: #0A0A0A;
-  --gold: #C9A84C;
+  /* --gold unified to the Community Cup electric gold (was #C9A84C antique)
+     so the tournament hub and draft screens share one accent. All four
+     var(--gold) consumers across styles.css + draft-commissioner.css
+     pick this up automatically. */
+  --gold: #FFB703;
   --green: #085D3C;
   --green-support: #3A5C36;
   --white: #FFFFFF;
