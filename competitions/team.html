@@ -22,6 +22,7 @@
   <header class="team__header" role="banner">
     <div class="team__header-left">
       <img class="team__brand-logo" src="assets/tps-monogram.png" alt="TPS">
+      <a class="team__back-hub" id="team-back-hub" href="team.html" hidden>← HUB</a>
     </div>
     <div class="team__header-center">
       <h1 class="team__title" id="team-title">Bangkok Community Cup</h1>
@@ -37,6 +38,10 @@
   <div class="team__reconnect" id="team-reconnect" role="status" aria-live="polite" hidden>
     <span class="pulse"></span>
     <span>Reconnecting…</span>
+  </div>
+
+  <div class="pick-toast" id="pick-toast" role="status" aria-live="polite">
+    <span class="toast__pre">You picked</span><span class="toast__name" id="pick-toast-name">—</span>
   </div>
 
   <!-- ============ POOL VIEW ============ -->
@@ -105,6 +110,9 @@
       </div>
     </div>
   </section>
+
+  <!-- ============ HUB VIEW (Rec #6) ============ -->
+  <section class="team__view team__view--hub" data-view="hub" id="team-view-hub" hidden></section>
 
   <!-- Inline error block (missing/invalid params, fetch failures, etc) -->
   <div class="team__error" id="team-error" hidden></div>
