@@ -19,10 +19,15 @@
   // ──────────────────────────────────────────────────────────
   const params   = new URLSearchParams(window.location.search);
   const SLUG     = params.get('slug') || 'community-cup';
-  // Per-competition stub sets window.__DRAFT_BASE (e.g. "/competitions/tps-may2026/draft").
-  // When present, team-name links point at the clean per-community URL under it;
-  // otherwise they fall back to the generic engine page (team.html?community=).
-  const DRAFT_BASE = (window.__DRAFT_BASE || '').replace(/\/+$/, '');
+  // Team-page links on the projector are built from one of two stub-set
+  // globals (new takes precedence, legacy retained for old stubs):
+  //   __COMMUNITY_BASE — directory-style URLs (current convention):
+  //                       <BASE>/<slug>/        → /competitions/tps-may2026/community/<slug>/
+  //   __DRAFT_BASE     — extensionless URLs (legacy stubs, kept working):
+  //                       <BASE>/<slug>          → /competitions/tps-may2026/draft/<slug>
+  // When neither is set, fall back to the generic engine URL.
+  const COMMUNITY_BASE = (window.__COMMUNITY_BASE || '').replace(/\/+$/, '');
+  const DRAFT_BASE     = (window.__DRAFT_BASE     || '').replace(/\/+$/, '');
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
   const N_TEAMS  = 8;
@@ -504,9 +509,11 @@
       ? `<img src="${escapeHtml(community.logoPath)}" alt="${escapeHtml(community.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(tInitials)}'}))">`
       : escapeHtml(tInitials);
     const { F, M } = rosterFor(community.id);
-    const teamHref = DRAFT_BASE
-      ? `${DRAFT_BASE}/${escapeHtml(community.id)}`
-      : `team.html?community=${escapeHtml(community.id)}`;
+    const teamHref = COMMUNITY_BASE
+      ? `${COMMUNITY_BASE}/${escapeHtml(community.id)}/`   // directory-style → /<slug>/
+      : DRAFT_BASE
+        ? `${DRAFT_BASE}/${escapeHtml(community.id)}`       // legacy extensionless
+        : `team.html?community=${escapeHtml(community.id)}`; // engine fallback
 
     // Average levels — recomputed every render, so they track drafts live.
     const avgTeam   = averageLevel(F.concat(M));
