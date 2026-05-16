@@ -589,7 +589,7 @@
       // foreground the upcoming pick number.
       elNextLabel.textContent = sameTeamBackToBack
         ? 'BACK-TO-BACK'
-        : `NEXT UP · PICK ${pickN + 1}`;
+        : 'NEXT UP';
       elNextName.textContent  = sameTeamBackToBack
         ? `PICK ${pickN + 1}`
         : (nextCommunity.name || nextCommunity.id);

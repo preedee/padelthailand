@@ -146,6 +146,12 @@ input  { font: inherit; color: inherit; }
 /* ---------- View visibility (driven by data-view on .team__app) ---------- */
 .team__app[data-view="pool"] #team-view-pool { display: flex; }
 .team__app[data-view="team"] #team-view-team { display: flex; }
+.team__app[data-view="hub"]  #team-view-hub  { display: flex; }
+
+/* Rec #6 — in neutral pool mode (no community), suppress the POOL/TEAM
+   pill since there's no TEAM destination to swap to. The "← HUB" chevron
+   in the header is the only navigation out. */
+.team__app.is-no-community .team__view--pool .team__pill { display: none; }
 .team__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
 
 /* ---------- Vertical pill toggle (POOL / TEAM) — load-bearing #9 ---------- */
@@ -295,10 +301,8 @@ input  { font: inherit; color: inherit; }
   font-size: 10px;
   letter-spacing: 0.3px;
 }
-/* The captain's own community — accent ring so they spot it instantly */
-.team__prefs-chip--mine {
-  box-shadow: inset 0 0 0 1px var(--dark-accent);
-}
+/* Rec #6 — captain-mine accent ring removed: pool view is now neutral
+   for all viewers (captains see the same chips spectators do). */
 .team__prefs-chip.is-active-filter {
   background: var(--dark-accent);
   color: var(--dark-bg);
@@ -671,6 +675,212 @@ input  { font: inherit; color: inherit; }
   .team__cell-avatar { width: 32px; height: 32px; font-size: 13px; }
   .team__title       { font-size: 14px; }
   .team__search-input { padding: 10px; font-size: 13px; }
+}
+
+/* ============================================================
+   HUB VIEW (Rec #6 — front-door page)
+   The bare team.html URL (no ?community= param) renders this view:
+   prominent "Watch Live Draft" card, secondary "Browse Pool" card,
+   then a 2-col grid of team tiles for captains to tap their community.
+   ============================================================ */
+#team-view-hub {
+  flex-direction: column;
+  padding: 16px 14px 32px;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+/* Primary CTA: WATCH LIVE DRAFT — gold border, pulsing icon */
+.hub__watch {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(255,183,3,0.16), rgba(255,183,3,0.04));
+  border: 1px solid var(--dark-accent);
+  border-radius: 10px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+.hub__watch:active { transform: scale(0.985); }
+.hub__watch::after {
+  content: '→';
+  margin-left: auto;
+  color: var(--dark-accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+.hub__watch-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  display: grid; place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  position: relative;
+}
+.hub__watch-icon::before {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dark-accent);
+  opacity: 0.45;
+  animation: hub-pulse 1.8s ease-in-out infinite;
+}
+@keyframes hub-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.45; }
+  50%      { transform: scale(1.18); opacity: 0; }
+}
+.hub__watch-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hub__watch-title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.hub__watch-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--dark-text-muted);
+  text-transform: uppercase;
+}
+
+/* Secondary CTA: BROWSE PLAYER POOL — same shape, quieter palette */
+.hub__pool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 10px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  margin-top: -8px;   /* hug the watch-live card so they read as a pair */
+}
+.hub__pool:active {
+  transform: scale(0.985);
+  border-color: var(--dark-text-muted);
+}
+.hub__pool::after {
+  content: '→';
+  margin-left: auto;
+  color: var(--dark-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+}
+.hub__pool-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-muted);
+  display: grid; place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.hub__pool-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hub__pool-title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.hub__pool-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dark-text-faint);
+  text-transform: uppercase;
+}
+
+/* Section divider between CTAs and team grid */
+.hub__divider { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.hub__divider::before,
+.hub__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dark-border);
+}
+.hub__divider-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  color: var(--dark-text-faint);
+  text-transform: uppercase;
+}
+
+/* 2-column grid of team tiles (8 communities, logo + name only) */
+.hub__teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hub__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px 12px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 8px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.hub__tile:active {
+  transform: scale(0.97);
+  border-color: var(--dark-accent);
+}
+.hub__tile-logo {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--dark-bg);
+  overflow: hidden;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.hub__tile-logo img { width: 100%; height: 100%; object-fit: cover; }
+.hub__tile-name {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* "← HUB" chevron in the header-left, shown on non-hub views */
+.team__back-hub {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--dark-text-muted);
+  text-decoration: none;
+  border: 1px solid var(--dark-border);
+  border-radius: 4px;
+  text-transform: uppercase;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.team__back-hub:hover {
+  color: var(--dark-accent);
+  border-color: var(--dark-accent);
 }
 
 /* ============================================================

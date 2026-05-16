@@ -67,6 +67,9 @@
   const $tournamentLogo = document.getElementById('team-tournament-logo');
   const $teamHeader = document.getElementById('team-team-header');
   const $rosterFemale = document.getElementById('team-roster-grid-female');
+  // Rec #6 — hub view + back-to-hub chevron
+  const $hub = document.getElementById('team-view-hub');
+  const $backHub = document.getElementById('team-back-hub');
   const $rosterMale = document.getElementById('team-roster-grid-male');
   const $poolList = document.getElementById('team-pool-list');
   const $search = document.getElementById('team-search');
@@ -247,14 +250,13 @@
   }
 
   // Build the PREFERS filter row — one chip per community (logo + short name).
-  // Multi-select. The captain's own community is marked with an accent ring.
+  // Multi-select. Rec #6: the pool view is now neutral for all viewers (no
+  // captain-specific accent ring), so the chips look identical regardless
+  // of whether a community is set in the URL.
   function renderPrefsFilterRow() {
     if (!$prefsGroup) return;
-    const mine = getCommunity();
     $prefsGroup.innerHTML = state.communities.map(c => {
-      const isMine = mine && c.id === mine.id;
       const cls = ['team__chip', 'team__prefs-chip'];
-      if (isMine) cls.push('team__prefs-chip--mine');
       const logo = c.logoPath
         ? `<img class="team__prefs-chip-logo" src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml((c.name || '?').charAt(0).toUpperCase())}">`
         : `<span class="team__prefs-chip-logo">${escapeHtml((c.name || '?').charAt(0).toUpperCase())}</span>`;
@@ -528,8 +530,11 @@
   }
 
   function setView(next) {
-    state.view = next === 'pool' ? 'pool' : 'team';
+    state.view = (next === 'pool' || next === 'hub') ? next : 'team';
     $app.setAttribute('data-view', state.view);
+    // Rec #6: show the "← HUB" chevron on team/pool views, hide it on the
+    // hub itself (no point pointing back at where you are).
+    if ($backHub) $backHub.hidden = (state.view === 'hub');
   }
 
   // Build the URL for a given view, preserving every other query param.
@@ -559,6 +564,46 @@
     // Header-right mark is the tournament logo (Bangkok Community Cup) — same
     // on every draft page for visual consistency, not the captain's community.
     $tournamentLogo.innerHTML = `<img src="assets/cc-logo.png" alt="Bangkok Community Cup">`;
+  }
+
+  // Rec #6 — front-door hub. Renders when no ?community= is set: prominent
+  // "Watch Live Draft" CTA, secondary "Browse Pool" CTA, then a 2-col grid
+  // of 8 community tiles (logo + name) linking to team.html?community=<id>.
+  function renderHub() {
+    if (!$hub) return;
+    const tiles = state.communities.map(c => {
+      const fallback = (c.name || '?').charAt(0).toUpperCase();
+      const logo = c.logoPath
+        ? `<img src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml(fallback)}">`
+        : `<span style="font-family:'SuperBlue',serif;font-weight:700;font-size:20px;color:var(--dark-text-muted)">${escapeHtml(fallback)}</span>`;
+      const href = `team.html?community=${encodeURIComponent(c.id)}`;
+      return `
+        <a class="hub__tile" href="${href}">
+          <div class="hub__tile-logo">${logo}</div>
+          <div class="hub__tile-name">${escapeHtml(c.name || c.id)}</div>
+        </a>`;
+    }).join('');
+
+    $hub.innerHTML = `
+      <a class="hub__watch" href="projector.html">
+        <div class="hub__watch-icon">▶</div>
+        <div class="hub__watch-text">
+          <div class="hub__watch-title">Watch Live Draft</div>
+          <div class="hub__watch-sub">See picks happen in real time</div>
+        </div>
+      </a>
+      <a class="hub__pool" href="team.html?pool">
+        <div class="hub__pool-icon">⌕</div>
+        <div class="hub__pool-text">
+          <div class="hub__pool-title">Browse Player Pool</div>
+          <div class="hub__pool-sub">All players available in the draft</div>
+        </div>
+      </a>
+      <div class="hub__divider">
+        <span class="hub__divider-label">Captains — tap your team</span>
+      </div>
+      <div class="hub__teams">${tiles}</div>`;
+    attachImgFallbacks($hub);
   }
 
   function pillHTML(currentView) {
@@ -1003,37 +1048,63 @@
 
   async function boot() {
     wireEvents();
-    setView(state.view);
 
-    // Param validation
-    if (!COMMUNITY_SLUG) {
-      showError('Missing ?community=<community-id>. Bookmark e.g. team.html?community=coco-padel (team view) or team.html?community=coco-padel&pool (pool view).');
-      return;
-    }
-
+    // Sheet data is needed for ALL views (hub needs communities; team needs
+    // communities+players; neutral pool needs communities+players). Loading
+    // it first means we can branch on the result without re-fetching.
     try {
       await loadSheetData();
     } catch (e) {
       console.error(e);
-      showError(`Could not load roster: ${e.message}`);
+      showError(`Could not load: ${e.message}`);
       return;
     }
 
+    const hasPool = params.has('pool');
+
+    // Rec #6 — Hub view (front door): no community AND not asking for pool.
+    if (!COMMUNITY_SLUG && !hasPool) {
+      renderHub();
+      setView('hub');
+      return;
+    }
+
+    // Rec #6 — Neutral pool view: ?pool with no community context. Same pool
+    // data, no captain-specific PREFERS highlighting. POOL/TEAM pill is
+    // suppressed via the .is-no-community class on $app (CSS hides it).
+    if (!COMMUNITY_SLUG && hasPool) {
+      $app.classList.add('is-no-community');
+      renderPrefsFilterRow();
+      setView('pool');
+      try {
+        await loadDraftData();
+      } catch (e) {
+        console.warn('Draft data unavailable; rendering pre-draft state.', e);
+        setReconnecting(true);
+      }
+      renderPool();
+      subscribeAll();
+      return;
+    }
+
+    // Community param present but unknown → silently fall back to the hub
+    // rather than the old red dev-error (consistent with Rec #6's spirit
+    // of "no error states for end users — give them a way forward").
     if (!getCommunity()) {
-      const ids = state.communities.map(c => c.id).join(', ');
-      showError(`Unknown community "${COMMUNITY_SLUG}". Known: ${ids || '(none loaded)'}.`);
+      renderHub();
+      setView('hub');
       return;
     }
 
-    renderPrefsFilterRow();   // communities are loaded — build the PREFERS chips
-
+    // Standard captain flow: community-specific team and pool views.
+    setView(state.view);
+    renderPrefsFilterRow();
     try {
       await loadDraftData();
     } catch (e) {
       console.warn('Draft data unavailable; rendering pre-draft state.', e);
       setReconnecting(true);
     }
-
     renderAll();
     subscribeAll();
   }
