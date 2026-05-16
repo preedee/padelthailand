@@ -517,7 +517,11 @@ input  { font: inherit; color: inherit; }
 
 .team__roster-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Rec #10 — adaptive column count: 5 columns on iPhone 12+/SE2 (390-414px
+     viewport ≈ 362-386px usable), 4 columns on iPhone SE1 / Android-mini
+     (<373px usable). Wider cells = more legible names/ratings in dim venue
+     light. Female + male sections still stack vertically (load-bearing #5). */
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 6px;
 }
 .team__roster-divider {
