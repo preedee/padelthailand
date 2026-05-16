@@ -21,6 +21,22 @@
         window.location.replace('/competition.html');
         return;
       }
+      // QA Critical-1 — smart fallback for deep tournament paths.
+      // A mistyped community slug like /competitions/tps-may2026/community/typo/
+      // used to bounce to the Padel Thailand calendar (confusing for captains
+      // arriving from a shared link). Now: any unmatched path under a known
+      // tournament directory falls back to that tournament's hub instead.
+      var tournamentMatch = path.match(/^\/competitions\/([^/]+)\//);
+      if (tournamentMatch) {
+        var slug = tournamentMatch[1];
+        if (slug === 'tps-may2026') {
+          window.location.replace('/competitions/tps-may2026/home/');
+          return;
+        }
+        // Other tournaments: fall back to their landing page.
+        window.location.replace('/competitions/' + slug + '/');
+        return;
+      }
       // For any other 404, redirect to home
       window.location.replace('/');
     })();
