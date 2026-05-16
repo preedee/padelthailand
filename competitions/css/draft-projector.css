@@ -1133,7 +1133,7 @@ html, body {
   }
 
   /* NEXT — row 2 full-width chip. Label and team name read inline:
-     "NEXT UP · PICK 4 · PADEL PA?" */
+     "NEXT UP · PADEL PA?" */
   .next-cell {
     grid-column: 1 / -1; grid-row: 2;
     justify-content: flex-start;
@@ -1142,9 +1142,10 @@ html, body {
     border-top: 1px dashed var(--line);
     opacity: 0.7;
   }
+  /* The tiny nlogo placeholder doesn't render an image (the moment-bar
+     mini-box is too small to be readable on phone) — hide it entirely. */
   .next-cell .nlogo {
-    width: 24px;
-    font-size: 11px;
+    display: none;
   }
   .next-cell .info {
     flex-direction: row;
@@ -1454,11 +1455,23 @@ html, body {
   .team-card.next::after { content: none; }
 
   /* ============== PICK OVERLAY — portrait stack ============== */
+  /* The desktop overlay is a centered flex-column with `max-height: 80vh`
+     and child blocks declared `flex: 1 1 0` so the two blocks split the
+     row-width evenly when rendered side-by-side. In portrait we stack
+     them vertically, so the same `flex: 1 1 0` collapses each block's
+     height to ~0 (basis 0, no available row-height to grow into) and
+     the avatar overflows the clipped block — the bug in the screenshot.
+     Fix: blocks size to their natural content height, inner allows
+     scroll if the stack is too tall, no max-height cap. */
   .pick-overlay__inner {
     width: 100%;
-    max-height: 92vh;
-    gap: 18px;
-    padding: 14px 14px 18px;
+    max-height: none;
+    height: auto;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 14px;
+    padding: 18px 14px;
   }
   .pick-overlay__header {
     font-size: 13px;
@@ -1468,11 +1481,16 @@ html, body {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    flex: none;
+    width: 100%;
   }
   .pick-overlay__block {
+    flex: none;             /* override desktop `flex: 1 1 0` */
+    min-height: auto;
     padding: 18px 14px;
     gap: 8px;
     border-radius: 10px;
+    width: 100%;
   }
   .pick-overlay__avatar,
   .pick-overlay__logo-img,

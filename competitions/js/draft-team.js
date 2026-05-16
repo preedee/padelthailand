@@ -574,34 +574,58 @@
     return ($backHub && $backHub.getAttribute('href')) || 'team.html';
   }
 
+  // Pool and projector URLs are derived from the hub URL so a stub only
+  // needs to set the chevron href — sibling files come along automatically.
+  //   Production hub:  tps-may2026/home.html
+  //     → pool:        tps-may2026/pool.html
+  //     → projector:   tps-may2026/projector.html
+  //     → community:   tps-may2026/community/<slug>/ (directory-style)
+  //   Local-dev hub:   team.html  (no tournament dir; everything bare)
+  //     → pool:        team.html?pool         (query-param fallback)
+  //     → projector:   projector.html         (top-level)
+  //     → community:   team.html?community=X  (query-param fallback)
+  function isTournamentScopedHub() { return hubFile().endsWith('/home.html'); }
+  function tournamentDir()         { return hubFile().replace(/home\.html$/, ''); }
+
+  function poolFile() {
+    return isTournamentScopedHub() ? tournamentDir() + 'pool.html' : hubFile() + '?pool';
+  }
+  function projectorFile() {
+    return isTournamentScopedHub() ? tournamentDir() + 'projector.html' : 'projector.html';
+  }
+  function communityUrl(communityId) {
+    if (isTournamentScopedHub()) {
+      return tournamentDir() + 'community/' + encodeURIComponent(communityId) + '/';
+    }
+    return hubFile() + '?community=' + encodeURIComponent(communityId);
+  }
+
   // Rec #6 — front-door hub. Renders when no ?community= is set: prominent
   // "Watch Live Draft" CTA, secondary "Browse Pool" CTA, then a 2-col grid
-  // of 8 community tiles (logo + name) linking to <hub>?community=<id>.
+  // of 8 community tiles (logo + name) linking to per-community pages.
   function renderHub() {
     if (!$hub) return;
-    const hub = hubFile();
     const tiles = state.communities.map(c => {
       const fallback = (c.name || '?').charAt(0).toUpperCase();
       const logo = c.logoPath
         ? `<img src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml(fallback)}">`
         : `<span style="font-family:'SuperBlue',serif;font-weight:700;font-size:20px;color:var(--dark-text-muted)">${escapeHtml(fallback)}</span>`;
-      const href = `${hub}?community=${encodeURIComponent(c.id)}`;
       return `
-        <a class="hub__tile" href="${href}">
+        <a class="hub__tile" href="${communityUrl(c.id)}">
           <div class="hub__tile-logo">${logo}</div>
           <div class="hub__tile-name">${escapeHtml(c.name || c.id)}</div>
         </a>`;
     }).join('');
 
     $hub.innerHTML = `
-      <a class="hub__watch" href="projector.html">
+      <a class="hub__watch" href="${projectorFile()}">
         <div class="hub__watch-icon">▶</div>
         <div class="hub__watch-text">
           <div class="hub__watch-title">Watch Live Draft</div>
           <div class="hub__watch-sub">See picks happen in real time</div>
         </div>
       </a>
-      <a class="hub__pool" href="${hub}?pool">
+      <a class="hub__pool" href="${poolFile()}">
         <div class="hub__pool-icon">⌕</div>
         <div class="hub__pool-text">
           <div class="hub__pool-title">Browse Player Pool</div>
@@ -1069,7 +1093,11 @@
       return;
     }
 
-    const hasPool = params.has('pool');
+    // Treat the clean pool.html URL (production: tps-may2026/pool.html) as
+    // equivalent to ?pool — captains share the cleaner URL but the older
+    // ?pool query still works for any link already in the wild.
+    const isPoolPath = /\/pool\.html$/i.test(window.location.pathname);
+    const hasPool = params.has('pool') || isPoolPath;
 
     // Rec #6 — Hub view (front door): no community AND not asking for pool.
     if (!COMMUNITY_SLUG && !hasPool) {
