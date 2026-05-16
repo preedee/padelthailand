@@ -1433,7 +1433,12 @@ html, body {
     max-width: 100%;
     max-height: 100%;
     width: auto;
-    height: auto;
+    /* `height: 100%`, not `auto`. Safari/WebKit ignores `max-height: 100%`
+       on a flex-child img inside a parent with aspect-ratio set, so on
+       iOS the logo would render at its full intrinsic-aspect width and
+       blow past the cell into the surrounding slot grid. Setting height
+       directly (not as a max-) is a constraint WebKit respects. */
+    height: 100%;
     object-fit: contain;
   }
   /* The inner ratings plaque moved into the team-card header — hide it
