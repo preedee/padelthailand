@@ -574,28 +574,26 @@
     return ($backHub && $backHub.getAttribute('href')) || 'team.html';
   }
 
-  // Pool and projector URLs are derived from the hub URL so a stub only
+  // Pool and live-draft URLs are derived from the hub URL so a stub only
   // needs to set the chevron href — sibling files come along automatically.
-  //   Production hub:  tps-may2026/home.html
-  //     → pool:        tps-may2026/pool.html
-  //     → projector:   tps-may2026/projector.html
-  //     → community:   tps-may2026/community/<slug>/ (directory-style)
-  //   Local-dev hub:   team.html  (no tournament dir; everything bare)
-  //     → pool:        team.html?pool         (query-param fallback)
-  //     → projector:   projector.html         (top-level)
-  //     → community:   team.html?community=X  (query-param fallback)
-  function isTournamentScopedHub() { return hubFile().endsWith('/home.html'); }
-  function tournamentDir()         { return hubFile().replace(/home\.html$/, ''); }
+  //   Production hub:  tps-may2026/home/        (directory-style, extensionless)
+  //     → pool:        tps-may2026/pool/
+  //     → draft:       tps-may2026/draft/
+  //     → community:   tps-may2026/community/<slug>/
+  //   Local-dev hub:   team.html                (no tournament dir; everything bare)
+  //     → pool:        team.html?pool           (query-param fallback)
+  //     → draft:       draft.html               (top-level file)
+  //     → community:   team.html?community=X    (query-param fallback)
+  function isTournamentScopedHub() { return /\/home\/?$/.test(hubFile()); }
+  function tournamentDir()         { return hubFile().replace(/home\/?$/, ''); }
 
   function poolFile() {
-    return isTournamentScopedHub() ? tournamentDir() + 'pool.html' : hubFile() + '?pool';
+    return isTournamentScopedHub() ? tournamentDir() + 'pool/' : hubFile() + '?pool';
   }
-  // Live-draft broadcast page. Named "projector.html" in local dev (legacy
-  // file kept for dev convenience); renamed to "draft.html" in production
-  // since "watch the draft" reads more naturally to audience/captains than
-  // operator-facing "projector".
+  // Live-draft broadcast page. Renamed from "projector.html" (operator
+  // jargon) to "draft" (reads naturally to audience and captains).
   function projectorFile() {
-    return isTournamentScopedHub() ? tournamentDir() + 'draft.html' : 'projector.html';
+    return isTournamentScopedHub() ? tournamentDir() + 'draft/' : 'draft.html';
   }
   function communityUrl(communityId) {
     if (isTournamentScopedHub()) {
@@ -1097,10 +1095,11 @@
       return;
     }
 
-    // Treat the clean pool.html URL (production: tps-may2026/pool.html) as
-    // equivalent to ?pool — captains share the cleaner URL but the older
+    // Treat the clean pool URL (production: tps-may2026/pool/ or /pool/index.html)
+    // as equivalent to ?pool — captains share the cleaner URL but the older
     // ?pool query still works for any link already in the wild.
-    const isPoolPath = /\/pool\.html$/i.test(window.location.pathname);
+    // Matches: /pool, /pool/, /pool/index.html, and legacy /pool.html.
+    const isPoolPath = /\/pool(\.html|\/(index\.html)?)?$/i.test(window.location.pathname);
     const hasPool = params.has('pool') || isPoolPath;
 
     // Rec #6 — Hub view (front door): no community AND not asking for pool.

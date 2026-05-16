@@ -1063,12 +1063,14 @@ html, body {
        Row 1:  [ON CLOCK logo + team + pick-meta]  |  [TIMER]
        Row 2:  [NEXT UP chip — full width, demoted]
      Grid: 2 cols × 2 rows; on-clock takes the flexible space, timer is
-     auto-sized on the right; NEXT spans both cols on row 2. */
+     auto-sized on the right; NEXT spans both cols on row 2. Generous
+     column-gap so the team name's ellipsis doesn't visually touch the
+     timer at overtime (negative 6-char) values. */
   .moment {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
-    column-gap: 12px;
+    column-gap: 16px;
     row-gap: 6px;
     padding: 10px 4px 8px;
     align-items: center;
@@ -1122,9 +1124,13 @@ html, body {
     align-items: flex-end;
     gap: 2px;
   }
+  /* Timer scales down on phones — at overtime the value grows to 6 chars
+     (`-14:42`); a 36px font crowds the team-name. clamp() keeps it
+     readable but compact, growing back on larger phones. */
   .timer-num {
-    font-size: 36px;
+    font-size: clamp(26px, 8vw, 36px);
     line-height: 0.85;
+    font-variant-numeric: tabular-nums;
   }
   .timer-label {
     font-size: 9px;
@@ -1295,7 +1301,11 @@ html, body {
   .team-card > .team-stats .stat {
     display: inline-flex;
     flex-direction: row;
-    align-items: baseline;
+    /* `center`, not `baseline` — the symbol glyphs (♀ ⚥ ♂) and the
+       JetBrains Mono digits don't share a baseline on iOS Safari, so
+       baseline alignment makes the symbols look offset. Center keeps
+       them visually aligned regardless of font metrics. */
+    align-items: center;
     gap: 3px;
     padding: 0;
     background: none;

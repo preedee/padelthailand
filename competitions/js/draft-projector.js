@@ -1279,7 +1279,7 @@
     }
 
     // Sheet — communities + players in parallel.
-    // Sheet ID resolution: window.__SHEET_ID (set inline in projector.html
+    // Sheet ID resolution: window.__SHEET_ID (set inline in draft.html
     // before data.js loads) > ?sheet= param > data.js DEFAULT_SHEET_ID.
     const dataReady = new Promise((resolve) => {
       let resolved = false;
