@@ -672,3 +672,84 @@ input  { font: inherit; color: inherit; }
   .team__title       { font-size: 14px; }
   .team__search-input { padding: 10px; font-size: 13px; }
 }
+
+/* ============================================================
+   PICK NOTIFICATION (Rec #5 — audit Variant B)
+   Spring-in + gold ring on the just-filled cell, plus a toast
+   banner sliding down from the top. JS adds .just-picked to the
+   cell and .show to #pick-toast when a NEW pick lands for this team.
+   ============================================================ */
+.team__roster-cell.just-picked {
+  animation:
+    cell-pick-spring 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 1 both,
+    cell-pick-glow   1.8s  ease-out                            1 both;
+  z-index: 3;   /* glow shouldn't be clipped by sibling cell borders */
+}
+@keyframes cell-pick-spring {
+  0%   { transform: scale(0.88); opacity: 0.55; }
+  55%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes cell-pick-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+  15%  { box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.85),
+                     0 0 36px 10px rgba(255, 183, 3, 0.50); }
+  65%  { box-shadow: 0 0 0 1px rgba(255, 183, 3, 0.30),
+                     0 0 14px 4px rgba(255, 183, 3, 0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+}
+
+.pick-toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow:
+    0 6px 24px rgba(255, 183, 3, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.10);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pick-toast .toast__pre {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  opacity: 0.75;
+  margin-right: 6px;
+}
+/* 3.2s total: 250ms slide-in, 2.15s hold, 800ms slide-out
+   (~1s longer than the original demo per user feedback). */
+.pick-toast.show {
+  animation: pick-toast-in 3.2s cubic-bezier(0.16, 1, 0.3, 1) 1 forwards;
+}
+@keyframes pick-toast-in {
+  0%   { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+  8%   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+  75%  { transform: translateX(-50%) translateY(0);     opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+}
+
+/* Honor the OS preference. Disable cell spring/glow and collapse the
+   toast to an instant fade so screen readers still hear the aria-live
+   announcement but motion-sensitive users don't get the bounce. */
+@media (prefers-reduced-motion: reduce) {
+  .team__roster-cell.just-picked,
+  .pick-toast.show {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+  }
+}

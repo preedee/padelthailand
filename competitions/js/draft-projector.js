@@ -528,7 +528,7 @@
     // sit invisibly outside the visible grid area. Also hidden by CSS when
     // the card is expanded (the full roster makes these stats redundant).
     const { made: picksMade, remaining: picksRemaining, total: picksTotal } = summaryFor(community.id);
-    const summaryHtml = `<span class="count">${picksMade}/${picksTotal} Players</span><span class="sep">·</span>${picksRemaining} Remaining Picks`;
+    const summaryHtml = `<span class="count">${picksMade}/${picksTotal} Players</span><span class="sep">·</span>${picksRemaining} Left`;
 
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">

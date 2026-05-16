@@ -83,6 +83,7 @@
     draft: null,
     picks: [],           // [{ id, draft_id, pick_number, team_id, player_id, is_undone }]
     picksHash: '',       // signature of the picks list used to skip no-op rerenders
+    firstPicksRendered: false, // gate for pick-notification animation (skip on initial load)
     search: '',
     sort: 'rating-desc',
     // gender/hand/side are single-value; prefs is a multi-select array of community ids.
@@ -611,7 +612,7 @@
       : escapeHtml(firstName(player.name));
 
     return `
-      <div class="${cls.join(' ')}">
+      <div class="${cls.join(' ')}" data-player-id="${escapeHtml(player.tpsId || '')}">
         <div class="team__cell-avatar">${avatarInner}</div>
         <div class="team__cell-fname">${nameHTML}</div>
         <div class="team__cell-rating">${ratingStr(player.rating)}</div>
@@ -888,11 +889,75 @@
     const fresh = await window.DraftSupabase.fetchPicks(state.draft.id);
     const sig = picksSignature(fresh);
     if (sig !== state.picksHash) {
+      // Detect new picks for THIS team before we overwrite state.picks.
+      // Only fires after the first successful render — the initial boot
+      // populates state.picks via bootData() (not refreshPicks), so the
+      // first refreshPicks call after boot is the first one where a delta
+      // is actually a NEW pick a captain should be notified about.
+      const newForMe = state.firstPicksRendered ? detectNewPicksForMe(fresh) : [];
+
       state.picks = fresh;
       state.picksHash = sig;
       renderRoster();
       renderPool();
+
+      if (newForMe.length) {
+        notifyPicks(newForMe);
+      }
+      state.firstPicksRendered = true;
     }
+  }
+
+  /** Returns the player records for picks that are new (vs prior state.picks)
+   *  AND belong to this captain's community. Sorted oldest → newest. */
+  function detectNewPicksForMe(freshPicks) {
+    const myId = (getCommunity() || {}).id;
+    if (!myId) return [];
+    const oldIds = new Set(state.picks.filter(p => !p.is_undone).map(p => p.id));
+    const newPicks = freshPicks
+      .filter(p => !p.is_undone && p.team_id === myId && !oldIds.has(p.id))
+      .sort((a, b) => a.pick_number - b.pick_number);
+    return newPicks.map(pk => {
+      const player = state.playersByTpsId.get(pk.player_id);
+      return player || { tpsId: pk.player_id, name: `#${pk.player_id}` };
+    });
+  }
+
+  /** Animate the just-filled cells (staggered for multi-pick) + show toast
+   *  for the most recent. Called AFTER renderRoster so cells exist in DOM. */
+  function notifyPicks(players) {
+    players.forEach((player, idx) => {
+      setTimeout(() => {
+        const cell = document.querySelector(`.team__roster-cell[data-player-id="${cssEscape(player.tpsId)}"]`);
+        if (!cell) return;
+        cell.classList.remove('just-picked');
+        void cell.offsetWidth;            // force reflow so animation re-runs
+        cell.classList.add('just-picked');
+        // Strip the class after the animation completes so it can re-fire
+        // on a later pick that lands in the same cell after undo+repick.
+        setTimeout(() => cell.classList.remove('just-picked'), 2200);
+      }, idx * 150);                       // stagger when multiple land at once
+    });
+    // Toast for the most recent pick only.
+    const latest = players[players.length - 1];
+    showPickToast(latest);
+  }
+
+  /** Minimal CSS.escape polyfill (handles the only chars TPS IDs use). */
+  function cssEscape(s) {
+    return String(s || '').replace(/(["\\])/g, '\\$1');
+  }
+
+  /** Slide-in / hold / slide-out toast at the top of the page. */
+  function showPickToast(player) {
+    const toast = document.getElementById('pick-toast');
+    if (!toast || !player) return;
+    const nameEl = document.getElementById('pick-toast-name');
+    if (nameEl) nameEl.textContent = firstName(player.name || '');
+    toast.classList.remove('show');
+    void toast.offsetWidth;                // retrigger animation
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3300);
   }
 
   function subscribeAll() {
