@@ -715,6 +715,13 @@
   function exitPickOverlay() {
     if (!elPickOverlay || !state.overlayPhase) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
+    // Hand-off cue: flash the destination team card so the audience's eye
+    // follows from the closing popup to the card that just got a new player.
+    // Skip on undo (no team to celebrate). Read teamId before we null the
+    // pendingOverlay state below.
+    const isUndo = elPickOverlay.classList.contains('is-undone');
+    const handoffTeamId = !isUndo && state.pendingOverlay && state.pendingOverlay.teamId;
+    if (handoffTeamId) flashTeamCard(handoffTeamId);
     state.overlayPhase = 'exiting';
     elPickOverlay.classList.remove('is-suspense', 'is-revealed', 'is-undone');
     elPickOverlay.classList.add('is-exiting');
@@ -727,6 +734,21 @@
       state.overlayPhase   = null;
       log('overlay → hidden');
     }, 420);
+  }
+
+  // Pulse a golden ring around the team card whose roster just gained a
+  // player. Animation is owned by CSS (.team-card.just-picked-flash); JS
+  // only adds/removes the class and force-restarts it if the same team
+  // gets back-to-back picks. Re-render of the grid wipes inline classes, so
+  // we re-apply on each call rather than relying on persisted state.
+  function flashTeamCard(teamId) {
+    if (!elTeamsGrid || !teamId) return;
+    const card = elTeamsGrid.querySelector(`.team-card[data-team-id="${CSS.escape(teamId)}"]`);
+    if (!card) return;
+    card.classList.remove('just-picked-flash');
+    void card.offsetWidth;  // restart CSS animation
+    card.classList.add('just-picked-flash');
+    setTimeout(() => card.classList.remove('just-picked-flash'), 2000);
   }
 
   // ── Undo overlay ────────────────────────────────────────────────────

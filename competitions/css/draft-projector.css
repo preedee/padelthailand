@@ -396,6 +396,44 @@ html, body {
 .team-card.back-to-back::before { content: 'BACK-TO-BACK'; }
 .team-card.back-to-back::after  { content: none; }
 
+/* Hand-off cue when the pick-confirm overlay closes: the receiving team's
+   card pulses with a golden ring so the audience's eye lands on the freshly-
+   updated roster. JS adds .just-picked-flash for ~2s, then removes it. The
+   animation uses only box-shadow (no layout-affecting properties) so it
+   layers cleanly on top of .live / .next / .back-to-back states. */
+.team-card.just-picked-flash {
+  animation: team-card-flash 1.8s ease-out 1 both;
+  /* z-stack so the glow isn't clipped by sibling cards. */
+  z-index: 3;
+}
+@keyframes team-card-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+  18% {
+    box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.85),
+                0 0 36px 10px rgba(255, 183, 3, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.45),
+                0 0 28px 6px rgba(255, 183, 3, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-card.just-picked-flash {
+    animation: team-card-flash-reduced 600ms linear 1 both;
+  }
+  @keyframes team-card-flash-reduced {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+    50%      { box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.6); }
+  }
+}
+
 .team-card > .tname {
   display: block;
   font-family: 'SuperBlue', Georgia, serif;
@@ -1182,21 +1220,21 @@ html, body {
      roster grid at cell (col 2, row 3), the outer one stays hidden. */
   .team-card.is-expanded > .team-stats { display: none; }
 
-  /* Roster: 3 columns × 4 rows of uniform squares. The two inner cells
-     (col 2, rows 2-3) hold the team logo and the gender-averages plaque;
-     the 10 player slots auto-flow around them in DOM order:
-        [F1]   [F2   ]  [F3]    row 1
-        [F4]   [LOGO ]  [F5]    row 2
-        [M1]   [STATS]  [M2]    row 3
-        [M3]   [M4   ]  [M5]    row 4
-     `aspect-ratio: 1` on every grid item locks each cell to a perfect
-     square sized by the column width. Slots stay stacked (avatar over name). */
+  /* Roster: 4 columns × 3 rows of uniform squares. The two inner cells
+     (col 2 row 2, col 3 row 2) hold the team logo and the gender-averages
+     plaque; the 10 player slots auto-flow around them in DOM order:
+        [F1]   [F2  ]  [F3  ]   [F4]   row 1
+        [F5]   [LOGO]  [STATS]  [M1]   row 2
+        [M2]   [M3  ]  [M4  ]   [M5]   row 3
+     `aspect-ratio: 1` keeps each cell a perfect square sized by the column
+     width. Interior elements (avatar, flag, name) use percentage/vw units
+     so they scale with the cell as the viewport grows. */
   .team-card.is-expanded > .roster10 {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 8px;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 1fr;
     gap: 6px;
   }
@@ -1206,19 +1244,29 @@ html, body {
     aspect-ratio: 1;
     min-height: 0;
   }
+  /* Player slot interior — avatar fills 62% of the cell (cell-relative,
+     so it scales with the grid), name uses clamp() viewport units so
+     text grows on bigger phones without overflowing tiny ones. */
   .team-card.is-expanded .slot {
-    padding: 4px 2px;
-    gap: 4px;
+    padding: 4% 2%;
+    gap: 4%;
+    overflow: hidden;
   }
   .team-card.is-expanded .slot .avatar {
-    width: 40px;
-    font-size: 14px;
+    width: 62%;
+    height: auto;        /* aspect-ratio: 1 from base rule keeps it circular */
+    font-size: clamp(12px, 3.4vw, 20px);
   }
+  /* Flag sits on the avatar — size it as a fraction of the avatar so
+     the badge stays proportional whether the avatar is 45px or 100px. */
   .team-card.is-expanded .slot .avatar .flag {
-    width: 13px; height: 10px;
+    width: 34%;
+    height: 26%;
+    bottom: -4%;
+    left: -4%;
   }
   .team-card.is-expanded .slot .fname {
-    font-size: 11px;
+    font-size: clamp(9px, 2.6vw, 13px);
     letter-spacing: 0.02em;
     max-width: 100%;
   }
@@ -1239,13 +1287,14 @@ html, body {
     object-fit: contain;
   }
   /* Gender-averages plaque — three stacked rows (♀ / ⚥ / ♂) read vertically
-     inside the square cell. Mirrors the .stat-* colour scheme so the inner
-     plaque matches the desktop stats row. */
+     inside the square cell. Sits next to the logo in the 4×3 layout
+     (col 3, row 2). Mirrors the .stat-* colour scheme so the inner plaque
+     matches the desktop stats row. */
   .team-card.is-expanded .roster-plaque-stats {
     display: flex;
     flex-direction: column;
-    grid-column: 2;
-    grid-row: 3;
+    grid-column: 3;
+    grid-row: 2;
     align-items: stretch;
     justify-content: center;
     gap: 3px;
