@@ -46,7 +46,7 @@
     const seg = decodeURIComponent(m[1]).toLowerCase();
     // Ignore segments that are file/page names — they're not community slugs.
     if (/\.[a-z0-9]+$/i.test(seg)) return '';
-    if (seg === 'team' || seg === 'draft' || seg === 'projector' || seg === 'commissioner') return '';
+    if (seg === 'team' || seg === 'draft' || seg === 'projector' || seg === 'commissioner' || seg === 'pool' || seg === 'home') return '';
     return seg;
   })();
   const COMMUNITY_SLUG = (
