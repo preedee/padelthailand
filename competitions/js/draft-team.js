@@ -590,8 +590,12 @@
   function poolFile() {
     return isTournamentScopedHub() ? tournamentDir() + 'pool.html' : hubFile() + '?pool';
   }
+  // Live-draft broadcast page. Named "projector.html" in local dev (legacy
+  // file kept for dev convenience); renamed to "draft.html" in production
+  // since "watch the draft" reads more naturally to audience/captains than
+  // operator-facing "projector".
   function projectorFile() {
-    return isTournamentScopedHub() ? tournamentDir() + 'projector.html' : 'projector.html';
+    return isTournamentScopedHub() ? tournamentDir() + 'draft.html' : 'projector.html';
   }
   function communityUrl(communityId) {
     if (isTournamentScopedHub()) {
