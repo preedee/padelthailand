@@ -1332,6 +1332,11 @@ html, body {
   .team-card > .team-stats .stat-label {
     font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
     font-weight: 600;
+    /* SF Pro renders ♀ ⚥ ♂ with their visual centers sitting ~2px below
+       their character-box centers, so even with identical box heights
+       the symbols look offset from the JetBrains Mono digits. This nudge
+       lifts the glyphs to optically match the digit midline. */
+    transform: translateY(-1.5px);
   }
   .team-card > .team-stats .stat-female .stat-label { color: var(--female); }
   .team-card > .team-stats .stat-male   .stat-label { color: var(--male); }
