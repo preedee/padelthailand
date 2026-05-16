@@ -19,15 +19,12 @@
   // ──────────────────────────────────────────────────────────
   const params   = new URLSearchParams(window.location.search);
   const SLUG     = params.get('slug') || 'community-cup';
-  // Team-page links on the projector are built from one of two stub-set
-  // globals (new takes precedence, legacy retained for old stubs):
-  //   __COMMUNITY_BASE — directory-style URLs (current convention):
-  //                       <BASE>/<slug>/        → /competitions/tps-may2026/community/<slug>/
-  //   __DRAFT_BASE     — extensionless URLs (legacy stubs, kept working):
-  //                       <BASE>/<slug>          → /competitions/tps-may2026/draft/<slug>
-  // When neither is set, fall back to the generic engine URL.
+  // Team-page links on the projector are built from __COMMUNITY_BASE set by
+  // the per-competition stub (directory-style URLs):
+  //   window.__COMMUNITY_BASE = '/competitions/tps-may2026/community'
+  //   → generates: /competitions/tps-may2026/community/<slug>/
+  // When not set, falls back to the generic engine URL.
   const COMMUNITY_BASE = (window.__COMMUNITY_BASE || '').replace(/\/+$/, '');
-  const DRAFT_BASE     = (window.__DRAFT_BASE     || '').replace(/\/+$/, '');
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
   const N_TEAMS  = 8;
@@ -510,10 +507,8 @@
       : escapeHtml(tInitials);
     const { F, M } = rosterFor(community.id);
     const teamHref = COMMUNITY_BASE
-      ? `${COMMUNITY_BASE}/${escapeHtml(community.id)}/`   // directory-style → /<slug>/
-      : DRAFT_BASE
-        ? `${DRAFT_BASE}/${escapeHtml(community.id)}`       // legacy extensionless
-        : `team.html?community=${escapeHtml(community.id)}`; // engine fallback
+      ? `${COMMUNITY_BASE}/${escapeHtml(community.id)}/`
+      : `team.html?community=${escapeHtml(community.id)}`;
 
     // Average levels — recomputed every render, so they track drafts live.
     const avgTeam   = averageLevel(F.concat(M));

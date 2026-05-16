@@ -1095,11 +1095,10 @@
       return;
     }
 
-    // Treat the clean pool URL (production: tps-may2026/pool/ or /pool/index.html)
-    // as equivalent to ?pool — captains share the cleaner URL but the older
-    // ?pool query still works for any link already in the wild.
-    // Matches: /pool, /pool/, /pool/index.html, and legacy /pool.html.
-    const isPoolPath = /\/pool(\.html|\/(index\.html)?)?$/i.test(window.location.pathname);
+    // Production neutral pool URL is /competitions/tps-may2026/pool/ — detect
+    // and treat as equivalent to ?pool. The ?pool query is also produced
+    // internally when a captain toggles to pool view from their team page.
+    const isPoolPath = /\/pool\/?$/i.test(window.location.pathname);
     const hasPool = params.has('pool') || isPoolPath;
 
     // Rec #6 — Hub view (front door): no community AND not asking for pool.
