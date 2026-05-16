@@ -63,6 +63,81 @@
   opacity: 1;
 }
 
+/* ============================================
+   THEME: DRAFT-LIVE (Rec #12)
+   Dark variant matching the draftday aesthetic — #061712 deep / #0E2A1E
+   elevated / #1A3A2E line / #FFB703 gold (shared via --gold after Rec #9).
+   Activated by adding .theme-draft-live to .dashboard. Per-page opt-in;
+   other tournament hubs keep the default light theme.
+   Used by: /competitions/tps-may2026/index.html
+   ============================================ */
+.dashboard.theme-draft-live {
+  background: #061712;
+  color: #FFFFFF;
+  position: relative;
+}
+/* Subtle radial-gradient + 56px grid overlay — mirrors the projector
+   broadcast aesthetic so the hub reads as part of the draftday family. */
+.dashboard.theme-draft-live::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 183, 3, 0.04) 0%, transparent 55%),
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: cover, 56px 56px, 56px 56px;
+}
+.dashboard.theme-draft-live > * { position: relative; z-index: 1; }
+
+/* Header — elevated surface + white type */
+.dashboard.theme-draft-live .header {
+  background: #0E2A1E;
+  border-bottom: 1px solid #1A3A2E;
+}
+.dashboard.theme-draft-live .header__title h1,
+.dashboard.theme-draft-live .header__title p {
+  color: #FFFFFF;
+}
+
+/* View bar — same elevated surface as header */
+.dashboard.theme-draft-live .view-bar {
+  background: #0E2A1E;
+  border-bottom: 1px solid #1A3A2E;
+}
+
+/* Main content area + content shell — deep bg */
+.dashboard.theme-draft-live .main-content,
+.dashboard.theme-draft-live .content-area {
+  background: transparent;   /* let the .dashboard bg + overlay show through */
+}
+
+/* Sidebar — elevated bg, white text, accent-gold divider on the left */
+.dashboard.theme-draft-live .sidebar {
+  background: #0E2A1E;
+  border-left: 1px solid #1A3A2E;
+  color: #FFFFFF;
+}
+.dashboard.theme-draft-live .sidebar__title,
+.dashboard.theme-draft-live .sidebar__match-team,
+.dashboard.theme-draft-live .sidebar__match-time,
+.dashboard.theme-draft-live .sidebar__court-label {
+  color: #FFFFFF;
+}
+
+/* Footer — elevated bg, dim text */
+.dashboard.theme-draft-live .footer {
+  background: #0E2A1E;
+  border-top: 1px solid #1A3A2E;
+  color: #C8D6CE;
+}
+.dashboard.theme-draft-live .footer__powered-text,
+.dashboard.theme-draft-live .footer__timestamp {
+  color: #C8D6CE;
+}
+
 html, body {
   width: 100%;
   height: 100%;
