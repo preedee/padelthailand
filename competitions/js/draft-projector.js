@@ -565,6 +565,14 @@
     elClockLogo.innerHTML = liveCommunity && liveCommunity.logoPath
       ? `<img src="${escapeHtml(liveCommunity.logoPath)}" alt="">`
       : escapeHtml(initials((liveCommunity && liveCommunity.name) || '?'));
+    // Wire the on-clock team's brand color to the clogo border (Rec #11).
+    // Same source as the per-card --team-color (community.color from the Sheet).
+    // Fall back to --accent when no live team (pre-draft / final pick / unresolved).
+    if (elMomentBlock) {
+      const clockColor = (liveCommunity && liveCommunity.color) || '';
+      if (clockColor) elMomentBlock.style.setProperty('--clock-team-color', clockColor);
+      else elMomentBlock.style.removeProperty('--clock-team-color');
+    }
 
     if (nextCommunity) {
       const sameTeamBackToBack = liveId && nextId === liveId;

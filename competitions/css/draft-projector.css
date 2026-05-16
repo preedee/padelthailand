@@ -245,7 +245,7 @@ html, body {
 .clock-cell .clogo {
   width: clamp(60px, 4.4vw, 90px); aspect-ratio: 1;
   background: var(--bg-elev);
-  border: 2px solid var(--accent);
+  border: 2px solid var(--clock-team-color, var(--accent));
   display: grid; place-items: center;
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
@@ -329,6 +329,7 @@ html, body {
 .team-card {
   background: var(--bg-elev);
   border: 1px solid var(--line);
+  border-left: 3px solid var(--team-color, var(--line));
   padding: clamp(8px, 0.7vw, 14px);
   /* Two-column grid: name + stats on the left, big logo spans both rows on
      the right. Row 3 is the roster, spanning the full width. */
@@ -438,7 +439,7 @@ html, body {
   display: block;
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(14px, 1.05vw, 19px);
+  font-size: clamp(16px, 1.4vw, 26px);
   letter-spacing: 0.06em;
   line-height: 1.1;
   color: var(--ink);
@@ -779,13 +780,13 @@ html, body {
 }
 
 .pick-overlay__name {
-  font-size: 36px;
+  font-size: clamp(48px, 5vw, 96px);
   font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.3px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--ink);
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
   max-width: 100%;
 }
 
@@ -998,12 +999,12 @@ html, body {
   }
   .projector::before { background-size: 32px 32px; }   /* tighter grid on small screens */
 
-  /* ============== HEADER — single row, drops the second logo ============== */
+  /* ============== HEADER — single row, brand left / tournament logo right ============== */
   .top-strip {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding-bottom: 8px;
   }
   .header-left,
@@ -1014,13 +1015,17 @@ html, body {
   .header-right  { flex: 0 0 auto; gap: 6px; }
 
   .brand-logo      { height: 32px; }
-  .tournament-logo { display: none; }   /* save space on phone */
+  /* Tournament logo on the right — matches the desktop layout but scaled down
+     to ~brand-logo height so the whole header still fits on one row. */
+  .tournament-logo {
+    display: block;
+    height: 28px;
+  }
   .tournament {
     font-size: 13px;
     letter-spacing: 0.10em;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+    line-height: 1.15;          /* room for descenders when it wraps */
+    white-space: normal;        /* allow 2-line wrap on narrow headers */
     max-width: 100%;
   }
   .live-pill {
@@ -1220,22 +1225,24 @@ html, body {
      roster grid at cell (col 2, row 3), the outer one stays hidden. */
   .team-card.is-expanded > .team-stats { display: none; }
 
-  /* Roster: 4 columns × 3 rows of uniform squares. The two inner cells
-     (col 2 row 2, col 3 row 2) hold the team logo and the gender-averages
-     plaque; the 10 player slots auto-flow around them in DOM order:
-        [F1]   [F2  ]  [F3  ]   [F4]   row 1
-        [F5]   [LOGO]  [STATS]  [M1]   row 2
-        [M2]   [M3  ]  [M4  ]   [M5]   row 3
-     `aspect-ratio: 1` keeps each cell a perfect square sized by the column
-     width. Interior elements (avatar, flag, name) use percentage/vw units
-     so they scale with the cell as the viewport grows. */
+  /* Roster: 4 columns × 3 rows of uniform squares. Captains anchor the
+     top-middle cells, the logo + stats sit beneath them in the center,
+     and drafted players radiate outward around the perimeter — female
+     counter-clockwise from F-captain, male clockwise from M-captain:
+        [F1]   [F-CAP]  [M-CAP]  [M1]    row 1
+        [F2]   [LOGO ]  [STATS]  [M2]    row 2
+        [F3]   [F4   ]  [M4   ]  [M3]    row 3
+     Index-driven placement (via :nth-child below) lets each slot land
+     in the correct cell — F[0]=captain → (2,1), F[1..4] fill ccw; M
+     analogously fills cw. `aspect-ratio: 1` keeps every cell a perfect
+     square; interior elements scale via %/vw units. */
   .team-card.is-expanded > .roster10 {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 8px;
     grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 1fr;
+    grid-template-rows: repeat(3, 1fr);
     gap: 6px;
   }
   .team-card.is-expanded .slot,
@@ -1244,6 +1251,20 @@ html, body {
     aspect-ratio: 1;
     min-height: 0;
   }
+  /* Explicit slot placement — counter-clockwise fill for F, clockwise for M,
+     each starting at the respective captain in row 1 of the middle. The
+     :nth-child indices line up with the F[0..4] / M[0..4] arrays produced
+     by rosterFor() (index 0 = captain, 1..4 = drafted picks in pick order). */
+  .team-card.is-expanded .row-female > .slot:nth-child(1) { grid-column: 2; grid-row: 1; }  /* F captain */
+  .team-card.is-expanded .row-female > .slot:nth-child(2) { grid-column: 1; grid-row: 1; }  /* F1 — ccw */
+  .team-card.is-expanded .row-female > .slot:nth-child(3) { grid-column: 1; grid-row: 2; }  /* F2 */
+  .team-card.is-expanded .row-female > .slot:nth-child(4) { grid-column: 1; grid-row: 3; }  /* F3 */
+  .team-card.is-expanded .row-female > .slot:nth-child(5) { grid-column: 2; grid-row: 3; }  /* F4 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(1) { grid-column: 3; grid-row: 1; }  /* M captain */
+  .team-card.is-expanded .row-male   > .slot:nth-child(2) { grid-column: 4; grid-row: 1; }  /* M1 — cw */
+  .team-card.is-expanded .row-male   > .slot:nth-child(3) { grid-column: 4; grid-row: 2; }  /* M2 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(4) { grid-column: 4; grid-row: 3; }  /* M3 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(5) { grid-column: 3; grid-row: 3; }  /* M4 */
   /* Player slot interior — avatar fills 62% of the cell (cell-relative,
      so it scales with the grid), name uses clamp() viewport units so
      text grows on bigger phones without overflowing tiny ones. */
@@ -1286,36 +1307,37 @@ html, body {
     height: auto;
     object-fit: contain;
   }
-  /* Gender-averages plaque — three stacked rows (♀ / ⚥ / ♂) read vertically
-     inside the square cell. Sits next to the logo in the 4×3 layout
-     (col 3, row 2). Mirrors the .stat-* colour scheme so the inner plaque
-     matches the desktop stats row. */
+  /* Gender-averages plaque — three rows (♀ / ⚥ / ♂) stretched to fill the
+     entire square cell. Each row gets an equal third via `flex: 1`, with
+     padding and gaps sized in % so the layout scales with cell size. */
   .team-card.is-expanded .roster-plaque-stats {
     display: flex;
     flex-direction: column;
     grid-column: 3;
     grid-row: 2;
     align-items: stretch;
-    justify-content: center;
-    gap: 3px;
-    padding: 4px 6px;
+    justify-content: stretch;
+    gap: 4%;
+    padding: 4%;
   }
   .team-card.is-expanded .roster-plaque-stats .stat {
+    flex: 1 1 0;                  /* each stat row fills 1/3 of cell height */
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 2px 4px;
-    background: rgba(255,255,255,0.03);
-    border-top: 1px solid var(--ink-faint);
+    gap: 8%;
+    padding: 0 6%;
+    background: rgba(255,255,255,0.04);
+    border-top: 2px solid var(--ink-faint);
     min-width: 0;
+    min-height: 0;
   }
   .team-card.is-expanded .roster-plaque-stats .stat-female { border-top-color: var(--female); }
   .team-card.is-expanded .roster-plaque-stats .stat-male   { border-top-color: var(--male); }
   .team-card.is-expanded .roster-plaque-stats .stat-label {
     font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 18px);
     line-height: 1;
     color: var(--ink-faint);
   }
@@ -1324,7 +1346,7 @@ html, body {
   .team-card.is-expanded .roster-plaque-stats .stat-team   .stat-label { color: var(--ink); }
   .team-card.is-expanded .roster-plaque-stats .stat-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: clamp(10px, 2.8vw, 16px);
     font-weight: 700;
     line-height: 1.1;
     color: var(--ink);
