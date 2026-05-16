@@ -673,7 +673,10 @@ function renderHistory() {
   const live = state.picks.filter(p => !p.is_undone).length;
   countEl.textContent = `${live} / ${DraftUtils.TOTAL_PICKS}`;
 
-  const sorted = [...state.picks].sort((a, b) => b.pick_number - a.pick_number);
+  const sorted = [...state.picks].sort((a, b) => {
+    if (b.pick_number !== a.pick_number) return b.pick_number - a.pick_number;
+    return (a.is_undone ? 1 : 0) - (b.is_undone ? 1 : 0);
+  });
   if (sorted.length === 0) {
     listEl.innerHTML = `<div class="history-list__empty">No picks yet</div>`;
     return;

@@ -7,6 +7,7 @@
   /* PadelThailand brand tokens (re-skinned from v12 navy/yellow) */
   --bg-deep:    #061712;                 /* deeper than primary, near-black green */
   --bg-elev:    #0E2A1E;                 /* community_cup primary */
+  --bg-chrome:  #122620;                 /* matches --dark-surface in styles.css for cross-page header consistency */
   --line:       #1A3A2E;                 /* nav_bg from Config */
   --line-bright:#3A5C36;                 /* green-support */
   --ink:        #FFFFFF;
@@ -79,7 +80,9 @@ html, body {
   grid-template-columns: var(--moment-grid);
   gap: 16px;
   align-items: center;
+  padding-top: clamp(8px, 0.8vw, 16px);
   padding-bottom: clamp(8px, 0.8vw, 16px);
+  background: var(--bg-chrome);
   border-bottom: 1px solid var(--line);
 }
 .header-left   { display: flex; align-items: center; gap: 14px; }
@@ -1312,19 +1315,30 @@ html, body {
     border-top: none;
     min-width: 0;
   }
-  .team-card > .team-stats .stat-label {
-    font-family: 'Segoe UI Symbol', 'Apple Color Emoji', sans-serif;
-    font-size: 11px;
+  /* The Apple-Color-Emoji glyphs for ♀ ⚥ ♂ on iOS sit lower than the
+     JetBrains Mono digit baseline, so even `align-items: center` looks
+     off. Forcing the system font (Apple's SF Pro / Segoe UI on Win)
+     for symbols pulls them into a normal text baseline, matching the
+     digit's visual center. Identical font-size + line-height on both
+     also guarantees equal box heights so the centers actually meet. */
+  .team-card > .team-stats .stat-label,
+  .team-card > .team-stats .stat-val {
+    display: inline-flex;
+    align-items: center;
+    height: 14px;
     line-height: 1;
+    font-size: 11px;
+  }
+  .team-card > .team-stats .stat-label {
+    font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
+    font-weight: 600;
   }
   .team-card > .team-stats .stat-female .stat-label { color: var(--female); }
   .team-card > .team-stats .stat-male   .stat-label { color: var(--male); }
   .team-card > .team-stats .stat-team   .stat-label { color: var(--ink); }
   .team-card > .team-stats .stat-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
     font-weight: 700;
-    line-height: 1;
     color: var(--ink);
   }
   .team-card > .team-stats .stat-female .stat-val { color: var(--female); }

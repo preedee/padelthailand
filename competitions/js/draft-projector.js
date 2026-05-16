@@ -595,15 +595,13 @@
     if (nextCommunity) {
       const sameTeamBackToBack = liveId && nextId === liveId;
       // Snake-draft round boundary: the same team is on the clock now AND
-      // gets the next pick. Repeating their name in the NEXT-UP cell is
-      // visual noise — replace it with a meaningful "back-to-back" tag and
-      // foreground the upcoming pick number.
+      // gets the next pick. The "BACK-TO-BACK" label signals the repeat;
+      // we still render the team name (rather than a pick number) so it's
+      // unmistakable *which* team is picking twice in a row.
       elNextLabel.textContent = sameTeamBackToBack
         ? 'BACK-TO-BACK'
         : 'NEXT UP';
-      elNextName.textContent  = sameTeamBackToBack
-        ? `PICK ${pickN + 1}`
-        : (nextCommunity.name || nextCommunity.id);
+      elNextName.textContent  = nextCommunity.name || nextCommunity.id;
       elNextLogo.innerHTML = nextCommunity.logoPath
         ? `<img src="${escapeHtml(nextCommunity.logoPath)}" alt="">`
         : escapeHtml(initials(nextCommunity.name));
