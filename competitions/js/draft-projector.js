@@ -273,48 +273,55 @@
     }
   }
 
-  // The Users tab is the system-wide directory (~14k rows, ~2.7MB). We only
-  // want it as a fallback for drafted players who aren't in Registrations
-  // (commissioner picked a TPS user directly). Lazy + cached + single-flight.
-  let _usersPromise = null;
-  function fetchUsersFromSheet() {
-    if (_usersPromise) return _usersPromise;
-    _usersPromise = (async () => {
+  // Registrations holds everyone who signed up for THIS tournament with
+  // their per-tournament data including the Avatar URL. Replaces the
+  // previous Users-tab fetch (system-wide ~14k rows, ~2.7MB) — Registrations
+  // is the per-tournament slice and includes avatar URLs natively.
+  // Lazy + cached + single-flight.
+  let _regsPromise = null;
+  function fetchRegistrationsFromSheet() {
+    if (_regsPromise) return _regsPromise;
+    _regsPromise = (async () => {
       try {
-        const rows = await fetchTabRows('Users');
+        const rows = await fetchTabRows('Registrations');
         return rows
-          .filter(r => (r['id'] || '').trim())
-          .map(r => ({
-            communityId: '',
-            playerId:    (r['id'] || '').trim(),
-            name:        (r['full_name'] || '').trim(),
-            gender:      normalizeGender(r['gender']),
-            isCaptain:   false,
-            avatar:      (r['avatar'] && r['avatar'] !== 'null') ? r['avatar'] : '',
-            level:       parseRating(r['level']),
-            nationality: (r['country'] || '').trim(),
-          }));
+          .filter(r => (r['User ID'] || '').trim())
+          .map(r => {
+            const levelStr = (r['Level (current)'] || '').trim();
+            const m = levelStr.match(/^\s*([\d.]+)/);
+            const av = (r['Avatar'] || '').trim();
+            return {
+              communityId: '',
+              playerId:    (r['User ID'] || '').trim(),
+              name:        (r['Name'] || '').trim(),
+              gender:      normalizeGender(r['Gender']),
+              isCaptain:   false,
+              avatar:      (av && av !== 'null' && av !== '#N/A') ? av : '',
+              level:       m ? parseFloat(m[1]) : null,
+              nationality: (r['Nationality'] || '').trim(),
+            };
+          });
       } catch (err) {
-        console.warn('[projector] Users tab fetch failed:', err);
+        console.warn('[projector] Registrations tab fetch failed:', err);
         return [];
       }
     })();
-    return _usersPromise;
+    return _regsPromise;
   }
 
   // After the initial render, if any pick's player_id wasn't resolved by
-  // Registrations + Teams and Players, fall back to Users and merge those
-  // records in. Triggers one rerender on success.
+  // Teams and Players, fall back to Registrations and merge those records
+  // in. Triggers one rerender on success.
   async function maybeResolveMissingPicksFromUsers() {
     const known = new Set(state.players.map(p => p.playerId));
     const missing = state.picks
       .filter(p => !p.is_undone && !known.has(p.player_id))
       .map(p => p.player_id);
     if (missing.length === 0) return false;
-    const users = await fetchUsersFromSheet();
-    if (!users.length) return false;
+    const regs = await fetchRegistrationsFromSheet();
+    if (!regs.length) return false;
     const wanted = new Set(missing);
-    const additions = users.filter(u => wanted.has(u.playerId));
+    const additions = regs.filter(u => wanted.has(u.playerId));
     if (!additions.length) return false;
     state.players = state.players.concat(additions);
     return true;
@@ -1270,14 +1277,21 @@
 
     const playersReady = fetchPlayersFromSheet().then(ps => { state.players = ps; });
 
-    // Eagerly fetch Users tab in parallel — gives the pick-confirm overlay a
-    // reliable avatar source even when the commissioner's broadcast payload
-    // doesn't include playerAvatar. Non-blocking: a slow Users fetch must NOT
-    // delay first paint. The lazy single-flight cache in fetchUsersFromSheet
-    // means maybeResolveMissingPicksFromUsers later reuses this result.
-    fetchUsersFromSheet().then(usersList => {
+    // Eagerly fetch Registrations in parallel — gives the pick-confirm
+    // overlay a reliable avatar source even when the commissioner's
+    // broadcast payload doesn't include playerAvatar. Non-blocking: a slow
+    // fetch must NOT delay first paint. The lazy single-flight cache in
+    // fetchRegistrationsFromSheet means maybeResolveMissingPicksFromUsers
+    // later reuses this result. Avatar fallback also reads Teams and
+    // Players captain rows once state.players is populated.
+    fetchRegistrationsFromSheet().then(regsList => {
       const map = {};
-      for (const u of usersList) {
+      // Captains first (from Teams and Players via state.players)
+      for (const p of state.players || []) {
+        if (p.playerId && p.avatar) map[p.playerId] = p.avatar;
+      }
+      // Registrations wins on conflict (more recently edited per tournament)
+      for (const u of regsList) {
         if (u.playerId && u.avatar) map[u.playerId] = u.avatar;
       }
       state.avatarsByUserId = map;

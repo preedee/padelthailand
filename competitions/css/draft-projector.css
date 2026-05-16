@@ -1177,12 +1177,13 @@ html, body {
     gap: 8px;
   }
 
-  /* Reflow each card: logo | name+summary | chevron, with stats/roster
-     hidden until `.is-expanded` is added by the tap handler. */
+  /* Reflow each card: 4-col header — logo | name + summary | ratings | chevron.
+     Ratings + chevron span both header rows and are vertically centered.
+     Roster stays hidden until `.is-expanded` is added by the tap handler. */
   .team-card {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-rows: auto auto;
-    column-gap: 12px;
+    column-gap: 10px;
     row-gap: 1px;
     padding: 10px 12px;
     cursor: pointer;
@@ -1210,10 +1211,11 @@ html, body {
     color: var(--ink-dim);
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     line-height: 1.3;
+    /* Allow wrap to 2 lines if the column is narrow — better than clipping
+       "X/8 PLAYERS · 7 REMAINING PICKS" to "X/8 PLAYERS · 7 …". */
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .team-card > .team-card-summary .count {
     color: var(--ink);
@@ -1225,7 +1227,7 @@ html, body {
   }
   .team-card > .team-card-chevron {
     display: block;
-    grid-column: 3; grid-row: 1;
+    grid-column: 4; grid-row: 1 / span 2;
     align-self: center;
     color: var(--ink-faint);
     font-family: 'JetBrains Mono', monospace;
@@ -1238,31 +1240,29 @@ html, body {
     transform: rotate(90deg);
     color: var(--ink);
   }
-  /* The compact summary line ("X/8 Players · Y Remaining Picks") is
-     replaced by the ratings row beneath the team name — hide it. */
-  .team-card > .team-card-summary { display: none; }
 
   /* Hide the roster until tap-to-expand. */
   .team-card > .roster10 { display: none; }
 
-  /* Ratings row in the team-card header — sits where the summary used to,
-     at (col 2, row 2). Three stats inline: ♀ 3.9  ⚥ 3.9  ♂ 4.0. Always
-     visible (collapsed AND expanded). */
+  /* Ratings on the right side of the header (col 3), vertically centered
+     across both rows. Three stats inline: ♀ 3.9  ⚥ 3.9  ♂ 4.0. Always
+     visible (collapsed AND expanded). Tightly packed so the name + summary
+     column gets enough room. */
   .team-card > .team-stats {
     display: flex;
     flex-direction: row;
-    grid-column: 2; grid-row: 2;
-    justify-content: flex-start;
-    align-items: baseline;
+    grid-column: 3; grid-row: 1 / span 2;
+    justify-content: flex-end;
+    align-items: center;
     align-self: center;
-    gap: 14px;
+    gap: 6px;
     padding: 0;
   }
   .team-card > .team-stats .stat {
     display: inline-flex;
     flex-direction: row;
     align-items: baseline;
-    gap: 4px;
+    gap: 3px;
     padding: 0;
     background: none;
     border-top: none;
@@ -1270,7 +1270,7 @@ html, body {
   }
   .team-card > .team-stats .stat-label {
     font-family: 'Segoe UI Symbol', 'Apple Color Emoji', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1;
   }
   .team-card > .team-stats .stat-female .stat-label { color: var(--female); }
@@ -1278,7 +1278,7 @@ html, body {
   .team-card > .team-stats .stat-team   .stat-label { color: var(--ink); }
   .team-card > .team-stats .stat-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     line-height: 1;
     color: var(--ink);

@@ -98,15 +98,18 @@ async function loadSheetData() {
     fetchGviz('Communities').then(parseCSVRows).catch(e => { throw new Error('Communities fetch failed: ' + e.message); }),
     fetchGviz('Teams and Players').then(parseCSVRows).catch(e => { throw new Error('Teams and Players fetch failed: ' + e.message); }),
     fetchGviz('Registrations').then(parseRegistrationsCSV).catch(e => { throw new Error('Registrations fetch failed: ' + e.message); }),
-    fetchGviz('Users').then(parseCSVRows).catch(e => { console.warn('Users fetch failed (avatars will fall back to initials):', e); return []; }),
   ];
-  const [communityRows, playerRows, regRows, userRows] = await Promise.all(fetches);
+  const [communityRows, playerRows, regRows] = await Promise.all(fetches);
 
   state.communities = parseCommunities(communityRows);
   state.captainUserIds = parseCaptainIds(playerRows);
   state.captainsByCommunity = parseCaptainsByCommunity(playerRows);
   state.registrations = regRows;
-  state.avatarsByUserId = parseAvatarsByUserId(userRows);
+  // Avatar lookup is now derived from Registrations + Teams and Players, not
+  // from a separate Users tab. Both source tabs already carry an Avatar
+  // column natively, so the Users tab was pure redundancy + a staleness
+  // risk (separate place to forget to update).
+  state.avatarsByUserId = buildAvatarsByUserId(regRows, playerRows);
 
   console.log('[Commissioner] sheet data loaded', {
     communities: state.communities.length,
@@ -135,7 +138,29 @@ function parseCaptainsByCommunity(playerRows) {
   return map;
 }
 
+// Build userId → avatar URL from the two tabs that natively carry it:
+// Registrations (pool players, includes captains via duplicate listing) and
+// Teams and Players (captain rows, primary source for those 16 IDs). On
+// conflict, Registrations wins because Registrations is what the operator
+// updates per-tournament — captains' Teams and Players row may be older.
+function buildAvatarsByUserId(regRows, playerRows) {
+  const map = {};
+  // Start with captains (Teams and Players)
+  for (const r of playerRows) {
+    const id = String(r['TPS User ID'] || '').trim();
+    const av = String(r['Avatar'] || '').trim();
+    if (id && av && av !== 'null' && av !== '#N/A') map[id] = av;
+  }
+  // Registrations wins on conflict
+  for (const reg of regRows) {
+    if (reg.userId && reg.avatar) map[reg.userId] = reg.avatar;
+  }
+  return map;
+}
+
 function parseAvatarsByUserId(rows) {
+  // DEPRECATED — kept for back-compat in case anything still calls it. The
+  // Users tab is no longer fetched; buildAvatarsByUserId is the replacement.
   const map = {};
   for (const r of rows) {
     const id = String(r['id'] || '').trim();
@@ -253,6 +278,7 @@ function parseRegistrationsCSV(text) {
     .map(r => {
       const levelStr = (r['Level (current)'] || '').trim();
       const m = levelStr.match(/^\s*([\d.]+)/);
+      const avatar = String(r['Avatar'] || '').trim();
       return {
         userId: (r['User ID'] || '').trim(),
         name: (r['Name'] || '').trim(),
@@ -262,6 +288,7 @@ function parseRegistrationsCSV(text) {
         hand: normalizeHandSide(r['Hand'] || ''),
         side: normalizeSide(r['Side'] || ''),
         nationality: (r['Nationality'] || '').trim(),
+        avatar: (avatar && avatar !== 'null' && avatar !== '#N/A') ? avatar : '',
         prefs: [r['Community 1st'], r['Community 2nd'], r['Community 3rd']]
           .map(s => (s || '').trim()).filter(Boolean),
         status: (r['Statuses'] || '').trim(),

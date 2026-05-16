@@ -380,21 +380,27 @@
   function parseRegistrations(rows) {
     return rows
       .filter(r => (r['User ID'] || '').trim() && (r['Paid ?'] || '').trim().toUpperCase() === 'Y')
-      .map(r => ({
-        communityId: '',                                       // assigned by the draft, not by registration
-        tpsId: (r['User ID'] || '').trim(),
-        name: (r['Name'] || '').trim(),
-        avatar: '',                                            // not stored on Registrations; users-tab lookup is 2.7MB, skipped
-        rating: parseRating(r['Level (current)']),
-        hand: normalizeHand(r['Hand']),
-        side: normalizeSide(r['Side']),
-        gender: normalizeGender(r['Gender']),
-        isCaptain: false,
-        nationality: (r['Nationality'] || '').trim(),
-        prefs: [r['Community 1st'], r['Community 2nd'], r['Community 3rd']]
-          .map(s => (s || '').trim()).filter(Boolean),
-        isPlaceholder: false,
-      }));
+      .map(r => {
+        const av = (r['Avatar'] || '').trim();
+        return {
+          communityId: '',                                     // assigned by the draft, not by registration
+          tpsId: (r['User ID'] || '').trim(),
+          name: (r['Name'] || '').trim(),
+          // Registrations natively carries an Avatar column — used to be
+          // empty here and backfilled from the Users tab; we now read it
+          // direct (Users tab retired).
+          avatar: (av && av !== 'null' && av !== '#N/A') ? av : '',
+          rating: parseRating(r['Level (current)']),
+          hand: normalizeHand(r['Hand']),
+          side: normalizeSide(r['Side']),
+          gender: normalizeGender(r['Gender']),
+          isCaptain: false,
+          nationality: (r['Nationality'] || '').trim(),
+          prefs: [r['Community 1st'], r['Community 2nd'], r['Community 3rd']]
+            .map(s => (s || '').trim()).filter(Boolean),
+          isPlaceholder: false,
+        };
+      });
   }
 
   // ============================================================
@@ -814,28 +820,21 @@
   // ============================================================
 
   async function loadSheetData() {
-    const [commRows, playerRows, regRows, userRows] = await Promise.all([
+    const [commRows, playerRows, regRows] = await Promise.all([
       fetchTabRows('Communities'),
       fetchTabRows('Teams and Players'),
       fetchTabRows('Registrations'),
-      // Users tab holds avatar URLs keyed by user id. Non-fatal if it fails —
-      // avatars just fall back to initials.
-      fetchTabRows('Users').catch(() => []),
     ]);
     state.communities = parseCommunities(commRows);
 
-    // userId → avatar URL (mirrors the commissioner's parseAvatarsByUserId).
-    const avatarById = {};
-    for (const r of userRows) {
-      const id = String(r['id'] || '').trim();
-      const url = String(r['avatar'] || '').trim();
-      if (id && url && url !== 'null' && url !== '#N/A') avatarById[id] = url;
-    }
-
     // Merge two sources by TPS User ID:
     //  • Teams and Players gives us captains (richer record — has avatar + Is Captain flag)
-    //  • Registrations gives us the rest of the pool (rating/hand/side/gender)
+    //  • Registrations gives us the rest of the pool (rating/hand/side/gender + avatar)
     // Captain rows from Teams and Players win on conflict.
+    //
+    // The Users tab (system-wide ~2.7MB) used to be fetched as an avatar
+    // backfill source. Retired: Registrations natively carries Avatar so the
+    // separate fetch + backfill loop became pure overhead.
     const captainAndKnown = parsePlayers(playerRows);
     const registrants = parseRegistrations(regRows);
     const merged = [];
@@ -850,11 +849,6 @@
       if (!p.tpsId || seen.has(p.tpsId)) continue;
       seen.add(p.tpsId);
       merged.push(p);
-    }
-    // Backfill avatars for anyone without one — registration players especially,
-    // since Registrations doesn't carry an avatar column.
-    for (const p of merged) {
-      if (!p.avatar && avatarById[p.tpsId]) p.avatar = avatarById[p.tpsId];
     }
     state.players = merged;
 
