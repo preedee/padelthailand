@@ -152,6 +152,8 @@ input  { font: inherit; color: inherit; }
    pill since there's no TEAM destination to swap to. The "← HUB" chevron
    in the header is the only navigation out. */
 .team__app.is-no-community .team__view--pool .team__pill { display: none; }
+/* No community context → no "us" to prefer. Hide the captain-only chip. */
+.team__app.is-no-community .team__chip--prefs { display: none; }
 .team__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
 
 /* ---------- Vertical pill toggle (POOL / TEAM) — load-bearing #9 ---------- */
