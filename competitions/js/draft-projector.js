@@ -71,11 +71,19 @@
   // because the media query that hides .roster10 only fires at <=900px wide,
   // and we early-out on viewport width here too so .team-card stays purely
   // informational on the broadcast display.
+  //
+  // Single tap target rule: anywhere on the card toggles expand/collapse,
+  // INCLUDING the team-name link (preventDefault stops navigation on mobile).
+  // The only exception is the explicit "View Team Page →" button inside the
+  // expanded card — that one bypasses the toggle and navigates as a normal
+  // link. Removes the previous ambiguity where users couldn't tell whether
+  // a tap would expand or navigate.
   document.addEventListener('click', (e) => {
     if (!window.matchMedia('(max-width: 900px)').matches) return;
-    if (e.target.closest('a')) return;  // let team-name link navigate
+    if (e.target.closest('.team-card-nav')) return;  // the navigate-to-team button
     const card = e.target.closest('.team-card[data-team-id]');
     if (!card) return;
+    e.preventDefault();   // stop the embedded team-name <a> from navigating
     const teamId = card.getAttribute('data-team-id');
     if (state.expandedTeams.has(teamId)) {
       state.expandedTeams.delete(teamId);
@@ -555,6 +563,7 @@
             <div class="stat stat-male"><span class="stat-label">♂</span><span class="stat-val">${avgMale}</span></div>
           </div>
         </div>
+        <a class="team-card-nav" href="${teamHref}">View Team Page →</a>
       </div>`;
   }
 

@@ -566,17 +566,26 @@
     $tournamentLogo.innerHTML = `<img src="assets/cc-logo.png" alt="Bangkok Community Cup">`;
   }
 
+  // The canonical hub URL is set per-stub in the ← HUB chevron's href so
+  // local dev (team.html) and production (tps-may2026/home.html) can both
+  // work without environment detection in JS. Falls back to 'team.html' if
+  // the chevron isn't present (e.g. very old stub HTMLs).
+  function hubFile() {
+    return ($backHub && $backHub.getAttribute('href')) || 'team.html';
+  }
+
   // Rec #6 — front-door hub. Renders when no ?community= is set: prominent
   // "Watch Live Draft" CTA, secondary "Browse Pool" CTA, then a 2-col grid
-  // of 8 community tiles (logo + name) linking to team.html?community=<id>.
+  // of 8 community tiles (logo + name) linking to <hub>?community=<id>.
   function renderHub() {
     if (!$hub) return;
+    const hub = hubFile();
     const tiles = state.communities.map(c => {
       const fallback = (c.name || '?').charAt(0).toUpperCase();
       const logo = c.logoPath
         ? `<img src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml(fallback)}">`
         : `<span style="font-family:'SuperBlue',serif;font-weight:700;font-size:20px;color:var(--dark-text-muted)">${escapeHtml(fallback)}</span>`;
-      const href = `team.html?community=${encodeURIComponent(c.id)}`;
+      const href = `${hub}?community=${encodeURIComponent(c.id)}`;
       return `
         <a class="hub__tile" href="${href}">
           <div class="hub__tile-logo">${logo}</div>
@@ -592,7 +601,7 @@
           <div class="hub__watch-sub">See picks happen in real time</div>
         </div>
       </a>
-      <a class="hub__pool" href="team.html?pool">
+      <a class="hub__pool" href="${hub}?pool">
         <div class="hub__pool-icon">⌕</div>
         <div class="hub__pool-text">
           <div class="hub__pool-title">Browse Player Pool</div>

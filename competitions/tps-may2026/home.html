@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#0A1612" />
-  <title>Team — Community Cup Draft</title>
+  <base href="/competitions/">
+  <title>Bangkok Community Cup — Home</title>
+  <meta property="og:title" content="Bangkok Community Cup — Home">
+  <meta property="og:description" content="Watch the live draft, browse the player pool, or jump to your team page.">
+  <meta property="og:image" content="https://padelthailand.com/assets/tps-logo-green-on-white.png">
   <link rel="icon" href="assets/tps-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +26,9 @@
   <header class="team__header" role="banner">
     <div class="team__header-left">
       <img class="team__brand-logo" src="assets/tps-monogram.png" alt="TPS">
-      <a class="team__back-hub" id="team-back-hub" href="team.html" hidden>← HUB</a>
+      <!-- Back-to-hub chevron is hidden on the hub itself; JS reveals it on
+           team/pool views. Hardcoded to this canonical hub URL. -->
+      <a class="team__back-hub" id="team-back-hub" href="tps-may2026/home.html" hidden>← HUB</a>
     </div>
     <div class="team__header-center">
       <h1 class="team__title" id="team-title">Bangkok Community Cup</h1>

@@ -351,7 +351,8 @@ html, body {
 /* Mobile-only adornments. Hidden on the broadcast/projector view; the
    @media block below re-enables them with explicit grid placement. */
 .team-card > .team-card-summary,
-.team-card > .team-card-chevron { display: none; }
+.team-card > .team-card-chevron,
+.team-card > .team-card-nav { display: none; }
 /* The 3×4 expanded-roster plaque (logo + stats in the two center cells).
    Hidden by default on the broadcast view — the @media block re-enables them. */
 .roster10 > .roster-plaque-logo,
@@ -1244,6 +1245,34 @@ html, body {
   .team-card.is-expanded > .team-card-chevron {
     transform: rotate(90deg);
     color: var(--ink);
+  }
+
+  /* "View Team Page →" button — only visible inside an expanded card.
+     Tapping this is the ONLY way to navigate to the team page on mobile;
+     every other tap on the card body toggles expand/collapse. */
+  .team-card.is-expanded > .team-card-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    grid-row: 5;
+    margin-top: 10px;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-bright);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: rgba(255, 183, 3, 0.2);
+  }
+  .team-card.is-expanded > .team-card-nav:active {
+    background: rgba(255, 183, 3, 0.1);
+    border-color: var(--accent);
   }
 
   /* Hide the roster until tap-to-expand. */
