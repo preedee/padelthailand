@@ -236,11 +236,17 @@ html, body {
 .next-cell .tname {
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(18px, 1.5vw, 28px);
-  letter-spacing: 0.06em;
-  line-height: 1;
+  /* QA m-10 — was clamp(18px, 1.5vw, 28px) — couldn't shrink below 18px on
+     phone, so "SUNSHINE PADEL" truncated to "SUNSHINE P...". Allow more
+     aggressive shrink + wrapping for narrow viewports. */
+  font-size: clamp(13px, 3.6vw, 28px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
   color: var(--ink);
   text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* ON CLOCK cell — center, gold accent */

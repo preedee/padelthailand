@@ -357,11 +357,17 @@
       .filter(r => (r['Community ID'] || '').trim())
       .map(r => {
         const tpsId = (r['TPS User ID'] || '').trim();
+        // QA M-6 — guard against literal 'null' / '#N/A' strings in the
+        // Sheet's Avatar column. Without this, `<img src="${av}">` resolves
+        // to /competitions/null and 404s on every render. Mirrors the
+        // defensive parse already in the Registrations branch (line ~395).
+        const avRaw = (r['Avatar'] || r['Player Avatar'] || '').trim();
+        const avatar = (avRaw && avRaw !== 'null' && avRaw !== '#N/A') ? avRaw : '';
         return {
           communityId: (r['Community ID'] || '').trim(),
           tpsId,
           name: (r['Player Name'] || '').trim(),
-          avatar: (r['Avatar'] || r['Player Avatar'] || '').trim(),
+          avatar,
           rating: parseRating(r['Rating']),
           hand: normalizeHand(r['Hand']),
           side: normalizeSide(r['Side']),

@@ -56,7 +56,13 @@
       const t0 = Date.now();
       let res;
       try {
-        res = await fetch(`${_url}/rest/v1/`, { method: 'HEAD', headers: { apikey: _key } });
+        // QA m-11 — HEAD on /rest/v1/ root 401s (no table specified), which
+        // polluted the console on every page load. Switching to a real table
+        // (drafts) with limit=0 + Bearer auth — same Date header, no 401 noise.
+        res = await fetch(`${_url}/rest/v1/drafts?select=id&limit=0`, {
+          method: 'HEAD',
+          headers: { apikey: _key, Authorization: `Bearer ${_key}` },
+        });
       } catch (_) {
         return;  // offline — keep the last known skew
       }

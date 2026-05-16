@@ -70,9 +70,11 @@ input  { font: inherit; color: inherit; }
 }
 .team__header-right { justify-content: flex-end; }
 .team__header-center {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;            /* allow shrink so it can't squeeze out the chevron */
   display: flex;
   align-items: center;
+  justify-content: center; /* keep title centered when there IS room */
 }
 .team__brand-logo {
   height: 26px;
@@ -168,6 +170,9 @@ input  { font: inherit; color: inherit; }
   flex-shrink: 0;
 }
 .team__pill-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 14px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
@@ -177,6 +182,7 @@ input  { font: inherit; color: inherit; }
   border-radius: 3px;
   text-transform: uppercase;
   min-width: 56px;
+  min-height: 44px;        /* QA M-4 — height was 25, below tap-target floor */
   transition: all 0.12s linear;
 }
 .team__app[data-view="pool"] .team__pill-tab[data-view-target="pool"],
@@ -521,7 +527,9 @@ input  { font: inherit; color: inherit; }
      viewport ≈ 362-386px usable), 4 columns on iPhone SE1 / Android-mini
      (<373px usable). Wider cells = more legible names/ratings in dim venue
      light. Female + male sections still stack vertically (load-bearing #5). */
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  /* QA M-7 — was minmax(72px) which delivered 4/3 cols (not the spec'd
+     5/4). Lowering the min to 62px restores 5 cols at 390px, 4 cols at 320px. */
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
   gap: 6px;
 }
 .team__roster-divider {
@@ -681,6 +689,47 @@ input  { font: inherit; color: inherit; }
   .team__cell-avatar { width: 32px; height: 32px; font-size: 13px; }
   .team__title       { font-size: 14px; }
   .team__search-input { padding: 10px; font-size: 13px; }
+}
+
+/* ---------- QA C-2 — hide centered title on phone so the ← HUB chevron
+   and brand logo own the header row. Title still appears at ≥520px. */
+@media (max-width: 519px) {
+  .team__header-center { display: none; }
+}
+
+/* ---------- QA M-8 — give the pool player name more room on phone.
+   Default grid is `32 18 1fr 48 14 46 48 50` (256px fixed + name) which
+   leaves ~60px for names at 390px → "Frede..." truncation. Compress
+   the secondary data columns + drop the prefs slot on narrow phones. */
+@media (max-width: 419px) {
+  .team__player-row {
+    grid-template-columns: 30px 14px minmax(0, 1fr) 14px 38px 30px 30px;
+    gap: 5px;
+    padding: 9px 8px;
+  }
+  /* The prefs column (index 4 in default grid) becomes gender — hide the
+     8-track prefs by setting it to display:none in JS, OR collapse the
+     default grid to 7 tracks here. Native CSS solution: the row's HTML
+     order is photo · flag · name · prefs · gender · rating · hand · side,
+     so dropping the prefs slot needs JS coordination; for the phone
+     breakpoint we just suppress the prefs cell visually. */
+  .team__player-row > .team__row-prefs { display: none; }
+}
+
+/* ---------- QA m-9 — team page on desktop was 420px of content in 1920px
+   of dark void. Center the roster scroll content with a max-width so the
+   page reads as intentional, not "broken / still loading". */
+@media (min-width: 1024px) {
+  .team__roster-scroll > * {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .team__roster-divider {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* ============================================================
@@ -871,8 +920,11 @@ input  { font: inherit; color: inherit; }
 .team__back-hub {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   margin-left: 8px;
-  padding: 4px 8px;
+  padding: 8px 12px;
+  min-height: 44px;        /* QA M-4 — WCAG/iOS tap target floor */
+  min-width: 44px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
@@ -917,7 +969,10 @@ input  { font: inherit; color: inherit; }
 
 .pick-toast {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  /* QA C-3 — was top: 8px which collided with the sticky header. Push it
+     below the header (~52px content + 12px breathing room = 64px) so the
+     toast and "BANGKOK COMMUNITY CUP" title don't share Z-space. */
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
   left: 50%;
   transform: translateX(-50%) translateY(-120%);
   background: var(--dark-accent);

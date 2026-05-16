@@ -138,6 +138,17 @@
   color: #C8D6CE;
 }
 
+/* QA Minor-12 — Match-type tags need dark-theme overrides; default beige
+   bg + brown text becomes near-invisible against the dark chrome. Use the
+   draftday palette with dark-text-on-bright-bg for AAA contrast on all
+   three (Male / Female / Mix). */
+.dashboard.theme-draft-live .match-card__type--m   { background: #5EC8FF; color: #0A1612; }
+.dashboard.theme-draft-live .match-card__type--f   { background: #FF85B8; color: #1A0612; }
+.dashboard.theme-draft-live .match-card__type--mix { background: #FFB703; color: #1A0F00; }
+.dashboard.theme-draft-live .cc-matches__type--m   { background: #5EC8FF; color: #0A1612; }
+.dashboard.theme-draft-live .cc-matches__type--f   { background: #FF85B8; color: #1A0612; }
+.dashboard.theme-draft-live .cc-matches__type--mix { background: #FFB703; color: #1A0F00; }
+
 html, body {
   width: 100%;
   height: 100%;
