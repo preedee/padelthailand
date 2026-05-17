@@ -131,5 +131,136 @@
 <script defer src="js/draft-supabase.js?v=37"></script>
 <script defer src="js/draft-team.js?v=38"></script>
 
+<!-- ──────────────────────────────────────────────────────────────────
+     Live-Draft countdown lock (per-competition; no engine changes).
+     Locks the .hub__watch card until the draft go-live moment, shows
+     a live HH:MM:SS countdown, auto-unlocks at zero with no reload.
+     ────────────────────────────────────────────────────────────── -->
+<style>
+  /* Locked draft card — until the countdown hits zero. */
+  .hub__watch.is-locked {
+    pointer-events: none;
+    cursor: not-allowed;
+    background: rgba(255, 183, 3, 0.06);
+    border: 1px dashed rgba(255, 183, 3, 0.45);
+    box-shadow: none;
+  }
+  .hub__watch.is-locked .hub__watch-icon {
+    background: rgba(255, 183, 3, 0.12);
+    color: var(--accent, #FFB703);
+    font-size: 22px;
+  }
+  .hub__watch.is-locked .hub__watch-title { color: var(--accent, #FFB703); }
+  .hub__watch.is-locked .hub__watch-sub  { color: var(--ink-dim, #C8D6CE); padding-top: 6px; }
+
+  .hub__countdown-label {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint, #6B8276);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .hub__countdown {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: clamp(22px, 6vw, 30px);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--accent, #FFB703);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+
+<script>
+  (function () {
+    // ── Target: Wednesday 2026-05-20, 19:00 ICT (UTC+7) = 12:00 UTC ──
+    // Date.UTC(year, monthIndex, day, hour, ...) — May is monthIndex 4.
+    const TARGET_MS = Date.UTC(2026, 4, 20, 12, 0, 0);
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function formatRemaining(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const days  = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins  = Math.floor((totalSec % 3600) / 60);
+      const secs  = totalSec % 60;
+      const hms = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+      return days > 0 ? (days + 'd ' + hms) : hms;
+    }
+
+    function lock(el) {
+      if (el.dataset.locked === '1') return;
+      el.dataset.locked = '1';
+      el.classList.add('is-locked');
+      el.setAttribute('aria-disabled', 'true');
+      el.setAttribute('tabindex', '-1');
+      const title = el.querySelector('.hub__watch-title');
+      const sub   = el.querySelector('.hub__watch-sub');
+      if (title) title.textContent = 'Live Draft starts Wed 19:00 ICT';
+      if (sub) {
+        sub.innerHTML =
+          '<span class="hub__countdown-label">Available in</span>' +
+          '<span class="hub__countdown" id="hub-countdown">' +
+            formatRemaining(TARGET_MS - Date.now()) +
+          '</span>';
+      }
+    }
+
+    function unlock(el) {
+      if (el.dataset.locked !== '1') return;
+      delete el.dataset.locked;
+      el.classList.remove('is-locked');
+      el.removeAttribute('aria-disabled');
+      el.removeAttribute('tabindex');
+      const title = el.querySelector('.hub__watch-title');
+      const sub   = el.querySelector('.hub__watch-sub');
+      if (title) title.textContent = 'Watch Live Draft';
+      if (sub)   sub.textContent   = 'See picks happen in real time';
+    }
+
+    let ticker = null;
+    function tick() {
+      const card = document.querySelector('.hub__watch');
+      if (!card) return;
+      const remaining = TARGET_MS - Date.now();
+      if (remaining <= 0) {
+        unlock(card);
+        if (ticker) { clearInterval(ticker); ticker = null; }
+        return;
+      }
+      lock(card);
+      const out = document.getElementById('hub-countdown');
+      if (out) out.textContent = formatRemaining(remaining);
+    }
+
+    function startWatching() {
+      const hub = document.getElementById('team-view-hub');
+      if (!hub) return;
+      const tryApply = () => {
+        if (!hub.querySelector('.hub__watch')) return false;
+        tick();
+        if (!ticker) ticker = setInterval(tick, 1000);
+        return true;
+      };
+      // Try once now (in case hub is already rendered)
+      if (tryApply()) return;
+      // Otherwise watch for renderHub() to inject the markup
+      const obs = new MutationObserver(() => { if (tryApply()) obs.disconnect(); });
+      obs.observe(hub, { childList: true, subtree: true });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startWatching);
+    } else {
+      startWatching();
+    }
+  })();
+</script>
+
 </body>
 </html>
