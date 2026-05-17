@@ -190,7 +190,8 @@
       const mins  = Math.floor((totalSec % 3600) / 60);
       const secs  = totalSec % 60;
       const hms = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
-      return days > 0 ? (days + 'd ' + hms) : hms;
+      if (days === 0) return hms;
+      return days + (days === 1 ? ' Day ' : ' Days ') + hms;
     }
 
     function lock(el) {
