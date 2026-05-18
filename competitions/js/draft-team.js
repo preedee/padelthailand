@@ -777,8 +777,15 @@
       return cells.join('');
     }
 
-    $rosterFemale.style.setProperty('--team-color', c.color || '#ff8a3d');
-    $rosterMale.style.setProperty('--team-color', c.color || '#ff8a3d');
+    const teamColor = c.color || '#ff8a3d';
+    $rosterFemale.style.setProperty('--team-color', teamColor);
+    $rosterMale.style.setProperty('--team-color', teamColor);
+    // Also set on the radial container so the centre plaque (a sibling of
+    // the F/M rows, not a descendant) inherits the community colour for
+    // its border. Without this the plaque falls back to the static default
+    // declared in .team__roster-radial.
+    const $rosterRadial = document.getElementById('team-roster-radial');
+    if ($rosterRadial) $rosterRadial.style.setProperty('--team-color', teamColor);
     $rosterFemale.innerHTML = buildSection(femaleFilled, N_FEMALE_SLOTS, 'F');
     $rosterMale.innerHTML   = buildSection(maleFilled,   N_MALE_SLOTS,   'M');
     attachImgFallbacks($rosterFemale);

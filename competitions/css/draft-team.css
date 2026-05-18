@@ -1196,7 +1196,7 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   justify-content: center;
   padding: 8px;
   background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
+  border: 2px solid var(--team-color, var(--dark-border));
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -1227,7 +1227,10 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 }
 .team__roster-radial .team__cell-avatar {
   width: 48%;
-  height: auto;          /* aspect-ratio: 1 inherited from base rule keeps it circular */
+  height: auto;
+  aspect-ratio: 1;       /* Without this, text-only fallbacks (no <img> to prop
+                            up height via intrinsic ratio) collapse to line-height
+                            of the initial → oval. */
   font-size: clamp(11px, 3.4vw, 16px);
   margin-top: 0;
 }
