@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pool Page — TEAM Button Options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css?v=204">
+  <link rel="stylesheet" href="../css/draft-team.css?v=46">
+  <style>
+    body {
+      background: var(--dark-bg);
+      color: var(--dark-text);
+      margin: 0;
+      padding: 24px;
+      font-family: 'Manrope', sans-serif;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; font-weight: 700; }
+    .lede {
+      color: var(--dark-text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      margin: 0 0 24px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+    .card {
+      background: var(--dark-bg);
+      border: 1px solid var(--dark-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 12px 16px 10px;
+      background: var(--dark-surface);
+      border-bottom: 1px solid var(--dark-border);
+    }
+    .card-head h2 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark-text);
+    }
+    .card-head .desc {
+      color: var(--dark-text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    .card-body {
+      /* Each preview lives inside its own .team__app — the existing
+         CSS rules pick up data-view, is-no-community, etc. */
+    }
+
+    /* Disabled state for Option ② — purely additive class. */
+    .team__pill-tab.is-disabled {
+      opacity: 0.35;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    /* Option ④ — picker overlay mockup. */
+    .picker-overlay {
+      margin: 8px 14px 4px;
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: 6px;
+      padding: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .picker-head {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      color: var(--dark-text-muted);
+      padding: 4px 8px 6px;
+      text-transform: uppercase;
+    }
+    .picker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      color: var(--dark-text);
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .picker-row:hover { background: var(--dark-border); }
+    .picker-row .dot {
+      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      background: var(--dark-border);
+    }
+
+    /* Override the existing is-no-community pill-hide rule INSIDE this
+       preview only — we want to actually see the pill in every option. */
+    .card .team__app.is-no-community .team__view--pool .team__pill {
+      display: flex;
+    }
+
+    /* Make each preview render at its natural compact width — no need
+       for full-screen mobile-canvas centering here since we're showing
+       four side-by-side. */
+    .card .team__app {
+      width: 100%;
+      max-width: none;
+      background: var(--dark-bg);
+    }
+
+    /* Ghost rows below the pill — keep the visual context honest. */
+    .ghost-row {
+      padding: 8px 14px;
+      border-bottom: 1px dashed rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.25);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Pool Page — TEAM Button Options</h1>
+<p class="lede">Pick one (or describe a different option).  All four mockups use the actual draft-team.css.</p>
+
+<div class="grid">
+
+  <!-- ============================================================
+       OPTION ①  — Hide TEAM entirely
+       ============================================================ -->
+  <div class="card">
+    <div class="card-head">
+      <h2>① Hide TEAM (Recommended)</h2>
+      <div class="desc">Row becomes [HOME] [POOL] — 2 buttons, 50/50.<br>Honest: no team selected → no TEAM destination.</div>
+    </div>
+    <div class="card-body">
+      <div class="team__app is-no-community" data-view="pool">
+        <div class="team__pool-pill-row">
+          <div class="team__pill" role="tablist" aria-label="Switch view">
+            <a class="team__pill-tab team__pill-tab--hub" href="#">← HOME</a>
+            <button class="team__pill-tab" data-view-target="pool">POOL</button>
+          </div>
+        </div>
+        <div class="team__pool-search-row">
+          <span class="team__filter-label">SORT</span>
+          <div class="team__chip-group">
+            <button class="team__chip is-active-sort">RATING <span class="team__sort-arrow">↓</span></button>
+            <button class="team__chip">NAME <span class="team__sort-arrow"></span></button>
+          </div>
+          <input class="team__search-input" type="search" placeholder="Search players…">
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">FILTER</span>
+          <div class="team__chip-group">
+            <button class="team__chip team__chip--female">♀ F</button>
+            <button class="team__chip team__chip--male">♂ M</button>
+            <button class="team__chip">L 🫲</button>
+            <button class="team__chip">🫱 R</button>
+            <button class="team__chip">L ⬅️</button>
+            <button class="team__chip">➡️ R</button>
+          </div>
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">PREFERS</span>
+          <div class="team__chip-group">
+            <button class="team__chip">CC</button>
+            <button class="team__chip">DP</button>
+            <button class="team__chip">PB</button>
+            <button class="team__chip">SR</button>
+          </div>
+        </div>
+        <div class="ghost-row">… player list …</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION ②  — Show TEAM disabled
+       ============================================================ -->
+  <div class="card">
+    <div class="card-head">
+      <h2>② Show TEAM disabled</h2>
+      <div class="desc">3 buttons; TEAM dimmed, not clickable.<br>Preserves the 3-tab visual rhythm of community pages.</div>
+    </div>
+    <div class="card-body">
+      <div class="team__app is-no-community" data-view="pool">
+        <div class="team__pool-pill-row">
+          <div class="team__pill" role="tablist" aria-label="Switch view">
+            <a class="team__pill-tab team__pill-tab--hub" href="#">← HOME</a>
+            <button class="team__pill-tab is-disabled" data-view-target="team" disabled aria-disabled="true">TEAM</button>
+            <button class="team__pill-tab" data-view-target="pool">POOL</button>
+          </div>
+        </div>
+        <div class="team__pool-search-row">
+          <span class="team__filter-label">SORT</span>
+          <div class="team__chip-group">
+            <button class="team__chip is-active-sort">RATING <span class="team__sort-arrow">↓</span></button>
+            <button class="team__chip">NAME <span class="team__sort-arrow"></span></button>
+          </div>
+          <input class="team__search-input" type="search" placeholder="Search players…">
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">FILTER</span>
+          <div class="team__chip-group">
+            <button class="team__chip team__chip--female">♀ F</button>
+            <button class="team__chip team__chip--male">♂ M</button>
+            <button class="team__chip">L 🫲</button>
+            <button class="team__chip">🫱 R</button>
+            <button class="team__chip">L ⬅️</button>
+            <button class="team__chip">➡️ R</button>
+          </div>
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">PREFERS</span>
+          <div class="team__chip-group">
+            <button class="team__chip">CC</button>
+            <button class="team__chip">DP</button>
+            <button class="team__chip">PB</button>
+            <button class="team__chip">SR</button>
+          </div>
+        </div>
+        <div class="ghost-row">… player list …</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION ③  — TEAM links to /home/
+       ============================================================ -->
+  <div class="card">
+    <div class="card-head">
+      <h2>③ TEAM → /home/</h2>
+      <div class="desc">TEAM = shortcut to the home card grid where users pick their team.<br>Functional but slightly misleading semantics.</div>
+    </div>
+    <div class="card-body">
+      <div class="team__app is-no-community" data-view="pool">
+        <div class="team__pool-pill-row">
+          <div class="team__pill" role="tablist" aria-label="Switch view">
+            <a class="team__pill-tab team__pill-tab--hub" href="#">← HOME</a>
+            <a class="team__pill-tab" href="../tps-may2026/home/" data-view-target="team">TEAM</a>
+            <button class="team__pill-tab" data-view-target="pool">POOL</button>
+          </div>
+        </div>
+        <div class="team__pool-search-row">
+          <span class="team__filter-label">SORT</span>
+          <div class="team__chip-group">
+            <button class="team__chip is-active-sort">RATING <span class="team__sort-arrow">↓</span></button>
+            <button class="team__chip">NAME <span class="team__sort-arrow"></span></button>
+          </div>
+          <input class="team__search-input" type="search" placeholder="Search players…">
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">FILTER</span>
+          <div class="team__chip-group">
+            <button class="team__chip team__chip--female">♀ F</button>
+            <button class="team__chip team__chip--male">♂ M</button>
+            <button class="team__chip">L 🫲</button>
+            <button class="team__chip">🫱 R</button>
+            <button class="team__chip">L ⬅️</button>
+            <button class="team__chip">➡️ R</button>
+          </div>
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">PREFERS</span>
+          <div class="team__chip-group">
+            <button class="team__chip">CC</button>
+            <button class="team__chip">DP</button>
+            <button class="team__chip">PB</button>
+            <button class="team__chip">SR</button>
+          </div>
+        </div>
+        <div class="ghost-row">… player list …</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION ④  — TEAM opens a community-picker overlay
+       ============================================================ -->
+  <div class="card">
+    <div class="card-head">
+      <h2>④ TEAM → community picker</h2>
+      <div class="desc">TEAM opens a small overlay listing all 8 communities.<br>Most useful; needs a new tiny overlay component.</div>
+    </div>
+    <div class="card-body">
+      <div class="team__app is-no-community" data-view="pool">
+        <div class="team__pool-pill-row">
+          <div class="team__pill" role="tablist" aria-label="Switch view">
+            <a class="team__pill-tab team__pill-tab--hub" href="#">← HOME</a>
+            <button class="team__pill-tab" data-view-target="team">TEAM</button>
+            <button class="team__pill-tab" data-view-target="pool">POOL</button>
+          </div>
+        </div>
+        <div class="picker-overlay">
+          <div class="picker-head">Pick your team</div>
+          <div class="picker-row"><span class="dot" style="background:#ff8a3d"></span>Coco Padel</div>
+          <div class="picker-row"><span class="dot" style="background:#4cc9f0"></span>Deuce Padel</div>
+          <div class="picker-row"><span class="dot" style="background:#e63946"></span>Padel &amp; Brew</div>
+          <div class="picker-row"><span class="dot" style="background:#9a8c98"></span>Padel PA</div>
+          <div class="picker-row"><span class="dot" style="background:#f9c74f"></span>Sabai Sabai</div>
+          <div class="picker-row"><span class="dot" style="background:#2a9d8f"></span>Social Rally</div>
+          <div class="picker-row"><span class="dot" style="background:#f4a261"></span>Sunshine Padel</div>
+          <div class="picker-row"><span class="dot" style="background:#7b2cbf"></span>Wall Whackers</div>
+        </div>
+        <div class="team__pool-search-row">
+          <span class="team__filter-label">SORT</span>
+          <div class="team__chip-group">
+            <button class="team__chip is-active-sort">RATING <span class="team__sort-arrow">↓</span></button>
+            <button class="team__chip">NAME <span class="team__sort-arrow"></span></button>
+          </div>
+          <input class="team__search-input" type="search" placeholder="Search players…">
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">FILTER</span>
+          <div class="team__chip-group">
+            <button class="team__chip team__chip--female">♀ F</button>
+            <button class="team__chip team__chip--male">♂ M</button>
+            <button class="team__chip">L 🫲</button>
+            <button class="team__chip">🫱 R</button>
+          </div>
+        </div>
+        <div class="team__filter-row">
+          <span class="team__filter-label">PREFERS</span>
+          <div class="team__chip-group">
+            <button class="team__chip">CC</button>
+            <button class="team__chip">DP</button>
+            <button class="team__chip">PB</button>
+            <button class="team__chip">SR</button>
+          </div>
+        </div>
+        <div class="ghost-row">… player list …</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

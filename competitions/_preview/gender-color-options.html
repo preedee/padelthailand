@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pink/Blue Gender Outline Options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css?v=204">
+  <style>
+    body {
+      background: #0A1612;
+      color: #E8F0EA;
+      margin: 0;
+      padding: 24px;
+      font-family: 'Manrope', sans-serif;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .lede {
+      color: rgba(232,240,234,0.55);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      margin: 0 0 24px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #0d1916;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .card .meta {
+      color: rgba(232,240,234,0.5);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+    .swatch-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .swatch {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      color: #0A1612;
+    }
+
+    /* --- Roster cell mock (team page) --- */
+    .roster-mock {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .roster-cell {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .roster-cell .avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      background: rgba(255,255,255,0.08);
+      display: grid;
+      place-items: center;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      box-shadow: 0 0 0 var(--ring-width, 1.5px) var(--ring-color, #888);
+    }
+    .roster-cell.is-female .avatar { --ring-color: var(--f); }
+    .roster-cell.is-male   .avatar { --ring-color: var(--m); }
+    .roster-cell .name {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .roster-cell .rating {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* --- Chip mock --- */
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 5px 10px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.04);
+    }
+    .chip.is-female { color: var(--f); }
+    .chip.is-male   { color: var(--m); }
+    .chip.is-female.is-active { background: var(--f); color: #0A1612; }
+    .chip.is-male.is-active   { background: var(--m); color: #0A1612; }
+
+    /* --- Per-card color variables --- */
+    .opt-1 { --f: #ff4d99; --m: #29a9ff; }
+    .opt-2 { --f: #ff2080; --m: #0099ff; }
+    .opt-3 { --f: #ff0080; --m: #007fff; }
+    .opt-4 { --f: #e91e63; --m: #1976d2; }
+    .opt-5 { --f: #ff4d99; --m: #29a9ff; --ring-width: 2.5px; }
+    .opt-6 { --f: #ff0066; --m: #00aaff; --ring-width: 3px; }
+  </style>
+</head>
+<body>
+
+<h1>Pink/Blue Gender Outline Options</h1>
+<p class="lede">Compare ring colors + thickness across the team-page avatar style. Tell me which option (or describe a different shade).</p>
+
+<div class="grid">
+
+  <!-- OPTION 1: Currently shipped -->
+  <div class="card opt-1">
+    <h2>① Currently shipped</h2>
+    <div class="meta">Vibrant pink + azure · ring 1.5px<br>--female: #ff4d99 · --male: #29a9ff</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#ff4d99">#ff4d99</div>
+      <div class="swatch" style="background:#29a9ff">#29a9ff</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+  <!-- OPTION 2: A step bolder -->
+  <div class="card opt-2">
+    <h2>② A step bolder</h2>
+    <div class="meta">Bolder pink + bolder blue · ring 1.5px<br>--female: #ff2080 · --male: #0099ff</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#ff2080">#ff2080</div>
+      <div class="swatch" style="background:#0099ff">#0099ff</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+  <!-- OPTION 3: Hot pink + electric blue -->
+  <div class="card opt-3">
+    <h2>③ Hot pink + electric blue</h2>
+    <div class="meta">Maximum saturation · ring 1.5px<br>--female: #ff0080 · --male: #007fff</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#ff0080">#ff0080</div>
+      <div class="swatch" style="background:#007fff">#007fff</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+  <!-- OPTION 4: Material magenta + cobalt -->
+  <div class="card opt-4">
+    <h2>④ Material magenta + cobalt</h2>
+    <div class="meta">Less hot, more "designed" · ring 1.5px<br>--female: #e91e63 · --male: #1976d2</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#e91e63">#e91e63</div>
+      <div class="swatch" style="background:#1976d2">#1976d2</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+  <!-- OPTION 5: Current colors + thicker ring -->
+  <div class="card opt-5">
+    <h2>⑤ Current colors + thicker ring</h2>
+    <div class="meta">Same shipped colors, ring 2.5px<br>(prominence via width, not saturation)</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#ff4d99">#ff4d99</div>
+      <div class="swatch" style="background:#29a9ff">#29a9ff</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+  <!-- OPTION 6: Neon + extra thick -->
+  <div class="card opt-6">
+    <h2>⑥ Neon + extra thick</h2>
+    <div class="meta">Both axes maxed · ring 3px<br>--female: #ff0066 · --male: #00aaff</div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#ff0066">#ff0066</div>
+      <div class="swatch" style="background:#00aaff">#00aaff</div>
+    </div>
+    <div class="roster-mock">
+      <div class="roster-cell is-female">
+        <div class="avatar">MK</div>
+        <div class="name">MILLY K.</div>
+        <div class="rating">3.50</div>
+      </div>
+      <div class="roster-cell is-male">
+        <div class="avatar">PT</div>
+        <div class="name">PEEDA T.</div>
+        <div class="rating">4.00</div>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip is-female">♀ F</span>
+      <span class="chip is-female is-active">♀ F</span>
+      <span class="chip is-male">♂ M</span>
+      <span class="chip is-male is-active">♂ M</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

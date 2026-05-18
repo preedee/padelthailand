@@ -99,17 +99,48 @@
     channels: [],
   };
 
-  // Label lookup tables (replace ternary chains).
-  // Letter-flanks-icon convention: position of the letter mirrors the court side.
-  const HAND_LABEL = { L: 'L 🫲', R: '🫱 R', B: 'L 🤲 R' };
-  const SIDE_LABEL = { L: 'L ⬅️', R: '➡️ R', B: 'L ↔️ R' };
+  // Letter-flanks-icon convention: the L/R letter sits on the side of the
+  // icon that matches the court side (left-handed L is to the LEFT of the
+  // racket icon, right-handed R is to the RIGHT). Both-handed shows both.
+  const HAND_ICON = { L: '🫲', R: '🫱', B: '🤲' };
+  const SIDE_ICON = { L: '⬅️', R: '➡️', B: '↔️' };
 
-  function handLabel(h) { return HAND_LABEL[h] || '—'; }
-  function sideLabel(s) { return SIDE_LABEL[s] || '—'; }
-  // Returns HTML (two flex-aligned spans) so the star icon + digits line up
-  // on the row baseline. Callers must NOT escapeHtml the result.
+  // Render as three structured spans so the icon ALWAYS sits in the same
+  // middle column regardless of left/right letter presence — caller's
+  // grid template gives each span a fixed track, so icons line up
+  // vertically down the column.
+  function handLabelHTML(h) {
+    const icon = HAND_ICON[h];
+    if (!icon) return '<span class="hs-cell hs-cell--empty">—</span>';
+    const left  = (h === 'L' || h === 'B') ? 'L' : '';
+    const right = (h === 'R' || h === 'B') ? 'R' : '';
+    return `<span class="hs-letter">${left}</span><span class="hs-icon">${icon}</span><span class="hs-letter">${right}</span>`;
+  }
+  function sideLabelHTML(s) {
+    const icon = SIDE_ICON[s];
+    if (!icon) return '<span class="hs-cell hs-cell--empty">—</span>';
+    const left  = (s === 'L' || s === 'B') ? 'L' : '';
+    const right = (s === 'R' || s === 'B') ? 'R' : '';
+    return `<span class="hs-letter">${left}</span><span class="hs-icon">${icon}</span><span class="hs-letter">${right}</span>`;
+  }
+  // Legacy plain-text helpers — still used by the team-roster cells.
+  function handLabel(h) {
+    const ic = HAND_ICON[h];
+    if (!ic) return '—';
+    return (h === 'L') ? `L ${ic}` : (h === 'R') ? `${ic} R` : `L ${ic} R`;
+  }
+  function sideLabel(s) {
+    const ic = SIDE_ICON[s];
+    if (!ic) return '—';
+    return (s === 'L') ? `L ${ic}` : (s === 'R') ? `${ic} R` : `L ${ic} R`;
+  }
+  // Star always emits a span (visibility-hidden when no rating) so the
+  // value column lines up vertically down the list. Callers must NOT
+  // escapeHtml the result.
   function ratingStr(r) {
-    if (r == null) return '—';
+    if (r == null) {
+      return `<span class="rating-star rating-star--empty" aria-hidden="true">⭐</span><span class="rating-val">—</span>`;
+    }
     return `<span class="rating-star">⭐</span><span class="rating-val">${r.toFixed(1)}</span>`;
   }
   function picksSignature(picks) {
@@ -818,8 +849,8 @@
           <span class="team__row-prefs">${prefsHTML(p)}</span>
           ${genderTag}
           <div class="team__player-rating">${ratingStr(p.rating)}</div>
-          <div class="team__row-tag">${escapeHtml(handLabel(p.hand))}</div>
-          <div class="team__row-tag">${escapeHtml(sideLabel(p.side))}</div>
+          <div class="team__row-handside">${handLabelHTML(p.hand)}</div>
+          <div class="team__row-handside">${sideLabelHTML(p.side)}</div>
         </div>
       `;
     }).join('');
