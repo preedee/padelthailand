@@ -161,8 +161,6 @@ input  { font: inherit; color: inherit; }
 body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   display: flex;
 }
-/* No community context → no "us" to prefer. Hide the captain-only chip. */
-.team__app.is-no-community .team__chip--prefs { display: none; }
 .team__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
 
 /* ---------- Vertical pill toggle (POOL / TEAM) — load-bearing #9 ---------- */
