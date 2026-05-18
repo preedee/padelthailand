@@ -746,6 +746,19 @@
     $rosterMale.innerHTML   = buildSection(maleFilled,   N_MALE_SLOTS,   'M');
     attachImgFallbacks($rosterFemale);
     attachImgFallbacks($rosterMale);
+
+    // Populate the merged center logo plaque (4×3 radial layout). The
+    // element only exists in the new template — guard so old layouts
+    // (if any) don't break. Uses the same fallback initials pattern as
+    // the team header.
+    const $plaque = document.getElementById('team-roster-plaque-logo');
+    if ($plaque) {
+      const fallback = teamInitials(c.name);
+      $plaque.innerHTML = c.logoPath
+        ? `<img src="${escapeHtml(c.logoPath)}" alt="" data-fallback="${escapeHtml(fallback)}">`
+        : `<span class="team__plaque-fallback">${escapeHtml(fallback)}</span>`;
+      attachImgFallbacks($plaque);
+    }
   }
 
   function renderPool() {

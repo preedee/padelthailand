@@ -16,11 +16,11 @@
   <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css?v=204">
-  <link rel="stylesheet" href="css/draft-team.css?v=40">
+  <link rel="stylesheet" href="css/draft-team.css?v=42">
   <!-- Community is derived from the URL path segment by draft-team.js. -->
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
-<body class="team theme-dark">
+<body class="team theme-dark force-mobile-view">
 
 <div id="app" class="team__app" data-view="team">
 
@@ -97,25 +97,21 @@
     </div>
   </section>
 
-  <!-- ============ TEAM VIEW ============ -->
+  <!-- ============ TEAM VIEW (4×3 captain-centered radial layout) ============ -->
   <section class="team__view team__view--team" data-view="team" id="team-view-team" hidden>
     <div class="team__team-header" id="team-team-header">
       <!-- Team logo + name + pick + vertical pill injected by draft-team.js -->
     </div>
 
     <div class="team__roster-scroll">
-      <div class="team__roster-section" id="team-roster-female">
-        <div class="team__roster-head">
-          <span class="team__roster-lbl team__roster-lbl--female">FEMALE PLAYERS</span>
-        </div>
-        <div class="team__roster-grid" id="team-roster-grid-female"></div>
-      </div>
-      <div class="team__roster-divider"></div>
-      <div class="team__roster-section" id="team-roster-male">
-        <div class="team__roster-head">
-          <span class="team__roster-lbl team__roster-lbl--male">MALE PLAYERS</span>
-        </div>
-        <div class="team__roster-grid" id="team-roster-grid-male"></div>
+      <div class="team__roster-radial" id="team-roster-radial">
+        <!-- 5 F + 5 M cells get explicit grid placement via :nth-child CSS.
+             display: contents on the wrappers so the cells become direct
+             grid items of .team__roster-radial. Cell HTML injected by
+             draft-team.js into the IDs below. -->
+        <div class="team__roster-female-row" id="team-roster-grid-female" style="display:contents"></div>
+        <div class="team__roster-male-row" id="team-roster-grid-male" style="display:contents"></div>
+        <div class="team__roster-plaque-logo" id="team-roster-plaque-logo" aria-hidden="true"></div>
       </div>
     </div>
   </section>
