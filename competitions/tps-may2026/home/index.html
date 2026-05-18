@@ -16,7 +16,7 @@
   <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css?v=204">
-  <link rel="stylesheet" href="css/draft-team.css?v=39">
+  <link rel="stylesheet" href="css/draft-team.css?v=40">
 </head>
 <body class="team theme-dark force-mobile-view">
 
@@ -141,17 +141,6 @@
      a live HH:MM:SS countdown, auto-unlocks at zero with no reload.
      ────────────────────────────────────────────────────────────── -->
 <style>
-  /* Hub-only: drop the dark-bg + border around the tournament logo so
-     the transparent CC PNG floats on its own. The boxed treatment is
-     fine on team/pool pages but looks heavy on the homepage hero row. */
-  .team__tournament-logo {
-    background: transparent;
-    border: 0;
-  }
-  .team__tournament-logo img {
-    padding: 0;
-  }
-
   /* Locked draft card — until the countdown hits zero. */
   .hub__watch.is-locked {
     pointer-events: none;
