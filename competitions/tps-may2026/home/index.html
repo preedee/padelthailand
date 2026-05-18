@@ -99,8 +99,15 @@
 
   <!-- ============ TEAM VIEW (4×3 captain-centered radial layout) ============ -->
   <section class="team__view team__view--team" data-view="team" id="team-view-team" hidden>
+    <div class="team__pool-pill-row">
+      <div class="team__pill" role="tablist" aria-label="Switch view">
+        <a class="team__pill-tab team__pill-tab--hub" href="tps-may2026/home/">← HOME</a>
+        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
+        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
+      </div>
+    </div>
     <div class="team__team-header" id="team-team-header">
-      <!-- Team logo + name + pick + vertical pill injected by draft-team.js -->
+      <!-- Team logo + name + pick injected by draft-team.js -->
     </div>
 
     <div class="team__roster-scroll">
@@ -128,7 +135,7 @@
 <script defer src="js/draft-config.js?v=37"></script>
 <script defer src="js/draft-utils.js?v=37"></script>
 <script defer src="js/draft-supabase.js?v=37"></script>
-<script defer src="js/draft-team.js?v=40"></script>
+<script defer src="js/draft-team.js?v=41"></script>
 
 <!-- ──────────────────────────────────────────────────────────────────
      Live-Draft countdown lock (per-competition; no engine changes).

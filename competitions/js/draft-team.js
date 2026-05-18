@@ -648,19 +648,6 @@
     attachImgFallbacks($hub);
   }
 
-  function pillHTML(currentView) {
-    // Tab order matches the static pool-view pill: HUB · TEAM · POOL.
-    // hubFile() reads the canonical href off the static pill's HUB anchor
-    // (id="team-back-hub"), so dynamically-rendered pills (team view) and
-    // static pills (pool view) always agree on the URL.
-    const hubHref = hubFile();
-    return `<div class="team__pill" role="tablist" aria-label="Switch view">
-      <a class="team__pill-tab team__pill-tab--hub" href="${escapeHtml(hubHref)}">← HOME</a>
-      <button class="team__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
-      <button class="team__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
-    </div>`;
-  }
-
   function renderTeamHeader() {
     const c = getCommunity();
     if (!c) {
@@ -680,7 +667,6 @@
         <div class="team__team-name">${escapeHtml(c.name.toUpperCase())}</div>
         <div class="team__team-pick">PICK ${pickNum} / 64</div>
       </div>
-      ${pillHTML('team')}
     `;
     attachImgFallbacks($teamHeader);
   }
