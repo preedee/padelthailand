@@ -16,7 +16,7 @@
   <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css?v=204">
-  <link rel="stylesheet" href="css/draft-team.css?v=42">
+  <link rel="stylesheet" href="css/draft-team.css?v=44">
 </head>
 <body class="team theme-dark force-mobile-view">
 
@@ -26,7 +26,6 @@
   <header class="team__header" role="banner">
     <div class="team__header-left">
       <img class="team__brand-logo" src="assets/tps-monogram.png" alt="TPS">
-      <a class="team__back-hub" id="team-back-hub" href="tps-may2026/home/" hidden>← HUB</a>
     </div>
     <div class="team__header-center">
       <h1 class="team__title" id="team-title">Bangkok Community Cup</h1>
@@ -61,17 +60,15 @@
         autocapitalize="off"
         spellcheck="false"
       />
-      <div class="team__pill" role="tablist" aria-label="Switch view">
-        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
-        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
-      </div>
-    </div>
-
-    <div class="team__filter-row">
       <span class="team__filter-label">SORT</span>
       <div class="team__chip-group" id="team-sort-group" role="group" aria-label="Sort">
         <button class="team__chip" data-sort="rating">RATING <span class="team__sort-arrow">↓</span></button>
         <button class="team__chip" data-sort="name">NAME <span class="team__sort-arrow"></span></button>
+      </div>
+      <div class="team__pill" role="tablist" aria-label="Switch view">
+        <a class="team__pill-tab team__pill-tab--hub" id="team-back-hub" href="tps-may2026/home/">← HUB</a>
+        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
+        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
       </div>
     </div>
     <div class="team__filter-row">

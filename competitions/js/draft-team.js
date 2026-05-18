@@ -538,9 +538,10 @@
   function setView(next) {
     state.view = (next === 'pool' || next === 'hub') ? next : 'team';
     $app.setAttribute('data-view', state.view);
-    // Rec #6: show the "← HUB" chevron on team/pool views, hide it on the
-    // hub itself (no point pointing back at where you are).
-    if ($backHub) $backHub.hidden = (state.view === 'hub');
+    // HUB visibility is now CSS-driven (`.team__app[data-view="hub"]
+    // .team__pill-tab--hub { display: none }`) since the HUB tab lives
+    // inside the POOL/TEAM pill rather than the header. No JS toggle
+    // needed — $backHub remains the URL source for hubFile().
   }
 
   // Build the URL for a given view, preserving every other query param.
@@ -648,7 +649,11 @@
   }
 
   function pillHTML(currentView) {
+    // HUB sits above POOL inside the pill. Same href as the static pool-view
+    // pill's HUB tab (which carries id="team-back-hub" — the URL source).
+    const hubHref = hubFile();
     return `<div class="team__pill" role="tablist" aria-label="Switch view">
+      <a class="team__pill-tab team__pill-tab--hub" href="${escapeHtml(hubHref)}">← HUB</a>
       <button class="team__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
       <button class="team__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
     </div>`;

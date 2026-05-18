@@ -202,6 +202,17 @@ input  { font: inherit; color: inherit; }
   gap: 8px;
   flex-shrink: 0;
 }
+/* SORT label + sort chip-group live INSIDE the search row so search +
+   sort share one row. The chip-group default is flex:1 (so it stretches
+   on its own row); inside the search row we cap it to its content width
+   to leave the search input as the only flexible element. */
+.team__pool-search-row .team__filter-label {
+  padding-left: 4px;
+  min-width: 0;
+}
+.team__pool-search-row .team__chip-group {
+  flex: 0 0 auto;
+}
 .team__search-input {
   flex: 1;
   padding: 11px 12px;
@@ -919,34 +930,25 @@ input  { font: inherit; color: inherit; }
   line-height: 1.2;
 }
 
-/* "← HUB" chevron in the header-left, shown on non-hub views.
-   The [hidden] override is load-bearing: the rule below would otherwise
-   defeat the user-agent default `[hidden] { display: none }`, so toggling
-   the `hidden` attribute in setView('hub') would have no visual effect. */
-.team__back-hub[hidden] { display: none !important; }
-.team__back-hub {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  padding: 8px 12px;
-  min-height: 44px;        /* QA M-4 — WCAG/iOS tap target floor */
-  min-width: 44px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+/* "← HUB" tab inside the vertical POOL/TEAM pill — sits above POOL as a
+   third tab. Visually anchored to the pill so it reads as one cohesive
+   nav stack rather than a stray button. Anchor (not button) so it does
+   normal browser navigation to the home/hub URL. */
+.team__pill-tab--hub {
   color: var(--dark-text-muted);
   text-decoration: none;
-  border: 1px solid var(--dark-border);
-  border-radius: 4px;
-  text-transform: uppercase;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  border-bottom: 1px solid var(--dark-border);   /* subtle divider from POOL/TEAM */
+  margin-bottom: 2px;
+  padding-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  transition: color 0.12s ease;
 }
-.team__back-hub:hover {
-  color: var(--dark-accent);
-  border-color: var(--dark-accent);
-}
+.team__pill-tab--hub:hover { color: var(--dark-accent); }
+/* Hide the HUB tab on the hub view itself — pointless to point users
+   back at where they are. Pool view inside the hub stays visible if
+   navigated to. */
+.team__app[data-view="hub"] .team__pill-tab--hub { display: none; }
 
 /* ============================================================
    PICK NOTIFICATION (Rec #5 — audit Variant B)
