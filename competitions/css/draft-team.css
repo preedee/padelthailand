@@ -445,7 +445,7 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 .team__player-photo {
   width: 32px; height: 32px;
   border-radius: 50%;
-  border: 3px solid var(--silver);
+  border: 2px solid var(--silver);
   display: grid; place-items: center;
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
