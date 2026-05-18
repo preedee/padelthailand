@@ -835,7 +835,7 @@
         : escapeHtml(fallback);
 
       // Gender is conveyed by the photo ring color (pink F / blue M / silver
-       unknown) — no longer needs its own column.
+      // unknown) — no longer needs its own column.
 
       const flag = flagEmoji(countryCodeFor(p.nationality));
 
