@@ -433,7 +433,7 @@
     const c = client();
     const { error: delErr } = await c.from('draft_picks').delete().eq('draft_id', draftId);
     if (delErr) throw delErr;
-    const reset = await updateDraft(draftId, {
+    await updateDraft(draftId, {
       status: 'pending',
       current_pick_number: 1,
       timer_started_at: null,
@@ -441,6 +441,16 @@
       team_seed_order: [],
       started_at: null,
       completed_at: null,
+    });
+    // Belt-and-suspenders re-assert. Observed 2026-05-18: on a paused draft,
+    // the combined PATCH above sometimes lands with current_pick_number/timer
+    // reset but status + is_timer_paused stuck at their paused values —
+    // leaving the UI showing RESUME instead of START. Root cause unknown
+    // (no DB trigger, no constraint, manual PATCH of both fields works fine).
+    // A second narrow PATCH of just those two fields reliably converges.
+    const reset = await updateDraft(draftId, {
+      status: 'pending',
+      is_timer_paused: false,
     });
     _clearPauseStart(draftId);
     _logEvent('draft_reset', { draftId });

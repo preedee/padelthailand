@@ -814,8 +814,12 @@ html, body {
   letter-spacing: -0.02em;
   color: var(--ink);
   text-align: center;
-  white-space: normal;
+  white-space: nowrap;
+  overflow: hidden;
   max-width: 100%;
+  /* JS (_fitOverlayName in draft-projector.js) shrinks font-size after
+     render so long names like "Kristina Kolesnikova" or "Sunshine Padel"
+     always fit on one line. */
 }
 
 .pick-overlay__stat {

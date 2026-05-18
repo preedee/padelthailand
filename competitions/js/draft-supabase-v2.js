@@ -319,7 +319,7 @@
   async function resetDraft(draftId) {
     // Two-step: delete all picks (Worker endpoint), then reset the draft row.
     await _api('delete-all-picks', { draftId });
-    const reset = await updateDraft(draftId, {
+    await updateDraft(draftId, {
       status: 'pending',
       current_pick_number: 1,
       timer_started_at: null,
@@ -327,6 +327,12 @@
       team_seed_order: [],
       started_at: null,
       completed_at: null,
+    });
+    // Belt-and-suspenders re-assert — see comment in draft-supabase.js
+    // resetDraft. Same combined-PATCH-leaving-status-stuck observation.
+    const reset = await updateDraft(draftId, {
+      status: 'pending',
+      is_timer_paused: false,
     });
     _clearPauseStart(draftId);
     _logEvent('draft_reset', { draftId, via: 'worker' });

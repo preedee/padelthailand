@@ -111,6 +111,8 @@ async function loadSheetData() {
   // risk (separate place to forget to update).
   state.avatarsByUserId = buildAvatarsByUserId(regRows, playerRows);
 
+  enrichCommunitiesWithCaptains();
+
   console.log('[Commissioner] sheet data loaded', {
     communities: state.communities.length,
     captains: state.captainUserIds.size,
@@ -236,6 +238,36 @@ function parseCommunities(rows) {
       logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=3'),
       seed: parseInt(r['Seed'], 10) || null,
     }));
+}
+
+// Join state.captainsByCommunity (userId+gender per community, from "Teams
+// and Players") with state.registrations (carries level) so the seed-preview
+// modal can show each community's captain pair + their averageLevel. Pure
+// additive — only writes new fields onto state.communities entries; existing
+// fields untouched. Safe to call after both sources are populated.
+function enrichCommunitiesWithCaptains() {
+  const regByUserId = new Map();
+  for (const r of state.registrations) {
+    if (r.userId) regByUserId.set(r.userId, r);
+  }
+  for (const c of state.communities) {
+    const captains = state.captainsByCommunity[c.id] || [];
+    for (const cap of captains) {
+      const reg = regByUserId.get(cap.userId);
+      if (!reg) continue;
+      const slot = cap.gender === 'F' ? 'captainF' : 'captainM';
+      c[slot] = {
+        userId: cap.userId,
+        name: reg.name,
+        level: reg.level,
+        avatar: state.avatarsByUserId[cap.userId] || '',
+      };
+    }
+    const lvls = [c.captainM, c.captainF]
+      .filter(x => x && x.level != null)
+      .map(x => x.level);
+    c.averageLevel = lvls.length ? lvls.reduce((a, b) => a + b, 0) / lvls.length : null;
+  }
 }
 
 function parseCaptainIds(playerRows) {
@@ -1047,22 +1079,30 @@ function previewSeedOrderAndConfirm(seeded) {
     const existing = document.getElementById('seed-preview-backdrop');
     if (existing) existing.remove();
 
+    const captainAvatar = (cap) => {
+      const initial = escapeHTML((cap.name || '?').charAt(0).toUpperCase());
+      const baseStyle = 'width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:6px;';
+      return cap.avatar
+        ? `<img src="${escapeHTML(cap.avatar)}" alt="" style="${baseStyle}object-fit:cover;">`
+        : `<span style="${baseStyle}display:inline-flex;align-items:center;justify-content:center;background:#3A5C36;color:#C8D6CE;font-size:11px;font-weight:700;">${initial}</span>`;
+    };
+
     const rows = seeded.map((c, i) => {
       const seedNum = i + 1;
       const captains = [];
       if (c.captainF && c.captainF.name) {
         const lvl = c.captainF.level != null ? c.captainF.level.toFixed(2) : '—';
-        captains.push(`${c.captainF.name} <span style="color:#FF85B8;">F ${lvl}</span>`);
+        captains.push(`${captainAvatar(c.captainF)}${escapeHTML(c.captainF.name)} <span style="color:#FF85B8;">F ${lvl}</span>`);
       }
       if (c.captainM && c.captainM.name) {
         const lvl = c.captainM.level != null ? c.captainM.level.toFixed(2) : '—';
-        captains.push(`${c.captainM.name} <span style="color:#5EC8FF;">M ${lvl}</span>`);
+        captains.push(`${captainAvatar(c.captainM)}${escapeHTML(c.captainM.name)} <span style="color:#5EC8FF;">M ${lvl}</span>`);
       }
       const avg = c.averageLevel != null ? c.averageLevel.toFixed(2) : '—';
       return `
         <tr style="border-bottom:1px solid #1A3A2E;">
           <td style="padding:10px 14px;font-family:monospace;color:#FFB703;font-weight:700;font-size:18px;">${seedNum}</td>
-          <td style="padding:10px 14px;font-weight:700;">${escapeHtml(c.name)}</td>
+          <td style="padding:10px 14px;font-weight:700;">${escapeHTML(c.name)}</td>
           <td style="padding:10px 14px;font-family:monospace;color:#C8D6CE;text-align:right;">avg ${avg}</td>
           <td style="padding:10px 14px;color:#C8D6CE;font-size:13px;">${captains.join('  ·  ')}</td>
         </tr>

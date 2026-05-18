@@ -520,8 +520,12 @@
       if (!player) return `<div class="slot empty"></div>`;
       const justPicked = state.justPicked && state.justPicked.player_id === player.playerId;
       const cls = ['slot', 'filled', player._captain && 'captain'].filter(Boolean).join(' ');
-      const av = player.avatar
-        ? `<img src="${escapeHtml(player.avatar)}" alt="${escapeHtml(player.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(player.name))}'}))">`
+      // Non-captain drafted players have no avatar in state.players (Teams
+      // and Players sheet is captains-only); fall through to avatarsByUserId
+      // which is prefetched from Registrations. Same path the pick overlay uses.
+      const avatarSrc = resolveAvatar(player);
+      const av = avatarSrc
+        ? `<img src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(player.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(player.name))}'}))">`
         : escapeHtml(initials(player.name));
       const flag = flagEmoji(countryCodeFor(player.nationality));
       const flagHtml = flag
@@ -627,10 +631,138 @@
   }
 
   function renderAll() {
+    renderSeedPreview();
     renderMomentZone();
     renderTeamGrid();
     // Clear just-picked latch so subsequent renders don't re-animate
     state.justPicked = null;
+  }
+
+  // Join state.players (Teams and Players sheet — has level + avatar on captain
+  // rows) onto state.communities so the seed-preview overlay shows captain F/M
+  // names with levels + avatars + an averageLevel for each community. Pure
+  // additive on each community object (captainM/F replaced with enriched copy;
+  // averageLevel added). Safe to call repeatedly — idempotent.
+  function enrichCommunitiesWithCaptains() {
+    if (!state.communities || !state.communities.length) return;
+    if (!state.players || !state.players.length) return;
+    const captainsByCommunity = {};
+    for (const p of state.players) {
+      if (!p.isCaptain || !p.communityId) continue;
+      (captainsByCommunity[p.communityId] = captainsByCommunity[p.communityId] || []).push(p);
+    }
+    for (const c of state.communities) {
+      const caps = captainsByCommunity[c.id] || [];
+      for (const cap of caps) {
+        const slot = cap.gender === 'F' ? 'captainF' : 'captainM';
+        const sheetName = c[slot] && c[slot].name;  // from data.js Communities parser
+        c[slot] = {
+          userId: cap.playerId,
+          name: cap.name || sheetName || '',
+          level: cap.level,
+          avatar: cap.avatar || (state.avatarsByUserId && state.avatarsByUserId[cap.playerId]) || '',
+          nationality: cap.nationality || '',
+        };
+      }
+      const lvls = [c.captainM, c.captainF]
+        .filter(x => x && x.level != null)
+        .map(x => x.level);
+      c.averageLevel = lvls.length ? lvls.reduce((a, b) => a + b, 0) / lvls.length : null;
+    }
+  }
+
+  // Pre-draft seed-order overlay. Mirrors the commissioner's "PREVIEW SEED
+  // ORDER" modal so the audience can see what the draft is about to lock in.
+  // Read-only — no buttons. Shown when draft.status === 'pending' AND we have
+  // a full 8-community seed; auto-removed when status moves to active/etc.
+  function renderSeedPreview() {
+    const existing = document.getElementById('projector-seed-preview');
+    const isPending = state.draft && state.draft.status === 'pending';
+    if (!isPending) { if (existing) existing.remove(); return; }
+
+    const seeded = (state.communities || [])
+      .filter(c => c.seed != null && c.id)
+      .sort((a, b) => a.seed - b.seed);
+    if (seeded.length !== 8) { if (existing) existing.remove(); return; }
+
+    // One captain per visual row: [bordered avatar] [flag] [name] [level].
+    // Border color encodes gender (pink F / blue M) — matches the pool page's
+    // .pool-row__avatar--f/--m treatment so the audience reads at a glance.
+    const captainLine = (cap, kind) => {
+      if (!cap || !cap.name) return '';
+      const borderColor = kind === 'F' ? '#ff85b8' : '#5ec8ff';
+      const initial = escapeHtml((cap.name || '?').charAt(0).toUpperCase());
+      const baseStyle = `width:48px;height:48px;border-radius:50%;border:3px solid ${borderColor};flex:0 0 auto;object-fit:cover;`;
+      const avatar = cap.avatar
+        ? `<img src="${escapeHtml(cap.avatar)}" alt="" style="${baseStyle}">`
+        : `<span style="${baseStyle}display:inline-flex;align-items:center;justify-content:center;background:#1A3A2E;color:#C8D6CE;font-size:20px;font-weight:700;">${initial}</span>`;
+      const flagHtml = cap.nationality
+        ? `<span style="font-size:30px;line-height:1;flex:0 0 auto;">${flagEmoji(countryCodeFor(cap.nationality))}</span>`
+        : `<span style="width:40px;flex:0 0 auto;"></span>`;
+      const lvl = cap.level != null ? cap.level.toFixed(2) : '—';
+      return `
+        <div style="display:flex;align-items:center;gap:14px;padding:4px 0;">
+          ${avatar}
+          ${flagHtml}
+          <span style="font-size:22px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(cap.name)}</span>
+          <span style="font-family:monospace;font-size:20px;color:#C8D6CE;flex:0 0 auto;">${lvl}</span>
+        </div>
+      `;
+    };
+
+    const rows = seeded.map((c, i) => {
+      const seedNum = i + 1;
+      const captainLines = [
+        captainLine(c.captainF, 'F'),
+        captainLine(c.captainM, 'M'),
+      ].filter(Boolean).join('');
+      const avg = c.averageLevel != null ? c.averageLevel.toFixed(2) : '—';
+      return `
+        <tr style="border-bottom:1px solid #1A3A2E;">
+          <td style="padding:20px 24px;font-family:monospace;color:#FFB703;font-weight:700;font-size:36px;width:90px;">${seedNum}</td>
+          <td style="padding:20px 24px;font-weight:700;font-size:26px;white-space:nowrap;">${escapeHtml(c.name)}</td>
+          <td style="padding:20px 24px;font-family:monospace;color:#C8D6CE;font-size:24px;text-align:right;white-space:nowrap;">${avg}</td>
+          <td style="padding:20px 24px;min-width:420px;">${captainLines}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.id = 'projector-seed-preview';
+    div.style.cssText = [
+      'position:fixed','inset:0','background:#0A0A0A','z-index:9998',
+      'display:flex','align-items:center','justify-content:center',
+      'font-family:var(--font, system-ui), sans-serif','overflow-y:auto',
+    ].join(';');
+    div.innerHTML = `
+      <div style="background:#0E2A1E;color:#FFFFFF;border:2px solid #FFB703;
+                  padding:48px 56px;border-radius:18px;max-width:1280px;width:90vw;
+                  max-height:94vh;overflow-y:auto;
+                  box-shadow:0 0 80px rgba(255,183,3,0.35);">
+        <div style="font-size:44px;font-weight:700;letter-spacing:0.08em;
+                    color:#FFB703;text-transform:uppercase;margin-bottom:14px;text-align:center;">
+          Preview Seed Order
+        </div>
+        <div style="font-size:18px;color:#C8D6CE;line-height:1.55;margin-bottom:32px;text-align:center;max-width:880px;margin-left:auto;margin-right:auto;">
+          Snake-draft order the commissioner is about to lock in.
+          Lower seed picks first; round 2 reverses (snake).
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #3A5C36;">
+              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
+              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
+              <th style="text-align:right;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">AVG</th>
+              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">CAPTAINS</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+    document.body.appendChild(div);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -705,6 +837,30 @@
     `;
   }
 
+  // Shrink a .pick-overlay__name element's font-size until its rendered text
+  // width fits within its (max-width-bounded) container. white-space: nowrap
+  // means scrollWidth = natural text width, clientWidth = constrained box
+  // width. We scale font-size by the overflow ratio (with a 2% safety margin)
+  // and run twice to converge cleanly across font-metric quirks.
+  const _OVERLAY_NAME_MIN_PX = 28;
+  function _fitOverlayName(el) {
+    if (!el) return;
+    for (let i = 0; i < 2; i++) {
+      const w = el.clientWidth;
+      const sw = el.scrollWidth;
+      if (!w || sw <= w) return;
+      const current = parseFloat(getComputedStyle(el).fontSize) || 96;
+      const next = Math.max(_OVERLAY_NAME_MIN_PX, current * (w / sw) * 0.98);
+      if (next >= current) return;  // can't shrink further
+      el.style.fontSize = next + 'px';
+    }
+  }
+  function _fitOverlayNames() {
+    if (!elPickOverlay) return;
+    const names = elPickOverlay.querySelectorAll('.pick-overlay__name');
+    names.forEach(_fitOverlayName);
+  }
+
   function showPendingOverlay(payload) {
     if (!payload || !elPickOverlay) return;
     if (_overlayHoldTimer) { clearTimeout(_overlayHoldTimer); _overlayHoldTimer = null; }
@@ -716,6 +872,7 @@
     elPickOverlay.classList.add('is-suspense');
     elPickOverlay.hidden = false;
     elPickOverlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(_fitOverlayNames);
     log('overlay → suspense');
   }
 
@@ -871,6 +1028,7 @@
     elPickOverlay.classList.add('is-undone', 'is-revealed');
     elPickOverlay.hidden = false;
     elPickOverlay.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(_fitOverlayNames);
     log('overlay → undo revealed (pick #' + payload.pickNumber + ')');
     _overlayHoldTimer = setTimeout(exitPickOverlay, OVERLAY_HOLD_MS);
   }
@@ -1280,6 +1438,7 @@
       let resolved = false;
       Data.startPolling(() => {
         state.communities = Data.getCommunities();
+        enrichCommunitiesWithCaptains();
         applyHeaderFromConfig();
         if (!resolved) { resolved = true; resolve(); }
         else { renderAll(); }   // subsequent polls re-render
@@ -1310,6 +1469,7 @@
     }).catch(err => console.warn('[projector] avatar prefetch failed:', err));
 
     await Promise.all([dataReady, playersReady]);
+    enrichCommunitiesWithCaptains();
     log('Sheet data loaded:', state.communities.length, 'communities,', state.players.length, 'players');
 
     // First paint NOW with Sheet data — pre-draft "WAITING…" state + full team grid.
