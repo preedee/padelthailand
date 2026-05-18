@@ -38,9 +38,9 @@
         <span class="pulse"></span>
         <span>Reconnecting…</span>
       </div>
-      <div class="live-pill" aria-label="Live Draft">
+      <div class="live-pill" id="livePill" aria-label="Live Draft">
         <span class="dot"></span>
-        LIVE DRAFT
+        <span class="live-pill__label" id="livePillLabel">LIVE DRAFT</span>
       </div>
       <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Bangkok Community Cup" />
     </div>
@@ -71,6 +71,19 @@
         <div class="timer-wrap">
           <div class="timer-num" id="timerNum">0:45</div>
           <div class="timer-label">Time Remaining</div>
+        </div>
+      </div>
+
+      <!-- Celebration banner shown only when draft.status === 'complete'.
+           Spans the full row; hides the three live cells via .moment-block.is-complete. -->
+      <div class="moment-cell moment-cell--complete" id="momentCompleteBanner">
+        <div class="complete-banner">
+          <div class="complete-banner__title">
+            <span class="complete-banner__spark">✨</span>
+            DRAFT COMPLETE
+            <span class="complete-banner__spark">✨</span>
+          </div>
+          <div class="complete-banner__sub" id="momentCompleteSub">All 64 picks locked · 8 rosters ready</div>
         </div>
       </div>
     </div>
