@@ -786,14 +786,11 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   .team__search-input { padding: 10px; font-size: 13px; }
 }
 
-/* ---------- QA C-2 — hide centered title on phone so the ← HUB chevron
-   and brand logo own the header row. Title still appears at ≥520px.
-   Scoped to non-hub views: on the hub page itself there's no back-hub
-   chevron competing for space, so the tournament title has room. */
-@media (max-width: 519px) {
-  .team__app[data-view="pool"] .team__header-center,
-  .team__app[data-view="team"] .team__header-center { display: none; }
-}
+/* (Removed: previous rule hid .team__header-center on phones < 520px
+   for pool/team views so the now-defunct ← HUB header chevron had room.
+   With the chevron gone and HOME living in the in-view horizontal pill
+   below the header, the title fits in the center on mobile across all
+   views.) */
 
 /* ---------- QA M-8 — give the pool player name more room on phone.
    Default grid is `32 18 1fr 48 14 46 48 50` (256px fixed + name) which
