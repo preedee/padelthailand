@@ -369,39 +369,42 @@ html, body {
   --bar-progress: 50%;
 }
 
+/* Sized to match the live moment row: title mirrors .timer-num metrics,
+   sub mirrors .timer-label. Zero padding so the row height collapses to
+   what the live cells produce. */
 .complete-banner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(6px, 0.6vw, 12px);
-  padding: clamp(8px, 1vw, 16px) 0;
   text-align: center;
   animation: complete-banner-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .complete-banner__title {
   font-family: 'SuperBlue', Georgia, serif;
-  font-size: clamp(36px, 4.4vw, 84px);
+  font-size: clamp(52px, 4.6vw, 96px);  /* match .timer-num */
   font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.06em;
+  line-height: 0.85;                     /* match .timer-num */
+  letter-spacing: 0.04em;
   color: var(--picked);
-  text-shadow: 0 0 24px rgba(63,211,145,0.35);
+  text-shadow: 0 0 28px rgba(63,211,145,0.35);
   display: inline-flex;
   align-items: center;
   gap: clamp(10px, 1.2vw, 22px);
 }
 .complete-banner__spark {
-  font-size: 0.65em;
+  font-size: 0.6em;
   filter: drop-shadow(0 0 8px rgba(255,183,3,0.55));
   animation: complete-banner-twinkle 2400ms ease-in-out infinite alternate;
 }
 .complete-banner__spark:last-child { animation-delay: 1200ms; }
 .complete-banner__sub {
   font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-  font-size: clamp(11px, 0.95vw, 16px);
-  letter-spacing: 0.22em;
+  font-size: clamp(10px, 0.8vw, 13px);   /* match .timer-label */
+  font-weight: 500;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--ink-dim);
+  margin-top: 8px;                       /* match .timer-label */
 }
 @keyframes complete-banner-in {
   from { opacity: 0; transform: translateY(8px) scale(0.97); }
