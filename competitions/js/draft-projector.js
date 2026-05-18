@@ -1343,14 +1343,14 @@
 
   function buildMockState() {
     const mockCommunities = [
-      { id:'coco-padel',     name:'Coco Padel',         color:'#C8E6C9', logoPath:'assets/communities/coco-padel.png',     captainM:{},captainF:{} },
-      { id:'deuce-padel',    name:'Deuce Padel',        color:'#FFE0B2', logoPath:'assets/communities/deuce-padel.png',    captainM:{},captainF:{} },
-      { id:'padel-and-brew', name:'Padel & Brew',       color:'#FFF59D', logoPath:'assets/communities/padel-and-brew.png', captainM:{},captainF:{} },
-      { id:'padel-pa',       name:'Padel Pa?',          color:'#F8BBD0', logoPath:'assets/communities/padel-pa.png',       captainM:{},captainF:{} },
-      { id:'sabai-sabai',    name:'Sabai Sabai',        color:'#B2DFDB', logoPath:'assets/communities/sabai-sabai.png',    captainM:{},captainF:{} },
-      { id:'social-rally',   name:'Social Rally',       color:'#FFCCBC', logoPath:'assets/communities/social-rally.png',   captainM:{},captainF:{} },
-      { id:'sunshine-padel', name:'Sunshine Padel',     color:'#FFF9C4', logoPath:'assets/communities/sunshine-padel.png', captainM:{},captainF:{} },
-      { id:'wall-whackers',  name:'Wall Whackers',      color:'#BBDEFB', logoPath:'assets/communities/wall-whackers.png',  captainM:{},captainF:{} },
+      { id:'coco-padel',     name:'Coco Padel',         color:'#E26B3B', logoPath:'assets/communities/coco-padel.png',     captainM:{},captainF:{} },
+      { id:'deuce-padel',    name:'Deuce Padel',        color:'#050809', logoPath:'assets/communities/deuce-padel.png',    captainM:{},captainF:{} },
+      { id:'padel-and-brew', name:'Padel & Brew',       color:'#E3AA2E', logoPath:'assets/communities/padel-and-brew.png', captainM:{},captainF:{} },
+      { id:'padel-pa',       name:'Padel Pa?',          color:'#2B2B2B', logoPath:'assets/communities/padel-pa.png',       captainM:{},captainF:{} },
+      { id:'sabai-sabai',    name:'Sabai Sabai',        color:'#092E1F', logoPath:'assets/communities/sabai-sabai.png',    captainM:{},captainF:{} },
+      { id:'social-rally',   name:'Social Rally',       color:'#CD9B41', logoPath:'assets/communities/social-rally.png',   captainM:{},captainF:{} },
+      { id:'sunshine-padel', name:'Sunshine Padel',     color:'#FCDC26', logoPath:'assets/communities/sunshine-padel.png', captainM:{},captainF:{} },
+      { id:'wall-whackers',  name:'Wall Whackers',      color:'#B83E22', logoPath:'assets/communities/wall-whackers.png',  captainM:{},captainF:{} },
     ];
     const mockPlayers = [];
     mockCommunities.forEach((c, ci) => {

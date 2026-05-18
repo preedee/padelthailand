@@ -695,9 +695,9 @@ function poolRowHTML(p, isTopMatch) {
       <span class="pool-row__name">${escapeHTML(p.name)}</span>
       <span class="pool-row__prefs">${prefsHTML(p)}</span>
       <span class="pool-row__meta">
-        <span class="pool-row__cell">${ratingLabel}</span>
         <span class="pool-row__cell">${handLabel}</span>
         <span class="pool-row__cell">${sideLabel}</span>
+        <span class="pool-row__cell">${ratingLabel}</span>
       </span>
       <span class="pool-row__chip">→ CLICK TO PICK</span>
     </div>
@@ -886,7 +886,7 @@ function openConfirmModal(player) {
       <div class="confirm-modal__player">
         ${avatarHTML(player, 90)}
         <div class="confirm-modal__name">${escapeHTML(player.name)}</div>
-        <div class="confirm-modal__sub">${ratingLabel} · ${handLabel} · ${sideLabel}</div>
+        <div class="confirm-modal__sub">${handLabel} · ${sideLabel} · ${ratingLabel}</div>
       </div>
       <div class="confirm-modal__arrow">→</div>
       <div class="confirm-modal__team">
