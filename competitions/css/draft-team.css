@@ -916,7 +916,11 @@ input  { font: inherit; color: inherit; }
   line-height: 1.2;
 }
 
-/* "← HUB" chevron in the header-left, shown on non-hub views */
+/* "← HUB" chevron in the header-left, shown on non-hub views.
+   The [hidden] override is load-bearing: the rule below would otherwise
+   defeat the user-agent default `[hidden] { display: none }`, so toggling
+   the `hidden` attribute in setView('hub') would have no visual effect. */
+.team__back-hub[hidden] { display: none !important; }
 .team__back-hub {
   display: inline-flex;
   align-items: center;
