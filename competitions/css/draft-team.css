@@ -642,13 +642,17 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   min-height: 120px;
 }
 /* Empty cells — gender-tinted dashed border (load-bearing #5) */
+/* Empty roster cells use color-mix() against the current --female / --male
+   tokens so they automatically track any brand-color updates rather than
+   carrying stale hardcoded rgba. Border bumped to 2px @ 65% opacity so
+   the gender-tinted dashed slots actually pop on the dark canvas. */
 .team__roster-cell.is-empty.is-female {
-  background: rgba(255, 133, 184, 0.06);
-  border: 1px dashed rgba(255, 133, 184, 0.30);
+  background: color-mix(in srgb, var(--female) 12%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--female) 65%, transparent);
 }
 .team__roster-cell.is-empty.is-male {
-  background: rgba(94, 200, 255, 0.06);
-  border: 1px dashed rgba(94, 200, 255, 0.30);
+  background: color-mix(in srgb, var(--male) 12%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--male) 65%, transparent);
 }
 .team__roster-cell.is-empty .team__cell-avatar,
 .team__roster-cell.is-empty .team__cell-fname,
