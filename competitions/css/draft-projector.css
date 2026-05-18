@@ -95,6 +95,15 @@ html, body {
   object-fit: contain;
   display: block;
 }
+/* Logotype (wordmark) renders 25% smaller than the default .brand-logo
+   so it balances visually next to the square monogram beside it.
+   Explicit align-self: center as a safety belt over the parent's
+   align-items: center, so the smaller logotype always sits on the
+   monogram's vertical midline. */
+#brandLogo {
+  height: clamp(33px, 2.55vw, 48px);
+  align-self: center;
+}
 
 .tournament {
   font-family: 'SuperBlue', Georgia, serif;
