@@ -845,9 +845,9 @@
           <span class="team__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
           <div class="team__player-name">${escapeHtml(p.name)}</div>
           <span class="team__row-prefs">${prefsHTML(p)}</span>
-          <div class="team__player-rating">${ratingStr(p.rating)}</div>
           <div class="team__row-tag">${escapeHtml(handLabel(p.hand))}</div>
           <div class="team__row-handside">${sideLabelHTML(p.side)}</div>
+          <div class="team__player-rating">${ratingStr(p.rating)}</div>
         </div>
       `;
     }).join('');

@@ -419,8 +419,11 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
      (3 logos + 1px gap × 2 = 74px → 80px col w/ small padding). Hand
      and side widened so the both-handed/either-side "L X R" labels
      don't clip. */
-  grid-template-columns: 32px 18px minmax(0, 1fr) 80px 46px 56px 56px;
-  gap: 6px;
+  /* photo · flag · name · prefs · hand · side · rating  (rating moved to
+     the rightmost column). Hand/side/rating cols tightened so the values
+     sit close together instead of swimming in padding. Gap reduced 6→4px. */
+  grid-template-columns: 32px 18px minmax(0, 1fr) 80px 44px 44px 38px;
+  gap: 4px;
   align-items: center;
   padding: 9px 10px;
   border-bottom: 1px solid var(--dark-border);
@@ -798,8 +801,10 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
    the secondary data columns + drop the prefs slot on narrow phones. */
 @media (max-width: 419px) {
   .team__player-row {
-    grid-template-columns: 30px 14px minmax(0, 1fr) 38px 30px 30px;
-    gap: 5px;
+    /* Mobile: prefs cell is display:none, so 6 visible items map to 6 tracks
+       in HTML order — photo, flag, name, hand, side, rating. */
+    grid-template-columns: 30px 14px minmax(0, 1fr) 30px 30px 34px;
+    gap: 4px;
     padding: 9px 8px;
   }
   /* The prefs column (index 4 in default grid) becomes gender — hide the
