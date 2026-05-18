@@ -678,7 +678,7 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   font-weight: 700;
   flex-shrink: 0;
   /* Gender ring — load-bearing #3 */
-  box-shadow: 0 0 0 3px var(--team-cell-ring, var(--silver));
+  box-shadow: 0 0 0 2px var(--team-cell-ring, var(--silver));
   overflow: hidden;
   position: relative;
   margin-top: 2px;

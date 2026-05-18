@@ -50,6 +50,8 @@
   const elTimerNum       = $('timerNum');
   const elTeamsGrid      = $('teamsGrid');
   const elPickOverlay    = $('pickOverlay');
+  const elLivePill       = $('livePill');
+  const elLivePillLabel  = $('livePillLabel');
 
   // ──────────────────────────────────────────────────────────
   // 3. State
@@ -424,6 +426,9 @@
   }
 
   function currentTeamId() {
+    // Once the draft is complete, nobody is "on the clock" anymore — return
+    // null so the team grid drops the .live class (and the ON CLOCK badge).
+    if (state.draft && state.draft.status === 'complete') return null;
     const order = (state.draft && state.draft.team_seed_order) || [];
     if (order.length !== N_TEAMS) return null;
     try {
@@ -575,6 +580,26 @@
   }
 
   function renderMomentZone() {
+    // Live-pill state: red blinking "LIVE DRAFT" by default; green steady
+    // "COMPLETE" once the final pick lands. Updated every render so it tracks
+    // status changes that arrive via realtime/poll.
+    const isComplete = !!(state.draft && state.draft.status === 'complete');
+    if (elLivePill && elLivePillLabel) {
+      elLivePill.classList.toggle('is-complete', isComplete);
+      elLivePillLabel.textContent = isComplete ? 'COMPLETE' : 'LIVE DRAFT';
+      elLivePill.setAttribute('aria-label', isComplete ? 'Draft Complete' : 'Live Draft');
+    }
+    // Draft-complete moment block: collapse the 3 cells into the celebration
+    // banner. Bail before doing the live-cell layout work — those fields are
+    // hidden by .moment-block.is-complete anyway, but skipping the writes also
+    // avoids stale "PICK 64 · ROUND 8 OF 8" content reappearing if the class
+    // is ever toggled back off.
+    if (isComplete) {
+      if (elMomentBlock) elMomentBlock.classList.add('is-complete');
+      return;
+    }
+    if (elMomentBlock) elMomentBlock.classList.remove('is-complete');
+
     const liveId = currentTeamId();
     const nextId = nextTeamId();
     const pickN  = currentPickNumber();

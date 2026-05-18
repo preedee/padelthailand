@@ -138,6 +138,19 @@ html, body {
   50%      { opacity: 0.35; box-shadow: 0 0 0 6px rgba(255,84,112,0); }
 }
 
+/* Draft-complete variant — swap red→green and stop the blink so the badge
+   reads as "settled" rather than "live." */
+.live-pill.is-complete {
+  color: var(--picked);
+  border-color: var(--picked);
+  background: rgba(63,211,145,0.10);
+}
+.live-pill.is-complete .dot {
+  background: var(--picked);
+  animation: none;
+  box-shadow: none;
+}
+
 .tournament-logo {
   height: clamp(44px, 3.4vw, 64px);
   width: auto;
@@ -336,6 +349,67 @@ html, body {
 @keyframes timer-blink-projector {
   0%, 49%   { opacity: 1; }
   50%, 100% { opacity: 0.15; }
+}
+
+/* ============== DRAFT-COMPLETE BANNER ==============
+   When .moment-block.is-complete is on, hide the three live cells and show
+   the celebration banner instead. The banner spans the full row. */
+.moment-cell--complete { display: none; }
+.moment-block.is-complete .moment-cell { display: none; }
+.moment-block.is-complete .moment-cell--complete {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: center;
+  align-items: center;
+}
+/* Mute the converging bars in complete state — keep the rule line but stop
+   the timer-driven progress, neutralize the state color. */
+.moment-block.is-complete {
+  --timer-state: var(--picked);
+  --bar-progress: 50%;
+}
+
+.complete-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 0.6vw, 12px);
+  padding: clamp(8px, 1vw, 16px) 0;
+  text-align: center;
+  animation: complete-banner-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.complete-banner__title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-size: clamp(36px, 4.4vw, 84px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--picked);
+  text-shadow: 0 0 24px rgba(63,211,145,0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1.2vw, 22px);
+}
+.complete-banner__spark {
+  font-size: 0.65em;
+  filter: drop-shadow(0 0 8px rgba(255,183,3,0.55));
+  animation: complete-banner-twinkle 2400ms ease-in-out infinite alternate;
+}
+.complete-banner__spark:last-child { animation-delay: 1200ms; }
+.complete-banner__sub {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(11px, 0.95vw, 16px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+@keyframes complete-banner-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+@keyframes complete-banner-twinkle {
+  from { opacity: 0.55; transform: scale(1);    }
+  to   { opacity: 1.00; transform: scale(1.15); }
 }
 
 /* ============== TEAM GRID ============== */
@@ -613,8 +687,8 @@ html, body {
 .slot .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
 /* Gender rings — load-bearing */
-.row-female .slot .avatar { box-shadow: 0 0 0 3px var(--female); }
-.row-male   .slot .avatar { box-shadow: 0 0 0 3px var(--male); }
+.row-female .slot .avatar { box-shadow: 0 0 0 2px var(--female); }
+.row-male   .slot .avatar { box-shadow: 0 0 0 2px var(--male); }
 
 /* Captain ring — load-bearing */
 .slot.captain .avatar {
