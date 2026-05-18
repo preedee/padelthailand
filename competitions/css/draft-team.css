@@ -692,9 +692,12 @@ input  { font: inherit; color: inherit; }
 }
 
 /* ---------- QA C-2 — hide centered title on phone so the ← HUB chevron
-   and brand logo own the header row. Title still appears at ≥520px. */
+   and brand logo own the header row. Title still appears at ≥520px.
+   Scoped to non-hub views: on the hub page itself there's no back-hub
+   chevron competing for space, so the tournament title has room. */
 @media (max-width: 519px) {
-  .team__header-center { display: none; }
+  .team__app[data-view="pool"] .team__header-center,
+  .team__app[data-view="team"] .team__header-center { display: none; }
 }
 
 /* ---------- QA M-8 — give the pool player name more room on phone.

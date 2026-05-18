@@ -137,6 +137,17 @@
      a live HH:MM:SS countdown, auto-unlocks at zero with no reload.
      ────────────────────────────────────────────────────────────── -->
 <style>
+  /* Hub-only: drop the dark-bg + border around the tournament logo so
+     the transparent CC PNG floats on its own. The boxed treatment is
+     fine on team/pool pages but looks heavy on the homepage hero row. */
+  .team__tournament-logo {
+    background: transparent;
+    border: 0;
+  }
+  .team__tournament-logo img {
+    padding: 0;
+  }
+
   /* Locked draft card — until the countdown hits zero. */
   .hub__watch.is-locked {
     pointer-events: none;
@@ -202,7 +213,9 @@
       el.setAttribute('tabindex', '-1');
       const title = el.querySelector('.hub__watch-title');
       const sub   = el.querySelector('.hub__watch-sub');
-      if (title) title.textContent = 'Live Draft starts Wed 19:00 ICT';
+      // innerHTML so the "Wed 19:00 ICT" half stays on one line — the
+      // natural wrap point becomes the space before <span>.
+      if (title) title.innerHTML = 'Live Draft starts <span style="white-space:nowrap">Wed 19:00 ICT</span>';
       if (sub) {
         sub.innerHTML =
           '<span class="hub__countdown-label">Available in</span>' +
