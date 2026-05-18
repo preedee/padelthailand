@@ -154,6 +154,13 @@ input  { font: inherit; color: inherit; }
    pill since there's no TEAM destination to swap to. The "← HUB" chevron
    in the header is the only navigation out. */
 .team__app.is-no-community .team__view--pool .team__pill { display: none; }
+/* Overall-pool stub (body.is-overall-pool) opts back IN to showing the
+   pill, with TEAM rewired as a link to /home/ (Option 3). The /home/
+   stub stays hidden by the rule above because it lands on hub view
+   and the pool-pill there would be redundant nav. */
+body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
+  display: flex;
+}
 /* No community context → no "us" to prefer. Hide the captain-only chip. */
 .team__app.is-no-community .team__chip--prefs { display: none; }
 .team__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
