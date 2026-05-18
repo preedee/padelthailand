@@ -195,8 +195,32 @@ input  { font: inherit; color: inherit; }
 /* =====================================================================
    POOL VIEW
    ===================================================================== */
+/* Row 1 — horizontal pill [HUB · TEAM · POOL] above the search row.
+   This is the only place where the pill renders horizontally — the
+   pill inside the team view header stays vertical (sits beside the
+   team name in a narrow column). */
+.team__pool-pill-row {
+  padding: 12px 14px 4px;
+  flex-shrink: 0;
+}
+.team__pool-pill-row .team__pill {
+  flex-direction: row;
+  width: 100%;
+  gap: 0;
+}
+.team__pool-pill-row .team__pill-tab {
+  flex: 1;
+  min-width: 0;
+  /* The vertical pill's HUB tab uses a border-bottom as a divider from
+     POOL/TEAM. In the horizontal layout that divider becomes meaningless
+     (and ugly), so the in-row HUB tab needs to render as a peer. */
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 6px;
+}
+
 .team__pool-search-row {
-  padding: 12px 14px 8px;
+  padding: 8px 14px 8px;
   display: flex;
   align-items: center;
   gap: 8px;

@@ -16,7 +16,7 @@
   <!-- PadelThailand base tokens first (defines .theme-dark palette), then team overlay -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css?v=204">
-  <link rel="stylesheet" href="css/draft-team.css?v=44">
+  <link rel="stylesheet" href="css/draft-team.css?v=45">
   <!-- Community is derived from the URL path segment by draft-team.js. -->
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
@@ -51,7 +51,20 @@
 
   <!-- ============ POOL VIEW ============ -->
   <section class="team__view team__view--pool" data-view="pool" id="team-view-pool" hidden>
+    <div class="team__pool-pill-row">
+      <div class="team__pill" role="tablist" aria-label="Switch view">
+        <a class="team__pill-tab team__pill-tab--hub" id="team-back-hub" href="tps-may2026/home/">← HUB</a>
+        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
+        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
+      </div>
+    </div>
+
     <div class="team__pool-search-row">
+      <span class="team__filter-label">SORT</span>
+      <div class="team__chip-group" id="team-sort-group" role="group" aria-label="Sort">
+        <button class="team__chip" data-sort="rating">RATING <span class="team__sort-arrow">↓</span></button>
+        <button class="team__chip" data-sort="name">NAME <span class="team__sort-arrow"></span></button>
+      </div>
       <input
         type="search"
         id="team-search"
@@ -62,17 +75,8 @@
         autocapitalize="off"
         spellcheck="false"
       />
-      <span class="team__filter-label">SORT</span>
-      <div class="team__chip-group" id="team-sort-group" role="group" aria-label="Sort">
-        <button class="team__chip" data-sort="rating">RATING <span class="team__sort-arrow">↓</span></button>
-        <button class="team__chip" data-sort="name">NAME <span class="team__sort-arrow"></span></button>
-      </div>
-      <div class="team__pill" role="tablist" aria-label="Switch view">
-        <a class="team__pill-tab team__pill-tab--hub" id="team-back-hub" href="tps-may2026/home/">← HUB</a>
-        <button class="team__pill-tab" role="tab" data-view-target="pool">POOL</button>
-        <button class="team__pill-tab" role="tab" data-view-target="team">TEAM</button>
-      </div>
     </div>
+
     <div class="team__filter-row">
       <span class="team__filter-label">FILTER</span>
       <div class="team__chip-group" id="team-filter-group" role="group" aria-label="Filters">
@@ -122,7 +126,7 @@
 <script defer src="js/draft-config.js?v=37"></script>
 <script defer src="js/draft-utils.js?v=37"></script>
 <script defer src="js/draft-supabase.js?v=37"></script>
-<script defer src="js/draft-team.js?v=38"></script>
+<script defer src="js/draft-team.js?v=39"></script>
 
 </body>
 </html>
