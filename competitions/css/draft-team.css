@@ -628,12 +628,14 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 
 .team__roster-cell {
   background: var(--dark-surface);
-  /* box-sizing + uniform 2px border so filled / empty / captain cells all
-     render at the same outer size — no shifting in the 4×3 grid. The
-     captain (.is-captain) and empty (.is-empty.is-female|male) rules
-     below just swap the colour / style. */
+  /* All cells render a 3px border so filled / empty / captain are the
+     same outer size — no layout shift across the 4×3 grid. Filled +
+     captain use a transparent border (the avatar ring carries gender +
+     captain identity); empty cells override with the dashed gender tint
+     below. Captain has no cell border by design — captaincy reads from
+     the gold avatar ring (load-bearing #4). */
   box-sizing: border-box;
-  border: 2px solid var(--dark-border);
+  border: 3px solid transparent;
   border-radius: var(--radius);
   display: flex;
   flex-direction: column;
@@ -644,23 +646,17 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   position: relative;
   min-height: 120px;
 }
-/* Captain cells get a gold border (matches the gold ring on their avatar)
-   so they read as the anchor positions in the roster grid. */
-.team__roster-cell.is-captain {
-  border-color: var(--dark-accent);
-}
-/* Empty cells — gender-tinted dashed border (load-bearing #5) */
-/* Empty roster cells use color-mix() against the current --female / --male
-   tokens so they automatically track any brand-color updates rather than
-   carrying stale hardcoded rgba. Border bumped to 2px @ 65% opacity so
-   the gender-tinted dashed slots actually pop on the dark canvas. */
+/* Empty cells — gender-tinted dashed border (load-bearing #5).
+   Full saturation pink / blue at 3px so empty slots read as bright
+   "halos" against the dark canvas — they're the only cells carrying
+   a visible cell-level border, so they need to pop. */
 .team__roster-cell.is-empty.is-female {
   background: color-mix(in srgb, var(--female) 12%, transparent);
-  border: 2px dashed color-mix(in srgb, var(--female) 65%, transparent);
+  border: 3px dashed var(--female);
 }
 .team__roster-cell.is-empty.is-male {
   background: color-mix(in srgb, var(--male) 12%, transparent);
-  border: 2px dashed color-mix(in srgb, var(--male) 65%, transparent);
+  border: 3px dashed var(--male);
 }
 .team__roster-cell.is-empty .team__cell-avatar,
 .team__roster-cell.is-empty .team__cell-fname,
