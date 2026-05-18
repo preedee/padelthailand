@@ -419,7 +419,14 @@
    *  write-back populates it). */
   function parseRegistrations(rows) {
     return rows
-      .filter(r => (r['User ID'] || '').trim() && (r['Paid ?'] || '').trim().toUpperCase() === 'Y')
+      .filter(r =>
+        (r['User ID'] || '').trim() &&
+        (r['Paid ?'] || '').trim().toUpperCase() === 'Y' &&
+        // Pool only includes registrations with Statuses = "Completed"
+        // (column P). Catches drop-outs and pending applicants who
+        // shouldn't show in the draftable pool.
+        (r['Statuses'] || '').trim().toLowerCase() === 'completed'
+      )
       .map(r => {
         const av = (r['Avatar'] || '').trim();
         return {
