@@ -627,6 +627,12 @@
     }).join('');
 
     $hub.innerHTML = `
+      <div class="team__pool-pill-row">
+        <div class="team__pill" role="tablist" aria-label="Switch view">
+          <a class="team__pill-tab team__pill-tab--hub" href="${escapeHtml(hubFile())}" aria-current="page">← HOME</a>
+          <a class="team__pill-tab" href="${escapeHtml(poolFile())}">POOL</a>
+        </div>
+      </div>
       <a class="hub__watch" href="${projectorFile()}">
         <div class="hub__watch-icon">▶</div>
         <div class="hub__watch-text">

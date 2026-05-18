@@ -193,7 +193,8 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   transition: all 0.12s linear;
 }
 .team__app[data-view="pool"] .team__pill-tab[data-view-target="pool"],
-.team__app[data-view="team"] .team__pill-tab[data-view-target="team"] {
+.team__app[data-view="team"] .team__pill-tab[data-view-target="team"],
+.team__pill-tab[aria-current="page"] {
   background: var(--dark-accent);
   color: var(--dark-bg);
   font-weight: 700;
