@@ -200,7 +200,7 @@ input  { font: inherit; color: inherit; }
    pill inside the team view header stays vertical (sits beside the
    team name in a narrow column). */
 .team__pool-pill-row {
-  padding: 12px 14px 4px;
+  padding: 6px 14px 6px;
   flex-shrink: 0;
 }
 .team__pool-pill-row .team__pill {
@@ -211,16 +211,22 @@ input  { font: inherit; color: inherit; }
 .team__pool-pill-row .team__pill-tab {
   flex: 1;
   min-width: 0;
-  /* The vertical pill's HUB tab uses a border-bottom as a divider from
-     POOL/TEAM. In the horizontal layout that divider becomes meaningless
-     (and ugly), so the in-row HUB tab needs to render as a peer. */
+  /* Match chip vertical metrics so this row is the same visual height
+     as the FILTER and PREFERS rows below it. min-height was 44px (iOS
+     tap-target floor) — explicitly relaxed here per user request for
+     a compact, uniform layout. The active-tab amber background still
+     provides clear hit feedback. */
+  min-height: 0;
+  padding: 5px 10px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  /* Reset vertical-pill HUB divider in the horizontal context. */
   border-bottom: 0;
   margin-bottom: 0;
-  padding-bottom: 6px;
 }
 
 .team__pool-search-row {
-  padding: 8px 14px 8px;
+  padding: 0 14px 6px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -236,6 +242,12 @@ input  { font: inherit; color: inherit; }
 }
 .team__pool-search-row .team__chip-group {
   flex: 0 0 auto;
+}
+/* Search input inside the compact search row — match chip vertical
+   metrics so the row height equals the FILTER and PREFERS rows. */
+.team__pool-search-row .team__search-input {
+  padding: 5px 10px;
+  font-size: 12px;
 }
 .team__search-input {
   flex: 1;

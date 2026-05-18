@@ -655,7 +655,7 @@
     // static pills (pool view) always agree on the URL.
     const hubHref = hubFile();
     return `<div class="team__pill" role="tablist" aria-label="Switch view">
-      <a class="team__pill-tab team__pill-tab--hub" href="${escapeHtml(hubHref)}">← HUB</a>
+      <a class="team__pill-tab team__pill-tab--hub" href="${escapeHtml(hubHref)}">← HOME</a>
       <button class="team__pill-tab" role="tab" data-view-target="team" aria-selected="${currentView === 'team'}">TEAM</button>
       <button class="team__pill-tab" role="tab" data-view-target="pool" aria-selected="${currentView === 'pool'}">POOL</button>
     </div>`;
