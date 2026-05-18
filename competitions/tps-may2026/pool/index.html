@@ -70,8 +70,8 @@
     <div class="team__filter-row">
       <span class="team__filter-label">SORT</span>
       <div class="team__chip-group" id="team-sort-group" role="group" aria-label="Sort">
-        <button class="team__chip" data-sort="rating-desc">RATING ↓</button>
-        <button class="team__chip" data-sort="name-asc">NAME</button>
+        <button class="team__chip" data-sort="rating">RATING <span class="team__sort-arrow">↓</span></button>
+        <button class="team__chip" data-sort="name">NAME <span class="team__sort-arrow"></span></button>
       </div>
     </div>
     <div class="team__filter-row">
@@ -85,6 +85,10 @@
         <button class="team__chip" data-filter="side" data-value="L">L ⬅️</button>
         <button class="team__chip" data-filter="side" data-value="R">➡️ R</button>
       </div>
+    </div>
+    <div class="team__filter-row">
+      <span class="team__filter-label">PREFERS</span>
+      <div class="team__chip-group" id="team-prefs-group" role="group" aria-label="Filter by preferred community"></div>
     </div>
 
     <div class="team__pool-list" id="team-pool-list" role="list" aria-live="polite">
