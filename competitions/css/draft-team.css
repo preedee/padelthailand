@@ -436,11 +436,11 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   justify-self: center;
   text-align: center;
 }
-.team__player-row.is-top {
-  background: rgba(255, 183, 3, 0.08);
-  box-shadow: inset 0 0 0 1px var(--dark-accent);
-  border-bottom-color: transparent;
-}
+/* `.is-top` (top-3 by rating-desc) used to highlight rows with a gold
+   outline + background tint. Visual was dropped on request — class still
+   emitted by JS in case we want to re-apply differentiation later. The
+   rating-cell colour override below also kept (gold value still works
+   as a subtler accent). */
 
 .team__player-photo {
   width: 32px; height: 32px;
@@ -630,7 +630,12 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 
 .team__roster-cell {
   background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
+  /* box-sizing + uniform 2px border so filled / empty / captain cells all
+     render at the same outer size — no shifting in the 4×3 grid. The
+     captain (.is-captain) and empty (.is-empty.is-female|male) rules
+     below just swap the colour / style. */
+  box-sizing: border-box;
+  border: 2px solid var(--dark-border);
   border-radius: var(--radius);
   display: flex;
   flex-direction: column;
@@ -640,6 +645,11 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   padding: 8px 3px 10px;
   position: relative;
   min-height: 120px;
+}
+/* Captain cells get a gold border (matches the gold ring on their avatar)
+   so they read as the anchor positions in the roster grid. */
+.team__roster-cell.is-captain {
+  border-color: var(--dark-accent);
 }
 /* Empty cells — gender-tinted dashed border (load-bearing #5) */
 /* Empty roster cells use color-mix() against the current --female / --male
@@ -1140,7 +1150,14 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
    ============================================================ */
 .team__roster-radial {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* `minmax(0, 1fr)` — not plain `1fr` — so the columns stay perfectly
+     equal regardless of any single cell's intrinsic min-content. Plain
+     `1fr` is `minmax(auto, 1fr)`: the captain cells (avatar + name +
+     rating + hand/side stack) have a min-content larger than the
+     fr-share, which steals width from neighbouring columns and makes
+     the captain cells render 3px wider than empty cells. minmax(0,..)
+     allows the cell to shrink below its min-content, forcing equal cols. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   /* No explicit row sizing — rows auto-size from the cells. The cells
      declare `aspect-ratio: 1` so their height matches their (col-width)
      width; setting `1fr` rows here would compete with that and force
