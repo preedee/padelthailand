@@ -27,8 +27,8 @@
   --danger:       #FF5470;
 
   /* Gender (load-bearing) */
-  --female: #FF4D99;
-  --male:   #29A9FF;
+  --female: #FF0066;
+  --male:   #00AAFF;
 
   --moment-grid: 1fr 1fr 1fr;
   --bar-progress: 0%;
@@ -604,8 +604,8 @@ html, body {
 .slot .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
 /* Gender rings — load-bearing */
-.row-female .slot .avatar { box-shadow: 0 0 0 1.5px var(--female); }
-.row-male   .slot .avatar { box-shadow: 0 0 0 1.5px var(--male); }
+.row-female .slot .avatar { box-shadow: 0 0 0 3px var(--female); }
+.row-male   .slot .avatar { box-shadow: 0 0 0 3px var(--male); }
 
 /* Captain ring — load-bearing */
 .slot.captain .avatar {

@@ -13,8 +13,8 @@
    ===================================================================== */
 
 :root {
-  --female: #ff4d99;
-  --male:   #29a9ff;
+  --female: #ff0066;
+  --male:   #00aaff;
   --team-danger: #ef4444;
 }
 
@@ -442,7 +442,7 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 .team__player-photo {
   width: 32px; height: 32px;
   border-radius: 50%;
-  border: 1.5px solid var(--silver);
+  border: 3px solid var(--silver);
   display: grid; place-items: center;
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
@@ -493,6 +493,35 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 }
 .team__row-tag--gender-f { color: var(--female); font-weight: 700; }
 .team__row-tag--gender-m { color: var(--male);   font-weight: 700; }
+
+/* Hand & side cells — 3-track grid (left-letter | icon | right-letter)
+   so the icon always sits in the same middle column. Reading down the
+   column you get a clean vertical row of icons regardless of which
+   side-letter is present. The L / R letters peek out on whichever side
+   the player favours (B shows both). */
+.team__row-handside {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  display: inline-grid;
+  grid-template-columns: 10px 18px 10px;
+  align-items: center;
+  justify-items: center;
+}
+.team__row-handside .hs-letter,
+.team__row-handside .hs-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.team__row-handside .hs-icon { font-size: 12px; }
+.team__row-handside .hs-cell--empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--dark-text-muted);
+}
 .team__player-rating {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
@@ -634,7 +663,7 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   font-weight: 700;
   flex-shrink: 0;
   /* Gender ring — load-bearing #3 */
-  box-shadow: 0 0 0 1.5px var(--team-cell-ring, var(--silver));
+  box-shadow: 0 0 0 3px var(--team-cell-ring, var(--silver));
   overflow: hidden;
   position: relative;
   margin-top: 2px;
@@ -701,6 +730,11 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
 .rating-star {
   font-size: 0.92em;
   margin-right: 4px;
+}
+/* No-rating rows still emit a star span so the value digits line up
+   vertically with rated rows. Just hide the glyph but reserve its width. */
+.rating-star--empty {
+  visibility: hidden;
 }
 .team__roster-cell.is-captain .team__cell-rating { color: var(--dark-accent); }
 .team__roster-cell.is-filled  .team__cell-rating { color: var(--dark-text); }
@@ -992,10 +1026,10 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
   transition: color 0.12s ease;
 }
 .team__pill-tab--hub:hover { color: var(--dark-accent); }
-/* Hide the HUB tab on the hub view itself — pointless to point users
-   back at where they are. Pool view inside the hub stays visible if
-   navigated to. */
-.team__app[data-view="hub"] .team__pill-tab--hub { display: none; }
+/* (Previously: .team__app[data-view="hub"] .team__pill-tab--hub { display: none; }
+   That rule made sense when HOME was just a back-nav chevron. With the new
+   horizontal pill, the HOME tab on the hub view should be visible AND show
+   as the active tab — handled by .team__pill-tab[aria-current="page"]). */
 
 /* ============================================================
    PICK NOTIFICATION (Rec #5 — audit Variant B)
