@@ -834,10 +834,8 @@
         ? `<img src="${escapeHtml(p.avatar)}" alt="" data-fallback="${escapeHtml(fallback)}">`
         : escapeHtml(fallback);
 
-      const genderTag =
-        p.gender === 'F' ? `<div class="team__row-tag team__row-tag--gender-f">F</div>` :
-        p.gender === 'M' ? `<div class="team__row-tag team__row-tag--gender-m">M</div>` :
-                           `<div class="team__row-tag">—</div>`;
+      // Gender is conveyed by the photo ring color (pink F / blue M / silver
+       unknown) — no longer needs its own column.
 
       const flag = flagEmoji(countryCodeFor(p.nationality));
 
@@ -847,9 +845,8 @@
           <span class="team__row-flag" title="${escapeHtml(p.nationality || '')}">${flag}</span>
           <div class="team__player-name">${escapeHtml(p.name)}</div>
           <span class="team__row-prefs">${prefsHTML(p)}</span>
-          ${genderTag}
           <div class="team__player-rating">${ratingStr(p.rating)}</div>
-          <div class="team__row-handside">${handLabelHTML(p.hand)}</div>
+          <div class="team__row-tag">${escapeHtml(handLabel(p.hand))}</div>
           <div class="team__row-handside">${sideLabelHTML(p.side)}</div>
         </div>
       `;
