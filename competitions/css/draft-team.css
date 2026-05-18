@@ -1031,3 +1031,36 @@ input  { font: inherit; color: inherit; }
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ============================================================
+   FORCE MOBILE VIEW on desktop  (opt-in via body.force-mobile-view)
+   The team app shell is built mobile-first. On wide viewports we
+   center it in a phone-shaped column (~480px) with dead space on
+   either side, the way Instagram / Threads web does for their
+   mobile-only flows. The body gets the page background so the
+   margins outside the column read as intentional, and the column
+   itself carries a soft drop-shadow to feel like a discrete device.
+   ============================================================ */
+@media (min-width: 600px) {
+  body.force-mobile-view {
+    /* Body becomes the desktop "canvas". The radial accent matches
+       the broadcast view's brand glow so it doesn't feel naked. */
+    background:
+      radial-gradient(ellipse at top, rgba(255,183,3,0.06) 0%, transparent 55%),
+      var(--dark-bg);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    overflow: auto;
+  }
+  body.force-mobile-view .team__app {
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--dark-bg);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--dark-border);
+    overflow: hidden;     /* internal views scroll, the shell does not */
+  }
+}
