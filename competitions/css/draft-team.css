@@ -835,7 +835,12 @@ body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
    ============================================================ */
 #team-view-hub {
   flex-direction: column;
-  padding: 16px 14px 32px;
+  /* padding-top: 0 (was 16px) so the .team__pool-pill-row at the top of
+     the hub view sits at the same 6px-from-view-top distance as on the
+     pool/community pages (where pill row provides its own 6px padding
+     and the section adds nothing on top). Keeps row 1 in a consistent
+     vertical position across every page. */
+  padding: 0 14px 32px;
   gap: 18px;
   overflow-y: auto;
 }
