@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css?v=204" />
-  <link rel="stylesheet" href="css/draft-projector.css?v=64" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=69" />
 </head>
 <body>
 
@@ -75,11 +75,24 @@
       </div>
 
       <!-- Celebration banner shown only when draft.status === 'complete'.
-           Spans the full row; hides the three live cells via .moment-block.is-complete. -->
+           Spans the full row; hides the three live cells via .moment-block.is-complete.
+           Three columns:
+             left   — DRAFT COMPLETE + locked-picks subtitle
+             center — "See you on Saturday!" tagline
+             right  — countdown ticking down to Sat May 23 09:00 Bangkok -->
       <div class="moment-cell moment-cell--complete" id="momentCompleteBanner">
         <div class="complete-banner">
-          <div class="complete-banner__title">DRAFT COMPLETE</div>
-          <div class="complete-banner__sub" id="momentCompleteSub">All 64 picks locked · 8 rosters ready</div>
+          <div class="complete-banner__col complete-banner__col--left">
+            <div class="complete-banner__title">DRAFT COMPLETE</div>
+            <div class="complete-banner__sub" id="momentCompleteSub">All 64 picks locked</div>
+          </div>
+          <div class="complete-banner__col complete-banner__col--center">
+            <div class="complete-banner__title">SEE YOU ON SATURDAY!</div>
+          </div>
+          <div class="complete-banner__col complete-banner__col--right">
+            <div class="complete-banner__title" id="completeCountdownNum">—</div>
+            <div class="complete-banner__sub" id="completeCountdownLabel">UNTIL SAT 9AM</div>
+          </div>
         </div>
       </div>
     </div>
@@ -128,7 +141,7 @@
 <script src="js/data.js?v=205"></script>
 
 <!-- Projector controller -->
-<script src="js/draft-projector.js?v=44"></script>
+<script src="js/draft-projector.js?v=52"></script>
 
 </body>
 </html>
