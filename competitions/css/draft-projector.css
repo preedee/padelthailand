@@ -910,12 +910,14 @@ html, body {
 .pick-overlay__name {
   font-size: clamp(32px, 3vw, 56px);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
   letter-spacing: -0.02em;
   color: var(--ink);
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
+  /* overflow handled by the parent .pick-overlay__block; clipping here
+     sliced descenders (j, y, g) off at the line-box. */
+  overflow: visible;
   max-width: 100%;
   /* JS (_fitOverlayName in draft-projector.js) shrinks font-size after
      render so long names like "Kristina Kolesnikova" or "Sunshine Padel"
