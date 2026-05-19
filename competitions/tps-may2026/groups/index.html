@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/draft-projector.css?v=80" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=81" />
 </head>
 <body class="groups">
 
@@ -26,17 +26,22 @@
 
   <header class="top-strip">
     <div class="header-left">
-      <img class="brand-logo" id="brandLogo" src="assets/monogram-white-on-green.png" alt="The Padel Society" />
+      <img class="brand-logo brand-logo--monogram" src="assets/tps-monogram.png" alt="TPS" />
+      <img class="brand-logo" id="brandLogo" src="assets/tps-logotype-white.png" alt="The Padel Society" />
     </div>
     <div class="header-center">
       <div class="tournament" id="tournamentName">Bangkok Community Cup</div>
     </div>
     <div class="header-right">
+      <div class="reconnect" id="reconnect" role="status" aria-live="polite">
+        <span class="pulse"></span>
+        <span>Reconnecting…</span>
+      </div>
       <div class="live-pill" id="livePill" aria-label="Live Draw">
         <span class="dot"></span>
         <span class="live-pill__label" id="livePillLabel">LIVE DRAW</span>
       </div>
-      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Community Cup" />
+      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Bangkok Community Cup" />
     </div>
   </header>
 

@@ -324,6 +324,7 @@ function parseRegistrationsCSV(text) {
         prefs: [r['Community 1st'], r['Community 2nd'], r['Community 3rd']]
           .map(s => (s || '').trim()).filter(Boolean),
         status: (r['Statuses'] || '').trim(),
+        paid: (r['Paid ?'] || '').trim().toUpperCase(),
       };
     });
 }
@@ -448,7 +449,8 @@ function getTeamCommunity(slug) {
 const POOL_MAX_LEVEL = 3.5;
 
 // Filter: real available players (not captains, not picked, has gender+level,
-// and rated at or below POOL_MAX_LEVEL).
+// and rated at or below POOL_MAX_LEVEL). Mirrors draft-team.js parseRegistrations
+// gates so commissioner and public pools stay in sync.
 function getAvailablePlayers() {
   const pickedIds = new Set(
     state.picks.filter(p => !p.is_undone).map(p => p.player_id)
@@ -457,6 +459,8 @@ function getAvailablePlayers() {
     if (!r.gender) return false;             // must have F/M
     if (r.level == null) return false;       // must have a numeric level
     if (r.level > POOL_MAX_LEVEL) return false;
+    if (r.paid !== 'Y') return false;        // Registrations "Paid ?" must be Y
+    if ((r.status || '').toLowerCase() !== 'completed') return false;  // Statuses col P
     if (state.captainUserIds.has(r.userId)) return false;
     if (pickedIds.has(r.userId)) return false;
     return true;

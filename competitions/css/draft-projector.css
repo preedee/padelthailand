@@ -227,6 +227,11 @@ html, body {
   gap: clamp(12px, 1.2vw, 24px);
   padding: clamp(14px, 1.4vw, 26px) clamp(8px, 0.8vw, 16px);
   align-items: center;
+  /* Lock the moment-row height so the draft and groups pages render identical
+     moment-bar dimensions. Driven by the draft .timer-cell content height
+     (timer-num + label + their margin); groups content is shorter, so this
+     min-height holds the bar steady across both pages. */
+  min-height: clamp(60px, 5.4vw, 100px);
 }
 .moment-cell { display: flex; align-items: center; min-width: 0; }
 
@@ -1822,7 +1827,10 @@ body.groups .moment {
   flex-direction: column;
   justify-content: center;
   gap: clamp(4px, 0.4vw, 8px);
-  padding: clamp(10px, 1vw, 18px) clamp(12px, 1.2vw, 22px);
+  /* Vertical padding removed — the .moment row's own padding already provides
+     the chrome, and adding it here pushed the groups moment-bar taller than
+     the draft moment-bar (which has no inner-cell vertical padding). */
+  padding: 0 clamp(12px, 1.2vw, 22px);
 }
 .groups-moment__half--a { align-items: flex-start; text-align: left; }
 .groups-moment__half--b { align-items: flex-end;   text-align: right; }
