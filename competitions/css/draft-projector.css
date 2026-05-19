@@ -227,11 +227,16 @@ html, body {
   gap: clamp(12px, 1.2vw, 24px);
   padding: clamp(14px, 1.4vw, 26px) clamp(8px, 0.8vw, 16px);
   align-items: center;
-  /* Lock the moment-row height so the draft and groups pages render identical
-     moment-bar dimensions. Driven by the draft .timer-cell content height
-     (timer-num + label + their margin); groups content is shorter, so this
-     min-height holds the bar steady across both pages. */
-  min-height: clamp(60px, 5.4vw, 100px);
+  /* Lock the moment-row height so the bar stays identical across:
+       1. live draft state (timer-cell dominates the row height)
+       2. draft-complete state (complete-banner is shorter and would shrink)
+       3. groups page (shorter content than draft)
+     Value matches the live-draft natural height (border-box total): the
+     .timer-num line-box (4.6vw × 0.85) + label margin (8) + label line-box
+     (0.8vw × ~1.4) + .moment padding × 2 (1.4vw × 2). Clamps tuned so the
+     bar doesn't visibly shrink when the celebration banner replaces the
+     live cells. */
+  min-height: clamp(94px, 8.4vw, 160px);
 }
 .moment-cell { display: flex; align-items: center; min-width: 0; }
 

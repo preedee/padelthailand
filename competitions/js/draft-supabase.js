@@ -209,13 +209,23 @@
     return _sendWithReady(draftId, 'clear', {});
   }
 
-  // Receiver. handlers = { onPending(payload), onClear() }.
+  // Suppress the next undo overlay on the projector — fired by the
+  // commissioner's rapid-undo (U key) so the projector skips its red
+  // PICK #N UNDONE reveal during rehearsal. The visible UNDO button does
+  // NOT broadcast this, so the audience-facing overlay still plays for
+  // legitimate undos during the live draft.
+  function broadcastSilentUndo(draftId) {
+    return _sendWithReady(draftId, 'silent_undo', {});
+  }
+
+  // Receiver. handlers = { onPending(payload), onClear(), onSilentUndo() }.
   function subscribeToPendingPick(draftId, handlers) {
-    const { onPending, onClear } = handlers || {};
+    const { onPending, onClear, onSilentUndo } = handlers || {};
     return client()
       .channel(`pending_pick:${draftId}`)
-      .on('broadcast', { event: 'pending' }, ({ payload }) => { if (onPending) onPending(payload); })
-      .on('broadcast', { event: 'clear'   }, ()             => { if (onClear)   onClear(); })
+      .on('broadcast', { event: 'pending' },     ({ payload }) => { if (onPending)     onPending(payload); })
+      .on('broadcast', { event: 'clear'   },     ()            => { if (onClear)       onClear(); })
+      .on('broadcast', { event: 'silent_undo' }, ()            => { if (onSilentUndo)  onSilentUndo(); })
       .subscribe();
   }
 
@@ -461,7 +471,7 @@
     init, client, serverNow,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
-    broadcastPendingPick, broadcastClearPending, subscribeToPendingPick, prewarmBroadcastChannel,
+    broadcastPendingPick, broadcastClearPending, broadcastSilentUndo, subscribeToPendingPick, prewarmBroadcastChannel,
     insertPick, commitPick, undoPick, updateDraft,
     startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
   };

@@ -1084,6 +1084,13 @@ async function fastUndo() {
   if (!mostRecent) { showToast('No picks to undo'); return; }
   try {
     state._inflightUndo = true;
+    // Broadcast suppression flag BEFORE the DB UPDATE so the projector has
+    // the flag set when the realtime undo event arrives. Best-effort — a
+    // missed broadcast just means the projector plays its undo overlay (not
+    // catastrophic during rehearsal). The visible UNDO button does NOT
+    // broadcast this, so the audience-facing overlay still plays for any
+    // legitimate undo during the live draft.
+    try { DraftSupabase.broadcastSilentUndo(state.draft.id); } catch (_) {}
     await undoPick(mostRecent.id);
   } finally {
     state._inflightUndo = false;

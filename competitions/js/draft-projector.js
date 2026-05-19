@@ -1227,7 +1227,11 @@
           if (newRow.is_undone) {
             // Pick was undone — fire the cancellation overlay before removing
             // it from state so the rendered roster updates after the show.
-            const undoPayload = _buildUndoPayload(newRow);
+            // Suppression: commissioner's rapid-undo (U key) broadcasts
+            // 'silent_undo' which sets state.suppressUndoUntil; if we're
+            // inside that window, skip the overlay.
+            const silent = state.suppressUndoUntil && Date.now() < state.suppressUndoUntil;
+            const undoPayload = silent ? null : _buildUndoPayload(newRow);
             state.picks.splice(idx, 1);
             if (undoPayload) showUndoOverlay(undoPayload);
           } else {
@@ -1324,6 +1328,9 @@
     const pendingChan = window.DraftSupabase.subscribeToPendingPick(draftRow.id, {
       onPending: (payload) => { log('pending', payload && payload.playerName); showPendingOverlay(payload); },
       onClear:   ()         => { log('pending cleared'); clearPendingOverlay(); },
+      // Suppress the next ~1.5s of undo overlays. Window refreshes on each
+      // rapid-fire U press, so mashing U during rehearsal stays silent.
+      onSilentUndo: () => { state.suppressUndoUntil = Date.now() + 1500; },
     });
     watchChannel(pendingChan);
   }
