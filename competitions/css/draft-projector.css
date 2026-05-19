@@ -910,7 +910,7 @@ html, body {
 .pick-overlay__name {
   font-size: clamp(32px, 3vw, 56px);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   color: var(--ink);
   text-align: center;
