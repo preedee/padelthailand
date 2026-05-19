@@ -16,7 +16,7 @@
 
   const POLL_MS = 3000;
   const OVERLAY_SUSPENSE_MS = 400;
-  const OVERLAY_HOLD_MS     = 1000;
+  const OVERLAY_HOLD_MS     = 1750;  // ~2.5s total visible (400 + 1750 + 350)
   const OVERLAY_EXIT_MS     = 350;
   const READY_POLL_MS = 100;
   const READY_TIMEOUT_MS = 10000;

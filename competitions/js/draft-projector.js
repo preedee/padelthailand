@@ -812,7 +812,7 @@
   // overlay, we swap from suspense to revealed, then auto-exit. This avoids
   // any race between a broadcast event and the DB write.
   // ──────────────────────────────────────────────────────────
-  const OVERLAY_HOLD_MS = 1500;  // tightened — keep the projector moving
+  const OVERLAY_HOLD_MS = 2000;  // ~3s total visible (suspense + hold + 420 exit)
   let _overlayHoldTimer = null;
 
   // Avatar resolution for overlay payloads. Order:
