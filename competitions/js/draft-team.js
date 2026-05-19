@@ -489,6 +489,11 @@
   /** Available pool: real (non-placeholder) non-captain players not yet drafted.
    *  IGNORES Sheet's Community ID per architecture decision 4c — Supabase picks
    *  are authoritative during a live draft. */
+  // Maximum draftable rating — must mirror POOL_MAX_LEVEL in draft-commissioner.js.
+  // Players above this cap don't appear in the public pool or in the "X available"
+  // counter. Captains can sit above the cap; they're already excluded by `isCaptain`.
+  const POOL_MAX_RATING = 3.5;
+
   function availablePool() {
     const picked = pickedPlayerIds();
     const seen = new Set();
@@ -496,6 +501,7 @@
       if (p.isPlaceholder) return false;
       if (p.isCaptain) return false;
       if (picked.has(p.tpsId)) return false;
+      if (p.rating != null && p.rating > POOL_MAX_RATING) return false;
       if (seen.has(p.tpsId)) return false;  // de-dupe if a player appears twice
       seen.add(p.tpsId);
       return true;
