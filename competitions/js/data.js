@@ -659,7 +659,7 @@ const Data = (() => {
         id: (row['Community ID'] || '').trim(),
         name: (row['Name'] || '').trim(),
         group: (row['Group'] || '').trim(),
-        color: (row['Color'] || '').trim(),
+        color: '#FFB703',  // brand gold — was row['Color']; Sheet column ignored by design
         // ?v=2 cache-busts the GitHub Pages CDN after the logo artwork refresh.
         logoPath: (row['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=3'),
         seed: parseInt(row['Seed'], 10) || null,

@@ -233,7 +233,7 @@ function parseCommunities(rows) {
       id: r['Community ID'].trim(),
       name: (r['Name'] || '').trim(),
       group: (r['Group'] || '').trim(),
-      color: (r['Color'] || '').trim(),
+      color: '#FFB703',  // brand gold — was r['Color']; Sheet column ignored by design
       // ?v=2 cache-busts the GitHub Pages CDN after the logo artwork refresh.
       logoPath: (r['Logo Path'] || '').trim().replace(/^(.+)$/, '$1?v=3'),
       seed: parseInt(r['Seed'], 10) || null,

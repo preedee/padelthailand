@@ -419,7 +419,7 @@ html, body {
 .team-card {
   background: var(--bg-elev);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--team-color, var(--line));
+  border-left: 2px solid var(--team-color, var(--line));
   padding: clamp(8px, 0.7vw, 14px);
   /* Two-column grid: name + stats on the left, big logo spans both rows on
      the right. Row 3 is the roster, spanning the full width. */
