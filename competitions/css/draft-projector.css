@@ -371,14 +371,26 @@ html, body {
 
 /* Sized to match the live moment row: title mirrors .timer-num metrics,
    sub mirrors .timer-label. Zero padding so the row height collapses to
-   what the live cells produce. */
+   what the live cells produce.
+   Three-column grid: left (draft complete + sub), center (Saturday
+   tagline), right (countdown to Sat May 23 09:00). 1fr-auto-1fr keeps
+   the centre tagline visually centred regardless of side-column widths. */
 .complete-banner {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  text-align: center;
+  width: 100%;
+  gap: 24px;
   animation: complete-banner-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.complete-banner__col {
+  display: flex;
+  flex-direction: column;
+}
+.complete-banner__col--left   { align-items: flex-start; text-align: left; }
+.complete-banner__col--center { align-items: center;     text-align: center; }
+.complete-banner__col--right  { align-items: flex-end;   text-align: right; }
+
 .complete-banner__title {
   font-family: 'SuperBlue', Georgia, serif;
   font-size: clamp(28px, 2.4vw, 48px);   /* match .clock-cell .team-name */
@@ -396,6 +408,31 @@ html, body {
   text-transform: uppercase;
   color: var(--ink-dim);
   margin-top: 8px;                       /* match .timer-label */
+}
+
+/* Left column: keep the default title-on-top / sub-below hierarchy
+   from .complete-banner__title and __sub. Override only the title
+   colour to gold (the celebration accent) — the default green
+   (--picked) loses on contrast against the brighter green LIVE pill
+   and stat ticks. */
+.complete-banner__col--left .complete-banner__title {
+  /* Match the countdown title on the right column so the two
+     side-column headlines read as a balanced pair. */
+  font-size: clamp(18px, 1.6vw, 28px);
+  color: var(--accent);
+  text-shadow: 0 0 28px rgba(255, 183, 3, 0.35);
+}
+
+/* Right column countdown — monospace with tabular-nums so digits don't
+   re-jitter every second. Slightly smaller than the base title since the
+   "3D 14H 22M 18S" string is longer than the centre tagline. */
+.complete-banner__col--right .complete-banner__title {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(18px, 1.6vw, 28px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--danger);
+  text-shadow: 0 0 24px rgba(255, 84, 112, 0.35);
 }
 @keyframes complete-banner-in {
   from { opacity: 0; transform: translateY(8px) scale(0.97); }

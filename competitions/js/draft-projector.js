@@ -9,6 +9,7 @@
      ?sheet=<id>      Sheet ID override (forwarded to data.js)
      ?mock=1          run without Supabase/Sheet, synthesize state for UI test
      ?debug=1         enable verbose console + ?t= controls for state stepping
+     ?complete=1      force the .is-complete banner regardless of draft status
    ============================================ */
 
 (function () {
@@ -27,6 +28,7 @@
   const COMMUNITY_BASE = (window.__COMMUNITY_BASE || '').replace(/\/+$/, '');
   const MOCK     = params.get('mock') === '1';
   const DEBUG    = params.get('debug') === '1';
+  const FORCE_COMPLETE = params.get('complete') === '1';
   const N_TEAMS  = 8;
   const N_ROUNDS = 8;
 
@@ -583,7 +585,7 @@
     // Live-pill state: red blinking "LIVE DRAFT" by default; green steady
     // "COMPLETE" once the final pick lands. Updated every render so it tracks
     // status changes that arrive via realtime/poll.
-    const isComplete = !!(state.draft && state.draft.status === 'complete');
+    const isComplete = FORCE_COMPLETE || !!(state.draft && state.draft.status === 'complete');
     if (elLivePill && elLivePillLabel) {
       elLivePill.classList.toggle('is-complete', isComplete);
       elLivePillLabel.textContent = isComplete ? 'COMPLETE' : 'LIVE DRAFT';
@@ -596,6 +598,7 @@
     // is ever toggled back off.
     if (isComplete) {
       if (elMomentBlock) elMomentBlock.classList.add('is-complete');
+      updateCompleteCountdown();
       return;
     }
     if (elMomentBlock) elMomentBlock.classList.remove('is-complete');
@@ -643,6 +646,34 @@
       elNextLogo.textContent  = '—';
     }
   }
+
+  // ──────────────────────────────────────────────────────────
+  // Draft-complete countdown — ticks down to the Bangkok Community Cup
+  // tournament tip-off (Saturday 2026-05-23 09:00 Bangkok / UTC+7).
+  // Per-second resolution so the SS digit visibly ticks on the wall display.
+  // ──────────────────────────────────────────────────────────
+  const EVENT_TARGET_MS = new Date('2026-05-23T09:00:00+07:00').getTime();
+
+  function updateCompleteCountdown() {
+    const elNum   = document.getElementById('completeCountdownNum');
+    const elLabel = document.getElementById('completeCountdownLabel');
+    if (!elNum || !elLabel) return;
+    const ms = EVENT_TARGET_MS - Date.now();
+    if (ms <= 0) {
+      elNum.textContent = "LET'S GO";
+      elLabel.textContent = 'SEE YOU AT THE COURT';
+      return;
+    }
+    const totalSec = Math.floor(ms / 1000);
+    const days  = Math.floor(totalSec / 86400);
+    const hours = Math.floor((totalSec % 86400) / 3600);
+    const mins  = Math.floor((totalSec % 3600) / 60);
+    const secs  = totalSec % 60;
+    const pad2  = (n) => String(n).padStart(2, '0');
+    elNum.textContent   = `${days}D ${pad2(hours)}H ${pad2(mins)}M ${pad2(secs)}S`;
+    elLabel.textContent = 'UNTIL SAT 9AM';
+  }
+  setInterval(updateCompleteCountdown, 1000);
 
   function renderTeamGrid() {
     const liveId = currentTeamId();
@@ -710,47 +741,36 @@
       .sort((a, b) => a.seed - b.seed);
     if (seeded.length !== 8) { if (existing) existing.remove(); return; }
 
-    // One captain per visual row: [bordered avatar] [flag] [name] [level].
-    // Border color encodes gender (pink F / blue M) — matches the pool page's
-    // .pool-row__avatar--f/--m treatment so the audience reads at a glance.
-    const captainLine = (cap, kind) => {
-      if (!cap || !cap.name) return '';
-      const borderColor = kind === 'F' ? '#ff85b8' : '#5ec8ff';
-      const initial = escapeHtml((cap.name || '?').charAt(0).toUpperCase());
-      const baseStyle = `width:48px;height:48px;border-radius:50%;border:3px solid ${borderColor};flex:0 0 auto;object-fit:cover;`;
-      const avatar = cap.avatar
-        ? `<img src="${escapeHtml(cap.avatar)}" alt="" style="${baseStyle}">`
-        : `<span style="${baseStyle}display:inline-flex;align-items:center;justify-content:center;background:#1A3A2E;color:#C8D6CE;font-size:20px;font-weight:700;">${initial}</span>`;
-      const flagHtml = cap.nationality
-        ? `<span style="font-size:30px;line-height:1;flex:0 0 auto;">${flagEmoji(countryCodeFor(cap.nationality))}</span>`
-        : `<span style="width:40px;flex:0 0 auto;"></span>`;
-      const lvl = cap.level != null ? cap.level.toFixed(2) : '—';
+    // Single-row builder; both columns share identical typography so the
+    // two halves read as one continuous list, just laid out side-by-side.
+    const rowHTML = (c, seedNum) => {
+      const logo = c.logoPath
+        ? `<img src="${escapeHtml(c.logoPath)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:contain;background:#1A3A2E;flex:0 0 auto;">`
+        : `<span style="width:44px;height:44px;border-radius:50%;background:#1A3A2E;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#C8D6CE;flex:0 0 auto;">${escapeHtml(initials(c.name))}</span>`;
       return `
-        <div style="display:flex;align-items:center;gap:14px;padding:4px 0;">
-          ${avatar}
-          ${flagHtml}
-          <span style="font-size:22px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(cap.name)}</span>
-          <span style="font-family:monospace;font-size:20px;color:#C8D6CE;flex:0 0 auto;">${lvl}</span>
-        </div>
+        <tr style="border-bottom:1px solid #1A3A2E;">
+          <td style="padding:10px 18px;font-family:monospace;color:#FFB703;font-weight:700;font-size:26px;width:56px;">${seedNum}</td>
+          <td style="padding:10px 18px;font-weight:700;font-size:20px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              ${logo}
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.name)}</span>
+            </div>
+          </td>
+        </tr>
       `;
     };
 
-    const rows = seeded.map((c, i) => {
-      const seedNum = i + 1;
-      const captainLines = [
-        captainLine(c.captainF, 'F'),
-        captainLine(c.captainM, 'M'),
-      ].filter(Boolean).join('');
-      const avg = c.averageLevel != null ? c.averageLevel.toFixed(2) : '—';
-      return `
-        <tr style="border-bottom:1px solid #1A3A2E;">
-          <td style="padding:20px 24px;font-family:monospace;color:#FFB703;font-weight:700;font-size:36px;width:90px;">${seedNum}</td>
-          <td style="padding:20px 24px;font-weight:700;font-size:26px;white-space:nowrap;">${escapeHtml(c.name)}</td>
-          <td style="padding:20px 24px;font-family:monospace;color:#C8D6CE;font-size:24px;text-align:right;white-space:nowrap;">${avg}</td>
-          <td style="padding:20px 24px;min-width:420px;">${captainLines}</td>
-        </tr>
-      `;
-    }).join('');
+    const tableHTML = (subset, startSeed) => `
+      <table style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #3A5C36;">
+            <th style="text-align:left;padding:8px 18px;font-size:12px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
+            <th style="text-align:left;padding:8px 18px;font-size:12px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
+          </tr>
+        </thead>
+        <tbody>${subset.map((c, i) => rowHTML(c, startSeed + i)).join('')}</tbody>
+      </table>
+    `;
 
     if (existing) existing.remove();
 
@@ -763,28 +783,17 @@
     ].join(';');
     div.innerHTML = `
       <div style="background:#0E2A1E;color:#FFFFFF;border:2px solid #FFB703;
-                  padding:48px 56px;border-radius:18px;max-width:1280px;width:90vw;
+                  padding:24px 36px;border-radius:14px;width:fit-content;max-width:96vw;
                   max-height:94vh;overflow-y:auto;
                   box-shadow:0 0 80px rgba(255,183,3,0.35);">
-        <div style="font-size:44px;font-weight:700;letter-spacing:0.08em;
-                    color:#FFB703;text-transform:uppercase;margin-bottom:14px;text-align:center;">
-          Preview Seed Order
+        <div style="font-size:32px;font-weight:700;letter-spacing:0.08em;
+                    color:#FFB703;text-transform:uppercase;margin-bottom:18px;text-align:center;">
+          Seed Order
         </div>
-        <div style="font-size:18px;color:#C8D6CE;line-height:1.55;margin-bottom:32px;text-align:center;max-width:880px;margin-left:auto;margin-right:auto;">
-          Snake-draft order the commissioner is about to lock in.
-          Lower seed picks first; round 2 reverses (snake).
+        <div style="display:grid;grid-template-columns:auto auto;justify-content:center;column-gap:80px;">
+          ${tableHTML(seeded.slice(0, 4), 1)}
+          ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="border-bottom:2px solid #3A5C36;">
-              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
-              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
-              <th style="text-align:right;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">AVG</th>
-              <th style="text-align:left;padding:14px 24px;font-size:14px;color:#6B8276;letter-spacing:0.18em;">CAPTAINS</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
       </div>
     `;
     document.body.appendChild(div);

@@ -681,10 +681,20 @@ function renderPool() {
   });
 }
 
+function sideLabelHTML(s) {
+  const icon = s === 'F' ? '⬅️' : s === 'B' ? '➡️' : s === 'E' ? '↔️' : '';
+  if (!icon) return '';
+  const left  = (s === 'F' || s === 'E') ? 'L' : '';
+  const right = (s === 'B' || s === 'E') ? 'R' : '';
+  return `<span class="hs-letter">${left}</span><span class="hs-icon">${icon}</span><span class="hs-letter">${right}</span>`;
+}
+
 function poolRowHTML(p, isTopMatch) {
   // Letter-flanks-icon convention: position of the letter mirrors the court side.
   const handLabel = p.hand === 'L' ? 'L 🫲' : p.hand === 'R' ? '🫱 R' : p.hand === 'B' ? 'L 🤲 R' : '';
-  const sideLabel = p.side === 'F' ? 'L ⬅️' : p.side === 'B' ? '➡️ R' : p.side === 'E' ? 'L ↔️ R' : '';
+  // Side: split into hs-letter/hs-icon spans so the emoji centers by box-middle
+  // instead of dropping onto its own baseline. Same pattern team.html uses.
+  const sideLabel = sideLabelHTML(p.side);
   const ratingLabel = p.level != null
     ? `<span class="rating-star">⭐</span><span class="rating-val">${p.level.toFixed(2)}</span>`
     : '—';
@@ -743,18 +753,32 @@ function avatarHTML(p, size) {
 // ── HISTORY PANEL ─────────────────────────────────────────────────
 
 /** Returns the next `count` upcoming picks per the seeded snake-draft order.
- *  Empty array if the draft hasn't started or has completed. */
+ *  During `pending`, derives a preview seed order from state.communities so
+ *  the commissioner can see who picks first before clicking Start. */
 function getUpcomingPicks(count) {
   if (!state.draft) return [];
-  if (state.draft.status === 'pending' || state.draft.status === 'complete') return [];
-  if (!state.draft.team_seed_order || state.draft.team_seed_order.length !== 8) return [];
+  if (state.draft.status === 'complete') return [];
+
+  let seedOrder = state.draft.team_seed_order;
+  let lastPickNumber = state.draft.current_pick_number;
+  if (state.draft.status === 'pending') {
+    if (!state.communities || state.communities.length !== 8) return [];
+    const seeded = state.communities
+      .filter(c => c.seed != null && c.id)
+      .sort((a, b) => a.seed - b.seed);
+    if (seeded.length !== 8) return [];
+    seedOrder = seeded.map(c => c.id);
+    lastPickNumber = 0;
+  }
+  if (!seedOrder || seedOrder.length !== 8) return [];
+
   const out = [];
   for (let i = 1; i <= count; i++) {
-    const n = state.draft.current_pick_number + i;
+    const n = lastPickNumber + i;
     if (n > DraftUtils.TOTAL_PICKS) break;
     out.push({
       pickNumber: n,
-      teamId: DraftUtils.teamForPick(n, state.draft.team_seed_order),
+      teamId: DraftUtils.teamForPick(n, seedOrder),
     });
   }
   return out;
@@ -1079,35 +1103,38 @@ function previewSeedOrderAndConfirm(seeded) {
     const existing = document.getElementById('seed-preview-backdrop');
     if (existing) existing.remove();
 
-    const captainAvatar = (cap) => {
-      const initial = escapeHTML((cap.name || '?').charAt(0).toUpperCase());
-      const baseStyle = 'width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:6px;';
-      return cap.avatar
-        ? `<img src="${escapeHTML(cap.avatar)}" alt="" style="${baseStyle}object-fit:cover;">`
-        : `<span style="${baseStyle}display:inline-flex;align-items:center;justify-content:center;background:#3A5C36;color:#C8D6CE;font-size:11px;font-weight:700;">${initial}</span>`;
-    };
-
-    const rows = seeded.map((c, i) => {
-      const seedNum = i + 1;
-      const captains = [];
-      if (c.captainF && c.captainF.name) {
-        const lvl = c.captainF.level != null ? c.captainF.level.toFixed(2) : '—';
-        captains.push(`${captainAvatar(c.captainF)}${escapeHTML(c.captainF.name)} <span style="color:#FF85B8;">F ${lvl}</span>`);
-      }
-      if (c.captainM && c.captainM.name) {
-        const lvl = c.captainM.level != null ? c.captainM.level.toFixed(2) : '—';
-        captains.push(`${captainAvatar(c.captainM)}${escapeHTML(c.captainM.name)} <span style="color:#5EC8FF;">M ${lvl}</span>`);
-      }
-      const avg = c.averageLevel != null ? c.averageLevel.toFixed(2) : '—';
+    // Same visual shell as the projector's seed-preview overlay
+    // (js/draft-projector.js renderSeedPreview): gold-bordered rectangle,
+    // two columns of 4 rows, seed# + community logo + name only.
+    const rowHTML = (c, seedNum) => {
+      const initial = escapeHTML((c.name || '?').charAt(0).toUpperCase());
+      const logo = c.logoPath
+        ? `<img src="${escapeHTML(c.logoPath)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:contain;background:#1A3A2E;flex:0 0 auto;">`
+        : `<span style="width:44px;height:44px;border-radius:50%;background:#1A3A2E;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#C8D6CE;flex:0 0 auto;">${initial}</span>`;
       return `
         <tr style="border-bottom:1px solid #1A3A2E;">
-          <td style="padding:10px 14px;font-family:monospace;color:#FFB703;font-weight:700;font-size:18px;">${seedNum}</td>
-          <td style="padding:10px 14px;font-weight:700;">${escapeHTML(c.name)}</td>
-          <td style="padding:10px 14px;font-family:monospace;color:#C8D6CE;text-align:right;">avg ${avg}</td>
-          <td style="padding:10px 14px;color:#C8D6CE;font-size:13px;">${captains.join('  ·  ')}</td>
+          <td style="padding:10px 18px;font-family:monospace;color:#FFB703;font-weight:700;font-size:26px;width:56px;">${seedNum}</td>
+          <td style="padding:10px 18px;font-weight:700;font-size:20px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              ${logo}
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(c.name)}</span>
+            </div>
+          </td>
         </tr>
       `;
-    }).join('');
+    };
+
+    const tableHTML = (subset, startSeed) => `
+      <table style="border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #3A5C36;">
+            <th style="text-align:left;padding:8px 18px;font-size:12px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
+            <th style="text-align:left;padding:8px 18px;font-size:12px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
+          </tr>
+        </thead>
+        <tbody>${subset.map((c, i) => rowHTML(c, startSeed + i)).join('')}</tbody>
+      </table>
+    `;
 
     const div = document.createElement('div');
     div.id = 'seed-preview-backdrop';
@@ -1118,31 +1145,19 @@ function previewSeedOrderAndConfirm(seeded) {
       font-family:var(--font, system-ui), sans-serif;
     `;
     div.innerHTML = `
-      <div style="background:#0E2A1E;color:#FFFFFF;border:1px solid #FFB703;
-                  padding:32px 40px;border-radius:14px;max-width:720px;width:92vw;
-                  max-height:90vh;overflow-y:auto;
-                  box-shadow:0 0 40px rgba(255,183,3,0.25);">
-        <div style="font-size:22px;font-weight:700;letter-spacing:0.06em;
-                    color:#FFB703;text-transform:uppercase;margin-bottom:6px;">
-          Preview Seed Order
+      <div style="background:#0E2A1E;color:#FFFFFF;border:2px solid #FFB703;
+                  padding:24px 36px;border-radius:14px;width:fit-content;max-width:96vw;
+                  max-height:94vh;overflow-y:auto;
+                  box-shadow:0 0 80px rgba(255,183,3,0.35);">
+        <div style="font-size:32px;font-weight:700;letter-spacing:0.08em;
+                    color:#FFB703;text-transform:uppercase;margin-bottom:18px;text-align:center;">
+          Seed Order
         </div>
-        <div style="font-size:13px;color:#C8D6CE;line-height:1.5;margin-bottom:18px;">
-          This is the snake-draft order Draftday will lock in.
-          Lower seed picks first; round 2 reverses (snake).
-          Confirm captain ratings look right — once the draft starts the order is fixed.
+        <div style="display:grid;grid-template-columns:auto auto;justify-content:center;column-gap:80px;">
+          ${tableHTML(seeded.slice(0, 4), 1)}
+          ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-          <thead>
-            <tr style="border-bottom:1px solid #3A5C36;">
-              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
-              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">COMMUNITY</th>
-              <th style="text-align:right;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">AVG</th>
-              <th style="text-align:left;padding:8px 14px;font-size:11px;color:#6B8276;letter-spacing:0.18em;">CAPTAINS</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">
           <button id="seed-preview-cancel" style="
             padding:12px 24px;font-size:14px;font-weight:700;
             background:transparent;color:#C8D6CE;

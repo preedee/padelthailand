@@ -524,6 +524,19 @@ html, body {
   text-align: center;
 }
 
+/* Side cell: letter-flanks-icon spans. Each is its own inline-flex item so
+   the emoji aligns by box-middle with the L/R letters instead of riding its
+   own (lower) baseline. Mirrors css/draft-team.css `.hs-letter/.hs-icon`. */
+.pool-row__cell > .hs-letter,
+.pool-row__cell > .hs-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+.pool-row__cell > .hs-icon {
+  padding: 0 3px;
+}
+
 /* Rating split into icon + value so each is its own flex item; the parent's
    align-items:center then lines them up by box-center instead of mixed-glyph
    baselines (emoji and text glyphs have different baselines). */
