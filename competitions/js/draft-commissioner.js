@@ -1017,11 +1017,23 @@ async function submitPendingPick() {
 // (no .pick-overlay reveal). See bindGlobalEvents() for the N keybinding.
 
 async function fastPick() {
-  if (!state.draft || state.draft.status !== 'active') {
-    showToast('Draft not active — start/resume first', 'error');
+  if (!state.draft) return;
+  if (state.pendingPick || state._inflightPick || state._inflightUndo) return;
+  // Auto-resume if paused — fastUndo always pauses the draft, so U-then-N
+  // chains by quietly unpausing before the next pick lands.
+  if (state.draft.status === 'paused') {
+    try {
+      await DraftSupabase.setPaused(state.draft.id, false);
+      await loadDraftState();
+    } catch (err) {
+      showToast(`Resume failed: ${err.message || err}`, 'error');
+      return;
+    }
+  }
+  if (state.draft.status !== 'active') {
+    showToast('Draft not active — start it first', 'error');
     return;
   }
-  if (state.pendingPick || state._inflightPick) return;
 
   const currentTeamId = getCurrentTeamId();
   const community = getTeamCommunity(currentTeamId);
