@@ -1149,6 +1149,10 @@ function previewSeedOrderAndConfirm(seeded) {
                   padding:24px 36px;border-radius:14px;width:fit-content;max-width:96vw;
                   max-height:94vh;overflow-y:auto;
                   box-shadow:0 0 80px rgba(255,183,3,0.35);">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div id="seedCountdownNum" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:48px;font-weight:700;color:#FF5470;letter-spacing:0.06em;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(255,84,112,0.35);line-height:1;">—</div>
+          <div id="seedCountdownLabel" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6B8276;letter-spacing:0.22em;margin-top:8px;text-transform:uppercase;">Draft Begins</div>
+        </div>
         <div style="font-size:32px;font-weight:700;letter-spacing:0.08em;
                     color:#FFB703;text-transform:uppercase;margin-bottom:18px;text-align:center;">
           Seed Order
@@ -1174,9 +1178,35 @@ function previewSeedOrderAndConfirm(seeded) {
       </div>
     `;
     document.body.appendChild(div);
+
+    // Anticipation countdown ticking down to live-draft start
+    // (Wed 2026-05-20 19:00 Bangkok / UTC+7). Same target the projector
+    // overlay shows so commissioner + audience see matching numbers.
+    const DRAFT_START_MS = new Date('2026-05-20T19:00:00+07:00').getTime();
+    const elCdNum   = document.getElementById('seedCountdownNum');
+    const elCdLabel = document.getElementById('seedCountdownLabel');
+    const tickCountdown = () => {
+      if (!elCdNum || !elCdLabel) return;
+      const ms = DRAFT_START_MS - Date.now();
+      if (ms <= 0) {
+        elCdNum.textContent = 'STARTING NOW';
+        elCdLabel.textContent = 'DRAFT IS LIVE';
+        return;
+      }
+      const totalSec = Math.floor(ms / 1000);
+      const days  = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins  = Math.floor((totalSec % 3600) / 60);
+      const secs  = totalSec % 60;
+      const pad2 = (n) => String(n).padStart(2, '0');
+      elCdNum.textContent = `${days}D ${pad2(hours)}H ${pad2(mins)}M ${pad2(secs)}S`;
+    };
+    tickCountdown();
+    const cdInterval = setInterval(tickCountdown, 1000);
+
     const ok     = document.getElementById('seed-preview-confirm');
     const cancel = document.getElementById('seed-preview-cancel');
-    const close = (val) => { div.remove(); resolve(val); };
+    const close = (val) => { clearInterval(cdInterval); div.remove(); resolve(val); };
     ok.addEventListener('click',     () => close(true));
     cancel.addEventListener('click', () => close(false));
     div.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(false); });
