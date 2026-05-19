@@ -908,7 +908,7 @@ html, body {
 }
 
 .pick-overlay__name {
-  font-size: clamp(48px, 5vw, 96px);
+  font-size: clamp(32px, 3vw, 56px);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
