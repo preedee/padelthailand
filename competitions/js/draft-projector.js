@@ -837,6 +837,12 @@
         @media (max-width: 760px) {
           #projector-seed-preview .seed-preview-grid > table { width: 100%; }
           #projector-seed-preview .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
+          /* Force the SEED col to the same width on both tables. Without
+             this, table 1's visible "SEED" header (~74px intrinsic-min)
+             makes that column wider than table 2's (where the hidden
+             thead doesn't contribute) — and the COMMUNITY cells then
+             start at different X positions, drifting visibly. */
+          #projector-seed-preview .seed-preview-grid > table tr > :first-child { width: 80px; }
         }
       </style>
     `;

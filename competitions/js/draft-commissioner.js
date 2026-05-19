@@ -1187,6 +1187,11 @@ function previewSeedOrderAndConfirm(seeded) {
         @media (max-width: 760px) {
           #seed-preview-backdrop .seed-preview-grid > table { width: 100%; }
           #seed-preview-backdrop .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
+          /* Pin SEED col to a fixed 80px on both tables so the visible
+             "SEED" header on table 1 doesn't push its column wider than
+             table 2's (where the hidden thead doesn't contribute to col
+             sizing). Keeps logos + names vertically aligned. */
+          #seed-preview-backdrop .seed-preview-grid > table tr > :first-child { width: 80px; }
         }
       </style>
     `;
