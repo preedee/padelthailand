@@ -442,7 +442,13 @@ function getTeamCommunity(slug) {
   return state.communities.find(c => c.id === slug) || null;
 }
 
-// Filter: real available players (not captains, not picked, has gender+level)
+// Maximum draftable rating — players above this threshold are filtered out
+// of the pool entirely (and out of the "X available" count). Captains can
+// still sit above it; this only applies to the draftable pool.
+const POOL_MAX_LEVEL = 3.5;
+
+// Filter: real available players (not captains, not picked, has gender+level,
+// and rated at or below POOL_MAX_LEVEL).
 function getAvailablePlayers() {
   const pickedIds = new Set(
     state.picks.filter(p => !p.is_undone).map(p => p.player_id)
@@ -450,6 +456,7 @@ function getAvailablePlayers() {
   return state.registrations.filter(r => {
     if (!r.gender) return false;             // must have F/M
     if (r.level == null) return false;       // must have a numeric level
+    if (r.level > POOL_MAX_LEVEL) return false;
     if (state.captainUserIds.has(r.userId)) return false;
     if (pickedIds.has(r.userId)) return false;
     return true;
