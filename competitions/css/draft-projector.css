@@ -438,6 +438,25 @@ html, body {
   from { opacity: 0; transform: translateY(8px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
 }
+
+/* Center column's "NEXT: GROUP DRAW" link — inherits .complete-banner__title
+   sizing, just strips default anchor styling. Gold underline on hover so it
+   reads as clickable from the projector. */
+.complete-banner__link {
+  color: var(--accent);
+  text-decoration: none;
+  text-shadow: 0 0 24px rgba(255, 183, 3, 0.35);
+  transition: text-shadow 0.2s ease, opacity 0.15s ease;
+}
+.complete-banner__link:hover,
+.complete-banner__link:focus-visible {
+  text-shadow: 0 0 32px rgba(255, 183, 3, 0.7);
+  outline: none;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
 /* ============== TEAM GRID ============== */
 .teams {
   display: grid;
@@ -1766,6 +1785,33 @@ html, body {
    page. Layout overrides only — no token or animation duplication.
    Live group draw at /competitions/tps-may2026/groups/. */
 
+/* V4 group identity — coral for A, teal for B. Applied to letter, card
+   border-left (via --team-color), and a 3px top bar over each grid
+   (rendered as an absolutely positioned ::before so the half's box
+   dimensions don't shift). */
+body.groups {
+  --grp-a: #FF6B6B;
+  --grp-b: #4ECDC4;
+}
+body.groups .groups-moment__half--a .groups-moment__letter { color: var(--grp-a); }
+body.groups .groups-moment__half--b .groups-moment__letter { color: var(--grp-b); }
+body.groups .groups-teams__half { position: relative; }
+body.groups .groups-teams__half--a::before,
+body.groups .groups-teams__half--b::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 2;
+  pointer-events: none;
+}
+body.groups .groups-teams__half--a::before { background: var(--grp-a); }
+body.groups .groups-teams__half--b::before { background: var(--grp-b); }
+body.groups .groups-teams__half--a .team-card { --team-color: var(--grp-a); }
+body.groups .groups-teams__half--b .team-card { --team-color: var(--grp-b); }
+
 body.groups .moment {
   grid-template-columns: 1fr auto 1fr;
   gap: clamp(16px, 1.6vw, 32px);
@@ -1773,37 +1819,42 @@ body.groups .moment {
 
 .groups-moment__half {
   display: flex;
-  align-items: baseline;
-  gap: clamp(14px, 1.4vw, 28px);
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(4px, 0.4vw, 8px);
   padding: clamp(10px, 1vw, 18px) clamp(12px, 1.2vw, 22px);
 }
-.groups-moment__half--a { justify-content: flex-start; }
-.groups-moment__half--b { justify-content: flex-end; }
+.groups-moment__half--a { align-items: flex-start; text-align: left; }
+.groups-moment__half--b { align-items: flex-end;   text-align: right; }
 
 .groups-moment__letter {
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(34px, 3.4vw, 64px);
+  font-size: clamp(32px, 3vw, 56px);
   line-height: 1;
   letter-spacing: 0.02em;
   color: var(--accent, #FFB703);
   white-space: nowrap;
   text-transform: uppercase;
-  flex-shrink: 0;
 }
 
 .groups-moment__count {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 500;
-  font-size: clamp(14px, 1.2vw, 22px);
+  font-size: clamp(13px, 1.1vw, 20px);
   line-height: 1;
   letter-spacing: 0.1em;
   color: var(--ink-dim);
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
 }
 
+.groups-moment__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+}
 .groups-moment__divider {
   width: 2px;
   align-self: stretch;
@@ -1812,6 +1863,64 @@ body.groups .moment {
     var(--line-bright, rgba(255,255,255,0.25)) 20%,
     var(--line-bright, rgba(255,255,255,0.25)) 80%,
     transparent 100%);
+}
+
+/* "See you on Saturday!" — replaces the divider once both groups are full
+   (body.groups.is-complete added by draft-groups.js when 4-of-4 + 4-of-4).
+   Hierarchy flips: this becomes the dominant text, Group A/B shrinks to a
+   subtitle role (see body.groups.is-complete .groups-moment__letter below). */
+.groups-moment__complete-msg {
+  display: none;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.6vw, 48px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent, #FFB703);
+  text-shadow: 0 0 28px rgba(255, 183, 3, 0.4);
+  text-align: center;
+  padding: 0 clamp(12px, 1.4vw, 28px);
+  white-space: nowrap;
+  line-height: 1;
+}
+body.groups.is-complete .groups-moment__divider { display: none; }
+body.groups.is-complete .groups-moment__complete-msg {
+  display: block;
+  animation: groups-complete-msg-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Countdown below "See you on Saturday!" — red, monospace, tabular nums so
+   digits don't jitter every second. Same visibility gate as the message. */
+.groups-moment__center-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 0.4vw, 8px);
+}
+.groups-moment__countdown {
+  display: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 26px);
+  letter-spacing: 0.06em;
+  color: var(--timer-red, var(--danger, #FF5470));
+  text-shadow: 0 0 20px rgba(255, 84, 112, 0.35);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+body.groups.is-complete .groups-moment__countdown {
+  display: block;
+  animation: groups-complete-msg-in 600ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+body.groups.is-complete .groups-moment__letter {
+  font-size: clamp(18px, 1.8vw, 30px);
+}
+body.groups.is-complete .groups-moment__count {
+  font-size: clamp(12px, 1vw, 18px);
+}
+@keyframes groups-complete-msg-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1);    }
 }
 
 /* Two-column teams area: A grid | divider | B grid */
@@ -1873,8 +1982,8 @@ body.groups .pick-overlay__block {
 body.groups .pick-overlay__group-banner {
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(40px, 4.2vw, 84px);
-  letter-spacing: 0.06em;
+  font-size: clamp(22px, 2.2vw, 40px);
+  letter-spacing: 0.08em;
   line-height: 1;
   color: var(--accent, #FFB703);
   text-transform: uppercase;

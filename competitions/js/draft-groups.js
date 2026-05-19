@@ -15,9 +15,9 @@
   'use strict';
 
   const POLL_MS = 3000;
-  const OVERLAY_SUSPENSE_MS = 700;
-  const OVERLAY_HOLD_MS     = 2200;
-  const OVERLAY_EXIT_MS     = 450;
+  const OVERLAY_SUSPENSE_MS = 400;
+  const OVERLAY_HOLD_MS     = 1000;
+  const OVERLAY_EXIT_MS     = 350;
   const READY_POLL_MS = 100;
   const READY_TIMEOUT_MS = 10000;
   const DRAFT_SLUG = 'community-cup';
@@ -70,6 +70,8 @@
     _renderCounts();
 
     state.pollTimer = setInterval(poll, POLL_MS);
+    state.countdownTimer = setInterval(_tickCountdown, 1000);
+    _tickCountdown();
     document.addEventListener('visibilitychange', _onVisibilityChange);
     window.addEventListener('pagehide', _cleanup);
 
@@ -231,12 +233,29 @@
       const existing = state.assigned.get(c.id);
       if (existing && existing.group === g) continue;
 
+      // Group correction (A→B or B→A). Strip the old card from its grid and
+      // drop any still-pending queue entry, then re-queue in the new group.
+      // If status is 'playing', the in-flight overlay finishes but _drainQueue's
+      // onDone mismatch guard skips landing the (now-stale) card.
+      if (existing) {
+        if (existing.status === 'shown') _removeCard(c.id, existing.group);
+        state.queue = state.queue.filter(item => item.community.id !== c.id);
+      }
+
       const fullCommunity = richById.get(c.id) || c;
       state.assigned.set(c.id, { group: g, status: 'queued' });
       state.queue.push({ community: fullCommunity, group: g });
     }
 
+    _renderCounts();
     _drainQueue();
+  }
+
+  function _removeCard(communityId, fromGroup) {
+    const grid = fromGroup === 'A' ? elGridA : elGridB;
+    if (!grid) return;
+    const card = grid.querySelector(`[data-team-id="${CSS.escape(communityId)}"]`);
+    if (card) card.remove();
   }
 
   async function _fetchCommunitiesNow() {
@@ -264,6 +283,14 @@
 
     _playOverlay(next.community, next.group, () => {
       const r = state.assigned.get(next.community.id);
+      // Mid-overlay correction: poll() flipped the assigned group while the
+      // overlay was playing. Skip landing the card — the next queue item is
+      // the corrected reveal.
+      if (r && r.group !== next.group) {
+        state.busy = false;
+        _drainQueue();
+        return;
+      }
       if (r) r.status = 'shown';
       _appendCard(next.community, next.group);
       _renderCounts();
@@ -344,6 +371,7 @@
     }
     if (elCountA) elCountA.textContent = `${a} of 4`;
     if (elCountB) elCountB.textContent = `${b} of 4`;
+    document.body.classList.toggle('is-complete', a >= 4 && b >= 4);
   }
 
   function _onVisibilityChange() {
@@ -351,7 +379,26 @@
   }
 
   function _cleanup() {
-    if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    if (state.pollTimer)      { clearInterval(state.pollTimer);      state.pollTimer = null; }
+    if (state.countdownTimer) { clearInterval(state.countdownTimer); state.countdownTimer = null; }
+  }
+
+  // Ticks down to Saturday 2026-05-23 09:00 Bangkok. Same EVENT_TARGET_MS
+  // semantics as draft-projector.js's updateCompleteCountdown — keep the
+  // two pages in sync if the event time ever shifts.
+  const EVENT_TARGET_MS = new Date('2026-05-23T09:00:00+07:00').getTime();
+  function _tickCountdown() {
+    const el = document.getElementById('groupsCountdown');
+    if (!el) return;
+    const ms = EVENT_TARGET_MS - Date.now();
+    if (ms <= 0) { el.textContent = "LET'S GO"; return; }
+    const totalSec = Math.floor(ms / 1000);
+    const days  = Math.floor(totalSec / 86400);
+    const hours = Math.floor((totalSec % 86400) / 3600);
+    const mins  = Math.floor((totalSec % 3600) / 60);
+    const secs  = totalSec % 60;
+    const pad2  = (n) => String(n).padStart(2, '0');
+    el.textContent = `${days}D ${pad2(hours)}H ${pad2(mins)}M ${pad2(secs)}S`;
   }
 
   function _normalizeGroup(s) { return String(s || '').trim().toUpperCase(); }

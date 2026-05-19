@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/draft-projector.css?v=72" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=80" />
 </head>
 <body class="groups">
 
@@ -26,7 +26,7 @@
 
   <header class="top-strip">
     <div class="header-left">
-      <img class="brand-logo" id="brandLogo" src="assets/tps-monogram.png" alt="TPS" />
+      <img class="brand-logo" id="brandLogo" src="assets/monogram-white-on-green.png" alt="The Padel Society" />
     </div>
     <div class="header-center">
       <div class="tournament" id="tournamentName">Bangkok Community Cup</div>
@@ -49,7 +49,13 @@
         <div class="groups-moment__count" id="groupACount">0 of 4</div>
       </div>
 
-      <div class="groups-moment__divider" aria-hidden="true"></div>
+      <div class="groups-moment__center">
+        <div class="groups-moment__divider" aria-hidden="true"></div>
+        <div class="groups-moment__center-stack">
+          <div class="groups-moment__complete-msg">See you on Saturday!</div>
+          <div class="groups-moment__countdown" id="groupsCountdown">—</div>
+        </div>
+      </div>
 
       <div class="moment-cell groups-moment__half groups-moment__half--b" id="groupBHalf">
         <div class="groups-moment__letter">Group B</div>
@@ -85,7 +91,7 @@
 <script src="js/draft-supabase.js?v=19"></script>
 <script src="js/data.js"></script>
 <script src="js/team-card.js?v=1"></script>
-<script src="js/draft-groups.js?v=3"></script>
+<script src="js/draft-groups.js?v=8"></script>
 
 </body>
 </html>

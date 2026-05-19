@@ -812,7 +812,7 @@
   // overlay, we swap from suspense to revealed, then auto-exit. This avoids
   // any race between a broadcast event and the DB write.
   // ──────────────────────────────────────────────────────────
-  const OVERLAY_HOLD_MS = 3300;  // stamp settles ~700ms + 2600ms hold
+  const OVERLAY_HOLD_MS = 1500;  // tightened — keep the projector moving
   let _overlayHoldTimer = null;
 
   // Avatar resolution for overlay payloads. Order:
