@@ -774,7 +774,7 @@
         : `<span style="width:44px;height:44px;border-radius:50%;background:#1A3A2E;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#C8D6CE;flex:0 0 auto;">${escapeHtml(initials(c.name))}</span>`;
       return `
         <tr style="border-bottom:1px solid #1A3A2E;">
-          <td style="padding:10px 18px;font-family:monospace;color:#FFB703;font-weight:700;font-size:26px;width:56px;">${seedNum}</td>
+          <td style="padding:10px 18px;font-family:monospace;color:#FFB703;font-weight:700;font-size:26px;">${seedNum}</td>
           <td style="padding:10px 18px;font-weight:700;font-size:20px;">
             <div style="display:flex;align-items:center;gap:14px;">
               ${logo}
@@ -785,8 +785,16 @@
       `;
     };
 
+    // colgroup pins col widths explicitly so both tables align identically on
+    // mobile (where they stack). Without colgroup, table 2's hidden thead
+    // breaks table-layout:fixed's column anchoring → table 2 col 1 comes out
+    // narrower than table 1, shifting all logos/names left.
     const tableHTML = (subset, startSeed) => `
       <table style="border-collapse:collapse;">
+        <colgroup>
+          <col class="seed-col-seed">
+          <col class="seed-col-community">
+        </colgroup>
         <thead>
           <tr style="border-bottom:2px solid #3A5C36;">
             <th style="text-align:left;padding:8px 18px;font-size:12px;color:#6B8276;letter-spacing:0.18em;">SEED</th>
@@ -835,14 +843,13 @@
            each table auto-sizes to its own widest name and the columns
            drift visibly out of alignment. */
         @media (max-width: 760px) {
-          #projector-seed-preview .seed-preview-grid > table { width: 100%; }
+          /* table-layout:fixed + colgroup pins col widths identically across
+             both tables so the SEED column is the same width in table 1
+             (with visible thead) and table 2 (thead hidden) — otherwise
+             logos+names in rows 5-8 sit ~24px left of rows 1-4. */
+          #projector-seed-preview .seed-preview-grid > table { width: 100%; table-layout: fixed; }
           #projector-seed-preview .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
-          /* Force the SEED col to the same width on both tables. Without
-             this, table 1's visible "SEED" header (~74px intrinsic-min)
-             makes that column wider than table 2's (where the hidden
-             thead doesn't contribute) — and the COMMUNITY cells then
-             start at different X positions, drifting visibly. */
-          #projector-seed-preview .seed-preview-grid > table tr > :first-child { width: 80px; }
+          #projector-seed-preview .seed-preview-grid > table col.seed-col-seed { width: 100px; }
         }
       </style>
     `;

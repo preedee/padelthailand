@@ -1044,6 +1044,10 @@ const Data = (() => {
     get tournamentFormat() { return getConfig('tournament_format', 'divisions'); },
     getCommunities: () => communities,
     getCommunityById,
+    // Pure helpers exposed so groups.js can do its own 3s Communities-only
+    // poll without duplicating the CSV parser or URL builder.
+    sheetURL,
+    parseCSVWithHeaders,
     getPlayers: () => players,
     getSeries: () => seriesList,
     getSeriesById,

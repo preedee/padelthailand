@@ -1760,3 +1760,196 @@ html, body {
   letter-spacing: 0.08em;
   line-height: 1.6;
 }
+
+/* ============== GROUPS PAGE (body.groups) ============== */
+/* Reuses .moment-block, .converge-bar, .pick-overlay, .team-card from draft
+   page. Layout overrides only — no token or animation duplication.
+   Live group draw at /competitions/tps-may2026/groups/. */
+
+body.groups .moment {
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(16px, 1.6vw, 32px);
+}
+
+.groups-moment__half {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.3vw, 26px);
+  padding: clamp(10px, 1vw, 18px) clamp(12px, 1.2vw, 22px);
+}
+.groups-moment__half--a { justify-content: flex-start; }
+.groups-moment__half--b { justify-content: flex-end; }
+
+.groups-moment__letter {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(48px, 5vw, 92px);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--accent, #FFB703);
+  flex-shrink: 0;
+}
+
+.groups-moment__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.groups-moment__info--right { align-items: flex-end; text-align: right; }
+
+.groups-moment__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.8vw, 14px);
+  letter-spacing: 0.24em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.groups-moment__count {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 40px);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.groups-moment__divider {
+  width: 2px;
+  align-self: stretch;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--line-bright, rgba(255,255,255,0.25)) 20%,
+    var(--line-bright, rgba(255,255,255,0.25)) 80%,
+    transparent 100%);
+}
+
+/* Two-column teams area: A grid | divider | B grid */
+body.groups .teams { padding: 0; }
+.groups-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(16px, 1.6vw, 32px);
+  align-items: stretch;
+  padding: clamp(14px, 1.4vw, 26px);
+}
+.groups-teams__half { min-width: 0; display: flex; flex-direction: column; }
+.groups-teams__divider {
+  width: 2px;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--line, rgba(255,255,255,0.12)) 15%,
+    var(--line, rgba(255,255,255,0.12)) 85%,
+    transparent 100%);
+}
+
+/* Each half stacks its 4 team cards as a 2x2 grid */
+body.groups .teams-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1vw, 20px);
+  width: 100%;
+}
+
+/* Card fade-in when JS appends it (after the overlay closes). Mirrors the
+   .pick-overlay teardown timing so the audience eye lands cleanly on the
+   grid card right as the overlay exits. */
+body.groups .team-card {
+  animation: groups-card-land 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  min-height: clamp(140px, 16vw, 220px);
+}
+body.groups .team-card > .tname {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 32px);
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+body.groups .team-card > .team-logo {
+  width: clamp(60px, 7vw, 110px);
+  aspect-ratio: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--line-bright);
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+body.groups .team-card > .team-logo img {
+  width: 100%; height: 100%; object-fit: contain; padding: 6px;
+}
+body.groups .team-card > .groups-card-captains {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(11px, 0.95vw, 14px);
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+}
+body.groups .groups-card-captains__f { color: var(--female); }
+body.groups .groups-card-captains__m { color: var(--male); }
+@keyframes groups-card-land {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Group-reveal overlay variant — single centered block (no player+team).
+   .pick-overlay__block defaults to opacity:0 and only animates when given
+   the __player/__team child class. Under body.groups, the lone block
+   springs in centered. The GROUP A/B banner starts hidden and bursts in
+   when .is-revealed lands. */
+body.groups .pick-overlay__block {
+  animation: groups-overlay-block-in 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards;
+}
+@keyframes groups-overlay-block-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+body.groups .pick-overlay__group-banner {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.2vw, 84px);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--accent, #FFB703);
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0;
+  transform: scale(0.7);
+}
+body.groups .pick-overlay.is-revealed .pick-overlay__group-banner {
+  animation: groups-banner-burst 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes groups-banner-burst {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); text-shadow: 0 0 32px rgba(255,183,3,0.6); }
+}
+
+/* ≤480px phone layout — stack the two halves vertically */
+@media (max-width: 480px) {
+  body.groups .moment {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .groups-moment__divider { display: none; }
+  .groups-moment__half { padding: 6px 10px; }
+  .groups-moment__half--b { justify-content: flex-start; flex-direction: row-reverse; }
+  .groups-moment__info--right { align-items: flex-start; text-align: left; }
+
+  .groups-teams {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 12px;
+  }
+  .groups-teams__divider { display: none; }
+  body.groups .teams-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- Generated from _templates/groups-stub.html via deploy.sh — edit the template, not this file. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A1612" />
+  <base href="/competitions/">
+  <title>Bangkok Community Cup — Group Draw</title>
+  <meta property="og:title" content="Bangkok Community Cup — Group Draw">
+  <meta property="og:description" content="Live group A / group B assignment after the draft.">
+  <meta property="og:image" content="https://padelthailand.com/assets/cc-logo.png">
+  <link rel="icon" href="/assets/tps-favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=72" />
+</head>
+<body class="groups">
+
+<main class="projector" id="projector" aria-label="Group Draw Projector">
+
+  <header class="top-strip">
+    <div class="header-left">
+      <img class="brand-logo" id="brandLogo" src="assets/tps-monogram.png" alt="TPS" />
+    </div>
+    <div class="header-center">
+      <div class="tournament" id="tournamentName">Bangkok Community Cup</div>
+    </div>
+    <div class="header-right">
+      <div class="live-pill" id="livePill" aria-label="Live Draw">
+        <span class="dot"></span>
+        <span class="live-pill__label">LIVE DRAW</span>
+      </div>
+      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Community Cup" />
+    </div>
+  </header>
+
+  <section class="moment-block state-green groups-moment" id="momentBlock">
+    <div class="converge-bar"><span class="seg seg-left"></span><span class="seg seg-right"></span></div>
+
+    <div class="moment groups-moment__row">
+      <div class="moment-cell groups-moment__half groups-moment__half--a" id="groupAHalf">
+        <div class="groups-moment__letter">A</div>
+        <div class="groups-moment__info">
+          <div class="groups-moment__label">GROUP A</div>
+          <div class="groups-moment__count" id="groupACount">0 of 4</div>
+        </div>
+      </div>
+
+      <div class="groups-moment__divider" aria-hidden="true"></div>
+
+      <div class="moment-cell groups-moment__half groups-moment__half--b" id="groupBHalf">
+        <div class="groups-moment__info groups-moment__info--right">
+          <div class="groups-moment__label">GROUP B</div>
+          <div class="groups-moment__count" id="groupBCount">0 of 4</div>
+        </div>
+        <div class="groups-moment__letter">B</div>
+      </div>
+    </div>
+
+    <div class="converge-bar"><span class="seg seg-left"></span><span class="seg seg-right"></span></div>
+  </section>
+
+  <section class="teams groups-teams">
+    <div class="groups-teams__half groups-teams__half--a">
+      <div class="teams-grid groups-teams__grid" id="teamsGridA"></div>
+    </div>
+    <div class="groups-teams__divider" aria-hidden="true"></div>
+    <div class="groups-teams__half groups-teams__half--b">
+      <div class="teams-grid groups-teams__grid" id="teamsGridB"></div>
+    </div>
+  </section>
+
+  <div class="pick-overlay" id="pickOverlay" hidden aria-hidden="true"></div>
+
+</main>
+
+<!-- Pin the Sheet ID to Community Cup -->
+<script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
+
+<!-- Supabase JS SDK (UMD attaches `window.supabase`) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<script src="js/draft-config.js"></script>
+<script src="js/draft-utils.js?v=16"></script>
+<script src="js/draft-supabase.js?v=19"></script>
+<script src="js/data.js"></script>
+<script src="js/team-card.js?v=1"></script>
+<script src="js/draft-groups.js?v=2"></script>
+
+</body>
+</html>
