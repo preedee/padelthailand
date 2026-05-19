@@ -1158,7 +1158,7 @@ function previewSeedOrderAndConfirm(seeded) {
                     color:#FFB703;text-transform:uppercase;margin-bottom:clamp(12px,3vw,18px);text-align:center;">
           Seed Order
         </div>
-        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px 60px;">
+        <div class="seed-preview-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px 60px;">
           ${tableHTML(seeded.slice(0, 4), 1)}
           ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
@@ -1177,6 +1177,14 @@ function previewSeedOrderAndConfirm(seeded) {
           </button>
         </div>
       </div>
+      <style>
+        /* Hide the second table's header when the two seed tables wrap to
+           a stacked column on narrow viewports — the second SEED·COMMUNITY
+           row becomes redundant once they're vertical. */
+        @media (max-width: 760px) {
+          #seed-preview-backdrop .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
+        }
+      </style>
     `;
     document.body.appendChild(div);
 

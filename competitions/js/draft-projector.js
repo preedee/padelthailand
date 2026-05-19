@@ -820,11 +820,20 @@
                     color:#FFB703;text-transform:uppercase;margin-bottom:clamp(12px,3vw,18px);text-align:center;">
           Seed Order
         </div>
-        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px 60px;">
+        <div class="seed-preview-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px 60px;">
           ${tableHTML(seeded.slice(0, 4), 1)}
           ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
       </div>
+      <style>
+        /* When the two seed tables wrap to a single stacked column (narrow
+           viewports), the second table's SEED·COMMUNITY header becomes
+           redundant — collapse it. Threshold matches where flex-wrap
+           typically kicks in given the table widths. */
+        @media (max-width: 760px) {
+          #projector-seed-preview .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
+        }
+      </style>
     `;
     document.body.appendChild(div);
     updateSeedCountdown();
