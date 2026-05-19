@@ -705,9 +705,9 @@ function poolRowHTML(p, isTopMatch) {
       <span class="pool-row__name">${escapeHTML(p.name)}</span>
       <span class="pool-row__prefs">${prefsHTML(p)}</span>
       <span class="pool-row__meta">
-        <span class="pool-row__cell">${handLabel}</span>
-        <span class="pool-row__cell">${sideLabel}</span>
-        <span class="pool-row__cell">${ratingLabel}</span>
+        <span class="pool-row__cell pool-row__cell--hand">${handLabel}</span>
+        <span class="pool-row__cell pool-row__cell--side">${sideLabel}</span>
+        <span class="pool-row__cell pool-row__cell--rating">${ratingLabel}</span>
       </span>
       <span class="pool-row__chip">→ CLICK TO PICK</span>
     </div>
@@ -807,7 +807,10 @@ function renderHistory() {
   const listEl = document.getElementById('history-list');
   const countEl = document.getElementById('history-count');
   const live = state.picks.filter(p => !p.is_undone).length;
-  countEl.textContent = `${live} / ${DraftUtils.TOTAL_PICKS}`;
+  const countText = `${live} / ${DraftUtils.TOTAL_PICKS}`;
+  countEl.textContent = countText;
+  const pillCountEl = document.getElementById('history-pill-count');
+  if (pillCountEl) pillCountEl.textContent = countText;
 
   const sorted = [...state.picks].sort((a, b) => {
     if (b.pick_number !== a.pick_number) return b.pick_number - a.pick_number;
@@ -1435,6 +1438,31 @@ function bindGlobalEvents() {
     backdrop.addEventListener('click', () => {
       if (state.pendingPick) closeConfirmModal();
     });
+  }
+
+  // Pill/scrim DOM is display:none above 480px via CSS, so these listeners
+  // are inert on desktop — but body.history-open is a global state class, so
+  // a resize past the breakpoint must clear it (see matchMedia below) or a
+  // re-narrow would re-open the drawer with no user action.
+  const pillEl = document.getElementById('history-pill');
+  const scrimEl = document.getElementById('history-scrim');
+  const setDrawer = (open) => {
+    document.body.classList.toggle('history-open', open);
+    if (pillEl) pillEl.setAttribute('aria-expanded', String(open));
+  };
+  if (pillEl) {
+    pillEl.addEventListener('click', () => {
+      setDrawer(!document.body.classList.contains('history-open'));
+    });
+  }
+  if (scrimEl) {
+    scrimEl.addEventListener('click', () => setDrawer(false));
+  }
+  if (window.matchMedia) {
+    const mql = window.matchMedia('(max-width: 480px)');
+    const onChange = (e) => { if (!e.matches) setDrawer(false); };
+    if (mql.addEventListener) mql.addEventListener('change', onChange);
+    else if (mql.addListener) mql.addListener(onChange);
   }
 }
 
