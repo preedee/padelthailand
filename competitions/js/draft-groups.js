@@ -64,6 +64,7 @@
     }
 
     await _loadFullRosterData();
+    _applyHeaderFromConfig();
 
     _seedInitialState(communities);
     _renderCounts();
@@ -177,6 +178,26 @@
           nationality: (r['Nationality'] || '').trim(),
         };
       });
+  }
+
+  // Pull the same draft_brand_logo / header_logo_right overrides that
+  // draft-projector.js applies, so groups.html shows the Padel Society
+  // wordmark and Community Cup mark instead of the bare HTML defaults.
+  function _applyHeaderFromConfig() {
+    if (!Data || !Data.getConfig) return;
+    const leftLogo  = Data.getConfig('draft_brand_logo', '');
+    const rightLogo = Data.getConfig('header_logo_right', '');
+    const tname     = Data.getConfig('tournament_name', '');
+    const elBrand   = document.getElementById('brandLogo');
+    const elTourn   = document.getElementById('tournamentLogo');
+    if (elBrand && leftLogo && !leftLogo.includes('example.com')) {
+      elBrand.src = leftLogo;
+      elBrand.alt = 'TPS';
+    }
+    if (elTourn && rightLogo && !rightLogo.includes('example.com')) {
+      elTourn.src = rightLogo;
+      elTourn.alt = tname || 'Tournament';
+    }
   }
 
   function _seedInitialState(communities) {

@@ -502,83 +502,28 @@
   }
 
   function renderTeamCard(community, isLive, isNext) {
+    // Render delegated to the shared module js/team-card.js (also used by
+    // groups.html). Falls back to the legacy inline path if the module
+    // didn't load — defensive guard for the live-draft event.
+    if (window.TeamCard && typeof window.TeamCard.render === 'function') {
+      return window.TeamCard.render(community, {
+        players: state.players,
+        picks: state.picks,
+        avatarsByUserId: state.avatarsByUserId,
+        communityBase: COMMUNITY_BASE,
+        isLive: !!isLive,
+        isNext: !!isNext,
+        justPickedId: state.justPicked && state.justPicked.player_id,
+        expanded: state.expandedTeams.has(community.id),
+      });
+    }
+    // Legacy fallback (TeamCard module missing): plain card.
     if (!community) {
       return `<div class="team-card"><div class="tname">—</div><div class="team-logo">?</div></div>`;
     }
-    const isBackToBack = isLive && isNext;
-    const isExpanded = state.expandedTeams.has(community.id);
-    const cls = ['team-card', isLive && 'live', isNext && 'next', isBackToBack && 'back-to-back', isExpanded && 'is-expanded'].filter(Boolean).join(' ');
-    const teamColor = community.color || '#6b7a99';
-    const tInitials = initials(community.name || community.id);
-    const logoHtml = community.logoPath
-      ? `<img src="${escapeHtml(community.logoPath)}" alt="${escapeHtml(community.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(tInitials)}'}))">`
-      : escapeHtml(tInitials);
-    const { F, M } = rosterFor(community.id);
-    const teamHref = COMMUNITY_BASE
-      ? `${COMMUNITY_BASE}/${escapeHtml(community.id)}/`
-      : `team.html?community=${escapeHtml(community.id)}`;
-
-    // Average levels — recomputed every render, so they track drafts live.
-    const avgTeam   = averageLevel(F.concat(M));
-    const avgFemale = averageLevel(F);
-    const avgMale   = averageLevel(M);
-
-    function slotHtml(player, row) {
-      if (!player) return `<div class="slot empty"></div>`;
-      const justPicked = state.justPicked && state.justPicked.player_id === player.playerId;
-      const cls = ['slot', 'filled', player._captain && 'captain'].filter(Boolean).join(' ');
-      // Non-captain drafted players have no avatar in state.players (Teams
-      // and Players sheet is captains-only); fall through to avatarsByUserId
-      // which is prefetched from Registrations. Same path the pick overlay uses.
-      const avatarSrc = resolveAvatar(player);
-      const av = avatarSrc
-        ? `<img src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(player.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(player.name))}'}))">`
-        : escapeHtml(initials(player.name));
-      const flag = flagEmoji(countryCodeFor(player.nationality));
-      const flagHtml = flag
-        ? `<div class="flag" title="${escapeHtml(player.nationality || '')}">${flag}</div>`
-        : '';
-      return `<div class="${cls}"${justPicked ? ' data-just-picked="1"' : ''}>
-        <div class="avatar">${av}${flagHtml}</div>
-        <div class="fname">${escapeHtml(firstName(player.name))}</div>
-      </div>`;
-    }
-
-    // Mobile-only compact summary + chevron. Hidden by CSS on desktop —
-    // .team-card-summary and .team-card-chevron only get grid cells inside
-    // the @media (max-width: 900px) block, so on the broadcast view they
-    // sit invisibly outside the visible grid area. Also hidden by CSS when
-    // the card is expanded (the full roster makes these stats redundant).
-    const { made: picksMade, remaining: picksRemaining, total: picksTotal } = summaryFor(community.id);
-    const summaryHtml = `<span class="count">${picksMade}/${picksTotal} Players</span><span class="sep">·</span>${picksRemaining} Left`;
-
-    return `
-      <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
-        <a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a>
-        <div class="team-card-summary">${summaryHtml}</div>
-        <div class="team-card-chevron" aria-hidden="true">▸</div>
-        <div class="team-stats">
-          <div class="stat stat-female"><span class="stat-label" aria-label="Female">♀</span><span class="stat-val">${avgFemale}</span></div>
-          <div class="stat stat-team"><span class="stat-label" aria-label="Team">⚥</span><span class="stat-val">${avgTeam}</span></div>
-          <div class="stat stat-male"><span class="stat-label" aria-label="Male">♂</span><span class="stat-val">${avgMale}</span></div>
-        </div>
-        <div class="team-logo">${logoHtml}</div>
-        <div class="roster10">
-          <div class="row-female" style="display:contents">
-            ${F.map(p => slotHtml(p, 'F')).join('')}
-          </div>
-          <div class="row-male" style="display:contents">
-            ${M.map(p => slotHtml(p, 'M')).join('')}
-          </div>
-          <div class="roster-plaque-logo" aria-hidden="true">${logoHtml}</div>
-          <div class="roster-plaque-stats" aria-hidden="true">
-            <div class="stat stat-female"><span class="stat-label">♀</span><span class="stat-val">${avgFemale}</span></div>
-            <div class="stat stat-team"><span class="stat-label">⚥</span><span class="stat-val">${avgTeam}</span></div>
-            <div class="stat stat-male"><span class="stat-label">♂</span><span class="stat-val">${avgMale}</span></div>
-          </div>
-        </div>
-        <a class="team-card-nav" href="${teamHref}">View Team Page →</a>
-      </div>`;
+    return `<div class="team-card" data-team-id="${escapeHtml(community.id)}">
+      <div class="tname">${escapeHtml(community.name || community.id)}</div>
+    </div>`;
   }
 
   function renderMomentZone() {
@@ -889,8 +834,8 @@
     const hand = p.hand === 'L' ? 'L 🫲'
                : p.hand === 'R' ? '🫱 R'
                : p.hand === 'B' ? 'L 🤲 R' : '';
-    const side = p.side === 'F' ? 'L ⬅️'
-               : p.side === 'B' ? '➡️ R'
+    const side = p.side === 'F' ? '➡️ R'
+               : p.side === 'B' ? 'L ⬅️'
                : p.side === 'E' ? 'L ↔️ R' : '';
     const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
     const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'
@@ -1055,8 +1000,8 @@
     const hand = p.hand === 'L' ? 'L 🫲'
                : p.hand === 'R' ? '🫱 R'
                : p.hand === 'B' ? 'L 🤲 R' : '';
-    const side = p.side === 'F' ? 'L ⬅️'
-               : p.side === 'B' ? '➡️ R'
+    const side = p.side === 'F' ? '➡️ R'
+               : p.side === 'B' ? 'L ⬅️'
                : p.side === 'E' ? 'L ↔️ R' : '';
     const statBits = [ratingTxt, hand, side].filter(Boolean).join('  ·  ');
     const genderClass = p.gender === 'F' ? 'pick-overlay__avatar--f'

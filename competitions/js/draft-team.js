@@ -179,8 +179,9 @@
     const v = String(s || '').trim().toLowerCase();
     if (!v) return '';
     if (v === 'b' || v.includes('both')  || v.includes('either')) return 'B';
-    if (v === 'l' || v === 'left'  || v === 'forehand') return 'L';
-    if (v === 'r' || v === 'right' || v === 'backhand') return 'R';
+    // Convention flip: forehand-side player → RIGHT court; backhand → LEFT.
+    if (v === 'l' || v === 'left'  || v === 'backhand') return 'L';
+    if (v === 'r' || v === 'right' || v === 'forehand') return 'R';
     return '';
   }
 

@@ -1773,8 +1773,8 @@ body.groups .moment {
 
 .groups-moment__half {
   display: flex;
-  align-items: center;
-  gap: clamp(14px, 1.3vw, 26px);
+  align-items: baseline;
+  gap: clamp(14px, 1.4vw, 28px);
   padding: clamp(10px, 1vw, 18px) clamp(12px, 1.2vw, 22px);
 }
 .groups-moment__half--a { justify-content: flex-start; }
@@ -1783,36 +1783,25 @@ body.groups .moment {
 .groups-moment__letter {
   font-family: 'SuperBlue', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(48px, 5vw, 92px);
-  line-height: 0.9;
+  font-size: clamp(34px, 3.4vw, 64px);
+  line-height: 1;
   letter-spacing: 0.02em;
   color: var(--accent, #FFB703);
+  white-space: nowrap;
+  text-transform: uppercase;
   flex-shrink: 0;
 }
 
-.groups-moment__info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.groups-moment__info--right { align-items: flex-end; text-align: right; }
-
-.groups-moment__label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(10px, 0.8vw, 14px);
-  letter-spacing: 0.24em;
-  color: var(--ink-faint);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
 .groups-moment__count {
-  font-family: 'SuperBlue', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2.2vw, 40px);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: clamp(14px, 1.2vw, 22px);
   line-height: 1;
-  letter-spacing: 0.04em;
-  color: var(--ink);
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .groups-moment__divider {
@@ -1844,56 +1833,25 @@ body.groups .teams { padding: 0; }
     transparent 100%);
 }
 
-/* Each half stacks its 4 team cards as a 2x2 grid */
+/* Each half is a 2x2 grid filling its allocated vertical space — matches the
+   .teams-grid 1fr-row sizing on draft.html so cards aren't undersized. */
+body.groups .groups-teams__half { min-height: 0; }
 body.groups .teams-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(10px, 1vw, 20px);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(8px, 0.7vw, 14px);
   width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
-/* Card fade-in when JS appends it (after the overlay closes). Mirrors the
+/* Card land-in when JS appends it (after the overlay closes). Mirrors the
    .pick-overlay teardown timing so the audience eye lands cleanly on the
    grid card right as the overlay exits. */
 body.groups .team-card {
   animation: groups-card-land 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  min-height: clamp(140px, 16vw, 220px);
 }
-body.groups .team-card > .tname {
-  font-family: 'SuperBlue', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(18px, 1.8vw, 32px);
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
-}
-body.groups .team-card > .team-logo {
-  width: clamp(60px, 7vw, 110px);
-  aspect-ratio: 1;
-  background: var(--bg-deep);
-  border: 1px solid var(--line-bright);
-  display: grid; place-items: center;
-  overflow: hidden;
-}
-body.groups .team-card > .team-logo img {
-  width: 100%; height: 100%; object-fit: contain; padding: 6px;
-}
-body.groups .team-card > .groups-card-captains {
-  grid-column: 1 / -1;
-  grid-row: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(11px, 0.95vw, 14px);
-  color: var(--ink-dim);
-  letter-spacing: 0.04em;
-}
-body.groups .groups-card-captains__f { color: var(--female); }
-body.groups .groups-card-captains__m { color: var(--male); }
 @keyframes groups-card-land {
   from { opacity: 0; transform: translateY(8px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
