@@ -214,8 +214,8 @@
   // PICK #N UNDONE reveal during rehearsal. The visible UNDO button does
   // NOT broadcast this, so the audience-facing overlay still plays for
   // legitimate undos during the live draft.
-  function broadcastSilentUndo(draftId) {
-    return _sendWithReady(draftId, 'silent_undo', {});
+  function broadcastSilentUndo(draftId, pickNumber) {
+    return _sendWithReady(draftId, 'silent_undo', { pickNumber });
   }
 
   // Receiver. handlers = { onPending(payload), onClear(), onSilentUndo() }.
@@ -225,7 +225,7 @@
       .channel(`pending_pick:${draftId}`)
       .on('broadcast', { event: 'pending' },     ({ payload }) => { if (onPending)     onPending(payload); })
       .on('broadcast', { event: 'clear'   },     ()            => { if (onClear)       onClear(); })
-      .on('broadcast', { event: 'silent_undo' }, ()            => { if (onSilentUndo)  onSilentUndo(); })
+      .on('broadcast', { event: 'silent_undo' }, ({ payload }) => { if (onSilentUndo)  onSilentUndo(payload || {}); })
       .subscribe();
   }
 

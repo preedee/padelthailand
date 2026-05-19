@@ -1090,7 +1090,11 @@ async function fastUndo() {
     // catastrophic during rehearsal). The visible UNDO button does NOT
     // broadcast this, so the audience-facing overlay still plays for any
     // legitimate undo during the live draft.
-    try { DraftSupabase.broadcastSilentUndo(state.draft.id); } catch (_) {}
+    // Broadcast suppression flag BEFORE the DB UPDATE so the projector has
+    // a deterministic correlation key (pick_number). The projector defers
+    // its undo overlay by 200ms — within that window the broadcast wins
+    // the race over the DB UPDATE event in nearly all cases.
+    try { DraftSupabase.broadcastSilentUndo(state.draft.id, mostRecent.pick_number); } catch (_) {}
     await undoPick(mostRecent.id);
   } finally {
     state._inflightUndo = false;

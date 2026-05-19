@@ -1225,15 +1225,24 @@
         const idx = state.picks.findIndex(p => p.id === newRow.id);
         if (idx >= 0) {
           if (newRow.is_undone) {
-            // Pick was undone — fire the cancellation overlay before removing
-            // it from state so the rendered roster updates after the show.
-            // Suppression: commissioner's rapid-undo (U key) broadcasts
-            // 'silent_undo' which sets state.suppressUndoUntil; if we're
-            // inside that window, skip the overlay.
-            const silent = state.suppressUndoUntil && Date.now() < state.suppressUndoUntil;
-            const undoPayload = silent ? null : _buildUndoPayload(newRow);
+            // Apply state change immediately so the team grid updates.
+            // Defer the undo overlay by 200ms — commissioner's rapid-undo
+            // broadcasts 'silent_undo' just before the DB write, and that
+            // broadcast may arrive at the projector slightly before OR after
+            // this UPDATE. The 200ms delay lets the broadcast win the race
+            // even when network latency varies. state.silentUndoPicks holds
+            // pick numbers flagged silent (with a 5s TTL safety expiry).
             state.picks.splice(idx, 1);
-            if (undoPayload) showUndoOverlay(undoPayload);
+            const pickNumber = newRow.pick_number;
+            const rowSnapshot = newRow;
+            setTimeout(() => {
+              if (state.silentUndoPicks && state.silentUndoPicks.has(pickNumber)) {
+                state.silentUndoPicks.delete(pickNumber);
+                return; // silent — no overlay
+              }
+              const undoPayload = _buildUndoPayload(rowSnapshot);
+              if (undoPayload) showUndoOverlay(undoPayload);
+            }, 200);
           } else {
             state.picks[idx] = newRow;
           }
@@ -1328,9 +1337,17 @@
     const pendingChan = window.DraftSupabase.subscribeToPendingPick(draftRow.id, {
       onPending: (payload) => { log('pending', payload && payload.playerName); showPendingOverlay(payload); },
       onClear:   ()         => { log('pending cleared'); clearPendingOverlay(); },
-      // Suppress the next ~1.5s of undo overlays. Window refreshes on each
-      // rapid-fire U press, so mashing U during rehearsal stays silent.
-      onSilentUndo: () => { state.suppressUndoUntil = Date.now() + 1500; },
+      // Commissioner's rapid-undo flagged this pick_number as silent.
+      // Stored with a 5s TTL safety expiry so a missed UPDATE doesn't leave
+      // dangling entries forever.
+      onSilentUndo: (payload) => {
+        if (!state.silentUndoPicks) state.silentUndoPicks = new Set();
+        const n = payload && payload.pickNumber;
+        if (n != null) {
+          state.silentUndoPicks.add(n);
+          setTimeout(() => state.silentUndoPicks.delete(n), 5000);
+        }
+      },
     });
     watchChannel(pendingChan);
   }
