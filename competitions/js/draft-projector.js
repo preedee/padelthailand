@@ -808,18 +808,19 @@
     ].join(';');
     div.innerHTML = `
       <div style="background:#0E2A1E;color:#FFFFFF;border:2px solid #FFB703;
-                  padding:24px 36px;border-radius:14px;width:fit-content;max-width:96vw;
+                  padding:clamp(16px,4vw,24px) clamp(18px,5vw,36px);border-radius:14px;
+                  width:fit-content;max-width:96vw;
                   max-height:94vh;overflow-y:auto;
                   box-shadow:0 0 80px rgba(255,183,3,0.35);">
-        <div style="text-align:center;margin-bottom:20px;">
-          <div id="seedCountdownNum" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:48px;font-weight:700;color:#FF5470;letter-spacing:0.06em;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(255,84,112,0.35);line-height:1;">—</div>
-          <div id="seedCountdownLabel" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#6B8276;letter-spacing:0.22em;margin-top:8px;text-transform:uppercase;">Draft Begins</div>
+        <div style="text-align:center;margin-bottom:clamp(12px,3vw,20px);">
+          <div id="seedCountdownNum" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:clamp(24px,7vw,48px);font-weight:700;color:#FF5470;letter-spacing:0.06em;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(255,84,112,0.35);line-height:1;white-space:nowrap;">—</div>
+          <div id="seedCountdownLabel" style="font-family:'JetBrains Mono',monospace;font-size:clamp(11px,2.6vw,13px);color:#6B8276;letter-spacing:0.22em;margin-top:8px;text-transform:uppercase;">Draft Begins</div>
         </div>
-        <div style="font-size:32px;font-weight:700;letter-spacing:0.08em;
-                    color:#FFB703;text-transform:uppercase;margin-bottom:18px;text-align:center;">
+        <div style="font-size:clamp(22px,5vw,32px);font-weight:700;letter-spacing:0.08em;
+                    color:#FFB703;text-transform:uppercase;margin-bottom:clamp(12px,3vw,18px);text-align:center;">
           Seed Order
         </div>
-        <div style="display:grid;grid-template-columns:auto auto;justify-content:center;column-gap:80px;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px 60px;">
           ${tableHTML(seeded.slice(0, 4), 1)}
           ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
