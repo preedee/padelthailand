@@ -371,7 +371,17 @@
     }
     if (elCountA) elCountA.textContent = `${a} of 4`;
     if (elCountB) elCountB.textContent = `${b} of 4`;
-    document.body.classList.toggle('is-complete', a >= 4 && b >= 4);
+    const isComplete = a >= 4 && b >= 4;
+    document.body.classList.toggle('is-complete', isComplete);
+    // Top-right pill: mirror draft.html's pattern — green "COMPLETE" when
+    // both groups are full, red blinking "LIVE DRAW" otherwise.
+    const pillEl   = document.getElementById('livePill');
+    const labelEl  = pillEl && pillEl.querySelector('.live-pill__label');
+    if (pillEl && labelEl) {
+      pillEl.classList.toggle('is-complete', isComplete);
+      labelEl.textContent = isComplete ? 'COMPLETE' : 'LIVE DRAW';
+      pillEl.setAttribute('aria-label', isComplete ? 'Draw Complete' : 'Live Draw');
+    }
   }
 
   function _onVisibilityChange() {

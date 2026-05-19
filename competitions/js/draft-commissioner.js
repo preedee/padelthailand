@@ -1010,7 +1010,69 @@ async function submitPendingPick() {
   }
 }
 
+// ── FAST PICK (rehearsal / mash-N to blow through 64 picks) ──────
+// Auto-picks the first eligible player in the current displayed pool and
+// commits without opening the confirm modal or broadcasting suspense — so
+// the projector sees only the DB INSERT and updates its team grid silently
+// (no .pick-overlay reveal). See bindGlobalEvents() for the N keybinding.
+
+async function fastPick() {
+  if (!state.draft || state.draft.status !== 'active') {
+    showToast('Draft not active — start/resume first', 'error');
+    return;
+  }
+  if (state.pendingPick || state._inflightPick) return;
+
+  const currentTeamId = getCurrentTeamId();
+  const community = getTeamCommunity(currentTeamId);
+  if (!community) { showToast('Cannot determine current team', 'error'); return; }
+
+  const teamPicks = state.picks.filter(p => !p.is_undone && p.team_id === currentTeamId);
+  const teamCaptains = state.captainsByCommunity[currentTeamId] || [];
+  const captainGenders = new Set(teamCaptains.map(c => c.gender));
+
+  // Walk the displayed pool top-down; pick the first player who passes the
+  // 5-per-gender slot check for this team (matches openConfirmModal's guard).
+  for (const player of getDisplayedPool()) {
+    const sameGenderCount = teamPicks.filter(p => {
+      const r = state.registrations.find(r => r.userId === p.player_id);
+      return r && r.gender === player.gender;
+    }).length;
+    const usedSlots = sameGenderCount + (captainGenders.has(player.gender) ? 1 : 0);
+    if (usedSlots >= 5) continue;
+
+    state.pendingPick = { player, community, pickNumber: state.draft.current_pick_number };
+    await submitPendingPick();
+    return;
+  }
+  showToast('No eligible player in pool for current team', 'error');
+}
+
 // ── UNDO ──────────────────────────────────────────────────────────
+// Rapid-undo (U key) — undoes the most recent non-undone pick. Each undo
+// pauses the timer per the existing pauseForUndo contract, so mashing U
+// walks backwards through picks one at a time; the operator must hit the
+// existing RESUME button (or START DRAFT if all undone) before N picks
+// can be made again. Inflight latch prevents racing parallel undos.
+
+async function fastUndo() {
+  if (state._inflightPick || state._inflightUndo) return;
+  if (!state.draft) return;
+  if (state.draft.status === 'complete') {
+    showToast('Cannot undo — draft is complete', 'error');
+    return;
+  }
+  const mostRecent = [...state.picks]
+    .sort((a, b) => b.pick_number - a.pick_number)
+    .find(p => !p.is_undone);
+  if (!mostRecent) { showToast('No picks to undo'); return; }
+  try {
+    state._inflightUndo = true;
+    await undoPick(mostRecent.id);
+  } finally {
+    state._inflightUndo = false;
+  }
+}
 
 async function undoPick(pickId) {
   try {
@@ -1443,6 +1505,18 @@ function bindGlobalEvents() {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && state.pendingPick) closeConfirmModal();
+    // N — rapid-fire pick. U — rapid undo of the most recent active pick.
+    // Both ignored when typing in an input/textarea so the search box still
+    // accepts literal 'n'/'u'. Skipped while the confirm modal is open
+    // (Escape it first).
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      const t = e.target;
+      const inEditable = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (inEditable) return;
+      if (state.pendingPick) return;
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); fastPick(); }
+      else if (e.key === 'u' || e.key === 'U') { e.preventDefault(); fastUndo(); }
+    }
   });
   // Bind backdrop dismiss ONCE here, not in openConfirmModal. The backdrop
   // element is static in commissioner.html (not replaced by innerHTML); the
