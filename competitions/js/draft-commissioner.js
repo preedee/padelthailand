@@ -1180,8 +1180,12 @@ function previewSeedOrderAndConfirm(seeded) {
       <style>
         /* Hide the second table's header when the two seed tables wrap to
            a stacked column on narrow viewports — the second SEED·COMMUNITY
-           row becomes redundant once they're vertical. */
+           row becomes redundant once they're vertical.
+           Also: both tables go width:100% so the SEED col + COMMUNITY col
+           line up across rows from both tables (otherwise each table
+           auto-sizes to its own widest name and columns visibly drift). */
         @media (max-width: 760px) {
+          #seed-preview-backdrop .seed-preview-grid > table { width: 100%; }
           #seed-preview-backdrop .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
         }
       </style>

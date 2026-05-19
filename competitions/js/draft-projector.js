@@ -829,8 +829,13 @@
         /* When the two seed tables wrap to a single stacked column (narrow
            viewports), the second table's SEED·COMMUNITY header becomes
            redundant — collapse it. Threshold matches where flex-wrap
-           typically kicks in given the table widths. */
+           typically kicks in given the table widths.
+           Also: both tables go width:100% so the SEED col (fixed 56px) and
+           the COMMUNITY col line up across rows from both tables — otherwise
+           each table auto-sizes to its own widest name and the columns
+           drift visibly out of alignment. */
         @media (max-width: 760px) {
+          #projector-seed-preview .seed-preview-grid > table { width: 100%; }
           #projector-seed-preview .seed-preview-grid > table:not(:first-of-type) thead { display: none; }
         }
       </style>
