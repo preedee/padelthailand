@@ -1161,15 +1161,15 @@ html, body {
     padding: 7px 10px;
     font-size: 11px;
   }
-  .pool__prefs {
-    gap: 5px;
-    margin-bottom: 8px;
-  }
-  .pool__prefs-label { display: none; }
-  .pool__prefs-chip {
-    padding: 4px 8px 4px 4px;
-    font-size: 10px;
-  }
+  /* On mobile we collapse the community-filter row entirely — the pool
+     view is narrow enough that the prefs chips dominated the screen,
+     and operators almost always filter by gender/hand/side instead. */
+  .pool__prefs { display: none; }
+  /* The sort group has `margin-left: auto` on desktop so it sits at the
+     right edge of the filter row. On mobile that auto-margin pushed it
+     onto its own wrapped line and centered it — drop the auto so it
+     left-aligns next to the F/M/L/R/L/R groups. */
+  .pool__sort { margin-left: 0; }
 
   .pool-row {
     gap: 9px;
