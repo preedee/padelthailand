@@ -11,13 +11,15 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/tps-monogram.png">
   <link rel="stylesheet" href="css/styles.css?v=205">
+  <link rel="stylesheet" href="css/cc-groups.css?v=1">
   <style>
-    /* Hide the Upcoming Matches sidebar on the All Matches, Main Draw, and
-       Consolation tabs so their content spans full width. Scoped to this page
-       only — the shared engine keeps the sidebar on every other competition. */
+    /* Hide the Upcoming Matches sidebar on the All Matches, Main Draw,
+       Consolation, and Groups tabs so their content spans full width. Scoped to
+       this page only — the shared engine keeps the sidebar on other competitions. */
     .content-area:has(#view-matches.active) .sidebar,
     .content-area:has(#view-bracket.active) .sidebar,
-    .content-area:has(#view-consolation.active) .sidebar { display: none; }
+    .content-area:has(#view-consolation.active) .sidebar,
+    .content-area:has(#view-groups.active) .sidebar { display: none; }
   </style>
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
@@ -79,6 +81,8 @@
   <script src="js/series.js?v=205"></script>
   <script src="js/cc-standings.js?v=203"></script>
   <script src="js/cc-live.js?v=203"></script>
-  <script src="js/app.js?v=205"></script>
+  <script src="js/team-card.js?v=83"></script>
+  <script src="js/cc-groups.js?v=1"></script>
+  <script src="js/app.js?v=206"></script>
 </body>
 </html>

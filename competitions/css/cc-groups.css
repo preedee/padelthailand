@@ -1,0 +1,664 @@
+/* ============================================================
+   cc-groups.css — Dashboard "Groups" view (self-contained)
+
+   The dashboard renders team cards (markup from team-card.js) inside a
+   `.cc-groups` container. The team-card visual styles originally live in
+   draft-projector.css as GLOBAL selectors, but that file also ships clashing
+   global `html, body` / `:root` rules and projector chrome we cannot load
+   here. This file therefore:
+     1. Declares the needed design tokens scoped to `.cc-groups`.
+     2. Copies the team-card / roster / slot / teams-grid / stat / flag style
+        blocks from draft-projector.css, with EVERY selector prefixed by
+        `.cc-groups ` so they only apply inside our container.
+     3. Adds new layout rules for the two-half Groups container.
+
+   Do NOT add projector chrome (.top-strip, .moment-block, .projector,
+   .pick-overlay), body.groups rules, or global html/body/:root rules here.
+   ============================================================ */
+
+/* ---- Design tokens (scoped to .cc-groups, copied from draft-projector :root) ---- */
+.cc-groups {
+  --bg-deep:     #061712;
+  --bg-elev:     #0E2A1E;
+  --bg-chrome:   #122620;
+  --line:        #1A3A2E;
+  --line-bright: #3A5C36;
+  --ink:         #FFFFFF;
+  --ink-dim:     #C8D6CE;
+  --ink-faint:   #6B8276;
+
+  --accent:      #FFB703;
+  --accent-warm: #FF8A3D;
+  --accent-cool: #7CC4E8;
+  --picked:      #3FD391;
+
+  /* Gender (load-bearing) */
+  --female: #FF0066;
+  --male:   #00AAFF;
+}
+
+/* ============================================================
+   NEW LAYOUT — Groups container (defined from scratch)
+   ============================================================ */
+.cc-groups {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: clamp(16px, 1.6vw, 32px);
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: clamp(14px, 1.4vw, 26px);
+  background: var(--bg-deep);
+  box-sizing: border-box;
+}
+
+.cc-groups__half {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.cc-groups__label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: clamp(8px, 0.8vw, 14px);
+}
+
+.cc-groups__divider {
+  flex: 0 0 1px;
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+
+/* The grid itself relies on the copied `.cc-groups .teams-grid` rule below. */
+
+.cc-groups__empty {
+  color: var(--ink-faint);
+  text-align: center;
+  padding: clamp(16px, 1.6vw, 32px);
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  letter-spacing: 0.08em;
+}
+
+/* ============================================================
+   COPIED — team-card / roster / slot / stat / flag styling
+   (global selectors from draft-projector.css, each prefixed `.cc-groups `)
+   ============================================================ */
+
+.cc-groups .teams-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 0.7vw, 14px);
+  min-height: 0;
+}
+
+.cc-groups .team-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--team-color, var(--line));
+  padding: clamp(8px, 0.7vw, 14px);
+  /* Two-column grid: name + stats on the left, big logo spans both rows on
+     the right. Row 3 is the roster, spanning the full width. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto 1fr;
+  column-gap: clamp(8px, 0.8vw, 14px);
+  row-gap: clamp(4px, 0.4vw, 8px);
+  position: relative;
+  min-height: 0;
+  --team-color: #6b7a99;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
+}
+.cc-groups .team-card > .tname      { grid-column: 1; grid-row: 1; }
+.cc-groups .team-card > .team-stats { grid-column: 1; grid-row: 2; align-self: end; }
+.cc-groups .team-card > .team-logo  { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
+.cc-groups .team-card > .roster10   { grid-column: 1 / -1; grid-row: 3; }
+
+/* Mobile-only adornments. Hidden on the broadcast/projector view; the
+   @media block below re-enables them with explicit grid placement. */
+.cc-groups .team-card > .team-card-summary,
+.cc-groups .team-card > .team-card-chevron,
+.cc-groups .team-card > .team-card-nav { display: none; }
+/* The 3×4 expanded-roster plaque (logo + stats in the two center cells).
+   Hidden by default on the broadcast view — the @media block re-enables them. */
+.cc-groups .roster10 > .roster-plaque-logo,
+.cc-groups .roster10 > .roster-plaque-stats { display: none; }
+
+.cc-groups .team-card.live {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(255,183,3,0.14), rgba(255,183,3,0.02));
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px rgba(255,183,3,0.28);
+}
+.cc-groups .team-card.live::before {
+  content: 'ON CLOCK';
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+.cc-groups .team-card.next {
+  border-color: var(--accent-cool);
+  border-style: dashed;
+  background: linear-gradient(135deg, rgba(124,196,232,0.06), transparent);
+}
+.cc-groups .team-card.next::after {
+  content: 'NEXT';
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--accent-cool); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+/* Snake-draft round boundary: one team is both ON CLOCK and NEXT. */
+.cc-groups .team-card.back-to-back::before { content: 'BACK-TO-BACK'; }
+.cc-groups .team-card.back-to-back::after  { content: none; }
+
+.cc-groups .team-card.just-picked-flash {
+  animation: cc-team-card-flash 1.8s ease-out 1 both;
+  z-index: 3;
+}
+@keyframes cc-team-card-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+  18% {
+    box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.85),
+                0 0 36px 10px rgba(255, 183, 3, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.45),
+                0 0 28px 6px rgba(255, 183, 3, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-groups .team-card.just-picked-flash {
+    animation: cc-team-card-flash-reduced 600ms linear 1 both;
+  }
+  @keyframes cc-team-card-flash-reduced {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+    50%      { box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.6); }
+  }
+}
+
+.cc-groups .team-card > .tname {
+  display: block;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 26px);
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  color: var(--ink);
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: end;
+}
+.cc-groups .team-card > a.tname:hover { text-decoration: underline; }
+
+/* Logo spans the name + stats rows on the right. */
+.cc-groups .team-logo {
+  height: 100%;
+  aspect-ratio: 1;
+  width: auto;
+  max-width: clamp(64px, 5vw, 96px);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.6vw, 28px);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.cc-groups .team-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.cc-groups .team-card.live .team-logo {
+  filter: drop-shadow(0 0 8px rgba(255,183,3,0.55));
+}
+
+/* Average-level strip — Team / Female / Male */
+.cc-groups .team-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(3px, 0.3vw, 6px);
+}
+.cc-groups .team-stats .stat {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(3px, 0.35vw, 6px);
+  padding: clamp(2px, 0.3vw, 5px) clamp(4px, 0.5vw, 8px);
+  background: rgba(255,255,255,0.03);
+  border-top: 1px solid var(--ink-faint);
+  min-width: 0;
+}
+.cc-groups .team-stats .stat-female { border-top-color: var(--female); }
+.cc-groups .team-stats .stat-male   { border-top-color: var(--male); }
+.cc-groups .team-stats .stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.9vw, 16px);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.1;
+}
+.cc-groups .team-stats .stat-female .stat-label,
+.cc-groups .team-stats .stat-team   .stat-label,
+.cc-groups .team-stats .stat-male   .stat-label {
+  font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
+  font-size: clamp(12px, 0.9vw, 16px);
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.cc-groups .team-stats .stat-female .stat-label { color: var(--female); }
+.cc-groups .team-stats .stat-male   .stat-label { color: var(--male); }
+.cc-groups .team-stats .stat-team   .stat-label { color: var(--ink); }
+.cc-groups .team-stats .stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(11px, 0.8vw, 14px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.cc-groups .team-stats .stat-female .stat-val { color: var(--female); }
+.cc-groups .team-stats .stat-male   .stat-val { color: var(--male); }
+
+/* Roster: 5 columns × 2 rows, female on top, male on bottom */
+.cc-groups .roster10 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(4px, 0.4vw, 8px);
+  min-height: 0;
+}
+.cc-groups .slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.32vw, 6px);
+  padding: 2px 1px;
+  min-width: 0;
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+.cc-groups .row-female .slot.empty {
+  background: rgba(255,133,184,0.08);
+  border: 1px dashed rgba(255,133,184,0.32);
+}
+.cc-groups .row-male .slot.empty {
+  background: rgba(94,200,255,0.08);
+  border: 1px dashed rgba(94,200,255,0.32);
+}
+
+.cc-groups .slot .avatar {
+  width: clamp(40px, 3.4vw, 64px); aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--team-color);
+  color: white;
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.2vw, 22px);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1.5px transparent;
+  position: relative;
+}
+.cc-groups .slot .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* Gender rings — load-bearing */
+.cc-groups .row-female .slot .avatar { box-shadow: 0 0 0 2px var(--female); }
+.cc-groups .row-male   .slot .avatar { box-shadow: 0 0 0 2px var(--male); }
+
+/* Captain ring — load-bearing */
+.cc-groups .slot.captain .avatar {
+  box-shadow: 0 0 0 2px var(--accent) !important;
+}
+.cc-groups .slot.captain .fname { color: var(--accent); font-weight: 700; }
+
+/* Flag sits on the avatar's bottom-left corner. */
+.cc-groups .slot .avatar .flag {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: clamp(14px, 1.05vw, 18px);
+  height: clamp(10px, 0.78vw, 13px);
+  line-height: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 2;
+}
+.cc-groups .slot .avatar .flag .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}
+.cc-groups .slot.empty .flag { display: none; }
+
+.cc-groups .slot .fname {
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 500;
+  color: var(--ink-dim);
+  line-height: 1.2;             /* room for y / g / p / j descenders */
+  padding-bottom: 1px;          /* extra safety against overflow clip */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  max-width: 100%;
+  text-align: center;
+}
+.cc-groups .slot.filled .fname { color: var(--ink); }
+.cc-groups .slot.empty .avatar { display: none; }
+.cc-groups .slot.empty .fname  { display: none; }
+
+/* Just-picked fade-in (~300ms) */
+.cc-groups .slot[data-just-picked="1"] .avatar,
+.cc-groups .slot[data-just-picked="1"] .fname {
+  animation: cc-avatar-in 0.3s ease-out;
+}
+@keyframes cc-avatar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   COPIED — MOBILE / PORTRAIT team-card overrides (max-width: 900px)
+   Selectors prefixed `.cc-groups `. Only team-card / roster / slot / stat
+   rules retained; projector + pick-overlay overrides dropped.
+   ============================================================ */
+@media (max-width: 900px) {
+  .cc-groups .teams-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 8px;
+  }
+
+  /* Reflow each card: 4-col header
+       col 1: logo (spans both rows, vertically centered)
+       col 2: team name (spans both rows, vertically centered)
+       col 3: summary on row 1 / ratings on row 2 (the right-side stack)
+       col 4: chevron (spans both rows, vertically centered)
+     Roster stays hidden until `.is-expanded` is added by the tap handler. */
+  .cc-groups .team-card {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    padding: 10px 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .cc-groups .team-card > .team-logo {
+    grid-column: 1; grid-row: 1 / span 2;
+    height: 44px; width: 44px;
+    aspect-ratio: 1;
+    max-width: none;
+    align-self: center;
+  }
+  .cc-groups .team-card > .tname {
+    grid-column: 2; grid-row: 1 / span 2;
+    align-self: center;          /* vertically centered alongside the logo */
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+  /* Summary on the right side, top row (col 3, row 1). */
+  .cc-groups .team-card > .team-card-summary {
+    display: block;
+    grid-column: 3; grid-row: 1;
+    align-self: end;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cc-groups .team-card > .team-card-summary .count {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .cc-groups .team-card > .team-card-summary .sep {
+    color: var(--ink-faint);
+    margin: 0 6px;
+  }
+  .cc-groups .team-card > .team-card-chevron {
+    display: block;
+    grid-column: 4; grid-row: 1 / span 2;
+    align-self: center;
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 200ms ease;
+    padding: 6px;       /* generous tap target */
+  }
+  .cc-groups .team-card.is-expanded > .team-card-chevron {
+    transform: rotate(90deg);
+    color: var(--ink);
+  }
+
+  /* "View Team Page →" button — only visible inside an expanded card. */
+  .cc-groups .team-card.is-expanded > .team-card-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    grid-row: 5;
+    margin-top: 10px;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-bright);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: rgba(255, 183, 3, 0.2);
+  }
+  .cc-groups .team-card.is-expanded > .team-card-nav:active {
+    background: rgba(255, 183, 3, 0.1);
+    border-color: var(--accent);
+  }
+
+  /* Hide the roster until tap-to-expand. */
+  .cc-groups .team-card > .roster10 { display: none; }
+
+  /* Ratings on the right side of the header (col 3, row 2). */
+  .cc-groups .team-card > .team-stats {
+    display: flex;
+    flex-direction: row;
+    grid-column: 3; grid-row: 2;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: start;
+    gap: 6px;
+    padding: 0;
+  }
+  .cc-groups .team-card > .team-stats .stat {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    background: none;
+    border-top: none;
+    min-width: 0;
+  }
+  .cc-groups .team-card > .team-stats .stat-label,
+  .cc-groups .team-card > .team-stats .stat-val {
+    display: inline-flex;
+    align-items: center;
+    height: 14px;
+    line-height: 1;
+    font-size: 11px;
+  }
+  .cc-groups .team-card > .team-stats .stat-label {
+    font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
+    font-weight: 600;
+  }
+  .cc-groups .team-card > .team-stats .stat-female .stat-label { color: var(--female); }
+  .cc-groups .team-card > .team-stats .stat-male   .stat-label { color: var(--male); }
+  .cc-groups .team-card > .team-stats .stat-team   .stat-label { color: var(--ink); }
+  .cc-groups .team-card > .team-stats .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .cc-groups .team-card > .team-stats .stat-female .stat-val { color: var(--female); }
+  .cc-groups .team-card > .team-stats .stat-male   .stat-val { color: var(--male); }
+
+  /* Roster: 4 columns × 3 rows of uniform squares (expanded). */
+  .cc-groups .team-card.is-expanded > .roster10 {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .cc-groups .team-card.is-expanded .slot,
+  .cc-groups .team-card.is-expanded .roster-plaque-logo,
+  .cc-groups .team-card.is-expanded .roster-plaque-stats {
+    aspect-ratio: 1;
+    min-height: 0;
+  }
+  /* Explicit slot placement — ccw fill for F, cw for M. */
+  .cc-groups .team-card.is-expanded .row-female > .slot:nth-child(1) { grid-column: 2; grid-row: 1; }
+  .cc-groups .team-card.is-expanded .row-female > .slot:nth-child(2) { grid-column: 1; grid-row: 1; }
+  .cc-groups .team-card.is-expanded .row-female > .slot:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .cc-groups .team-card.is-expanded .row-female > .slot:nth-child(4) { grid-column: 1; grid-row: 3; }
+  .cc-groups .team-card.is-expanded .row-female > .slot:nth-child(5) { grid-column: 2; grid-row: 3; }
+  .cc-groups .team-card.is-expanded .row-male   > .slot:nth-child(1) { grid-column: 3; grid-row: 1; }
+  .cc-groups .team-card.is-expanded .row-male   > .slot:nth-child(2) { grid-column: 4; grid-row: 1; }
+  .cc-groups .team-card.is-expanded .row-male   > .slot:nth-child(3) { grid-column: 4; grid-row: 2; }
+  .cc-groups .team-card.is-expanded .row-male   > .slot:nth-child(4) { grid-column: 4; grid-row: 3; }
+  .cc-groups .team-card.is-expanded .row-male   > .slot:nth-child(5) { grid-column: 3; grid-row: 3; }
+  /* Player slot interior. */
+  .cc-groups .team-card.is-expanded .slot {
+    padding: 4% 2%;
+    gap: 4%;
+    overflow: hidden;
+  }
+  .cc-groups .team-card.is-expanded .slot .avatar {
+    width: 62%;
+    height: auto;
+    font-size: clamp(12px, 3.4vw, 20px);
+  }
+  .cc-groups .team-card.is-expanded .slot .avatar .flag {
+    width: 34%;
+    height: 26%;
+    bottom: -4%;
+    left: -4%;
+  }
+  .cc-groups .team-card.is-expanded .slot .fname {
+    font-size: clamp(9px, 2.6vw, 13px);
+    letter-spacing: 0.02em;
+    max-width: 100%;
+  }
+  /* Merged center plaque: the team logo spans both inner cells. */
+  .cc-groups .team-card.is-expanded .roster-plaque-logo {
+    display: flex;
+    grid-column: 2 / span 2;
+    grid-row: 2;
+    aspect-ratio: 2 / 1;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats {
+    display: none;
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8%;
+    padding: 0 6%;
+    background: rgba(255,255,255,0.04);
+    border-top: 2px solid var(--ink-faint);
+    min-width: 0;
+    min-height: 0;
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-female { border-top-color: var(--female); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-male   { border-top-color: var(--male); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-label {
+    font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
+    font-size: clamp(11px, 3vw, 18px);
+    line-height: 1;
+    color: var(--ink-faint);
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-female .stat-label { color: var(--female); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-label { color: var(--male); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-team   .stat-label { color: var(--ink); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(10px, 2.8vw, 16px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-female .stat-val { color: var(--female); }
+  .cc-groups .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-val { color: var(--male); }
+
+  /* The desktop status chips overlap the team-name on a compact card — drop them. */
+  .cc-groups .team-card.live::before,
+  .cc-groups .team-card.next::after { content: none; }
+}
