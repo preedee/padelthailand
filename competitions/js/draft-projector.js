@@ -752,6 +752,12 @@
 
     if (existing) existing.remove();
 
+    // Big logos flanking the Seed Order box — TPS monogram (left) and the
+    // Community Cup mark (right). Pull from the same config keys the header
+    // uses, falling back to the bundled assets when unset.
+    const flankLeft  = Data.getConfig('draft_brand_logo', '')  || 'assets/tps-monogram.png';
+    const flankRight = Data.getConfig('header_logo_right', '') || 'assets/cc-logo.png';
+
     const div = document.createElement('div');
     div.id = 'projector-seed-preview';
     div.style.cssText = [
@@ -760,6 +766,7 @@
       'font-family:var(--font, system-ui), sans-serif','overflow-y:auto',
     ].join(';');
     div.innerHTML = `
+      <img class="seed-flank-logo seed-flank-logo--left" src="${escapeHtml(flankLeft)}" alt="The Padel Society">
       <div style="background:#0E2A1E;color:#FFFFFF;border:2px solid #FFB703;
                   padding:clamp(16px,4vw,24px) clamp(18px,5vw,36px);border-radius:14px;
                   width:fit-content;max-width:96vw;
@@ -778,7 +785,26 @@
           ${tableHTML(seeded.slice(4, 8), 5)}
         </div>
       </div>
+      <img class="seed-flank-logo seed-flank-logo--right" src="${escapeHtml(flankRight)}" alt="Community Cup">
       <style>
+        /* Big logos either side of the Seed Order box, vertically centered.
+           Absolutely positioned so they sit on the left/right edges WITHOUT
+           taking flex space — the Seed Order box stays centered and its table
+           layout is unchanged. */
+        #projector-seed-preview .seed-flank-logo {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: clamp(120px, 16vw, 260px);
+          height: auto;
+          object-fit: contain;
+        }
+        #projector-seed-preview .seed-flank-logo--left  { left:  clamp(16px, 4vw, 80px); }
+        #projector-seed-preview .seed-flank-logo--right { right: clamp(16px, 4vw, 80px); }
+        /* Below the projector width, hide the flanks so they never overlap the box. */
+        @media (max-width: 1200px) {
+          #projector-seed-preview .seed-flank-logo { display: none; }
+        }
         /* When the two seed tables wrap to a single stacked column (narrow
            viewports), the second table's SEED·COMMUNITY header becomes
            redundant — collapse it. Threshold matches where flex-wrap
