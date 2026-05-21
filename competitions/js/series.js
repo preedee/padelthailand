@@ -37,6 +37,22 @@ const Series = (() => {
     return community ? community.name : value;
   }
 
+  // Final-winner badges: Main Draw final → Champion (gold), Consolation final → Plate (silver).
+  const CHAMPION_BADGE = { rowClass: 'cc-series-card__team--champion', badgeClass: 'cc-champion-badge', badgeText: '🏆 Champion' };
+  const PLATE_BADGE    = { rowClass: 'cc-series-card__team--plate',    badgeClass: 'cc-plate-badge',    badgeText: '🏅 Plate Winner' };
+
+  // Spell out a series ID for display: SF-1 → "Semi-Final 1", F → "Final",
+  // 3P → "3rd Place", CSF-2 → "Consolation Semi-Final 2", CF → "Consolation Final".
+  function seriesIdLabel(id) {
+    const fixed = { 'F': 'Final', '3P': '3rd Place', 'CF': 'Consolation Final' };
+    if (fixed[id]) return fixed[id];
+    let m = id.match(/^SF-(\d+)$/);
+    if (m) return `Semi-Final ${m[1]}`;
+    m = id.match(/^CSF-(\d+)$/);
+    if (m) return `Consolation Semi-Final ${m[1]}`;
+    return id;
+  }
+
   // Logo path for a community slot — only if value is a real community ID
   function resolveLogo(value) {
     if (!value || value === 'TBD') return null;
@@ -70,9 +86,10 @@ const Series = (() => {
     return `<div class="series-card__matches">${pills}</div>`;
   }
 
-  // Render a single SERIES as a bracket-match card (RPA-style bracket layout).
-  // Uses the existing .bracket-match CSS hooks so styling is consistent.
-  function renderSeriesCard(series, extraClass) {
+  // Render a single SERIES as a match-card — same design as the All Matches
+  // tab (community logo + name + series score) so the two tabs stay visually
+  // consistent. accentClass adds the gold (final) / bronze (3rd place) border.
+  function renderSeriesCard(series, accentClass, winnerBadge) {
     const aLabel = resolveLabel(series.communityA);
     const bLabel = resolveLabel(series.communityB);
     const aLogo = resolveLogo(series.communityA);
@@ -88,73 +105,66 @@ const Series = (() => {
 
     function logoHTML(logoPath, label) {
       if (logoPath) {
-        return `<img class="bracket-match__logo" src="${logoPath}" alt="${label}" onerror="this.style.display='none'">`;
+        return `<img class="match-card__cc-logo" src="${logoPath}" alt="${label}" onerror="this.style.display='none'">`;
       }
       const initial = (label || '?').charAt(0).toUpperCase();
-      return `<span class="bracket-match__logo bracket-match__logo--fallback">${initial}</span>`;
+      return `<span class="match-card__cc-logo match-card__cc-logo--fallback">${initial}</span>`;
     }
 
-    const t1Class = aWinning ? 'bracket-match__team--winner'
-                  : bWinning ? 'bracket-match__team--loser'
-                  : (aTBD ? 'bracket-match__team--tbd' : '');
-    const t2Class = bWinning ? 'bracket-match__team--winner'
-                  : aWinning ? 'bracket-match__team--loser'
-                  : (bTBD ? 'bracket-match__team--tbd' : '');
-
-    const meta = `${series.id}${series.startTime ? ' · ' + series.startTime : ''}`;
-
-    return `<div class="bracket-match ${extraClass || ''}" data-series-id="${series.id}">
-      <div class="bracket-match__datetime">${meta}</div>
-      <div class="bracket-match__team ${t1Class}">
-        <div class="bracket-match__community">
-          ${logoHTML(aLogo, aLabel)}
-          <span class="bracket-match__team-name">${aLabel}</span>
+    function teamRow(label, logo, winning, tbd, wins, teamClass) {
+      const nameClass = tbd ? ' match-card__cc-name--tbd' : '';
+      const showBadge = winnerBadge && winning;
+      const badgeRowClass = showBadge ? ' ' + winnerBadge.rowClass : '';
+      const badge = showBadge ? `<span class="${winnerBadge.badgeClass}">${winnerBadge.badgeText}</span>` : '';
+      return `<div class="match-card__team ${teamClass}${badgeRowClass}">
+        <div class="match-card__cc-team">
+          <div class="match-card__cc-logo-wrap">${logo}</div>
+          <div class="match-card__cc-names"><div class="match-card__cc-name-row${nameClass}">${label}${badge}</div></div>
         </div>
-        <div class="bracket-match__score"><span class="bracket-match__set${aWinning ? ' bracket-match__set--high' : ''}">${aWins}</span></div>
+        <div class="match-card__scores"><span class="match-card__set-score${winning ? ' match-card__set-score--high' : ''}">${wins}</span></div>
+      </div>`;
+    }
+
+    const t1Class = aWinning ? 'match-card__team--winner' : bWinning ? 'match-card__team--loser' : '';
+    const t2Class = bWinning ? 'match-card__team--winner' : aWinning ? 'match-card__team--loser' : '';
+    const meta = `${series.startTime ? series.startTime + ' · ' : ''}${seriesIdLabel(series.id)}`;
+
+    return `<div class="match-card cc-series-card ${accentClass || ''}" data-series-id="${series.id}">
+      <div class="match-card__status">
+        <span class="match-card__round">${meta}</span>
       </div>
-      <div class="bracket-match__team ${t2Class}">
-        <div class="bracket-match__community">
-          ${logoHTML(bLogo, bLabel)}
-          <span class="bracket-match__team-name">${bLabel}</span>
-        </div>
-        <div class="bracket-match__score"><span class="bracket-match__set${bWinning ? ' bracket-match__set--high' : ''}">${bWins}</span></div>
+      <div class="match-card__teams">
+        ${teamRow(aLabel, logoHTML(aLogo, aLabel), aWinning, aTBD, aWins, t1Class)}
+        ${teamRow(bLabel, logoHTML(bLogo, bLabel), bWinning, bTBD, bWins, t2Class)}
       </div>
     </div>`;
   }
 
-  // Render one bracket tree (Semi-Finals column → Final/3rd Place column).
-  function renderBracketTree(title, sf, grandFinal, thirdPlace) {
-    if (sf.length === 0 && grandFinal.length === 0) return '';
+  // Semi-Finals column → Final column flow (the championship path).
+  function renderFlow(sf, grandFinal, finalWinnerBadge) {
     const sfColumn = sf.length > 0 ? `
-      <div class="bracket__round">
-        <div class="bracket__round-title">Semi-Finals</div>
-        <div class="bracket__matches">
-          ${sf.map(s => renderSeriesCard(s)).join('')}
-        </div>
+      <div class="cc-bracket-col">
+        <div class="cc-bracket-round-title">Semi-Finals</div>
+        ${sf.map(s => renderSeriesCard(s)).join('')}
       </div>` : '';
-
-    const hasThird = thirdPlace.length > 0;
-    const hasFinal = grandFinal.length > 0;
-    const finalLabel = hasThird && hasFinal ? 'Final / 3rd Place' : (hasFinal ? 'Final' : '3rd Place');
-    const finalColumn = (hasFinal || hasThird) ? `
-      <div class="bracket__round">
-        <div class="bracket__round-title">${finalLabel}</div>
-        <div class="bracket__matches">
-          ${grandFinal.map(s => renderSeriesCard(s, 'bracket-match--gold')).join('')}
-          ${thirdPlace.map(s => renderSeriesCard(s, 'bracket-match--bronze')).join('')}
-        </div>
+    const finalColumn = grandFinal.length > 0 ? `
+      <div class="cc-bracket-col cc-bracket-col--final">
+        <div class="cc-bracket-round-title">Final</div>
+        ${grandFinal.map(s => renderSeriesCard(s, 'match-card--finals', finalWinnerBadge)).join('')}
       </div>` : '';
+    return `<div class="cc-bracket-flow">${sfColumn}${finalColumn}</div>`;
+  }
 
-    return `<div class="bracket-single">
-      <div class="bracket-division__title">${title}</div>
-      <div class="bracket">
-        ${sfColumn}
-        ${finalColumn}
-      </div>
+  // 3rd Place — its own area, separate from the Final.
+  function renderThirdPlace(thirdPlace) {
+    if (thirdPlace.length === 0) return '';
+    return `<div class="cc-bracket-thirdplace">
+      <div class="cc-bracket-round-title">3rd Place</div>
+      ${thirdPlace.map(s => renderSeriesCard(s, 'match-card--third-place')).join('')}
     </div>`;
   }
 
-  // Main entry — render the Round 2 bracket view as two parallel trees.
+  // Main Draw bracket — own tab (Semi-Finals → Final, with 3rd Place separate).
   function renderBracket(container) {
     if (!container) return;
     const allSeries = Data.getSeries();
@@ -166,22 +176,43 @@ const Series = (() => {
     const mainSF = allSeries.filter(s => s.id === 'SF-1' || s.id === 'SF-2');
     const grandFinal = allSeries.filter(s => s.id === 'F');
     const thirdPlace = allSeries.filter(s => s.id === '3P');
-    const consolationSF = allSeries.filter(s => s.id === 'CSF-1' || s.id === 'CSF-2');
-    const consolationFinal = allSeries.filter(s => s.id === 'CF');
 
-    if (mainSF.length === 0 && consolationSF.length === 0) {
+    if (mainSF.length === 0 && grandFinal.length === 0) {
       container.innerHTML = `<div class="loading">Knockout bracket — fills in after Round 1</div>`;
       return;
     }
 
-    const mainHTML = renderBracketTree('Main Draw', mainSF, grandFinal, thirdPlace);
-    const consolationHTML = renderBracketTree('Consolation', consolationSF, consolationFinal, []);
+    container.innerHTML = `<div class="cc-bracket-page">
+      ${renderFlow(mainSF, grandFinal, CHAMPION_BADGE)}
+      ${renderThirdPlace(thirdPlace)}
+    </div>`;
+  }
 
-    container.innerHTML = `<div class="cc-bracket-trees">${mainHTML}${consolationHTML}</div>`;
+  // Consolation bracket — own tab (Semi-Finals → Final).
+  function renderConsolation(container) {
+    if (!container) return;
+    const allSeries = Data.getSeries();
+    if (allSeries.length === 0) {
+      container.innerHTML = `<div class="loading">No series data available yet</div>`;
+      return;
+    }
+
+    const consolationSF = allSeries.filter(s => s.id === 'CSF-1' || s.id === 'CSF-2');
+    const consolationFinal = allSeries.filter(s => s.id === 'CF');
+
+    if (consolationSF.length === 0 && consolationFinal.length === 0) {
+      container.innerHTML = `<div class="loading">Consolation bracket — fills in after Round 1</div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="cc-bracket-page">
+      ${renderFlow(consolationSF, consolationFinal, PLATE_BADGE)}
+    </div>`;
   }
 
   return {
     renderBracket,
+    renderConsolation,
     resolveLabel,
     renderSeriesCard
   };

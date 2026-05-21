@@ -10,7 +10,15 @@
   <meta property="og:image" content="https://padelthailand.com/assets/cc-logo.png">
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/tps-monogram.png">
-  <link rel="stylesheet" href="css/styles.css?v=204">
+  <link rel="stylesheet" href="css/styles.css?v=205">
+  <style>
+    /* Hide the Upcoming Matches sidebar on the All Matches, Main Draw, and
+       Consolation tabs so their content spans full width. Scoped to this page
+       only — the shared engine keeps the sidebar on every other competition. */
+    .content-area:has(#view-matches.active) .sidebar,
+    .content-area:has(#view-bracket.active) .sidebar,
+    .content-area:has(#view-consolation.active) .sidebar { display: none; }
+  </style>
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
 <body>
@@ -68,9 +76,9 @@
   <script src="js/standings.js?v=203"></script>
   <script src="js/matches.js?v=203"></script>
   <script src="js/bracket.js?v=203"></script>
-  <script src="js/series.js?v=203"></script>
+  <script src="js/series.js?v=205"></script>
   <script src="js/cc-standings.js?v=203"></script>
   <script src="js/cc-live.js?v=203"></script>
-  <script src="js/app.js?v=203"></script>
+  <script src="js/app.js?v=205"></script>
 </body>
 </html>

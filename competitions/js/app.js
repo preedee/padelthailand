@@ -406,14 +406,15 @@ const App = (() => {
     const mainContent = document.getElementById('main-content');
 
     // View IDs (Live is first — most important during the event)
-    ALL_VIEWS = ['live', 'standings', 'bracket', 'matches'];
+    ALL_VIEWS = ['live', 'standings', 'bracket', 'consolation', 'matches'];
     VIEWS = ALL_VIEWS.slice();
 
     // Build nav (single-row layout)
     let tabsHTML = '';
     tabsHTML += `<button class="view-bar__tab active" data-view="live">Live</button>`;
     tabsHTML += `<button class="view-bar__tab" data-view="standings">Standings</button>`;
-    tabsHTML += `<button class="view-bar__tab" data-view="bracket">Bracket</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="bracket">Main Draw</button>`;
+    tabsHTML += `<button class="view-bar__tab" data-view="consolation">Consolation</button>`;
     tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
     tabsHTML += `<div class="view-bar__dots">`;
     VIEWS.forEach((_, i) => {
@@ -432,6 +433,9 @@ const App = (() => {
     </section>`;
     viewsHTML += `<section class="view" id="view-bracket">
       <div class="loading">Bracket</div>
+    </section>`;
+    viewsHTML += `<section class="view" id="view-consolation">
+      <div class="loading">Consolation bracket</div>
     </section>`;
     viewsHTML += `<section class="view" id="view-matches">
       <div class="loading">Loading matches...</div>
@@ -512,6 +516,10 @@ const App = (() => {
       const bracketEl = document.getElementById('view-bracket');
       if (bracketEl && typeof Series !== 'undefined') {
         Series.renderBracket(bracketEl);
+      }
+      const consolationEl = document.getElementById('view-consolation');
+      if (consolationEl && typeof Series !== 'undefined') {
+        Series.renderConsolation(consolationEl);
       }
       const matchesContainer = document.getElementById('view-matches');
       if (matchesContainer) Matches.render(matchesContainer, matches);

@@ -1863,13 +1863,131 @@ body:has(.theme-dark) {
    ============================================ */
 
 /* Main on top, Consolation on bottom */
-.cc-bracket-trees {
+/* Community Cup bracket page — match-card style, scaled to fill the viewport.
+   Used by the Main Draw and Consolation tabs. */
+.cc-bracket-page {
   display: flex;
   flex-direction: column;
-  gap: 28px;
   height: 100%;
-  overflow-y: auto;
-  padding: 12px 0;
+  gap: 24px;
+  padding: 24px 40px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.cc-bracket-flow {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(48px, 10vw, 160px);
+  min-height: 0;
+}
+
+.cc-bracket-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  flex: 1 1 0;
+  max-width: 460px;
+}
+
+.cc-bracket-round-title {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--dark-accent, #FFB703);
+  margin-bottom: 4px;
+}
+
+/* 3rd Place — its own area, divided off below the championship flow. */
+.cc-bracket-thirdplace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--dark-border, #2A3F35);
+  padding-top: 14px;
+}
+
+.cc-bracket-thirdplace .cc-series-card {
+  max-width: 460px;
+}
+
+/* Bracket cards reuse the All Matches .match-card design, scaled up. */
+.cc-series-card {
+  width: 100%;
+  padding: 10px 18px;
+  gap: 8px;
+}
+
+.cc-series-card .match-card__cc-logo {
+  width: 52px;
+  height: 52px;
+}
+
+.cc-series-card .match-card__cc-name-row {
+  font-size: 18px;
+  line-height: 52px;
+}
+
+.cc-series-card .match-card__set-score {
+  font-size: 28px;
+  min-width: 34px;
+}
+
+.cc-series-card .match-card__team {
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+/* Drop the default inter-row divider — winners are highlighted individually. */
+.theme-dark .cc-series-card .match-card__team + .match-card__team {
+  border-top-color: transparent;
+}
+
+/* Winner row — gold ring + faint gold fill. */
+.cc-series-card .match-card__team--winner {
+  box-shadow: inset 0 0 0 1.5px var(--dark-accent, #FFB703);
+  background: rgba(255, 183, 3, 0.08);
+}
+
+/* Finals champion — filled gold ring, glow, and a Champion badge. */
+.cc-series-card .cc-series-card__team--champion {
+  box-shadow: inset 0 0 0 2px var(--dark-accent, #FFB703), 0 0 22px rgba(255, 183, 3, 0.45);
+  background: rgba(255, 183, 3, 0.18);
+}
+
+/* Consolation final winner — Plate Winner (silver, distinct from gold champion). */
+.cc-series-card .cc-series-card__team--plate {
+  box-shadow: inset 0 0 0 2px #C8D0D8, 0 0 22px rgba(200, 208, 216, 0.35);
+  background: rgba(200, 208, 216, 0.12);
+}
+
+.cc-champion-badge,
+.cc-plate-badge {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1A0F00;
+  background: var(--dark-accent, #FFB703);
+  padding: 1px 9px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.cc-plate-badge {
+  color: #1A1F24;
+  background: #C8D0D8;
 }
 
 /* Dark-theme overrides for the shared .bracket-* scaffolding */
