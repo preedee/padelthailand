@@ -2466,12 +2466,12 @@ body:has(.theme-dark) {
   border-bottom: 1px solid var(--dark-border, #2A3F35);
 }
 
-/* Column widths: Community 40%, the other three 20% each */
+/* Column widths: Community 43%, the other three 19% each */
 .cc-standings__col {
-  width: 20%;
+  width: 19%;
 }
 .cc-standings__col--community {
-  width: 40%;
+  width: 43%;
 }
 
 .cc-standings__row {
