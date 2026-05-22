@@ -252,7 +252,12 @@ const Data = (() => {
       if (values.length < 1) continue;
       const row = {};
       headers.forEach((h, idx) => {
-        row[h.trim()] = (values[idx] || '').trim();
+        const key = h.trim();
+        const val = (values[idx] || '').trim();
+        // Guard against duplicate header columns (e.g. a trailing blank
+        // "Match ID"): don't let a later empty cell clobber an earlier value.
+        if (Object.prototype.hasOwnProperty.call(row, key) && row[key] && !val) return;
+        row[key] = val;
       });
       rows.push(row);
     }
@@ -275,6 +280,20 @@ const Data = (() => {
     }
     const ccTeam1 = pair(row['Community A - Player 1 Name'], row['Community A - Player 2 Name']);
     const ccTeam2 = pair(row['Community B - Player 1 Name'], row['Community B - Player 2 Name']);
+
+    // Scores: prefer per-set columns (Set 1/2/3 - Team A/B); fall back to the
+    // single-score columns (Community A/B - Score) the Community Cup uses.
+    const _num = v => { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+    let sets = [
+      { a: _num(row['Set 1 - Team A']), b: _num(row['Set 1 - Team B']) },
+      { a: _num(row['Set 2 - Team A']), b: _num(row['Set 2 - Team B']) },
+      { a: _num(row['Set 3 - Team A']), b: _num(row['Set 3 - Team B']) }
+    ];
+    if (!sets.some(s => s.a > 0 || s.b > 0) &&
+        (String(row['Community A - Score'] || '').trim() !== '' ||
+         String(row['Community B - Score'] || '').trim() !== '')) {
+      sets = [{ a: _num(row['Community A - Score']), b: _num(row['Community B - Score']) }];
+    }
 
     return {
       division: row['Division'] || '',
@@ -302,11 +321,7 @@ const Data = (() => {
       courtId: row['Court ID'] || '',
       status: row['Status'] || '',
       notes: row['Notes'] || '',
-      sets: [
-        { a: parseInt(row['Set 1 - Team A']) || 0, b: parseInt(row['Set 1 - Team B']) || 0 },
-        { a: parseInt(row['Set 2 - Team A']) || 0, b: parseInt(row['Set 2 - Team B']) || 0 },
-        { a: parseInt(row['Set 3 - Team A']) || 0, b: parseInt(row['Set 3 - Team B']) || 0 }
-      ],
+      sets: sets,
       matchId: row['Match ID'] || '',
       updatedAt: row['Updated At'] || '',
       // Community Cup additions — empty strings for non-CC tournaments.
