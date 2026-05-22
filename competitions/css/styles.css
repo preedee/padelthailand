@@ -2133,7 +2133,7 @@ body:has(.theme-dark) {
 .match-card__cc-type { font-weight: 700; }
 .match-card__cc-type--m   { color: #5EC8FF; }
 .match-card__cc-type--f   { color: #FF85B8; }
-.match-card__cc-type--mix { color: #FFB703; }
+.match-card__cc-type--mix { color: #C29BFF; }
 
 .theme-dark .match-card__team-name {
   color: var(--dark-text, #E8F0EC);
