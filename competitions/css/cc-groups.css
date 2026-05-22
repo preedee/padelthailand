@@ -667,3 +667,28 @@
   .cc-groups .team-card.live::before,
   .cc-groups .team-card.next::after { content: none; }
 }
+
+/* ============================================================
+   PHONE — stack Group A above Group B (≤767px)
+   The 900px block above reflows each team-card to a compact row, but the
+   outer .cc-groups stays flex-row (A | B) which clips card stats off the
+   right edge on a phone. Stack the two halves vertically here. Desktop +
+   tablet (≥768px) keep the side-by-side projector layout untouched.
+   ============================================================ */
+@media (max-width: 767px) {
+  .cc-groups {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    gap: 24px;
+    padding: 14px;
+  }
+  .cc-groups__half { flex: 0 0 auto; width: 100%; }
+  .cc-groups__label { font-size: 16px; letter-spacing: 1.5px; }
+  /* Vertical divider → horizontal hairline between the stacked halves. */
+  .cc-groups__divider {
+    flex: 0 0 1px;
+    width: 100%;
+    height: 1px;
+  }
+}

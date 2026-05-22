@@ -2924,23 +2924,29 @@ td.cc-standings__community {
   .cc-standings__logo,
   .cc-standings__logo--fallback { width: 40px; height: 40px; }
   .cc-standings__logo--fallback { font-size: 18px; }
-  .cc-standings__community-inner { gap: 10px; }
+  .cc-standings__community-inner { gap: 10px; width: 100%; }
   .cc-standings__name {
-    max-width: none;              /* full width is available now */
+    flex: 1;                      /* fill the cell so names don't break mid-word */
+    min-width: 0;
+    max-width: none;
     font-size: 14px;
     -webkit-line-clamp: 2;
+    overflow-wrap: break-word;
+    word-break: normal;
   }
   .cc-standings__head th {
-    font-size: 11px;
-    letter-spacing: 0.3px;
-    padding: 8px 4px;
+    font-size: 10px;
+    letter-spacing: 0.2px;
+    padding: 8px 2px;
   }
-  .cc-standings__row td { padding: 10px 4px; font-size: 14px; }
+  .cc-standings__row td { padding: 10px 2px; font-size: 14px; }
   .cc-standings__cell { font-size: 14px; }
   .cc-standings__cell--points { font-size: 17px; }
-  /* Give the community name column room; tighten the three numeric cols. */
-  .cc-standings__col--community { width: 46%; }
-  .cc-standings__col { width: 18%; }
+  /* Give the community name column room; tighten the three numeric cols.
+     Order matters: --community must come AFTER the generic rule (equal
+     specificity) so it wins, otherwise all four cols collapse to 25%. */
+  .cc-standings__col { width: 16%; }
+  .cc-standings__col--community { width: 52%; }
   .cc-standings__footnote { font-size: 11px; margin-top: 12px; }
 
   /* ---- Brackets (Main Draw + Consolation): swipe instead of clip ---- */
