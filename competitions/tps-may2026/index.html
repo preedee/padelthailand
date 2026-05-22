@@ -21,6 +21,21 @@
     .content-area:has(#view-bracket.active) .sidebar,
     .content-area:has(#view-consolation.active) .sidebar,
     .content-area:has(#view-groups.active) .sidebar { display: none; }
+
+    /* Centered QR linking to this dashboard (scoped to this page). The shared
+       footer is a fixed 44px space-between bar; grow it and absolutely-center
+       the QR so it stays centered regardless of the side items' widths. */
+    .footer { position: relative; height: auto; min-height: 78px; }
+    .footer__qr {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      text-decoration: none;
+    }
+    .footer__qr img { width: 58px; height: 58px; display: block; border-radius: 3px; }
+    .footer__qr-label {
+      font-family: var(--font); font-weight: 400; font-size: 10px;
+      letter-spacing: 1px; text-transform: uppercase; color: #C8D6CE;
+    }
   </style>
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
 </head>
@@ -70,6 +85,10 @@
         <img src="/assets/favicon.png" alt="The Padel Society" class="footer__tps-logo">
         <span class="footer__powered-text">Powered by The Padel Society</span>
       </div>
+      <a class="footer__qr" href="https://padelthailand.com/competitions/tps-may2026/" title="Scan to open this dashboard">
+        <img src="assets/qr-tps-may2026.svg" alt="QR code linking to this dashboard">
+        <span class="footer__qr-label">Scan for live scores</span>
+      </a>
       <span class="footer__timestamp" id="last-updated">Last updated: --</span>
     </footer>
 
