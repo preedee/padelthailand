@@ -2949,31 +2949,27 @@ td.cc-standings__community {
   .cc-standings__col--community { width: 52%; }
   .cc-standings__footnote { font-size: 11px; margin-top: 12px; }
 
-  /* ---- Brackets (Main Draw + Consolation): swipe instead of clip ---- */
+  /* ---- Brackets (Main Draw + Consolation): stack rounds vertically ---- */
   .cc-bracket-page {
     padding: 12px;
-    overflow-x: auto;
+    overflow-x: hidden;           /* no sideways scroll — everything stacks */
     overflow-y: visible;
     height: auto;
-    -webkit-overflow-scrolling: touch;
   }
   .cc-bracket-flow {
-    justify-content: flex-start;  /* don't center → don't clip the left edge */
+    flex-direction: column;       /* rounds stack top-to-bottom */
     align-items: stretch;
-    gap: 28px;
-    min-width: max-content;       /* let the full bracket extend + scroll */
-    padding-bottom: 6px;
+    justify-content: flex-start;
+    gap: 20px;
+    min-width: 0;
   }
   .cc-bracket-col {
+    width: 100%;                  /* each round spans the full width */
     max-width: none;
     flex: 0 0 auto;
-    width: 78vw;                  /* each round ~one screen, peek the next */
-    max-width: 320px;
     justify-content: flex-start;
   }
   .cc-bracket-round-title { font-size: 12px; letter-spacing: 1.5px; }
-  /* subtle hint that the bracket scrolls sideways */
-  #view-bracket, #view-consolation { position: relative; }
 
   /* ---- All Matches: keep horizontal court-swipe, smooth + readable ---- */
   #view-matches { -webkit-overflow-scrolling: touch; }
