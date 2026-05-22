@@ -67,7 +67,7 @@ const Matches = (() => {
 
     // Render as time-aligned grid
     const colCount = courtNames.length;
-    const gridCols = `grid-template-columns: repeat(${colCount}, 1fr);`;
+    const gridCols = `grid-template-columns: repeat(${colCount}, minmax(0, 1fr));`;
     const headerRow = courtNames.map(name =>
       `<div class="court-column__header">${name}</div>`
     ).join('');

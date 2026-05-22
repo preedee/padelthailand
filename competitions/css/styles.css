@@ -859,6 +859,7 @@ img.avatar {
 
 .matches-grid__header-row {
   display: grid;
+  column-gap: 12px;          /* match .matches-grid so headers align with cards */
   position: sticky;
   top: -20px;
   z-index: 5;
@@ -2189,7 +2190,7 @@ body:has(.theme-dark) {
 .match-card__cc-avatars {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -2205,21 +2206,21 @@ body:has(.theme-dark) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--dark-border, #2A3F35);
   color: var(--dark-text, #E8F0EC);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
   object-fit: cover;   /* photo avatars (img) fill the circle */
 }
 
 .match-card__cc-name-row {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--dark-text, #E8F0EC);
-  line-height: 22px;          /* match avatar height for row alignment */
+  line-height: 30px;          /* match avatar height for row alignment */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2893,4 +2894,88 @@ td.cc-standings__community {
   font-size: 12px;
   color: var(--dark-text-muted, #9CA3AF);
   white-space: nowrap;
+}
+
+/* ============================================================
+   COMMUNITY CUP — MOBILE / PHONE RESPONSIVE (≤767px)
+   The cc-* views (standings, brackets, all-matches) were authored as a
+   fixed-size projector layout with no phone breakpoint. This block makes
+   them readable on phones without touching any desktop/projector selectors.
+   Scoped strictly to ≤767px so the 768px tablet + desktop layouts are
+   byte-for-byte unchanged.
+   ============================================================ */
+@media (max-width: 767px) {
+
+  /* ---- Standings: stack the groups into one column ---- */
+  .cc-standings-multi {
+    grid-template-columns: 1fr;   /* one group per row, full width */
+    gap: 28px;
+    height: auto;
+  }
+  .cc-standings { padding: 4px 0; height: auto; }
+  .cc-standings__title {
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+  /* Logos were 84px — far wider than a phone-width column. Shrink so the
+     name + stat columns get their space back (kills the garbled overlap). */
+  .cc-standings__logo,
+  .cc-standings__logo--fallback { width: 40px; height: 40px; }
+  .cc-standings__logo--fallback { font-size: 18px; }
+  .cc-standings__community-inner { gap: 10px; }
+  .cc-standings__name {
+    max-width: none;              /* full width is available now */
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+  .cc-standings__head th {
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    padding: 8px 4px;
+  }
+  .cc-standings__row td { padding: 10px 4px; font-size: 14px; }
+  .cc-standings__cell { font-size: 14px; }
+  .cc-standings__cell--points { font-size: 17px; }
+  /* Give the community name column room; tighten the three numeric cols. */
+  .cc-standings__col--community { width: 46%; }
+  .cc-standings__col { width: 18%; }
+  .cc-standings__footnote { font-size: 11px; margin-top: 12px; }
+
+  /* ---- Brackets (Main Draw + Consolation): swipe instead of clip ---- */
+  .cc-bracket-page {
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    height: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cc-bracket-flow {
+    justify-content: flex-start;  /* don't center → don't clip the left edge */
+    align-items: stretch;
+    gap: 28px;
+    min-width: max-content;       /* let the full bracket extend + scroll */
+    padding-bottom: 6px;
+  }
+  .cc-bracket-col {
+    max-width: none;
+    flex: 0 0 auto;
+    width: 78vw;                  /* each round ~one screen, peek the next */
+    max-width: 320px;
+    justify-content: flex-start;
+  }
+  .cc-bracket-round-title { font-size: 12px; letter-spacing: 1.5px; }
+  /* subtle hint that the bracket scrolls sideways */
+  #view-bracket, #view-consolation { position: relative; }
+
+  /* ---- All Matches: keep horizontal court-swipe, smooth + readable ---- */
+  #view-matches { -webkit-overflow-scrolling: touch; }
+  .court-column__header { font-size: 13px; letter-spacing: 1px; }
+
+  /* ---- Nav: make the horizontal scroll discoverable ---- */
+  .view-bar {
+    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+            mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+  }
 }
