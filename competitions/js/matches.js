@@ -176,6 +176,9 @@ const Matches = (() => {
     // Shorten the long knockout round names for the card label (display only;
     // the sheet keeps the full values that standings/bracket logic keys off).
     const ROUND_SHORT = {
+      'Round 1': 'R1',
+      'Round 2': 'R2',
+      'Round 3': 'R3',
       'Semifinals': 'SF',
       'Consolation SF': 'Cons SF',
       'Consolation Final': 'Cons Finals',
@@ -236,7 +239,12 @@ const Matches = (() => {
         <div class="match-card__cc-names">${t2.map(p => renderName(p.name)).join('')}</div>
       </div>`;
       if (match.matchType) {
-        const typeText = match.matchType;  // short code: M / F / Mix
+        // Group rounds (R1-R3) have room for full Male/Female; knockout uses the
+        // short code (M/F) since it carries a #1/#2 suffix. Mix stays "Mix".
+        const isGroupStage = /^Round \d/.test(match.round || '');
+        const typeText = isGroupStage
+          ? ({ 'M': 'Male', 'F': 'Female' }[match.matchType] || match.matchType)
+          : match.matchType;
         const typeClass = 'match-card__cc-type--' + String(match.matchType).toLowerCase();
         // Knockout M/F matches carry a slot number in the Match ID (e.g. SF-1-M2);
         // show "#1"/"#2" for both. Group matches (R1-A-1-M) and Mixed have none.
