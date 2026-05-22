@@ -405,14 +405,13 @@ const App = (() => {
     const viewBar = document.getElementById('view-bar');
     const mainContent = document.getElementById('main-content');
 
-    // View IDs (Live is first — most important during the event)
-    ALL_VIEWS = ['live', 'groups', 'standings', 'bracket', 'consolation', 'matches'];
+    // View IDs (Groups is first now that the Live tab is removed)
+    ALL_VIEWS = ['groups', 'standings', 'bracket', 'consolation', 'matches'];
     VIEWS = ALL_VIEWS.slice();
 
     // Build nav (single-row layout)
     let tabsHTML = '';
-    tabsHTML += `<button class="view-bar__tab active" data-view="live">Live</button>`;
-    tabsHTML += `<button class="view-bar__tab" data-view="groups">Groups</button>`;
+    tabsHTML += `<button class="view-bar__tab active" data-view="groups">Groups</button>`;
     tabsHTML += `<button class="view-bar__tab" data-view="standings">Standings</button>`;
     tabsHTML += `<button class="view-bar__tab" data-view="bracket">Main Draw</button>`;
     tabsHTML += `<button class="view-bar__tab" data-view="consolation">Consolation</button>`;
@@ -426,10 +425,7 @@ const App = (() => {
 
     // Build view sections
     let viewsHTML = '';
-    viewsHTML += `<section class="view active" id="view-live">
-      <div class="loading">Loading live courts...</div>
-    </section>`;
-    viewsHTML += `<section class="view" id="view-groups">
+    viewsHTML += `<section class="view active" id="view-groups">
       <div class="loading">Loading groups...</div>
     </section>`;
     viewsHTML += `<section class="view" id="view-standings">
@@ -445,6 +441,10 @@ const App = (() => {
       <div class="loading">Loading matches...</div>
     </section>`;
     mainContent.innerHTML = viewsHTML;
+
+    // Upcoming Matches sidebar removed for the Community Cup dashboard — the
+    // .content-area flex layout reflows .main-content to full width on its own.
+    document.getElementById('sidebar-upcoming')?.remove();
 
     // Wire tab clicks
     viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
@@ -509,10 +509,6 @@ const App = (() => {
 
     // Community Cup renderers
     if (Data.isCommunityCupFormat && Data.isCommunityCupFormat()) {
-      const liveEl = document.getElementById('view-live');
-      if (liveEl && typeof CCLive !== 'undefined') {
-        CCLive.renderLive(liveEl);
-      }
       const groupsEl = document.getElementById('view-groups');
       if (groupsEl && typeof CCGroups !== 'undefined') {
         CCGroups.render(groupsEl);
@@ -531,8 +527,6 @@ const App = (() => {
       }
       const matchesContainer = document.getElementById('view-matches');
       if (matchesContainer) Matches.render(matchesContainer, matches);
-      const sidebarContent = document.querySelector('.sidebar__content');
-      if (sidebarContent) Matches.renderUpcoming(sidebarContent, matches);
       return;
     }
 
