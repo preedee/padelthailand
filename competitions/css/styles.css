@@ -2524,6 +2524,23 @@ td.cc-standings__community {
   font-style: italic;
 }
 
+/* Larger, more readable standings on wide screens (projector). The Upcoming
+   sidebar was removed, so there's full width + vertical room to breathe. */
+@media (min-width: 1024px) {
+  .cc-standings-multi { gap: 48px; }
+  .cc-standings { padding: 16px 8px; }
+  .cc-standings__title { font-size: 30px; margin-bottom: 20px; padding-bottom: 14px; }
+  .cc-standings__head th { font-size: 16px; padding: 14px; letter-spacing: 1.5px; }
+  .cc-standings__row td { padding: 22px 14px; font-size: 23px; }
+  .cc-standings__cell { font-size: 23px; }
+  .cc-standings__row td.cc-standings__cell--points { font-size: 34px; }
+  .cc-standings__community-inner { gap: 22px; }
+  .cc-standings__name { font-size: 23px; max-width: 280px; }
+  .cc-standings__logo { width: 96px; height: 96px; }
+  .cc-standings__logo--fallback { font-size: 48px; }
+  .cc-standings__footnote { font-size: 15px; margin-top: 20px; }
+}
+
 /* ============================================
    COMMUNITY CUP — Live courts grid
    ============================================ */
