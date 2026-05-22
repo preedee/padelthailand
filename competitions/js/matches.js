@@ -173,7 +173,15 @@ const Matches = (() => {
     // and append match type to the round label (e.g. "Round 1 - Mixed").
     const ccMode = Data.isCommunityCupFormat && Data.isCommunityCupFormat();
     let team1HTML, team2HTML;
-    let roundLabel = match.round || '';
+    // Shorten the long knockout round names for the card label (display only;
+    // the sheet keeps the full values that standings/bracket logic keys off).
+    const ROUND_SHORT = {
+      'Semifinals': 'Semis',
+      'Consolation SF': 'Cons Semis',
+      'Consolation Final': 'Cons Finals',
+      'Grand Final': 'Finals',
+    };
+    let roundLabel = ROUND_SHORT[match.round] || match.round || '';
     if (ccMode) {
       const cA = Data.getCommunityById ? Data.getCommunityById(match.communityA) : null;
       const cB = Data.getCommunityById ? Data.getCommunityById(match.communityB) : null;
