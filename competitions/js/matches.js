@@ -193,9 +193,12 @@ const Matches = (() => {
         }
         return `<span class="match-card__cc-avatar">${initial}</span>`;
       }
+      function firstName(full) {
+        return String(full || '').trim().split(/[\s_]/)[0] || '';
+      }
       function renderName(name) {
-        const label = name || 'TBD';
         const placeholderClass = name ? '' : ' match-card__cc-name--tbd';
+        const label = name ? firstName(name) : 'TBD';
         return `<div class="match-card__cc-name-row${placeholderClass}">${label}</div>`;
       }
       const t1 = match.team1Players || [];
