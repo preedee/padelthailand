@@ -2189,7 +2189,7 @@ body:has(.theme-dark) {
 .match-card__cc-avatars {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
@@ -2205,21 +2205,21 @@ body:has(.theme-dark) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--dark-border, #2A3F35);
   color: var(--dark-text, #E8F0EC);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
   object-fit: cover;   /* photo avatars (img) fill the circle */
 }
 
 .match-card__cc-name-row {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--dark-text, #E8F0EC);
-  line-height: 30px;          /* match avatar height for row alignment */
+  line-height: 22px;          /* match avatar height for row alignment */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
