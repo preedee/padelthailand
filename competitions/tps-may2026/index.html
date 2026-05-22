@@ -42,6 +42,12 @@
         margin-bottom: 0;
       }
       .footer__qr { display: none; }
+      /* The shared .view-bar__tab.active is 18px and isn't scaled down for
+         mobile, so the selected tab dwarfs the 10px inactive ones and gets
+         truncated. Bring it in line (slightly emphasized, still bold). */
+      .dashboard.theme-draft-live .view-bar__tab.active {
+        font-size: 11px; letter-spacing: 0.3px;
+      }
     }
   </style>
   <script>window.__SHEET_ID = '1ZvTjeu-rgNFGG5lX-DY5k8riy_ezPIAtcSNr5BjY4DQ';</script>
