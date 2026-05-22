@@ -216,8 +216,9 @@ const Matches = (() => {
       if (match.matchType) {
         const typeNames = { 'M': 'Male', 'F': 'Female', 'Mix': 'Mixed' };
         const typeText = typeNames[match.matchType] || match.matchType;
+        const typeClass = 'match-card__cc-type--' + String(match.matchType).toLowerCase();
         const slotSuffix = match.matchSlot && parseInt(match.matchSlot, 10) > 1 ? ' #' + match.matchSlot : '';
-        roundLabel = `${roundLabel} - ${typeText}${slotSuffix}`;
+        roundLabel = `${roundLabel} - <span class="match-card__cc-type ${typeClass}">${typeText}${slotSuffix}</span>`;
       }
     } else {
       team1HTML = Data.getTeamStackedHTML(match.team1, 30);

@@ -2113,10 +2113,27 @@ body:has(.theme-dark) {
   opacity: 0.92;        /* much subtler than the 0.6 default */
 }
 
-.theme-dark .match-card__round,
-.theme-dark .match-card__time {
+.theme-dark .match-card__round {
   color: var(--dark-text-muted, #9CA3AF);
 }
+
+/* Match time in gold so it stands out on the dark dashboard. */
+.theme-dark .match-card__time {
+  color: var(--dark-accent, #FFB703);
+  font-weight: 700;
+}
+
+/* Bigger, prominent scores on the dark dashboard (handles 2-digit like 9-8). */
+.theme-dark .match-card__set-score {
+  font-size: 24px;
+  min-width: 28px;
+}
+
+/* Match-type colour coding in the card label: Male blue, Female pink, Mixed gold. */
+.match-card__cc-type { font-weight: 700; }
+.match-card__cc-type--m   { color: #5EC8FF; }
+.match-card__cc-type--f   { color: #FF85B8; }
+.match-card__cc-type--mix { color: #FFB703; }
 
 .theme-dark .match-card__team-name {
   color: var(--dark-text, #E8F0EC);
@@ -2157,7 +2174,7 @@ body:has(.theme-dark) {
 .match-card__cc-avatars {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -2173,21 +2190,21 @@ body:has(.theme-dark) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--dark-border, #2A3F35);
   color: var(--dark-text, #E8F0EC);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
   object-fit: cover;   /* photo avatars (img) fill the circle */
 }
 
 .match-card__cc-name-row {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--dark-text, #E8F0EC);
-  line-height: 20px;          /* match avatar height for row alignment */
+  line-height: 30px;          /* match avatar height for row alignment */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
