@@ -2526,12 +2526,30 @@ td.cc-standings__community {
 
 /* Larger, more readable standings on wide screens (projector). The Upcoming
    sidebar was removed, so there's full width + vertical room to breathe. */
+/* Tier 1 — moderately larger; sized to FIT a windowed browser (~742px content
+   at 940 innerHeight) so nothing clips at 100% zoom. */
 @media (min-width: 1024px) {
+  .cc-standings-multi { gap: 40px; }
+  .cc-standings { padding: 12px 8px; }
+  .cc-standings__title { font-size: 26px; margin-bottom: 16px; padding-bottom: 12px; }
+  .cc-standings__head th { font-size: 15px; padding: 12px; letter-spacing: 1.5px; }
+  .cc-standings__row td { padding: 16px 14px; font-size: 20px; }
+  .cc-standings__cell { font-size: 20px; }
+  .cc-standings__row td.cc-standings__cell--points { font-size: 28px; }
+  .cc-standings__community-inner { gap: 18px; }
+  .cc-standings__name { font-size: 20px; max-width: 260px; }
+  .cc-standings__logo { width: 80px; height: 80px; }
+  .cc-standings__logo--fallback { font-size: 40px; }
+  .cc-standings__footnote { font-size: 14px; margin-top: 16px; }
+}
+
+/* Tier 2 — full size, only on a tall (fullscreen projector) viewport where
+   there's room. Windowed browsers stay on Tier 1 and never clip. */
+@media (min-width: 1024px) and (min-height: 1000px) {
   .cc-standings-multi { gap: 48px; }
-  .cc-standings { padding: 16px 8px; }
   .cc-standings__title { font-size: 30px; margin-bottom: 20px; padding-bottom: 14px; }
-  .cc-standings__head th { font-size: 16px; padding: 14px; letter-spacing: 1.5px; }
-  .cc-standings__row td { padding: 22px 14px; font-size: 23px; }
+  .cc-standings__head th { font-size: 16px; padding: 14px; }
+  .cc-standings__row td { padding: 24px 14px; font-size: 23px; }
   .cc-standings__cell { font-size: 23px; }
   .cc-standings__row td.cc-standings__cell--points { font-size: 34px; }
   .cc-standings__community-inner { gap: 22px; }
