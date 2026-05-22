@@ -794,9 +794,9 @@ img.avatar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px 12px;
-  height: 100%;
+  min-height: 100%;       /* grow with content so padding-bottom adds scroll space */
   align-content: start;
-  padding-bottom: 32px;
+  padding-bottom: 80px;   /* breathing room so the last row clears the footer */
 }
 
 /* Day grouping for multi-day tournaments */

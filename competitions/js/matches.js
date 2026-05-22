@@ -177,7 +177,7 @@ const Matches = (() => {
     // the sheet keeps the full values that standings/bracket logic keys off).
     const ROUND_SHORT = {
       'Semifinals': 'Semis',
-      'Consolation SF': 'Cons Semis',
+      'Consolation SF': 'Cons SF',
       'Consolation Final': 'Cons Finals',
       'Grand Final': 'Finals',
     };
@@ -238,7 +238,10 @@ const Matches = (() => {
         const typeNames = { 'M': 'Male', 'F': 'Female', 'Mix': 'Mixed' };
         const typeText = typeNames[match.matchType] || match.matchType;
         const typeClass = 'match-card__cc-type--' + String(match.matchType).toLowerCase();
-        const slotSuffix = match.matchSlot && parseInt(match.matchSlot, 10) > 1 ? ' #' + match.matchSlot : '';
+        // Knockout M/F matches carry a slot number in the Match ID (e.g. SF-1-M2);
+        // show "#1"/"#2" for both. Group matches (R1-A-1-M) and Mixed have none.
+        const slotMatch = String(match.matchId || '').match(/-(?:M|F)(\d+)$/);
+        const slotSuffix = slotMatch ? ' #' + slotMatch[1] : '';
         roundLabel = `${roundLabel} - <span class="match-card__cc-type ${typeClass}">${typeText}${slotSuffix}</span>`;
       }
     } else {
