@@ -886,8 +886,10 @@ const Data = (() => {
   // A valid match must have a date, time, and at least one identifier for each team
   function isValidMatch(m) {
     if (!m.date || !m.time) return false;
-    const hasTeam1 = m.team1 || m.team1Code;
-    const hasTeam2 = m.team2 || m.team2Code;
+    // Community Cup matches identify teams by community, so they stay valid
+    // (and render as placeholders) even before player names are entered.
+    const hasTeam1 = m.team1 || m.team1Code || m.communityA;
+    const hasTeam2 = m.team2 || m.team2Code || m.communityB;
     return !!(hasTeam1 && hasTeam2);
   }
 

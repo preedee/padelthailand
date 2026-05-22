@@ -177,8 +177,21 @@ const Matches = (() => {
     if (ccMode) {
       const cA = Data.getCommunityById ? Data.getCommunityById(match.communityA) : null;
       const cB = Data.getCommunityById ? Data.getCommunityById(match.communityB) : null;
-      const aLabel = cA ? cA.name : (match.communityA || 'TBD');
-      const bLabel = cB ? cB.name : (match.communityB || 'TBD');
+      // Bracket-slot tokens (<A1>, <SF-1-W>, <SF-1-L>, ...) → readable placeholders.
+      function placeholderLabel(token) {
+        if (!token) return 'TBD';
+        const t = String(token).replace(/[<>]/g, '').trim();
+        let mm;
+        if ((mm = t.match(/^([AB])([1-4])$/))) {
+          return ({ '1': '1st', '2': '2nd', '3': '3rd', '4': '4th' }[mm[2]]) + ' Group ' + mm[1];
+        }
+        if ((mm = t.match(/^(C?SF)-(\d+)-([WL])$/))) {
+          return (mm[3] === 'W' ? 'Winner ' : 'Loser ') + (mm[1] === 'CSF' ? 'Cons. SF-' : 'SF-') + mm[2];
+        }
+        return t || 'TBD';
+      }
+      const aLabel = cA ? cA.name : placeholderLabel(match.communityA);
+      const bLabel = cB ? cB.name : placeholderLabel(match.communityB);
       const aLogo = cA && cA.logoPath
         ? `<img class="match-card__cc-logo" src="${cA.logoPath}" alt="${aLabel}" onerror="this.style.display='none'">`
         : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(aLabel || '?').charAt(0).toUpperCase()}</span>`;
