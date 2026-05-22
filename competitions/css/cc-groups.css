@@ -520,22 +520,24 @@
   .cc-groups .team-card > .team-stats {
     display: flex;
     flex-direction: row;
+    flex-wrap: nowrap;            /* keep all three ratings on one line */
     grid-column: 3; grid-row: 2;
     justify-content: flex-end;
     align-items: center;
     align-self: start;
-    gap: 6px;
+    gap: 14px;                    /* breathing room between ♀ / ⚥ / ♂ ratings */
     padding: 0;
   }
   .cc-groups .team-card > .team-stats .stat {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
-    gap: 3px;
+    gap: 4px;                     /* symbol ↔ value */
     padding: 0;
     background: none;
     border-top: none;
     min-width: 0;
+    white-space: nowrap;
   }
   .cc-groups .team-card > .team-stats .stat-label,
   .cc-groups .team-card > .team-stats .stat-val {
