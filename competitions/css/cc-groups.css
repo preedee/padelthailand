@@ -60,13 +60,18 @@
   min-width: 0;
 }
 
+/* Matches the Standings group header (.cc-standings__title): left-aligned,
+   gold underline, same size/spacing — keep the two pages consistent. */
 .cc-groups__label {
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 2px;
   color: var(--accent);
   font-weight: 700;
-  text-align: center;
-  margin-bottom: clamp(8px, 0.8vw, 14px);
+  font-size: 20px;
+  text-align: left;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--accent);
 }
 
 .cc-groups__divider {
