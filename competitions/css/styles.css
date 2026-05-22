@@ -1904,19 +1904,17 @@ body:has(.theme-dark) {
   margin-bottom: 6px;
 }
 
-/* 3rd Place — its own area, divided off below the championship flow. */
+/* 3rd Place — stacked directly beneath the Final, in the same column. */
 .cc-bracket-thirdplace {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--dark-border, #2A3F35);
-  padding-top: 12px;
+  margin-top: 18px;
 }
 
 .cc-bracket-thirdplace .cc-series-card {
-  max-width: 460px;
+  width: 100%;
 }
 
 /* Bracket cards reuse the All Matches .match-card design. */

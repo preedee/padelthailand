@@ -141,27 +141,25 @@ const Series = (() => {
   }
 
   // Semi-Finals column → Final column flow (the championship path).
-  function renderFlow(sf, grandFinal, finalWinnerBadge) {
+  // When thirdPlace is supplied, it stacks beneath the Final in the same column.
+  function renderFlow(sf, grandFinal, finalWinnerBadge, thirdPlace) {
     const sfColumn = sf.length > 0 ? `
       <div class="cc-bracket-col">
         <div class="cc-bracket-round-title">Semi-Finals</div>
         ${sf.map(s => renderSeriesCard(s)).join('')}
       </div>` : '';
+    const thirdPlaceBlock = (thirdPlace && thirdPlace.length > 0) ? `
+      <div class="cc-bracket-thirdplace">
+        <div class="cc-bracket-round-title">3rd Place</div>
+        ${thirdPlace.map(s => renderSeriesCard(s, 'match-card--third-place')).join('')}
+      </div>` : '';
     const finalColumn = grandFinal.length > 0 ? `
       <div class="cc-bracket-col cc-bracket-col--final">
         <div class="cc-bracket-round-title">Final</div>
         ${grandFinal.map(s => renderSeriesCard(s, 'match-card--finals', finalWinnerBadge)).join('')}
+        ${thirdPlaceBlock}
       </div>` : '';
     return `<div class="cc-bracket-flow">${sfColumn}${finalColumn}</div>`;
-  }
-
-  // 3rd Place — its own area, separate from the Final.
-  function renderThirdPlace(thirdPlace) {
-    if (thirdPlace.length === 0) return '';
-    return `<div class="cc-bracket-thirdplace">
-      <div class="cc-bracket-round-title">3rd Place</div>
-      ${thirdPlace.map(s => renderSeriesCard(s, 'match-card--third-place')).join('')}
-    </div>`;
   }
 
   // Main Draw bracket — own tab (Semi-Finals → Final, with 3rd Place separate).
@@ -183,8 +181,7 @@ const Series = (() => {
     }
 
     container.innerHTML = `<div class="cc-bracket-page">
-      ${renderFlow(mainSF, grandFinal, CHAMPION_BADGE)}
-      ${renderThirdPlace(thirdPlace)}
+      ${renderFlow(mainSF, grandFinal, CHAMPION_BADGE, thirdPlace)}
     </div>`;
   }
 
