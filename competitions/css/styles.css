@@ -2135,6 +2135,23 @@ body:has(.theme-dark) {
 .match-card__cc-type--f   { color: #FF85B8; }
 .match-card__cc-type--mix { color: #C29BFF; }
 
+/* Make the winning team obvious on the dark dashboard: gold tint + left bar +
+   gold name and score; the loser is dimmed. */
+.theme-dark .match-card__team { padding-left: 8px; border-radius: 6px; }
+.theme-dark .match-card__team--winner {
+  background: rgba(255, 183, 3, 0.12);
+  box-shadow: inset 3px 0 0 0 var(--dark-accent, #FFB703);
+}
+.theme-dark .match-card__team--winner .match-card__cc-name-row {
+  color: var(--dark-accent, #FFB703);
+  font-weight: 700;
+}
+.theme-dark .match-card__team--winner .match-card__set-score--high {
+  color: var(--dark-accent, #FFB703);
+  font-weight: 700;
+}
+.theme-dark .match-card__team--loser { opacity: 0.45; }
+
 .theme-dark .match-card__team-name {
   color: var(--dark-text, #E8F0EC);
 }
