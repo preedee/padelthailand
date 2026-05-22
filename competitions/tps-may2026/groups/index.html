@@ -18,32 +18,44 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/draft-projector.css?v=84" />
+  <link rel="stylesheet" href="css/draft-projector.css?v=85" />
+  <style>
+    /* The dashboard header/nav need a .dashboard.theme-draft-live ancestor for
+       their styling, but the full .dashboard grid (100vh, overflow:hidden) would
+       hijack the projector layout — neutralise it so the chrome is just two bars. */
+    .dashboard.groups-chrome { display: block; width: auto; height: auto; overflow: visible; }
+    .dashboard.theme-draft-live.groups-chrome::before { display: none; }
+  </style>
 </head>
 <body class="groups">
 
 <main class="projector" id="projector" aria-label="Group Draw Projector">
 
-  <header class="top-strip">
-    <div class="header-left">
-      <img class="brand-logo brand-logo--monogram" src="assets/tps-monogram.png" alt="TPS" />
-      <img class="brand-logo" id="brandLogo" src="assets/tps-logotype-white.png" alt="The Padel Society" />
-    </div>
-    <div class="header-center">
-      <div class="tournament" id="tournamentName">Bangkok Community Cup</div>
-    </div>
-    <div class="header-right">
-      <div class="reconnect" id="reconnect" role="status" aria-live="polite">
-        <span class="pulse"></span>
-        <span>Reconnecting…</span>
+  <!-- Dashboard-style header + nav bars (same chrome as /competitions/tps-may2026/).
+       Wrapped in a .dashboard.theme-draft-live styling context so the shared
+       header/view-bar styles apply; .groups-chrome neutralises the full-page
+       .dashboard grid/height so it just sits at the top of the projector. -->
+  <div class="dashboard theme-draft-live groups-chrome">
+    <header class="header">
+      <a class="header__left header__home-link" href="tps-may2026/home/">
+        <img src="assets/tps-monogram.png" alt="TPS" class="header__lps-logo">
+      </a>
+      <div class="header__title">
+        <h1>Bangkok Community Cup</h1>
+        <p>23 May 2026 · Sterling Club</p>
       </div>
-      <div class="live-pill" id="livePill" aria-label="Live Draw">
-        <span class="dot"></span>
-        <span class="live-pill__label" id="livePillLabel">LIVE DRAW</span>
+      <div class="header__right">
+        <img src="assets/cc-logo.png" alt="Bangkok Community Cup" class="header__tps-logo">
       </div>
-      <img class="tournament-logo" id="tournamentLogo" src="assets/cc-logo.png" alt="Bangkok Community Cup" />
-    </div>
-  </header>
+    </header>
+    <nav class="view-bar">
+      <button class="view-bar__tab active" type="button" aria-current="page">Groups</button>
+      <a class="view-bar__tab" href="tps-may2026/#standings">Standings</a>
+      <a class="view-bar__tab" href="tps-may2026/#bracket">Main Draw</a>
+      <a class="view-bar__tab" href="tps-may2026/#consolation">Consolation</a>
+      <a class="view-bar__tab view-bar__tab--right" href="tps-may2026/#matches">All Matches</a>
+    </nav>
+  </div>
 
   <section class="moment-block state-green groups-moment" id="momentBlock">
     <div class="converge-bar"><span class="seg seg-left"></span><span class="seg seg-right"></span></div>
