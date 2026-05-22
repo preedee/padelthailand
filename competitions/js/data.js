@@ -1026,6 +1026,7 @@ const Data = (() => {
     hasScores,
     getMatchesByCourt,
     getTeamAvatarsHTML,
+    getPlayerAvatar,
     getTeamStackedHTML,
     // Dynamic standings: try pre-computed format first, fall back to computing from match data
     getStandings: (tabName) => {

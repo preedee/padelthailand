@@ -187,6 +187,10 @@ const Matches = (() => {
         : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(bLabel || '?').charAt(0).toUpperCase()}</span>`;
       function renderAvatar(name) {
         const initial = ((name || '?').charAt(0).toUpperCase());
+        const url = (Data.getPlayerAvatar && Data.getPlayerAvatar(name)) || null;
+        if (url) {
+          return `<img class="match-card__cc-avatar" src="${url}" alt="${name || ''}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'match-card__cc-avatar',textContent:'${initial}'}))">`;
+        }
         return `<span class="match-card__cc-avatar">${initial}</span>`;
       }
       function renderName(name) {
