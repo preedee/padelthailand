@@ -307,6 +307,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 20px;
+  flex: 1;
 }
 
 .header__home-link {
@@ -323,7 +324,7 @@ html, body {
 
 .header__title {
   text-align: center;
-  flex: 1;
+  flex: 0 0 auto;   /* natural width; equal flex:1 sides keep it header-centered */
 }
 
 .header__title h1 {
@@ -348,6 +349,8 @@ html, body {
 .header__right {
   display: flex;
   align-items: center;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .header__tps-logo {
@@ -1632,6 +1635,15 @@ img.avatar {
     padding-top: 0;
   }
 
+  /* Widen each court column so match cards are readable (was ~130px when 5
+     courts shared a 700px grid). --court-min feeds the inline
+     repeat(N, minmax(var(--court-min),1fr)) the engine emits, so this works
+     for any court count and the grid scrolls horizontally. */
+  .matches-grid,
+  .matches-grid__header-row {
+    --court-min: 280px;
+  }
+
   .matches-grid__header-row {
     position: sticky;
     top: 0;
@@ -1640,12 +1652,12 @@ img.avatar {
     padding: 10px 0 8px;
     margin-top: 0;
     gap: 8px 12px;
-    min-width: 700px;
+    min-width: 0;
   }
 
   .matches-grid {
     gap: 8px 12px;
-    min-width: 700px;
+    min-width: 0;
   }
 
   .matches-grid::-webkit-scrollbar {
@@ -2974,6 +2986,9 @@ td.cc-standings__community {
   /* ---- All Matches: keep horizontal court-swipe, smooth + readable ---- */
   #view-matches { -webkit-overflow-scrolling: touch; }
   .court-column__header { font-size: 13px; letter-spacing: 1px; }
+  /* Team logos 25% smaller on phones (40px → 30px). Placed here, after the
+     base .match-card__cc-logo rule, so equal specificity resolves in our favor. */
+  .match-card__cc-logo { width: 30px; height: 30px; }
 
   /* ---- Nav: make the horizontal scroll discoverable ---- */
   .view-bar {

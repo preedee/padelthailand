@@ -67,7 +67,9 @@ const Matches = (() => {
 
     // Render as time-aligned grid
     const colCount = courtNames.length;
-    const gridCols = `grid-template-columns: repeat(${colCount}, minmax(0, 1fr));`;
+    // --court-min lets the mobile stylesheet widen each court column (defaults
+    // to 0px on desktop, so the projector layout is unchanged).
+    const gridCols = `grid-template-columns: repeat(${colCount}, minmax(var(--court-min, 0px), 1fr));`;
     const headerRow = courtNames.map(name =>
       `<div class="court-column__header">${name}</div>`
     ).join('');
