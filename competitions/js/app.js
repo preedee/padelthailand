@@ -407,7 +407,27 @@ const App = (() => {
 
     // View IDs (Groups is first now that the Live tab is removed)
     ALL_VIEWS = ['groups', 'standings', 'bracket', 'consolation', 'matches'];
-    VIEWS = ALL_VIEWS.slice();
+
+    // Rotation set is configurable via the Config tab key `rotation_views`.
+    // Accepts internal IDs or the friendly tab labels, e.g.
+    //   "Groups, Standings, Main Draw"  or  "groups, standings, bracket"
+    // Blank/unset (or all entries invalid) → rotate through all five tabs.
+    const ccViewAliases = {
+      'groups': 'groups',
+      'standings': 'standings',
+      'main-draw': 'bracket', 'bracket': 'bracket', 'draw': 'bracket',
+      'consolation': 'consolation',
+      'all-matches': 'matches', 'matches': 'matches'
+    };
+    const rotationConfig = Data.getConfigList('rotation_views');
+    if (rotationConfig.length === 0) {
+      VIEWS = ALL_VIEWS.slice();
+    } else {
+      VIEWS = rotationConfig
+        .map(v => ccViewAliases[v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')])
+        .filter(v => v && ALL_VIEWS.includes(v));
+      if (VIEWS.length === 0) VIEWS = ALL_VIEWS.slice();
+    }
 
     // Build nav (single-row layout)
     let tabsHTML = '';
@@ -446,7 +466,8 @@ const App = (() => {
     // .content-area flex layout reflows .main-content to full width on its own.
     document.getElementById('sidebar-upcoming')?.remove();
 
-    // Wire tab clicks
+    // Wire tab clicks. Tabs in the rotation set switch + reset rotation; tabs
+    // excluded from rotation are still manually clickable (and stop rotation).
     viewBar.querySelectorAll('.view-bar__tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const viewName = tab.dataset.view;
@@ -454,6 +475,9 @@ const App = (() => {
         if (idx !== -1) {
           switchToView(idx);
           resetRotation();
+        } else if (ALL_VIEWS.includes(viewName)) {
+          showManualView(viewName);
+          stopRotation();
         }
       });
     });
@@ -468,6 +492,7 @@ const App = (() => {
     if (hasHash && ALL_VIEWS.includes(hash)) {
       const idx = VIEWS.indexOf(hash);
       if (idx !== -1) switchToView(idx, true);
+      else showManualView(hash, true);
     }
 
     // Auto-rotation (desktop only)
