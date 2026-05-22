@@ -1869,8 +1869,8 @@ body:has(.theme-dark) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 32px;
-  padding: 28px 56px;
+  gap: 16px;
+  padding: 14px 56px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -1888,7 +1888,7 @@ body:has(.theme-dark) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 24px;
+  gap: 14px;
   flex: 1 1 0;
   max-width: 460px;
 }
@@ -1896,12 +1896,12 @@ body:has(.theme-dark) {
 .cc-bracket-round-title {
   font-family: var(--font);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
   text-align: center;
   color: var(--dark-accent, #FFB703);
-  margin-bottom: 14px;
+  margin-bottom: 6px;
 }
 
 /* 3rd Place — its own area, divided off below the championship flow. */
@@ -1909,10 +1909,10 @@ body:has(.theme-dark) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
   flex-shrink: 0;
   border-top: 1px solid var(--dark-border, #2A3F35);
-  padding-top: 22px;
+  padding-top: 12px;
 }
 
 .cc-bracket-thirdplace .cc-series-card {
@@ -1922,27 +1922,27 @@ body:has(.theme-dark) {
 /* Bracket cards reuse the All Matches .match-card design. */
 .cc-series-card {
   width: 100%;
-  padding: 8px 18px;
-  gap: 8px;
+  padding: 5px 16px;
+  gap: 4px;
 }
 
 .cc-series-card .match-card__cc-logo {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
 }
 
 .cc-series-card .match-card__cc-name-row {
-  font-size: 16px;
-  line-height: 44px;
+  font-size: 15px;
+  line-height: 34px;
 }
 
 .cc-series-card .match-card__set-score {
-  font-size: 24px;
+  font-size: 22px;
   min-width: 30px;
 }
 
 .cc-series-card .match-card__team {
-  padding: 2px 10px;
+  padding: 1px 10px;
   border-radius: 8px;
 }
 
