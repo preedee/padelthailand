@@ -2497,16 +2497,16 @@ body:has(.theme-dark) {
 }
 
 td.cc-standings__community {
-  /* Center the inner flex pair both axes; padding via td default */
-  text-align: center;
+  /* Left-align so every logo shares one left edge and names form a clean column */
+  text-align: left;
 }
 
-/* Wrapper inside the td to hold the centered flex pair */
+/* Wrapper inside the td to hold the left-aligned flex pair */
 .cc-standings__community-inner {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 14px;
 }
 
