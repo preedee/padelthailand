@@ -2068,6 +2068,60 @@ body:has(.theme-dark) {
   background: #C8D0D8;
 }
 
+/* Projector / large-screen bracket — scale the cards UP to fill the white space.
+   Gated at min-width:1024px (the existing projector threshold) so the phone
+   layout (<=767px) and narrow windows (768-1023px) keep the base sizes. */
+@media (min-width: 1024px) {
+  .cc-bracket-flow {
+    gap: clamp(72px, 7vw, 140px);
+  }
+  .cc-bracket-col {
+    max-width: 720px;
+    gap: 22px;
+  }
+  .cc-bracket-round-title {
+    font-size: 20px;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+  }
+  .cc-bracket-thirdplace {
+    gap: 16px;
+    margin-top: 34px;
+    transform: scale(0.75);          /* 3rd Place card 25% smaller than the Final */
+    transform-origin: top center;
+  }
+
+  .cc-series-card {
+    padding: 16px 28px;
+    gap: 10px;
+  }
+  .cc-series-card .match-card__round {
+    font-size: 18px;
+  }
+  .cc-series-card .match-card__cc-logo {
+    width: 54px;
+    height: 54px;
+  }
+  .cc-series-card .match-card__cc-name-row {
+    font-size: 27px;
+    line-height: 54px;
+  }
+  .cc-series-card .match-card__set-score {
+    font-size: 42px;
+    min-width: 48px;
+  }
+  .cc-series-card .match-card__team {
+    padding: 9px 18px;
+    border-radius: 12px;
+  }
+  .cc-champion-badge,
+  .cc-plate-badge {
+    font-size: 13px;
+    padding: 3px 12px;
+    margin-left: 16px;
+  }
+}
+
 /* Dark-theme overrides for the shared .bracket-* scaffolding */
 .theme-dark .bracket-division__title {
   color: var(--dark-accent, #FFB703);
