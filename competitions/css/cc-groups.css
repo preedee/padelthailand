@@ -40,15 +40,22 @@
 /* ============================================================
    NEW LAYOUT — Groups container (defined from scratch)
    ============================================================ */
+/* Geometry MIRRORS .cc-standings-multi so the Group A/B headings land in the
+   exact same spot when switching between the Standings and Groups tabs:
+   2 equal columns, identical gap per tier, zero outer padding (the .view
+   supplies the outer inset), per-column padding lives on .cc-groups__half to
+   match .cc-standings. The divider is taken out of flow (absolute) so the
+   2-column grid isn't disturbed. See [[project_dashboard_architecture]]. */
 .cc-groups {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: clamp(16px, 1.6vw, 32px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;                 /* mirror .cc-standings-multi base */
+  align-items: start;
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding: clamp(14px, 1.4vw, 26px);
+  padding: 0;                /* mirror .cc-standings-multi (0) */
+  position: relative;        /* anchor the absolute divider */
   background: var(--bg-deep);
   box-sizing: border-box;
 }
@@ -56,8 +63,8 @@
 .cc-groups__half {
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
+  padding: 8px 4px;          /* mirror .cc-standings base */
 }
 
 /* Matches the Standings group header (.cc-standings__title): left-aligned,
@@ -74,11 +81,25 @@
   border-bottom: 2px solid var(--accent);
 }
 
+/* Vertical separator down the gap centre — absolutely positioned so it does
+   not occupy a grid track (which would push Group B onto a new row). */
 .cc-groups__divider {
-  flex: 0 0 1px;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
   width: 1px;
-  align-self: stretch;
+  transform: translateX(-50%);
   background: var(--line);
+}
+
+/* Match the Standings projector tiers exactly (gap + per-column padding). */
+@media (min-width: 1024px) {
+  .cc-groups { gap: 40px; }
+  .cc-groups__half { padding: 12px 8px; }
+}
+@media (min-width: 1024px) and (min-height: 1000px) {
+  .cc-groups { gap: 48px; }
 }
 
 /* The grid itself relies on the copied `.cc-groups .teams-grid` rule below. */
@@ -678,19 +699,28 @@
    tablet (≥768px) keep the side-by-side projector layout untouched.
    ============================================================ */
 @media (max-width: 767px) {
+  /* Single column, mirroring .cc-standings-multi mobile (1fr, gap 28, pad 0)
+     so the Group A heading lands in the exact same spot on both tabs. */
   .cc-groups {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 0;
     height: auto;
     overflow: visible;
-    gap: 24px;
-    padding: 14px;
+    position: static;        /* divider returns to normal flow */
   }
-  .cc-groups__half { flex: 0 0 auto; width: 100%; }
-  .cc-groups__label { font-size: 16px; letter-spacing: 1.5px; }
+  .cc-groups__half { width: 100%; padding: 4px 0; }   /* mirror .cc-standings mobile */
+  .cc-groups__label {
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    padding-bottom: 8px;     /* mirror .cc-standings__title mobile */
+    margin-bottom: 10px;
+  }
   /* Vertical divider → horizontal hairline between the stacked halves. */
   .cc-groups__divider {
-    flex: 0 0 1px;
+    position: static;
     width: 100%;
     height: 1px;
+    transform: none;
   }
 }
