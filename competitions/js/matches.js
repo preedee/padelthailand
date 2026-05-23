@@ -231,6 +231,7 @@ const Matches = (() => {
       'Semifinals': 'SF',
       'Consolation SF': 'Cons SF',
       'Consolation Final': 'Cons Finals',
+      'Consolation Finals': 'Cons Finals',
       'Grand Final': 'Finals',
       '3rd Place': '3rd',
     };
