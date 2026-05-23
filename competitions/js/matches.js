@@ -28,7 +28,82 @@ const Matches = (() => {
     return 0;
   }
 
+  // Keep only the 7 most-recently-completed matches (by date/time) across the
+  // whole view; always keep live + upcoming. Stops the All Matches grid from
+  // growing without bound as results come in.
+  const MAX_COMPLETED = 7;
+  function capCompleted(matches) {
+    const done = matches.filter(m => hasScores(m) && !isLive(m)).sort(sortByDateTime);
+    if (done.length <= MAX_COMPLETED) return matches;
+    const keep = new Set(done.slice(-MAX_COMPLETED));   // latest N completed
+    return matches.filter(m => !(hasScores(m) && !isLive(m)) || keep.has(m));
+  }
+
+  // ── Auto-scroll: scroll the All Matches view DOWN to push older completed
+  // results up off the screen, then STOP once the top 2 visible rows hold ≤5
+  // completed matches (resting the view on current/upcoming play). No loop.
+  // Restarts from the top each time the page (re)appears in rotation.
+  // lastMatchesHTML lets render() skip rebuilding identical DOM on each 5s poll
+  // so the scroll isn't reset mid-animation.
+  const MAX_TOP_DONE = 5;   // stop once the top 2 rows have this many completed (or fewer)
+  let lastMatchesHTML = '';
+  let scrollRAF = null, scrollPos = 0, scrollLastTs = 0, scrollPauseUntil = 0;
+  let scrollTarget = 0, scrollWasActive = false;
+  const SCROLL_SPEED = 66, TOP_PAUSE = 1800;
+
+  // The scrollTop at which the top 2 visible rows first contain ≤5 completed
+  // matches. Rows are implicit grid rows; group cells by their content-Y.
+  function computeScrollTarget(scroller) {
+    const grid = scroller.querySelector('.matches-grid');
+    if (!grid) return 0;
+    const header = scroller.querySelector('.matches-grid__header-row');
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const cTop = scroller.getBoundingClientRect().top;
+    const cells = Array.from(grid.children).filter(c => c.classList.contains('matches-grid__cell'));
+    const rows = [];   // { top (content px), done }
+    cells.forEach(c => {
+      const top = Math.round(c.getBoundingClientRect().top - cTop + scroller.scrollTop);
+      let row = rows.find(r => Math.abs(r.top - top) < 3);
+      if (!row) { row = { top, done: 0 }; rows.push(row); }
+      row.done += c.querySelectorAll('.match-card--done').length;
+    });
+    rows.sort((a, b) => a.top - b.top);
+    const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+    for (let i = 0; i < rows.length; i++) {
+      const top2 = rows[i].done + (rows[i + 1] ? rows[i + 1].done : 0);
+      if (top2 <= MAX_TOP_DONE) {
+        return Math.max(0, Math.min(rows[i].top - headerH, maxScroll));
+      }
+    }
+    return 0;
+  }
+
+  function startMatchesAutoScroll(scroller) {
+    if (scrollRAF) cancelAnimationFrame(scrollRAF);
+    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0; scrollTarget = 0; scrollWasActive = false;
+    function step(ts) {
+      scrollRAF = requestAnimationFrame(step);
+      const active = scroller.classList.contains('active');
+      if (active && !scrollWasActive) {        // (re)appeared → restart from top, recompute stop
+        scrollPos = 0; scroller.scrollTop = 0;
+        scrollPauseUntil = ts + TOP_PAUSE;
+        scrollTarget = computeScrollTarget(scroller);
+      }
+      scrollWasActive = active;
+      scrollLastTs = scrollLastTs || ts;
+      if (!active) { scrollLastTs = ts; return; }   // freeze while hidden
+      if (ts < scrollPauseUntil) { scrollLastTs = ts; return; }
+      const dt = Math.min((ts - scrollLastTs) / 1000, 0.05);
+      scrollLastTs = ts;
+      if (scrollPos >= scrollTarget) { scroller.scrollTop = scrollTarget; return; }  // reached → stop
+      scrollPos = Math.min(scrollPos + SCROLL_SPEED * dt, scrollTarget);
+      scroller.scrollTop = scrollPos;
+    }
+    scrollRAF = requestAnimationFrame(step);
+  }
+
   function render(container, matches) {
+    matches = capCompleted(matches);
     const courts = Data.getMatchesByCourt(matches);
     const courtNames = Object.keys(courts);
 
@@ -137,7 +212,17 @@ const Matches = (() => {
       </div>`;
     }
 
-    container.innerHTML = html;
+    // Only rebuild the DOM when the content actually changed, so the poll
+    // (every ~5s) doesn't reset the auto-scroll position. (Re)start the scroll
+    // loop on a real change or the first render.
+    const changed = (html !== lastMatchesHTML);
+    if (changed) {
+      lastMatchesHTML = html;
+      container.innerHTML = html;
+    }
+    if (changed || scrollRAF === null) {
+      startMatchesAutoScroll(container);
+    }
   }
 
   function renderMatchCard(match, type) {
@@ -147,7 +232,7 @@ const Matches = (() => {
     const isThirdPlace = roundLower.includes('3rd place');
     const roundClass = isFinals ? 'match-card--finals' : isThirdPlace ? 'match-card--third-place' : '';
     const roundLabelClass = isFinals ? 'match-card__round--finals' : isThirdPlace ? 'match-card__round--third-place' : '';
-    const statusClass = type === 'live' ? 'match-card--live' : type === 'upcoming' ? 'match-card--upcoming' : '';
+    const statusClass = type === 'live' ? 'match-card--live' : type === 'upcoming' ? 'match-card--upcoming' : 'match-card--done';
 
     const liveBadge = type === 'live'
       ? `<span class="live-badge"><span class="live-badge__dot"></span>LIVE</span>`
