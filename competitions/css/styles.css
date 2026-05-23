@@ -556,12 +556,14 @@ html, body {
 }
 
 /* Rotation countdown — depleting ring (no number) until the next view switch.
-   Pinned to the footer's bottom-right corner; [hidden] when rotation inactive.
-   Sized to the "Last updated" text. Footer is position:relative on this page. */
+   Sits just to the right of the "Last updated" timestamp, vertically centered
+   with it; [hidden] when rotation is inactive. Sized to the timestamp text. */
+.footer__updated-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .footer__countdown {
-  position: absolute;
-  right: 14px;
-  bottom: 8px;
   display: inline-flex;
 }
 .footer__countdown[hidden] { display: none; }
@@ -939,6 +941,36 @@ img.avatar {
 
 .match-card--upcoming {
   opacity: 0.6;
+}
+
+/* Next match per court = the one effectively in progress. Vivid green border
+   so it reads on the dark projector surface as the "court in progress". */
+.match-card--next {
+  opacity: 1;
+  border: 2px solid #22c55e;
+}
+
+/* In place of scores, the in-progress card shows "On Court" stacked on two
+   lines and vertically centered against the right edge where scores sit. */
+.match-card--next .match-card__teams {
+  position: relative;
+}
+.match-card--next .match-card__scores {
+  display: none;
+}
+.match-card__on-court {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  line-height: 1.05;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #22c55e;
 }
 
 .match-card__status {
@@ -2157,6 +2189,12 @@ body:has(.theme-dark) {
 
 .theme-dark .match-card--upcoming {
   opacity: 0.92;        /* much subtler than the 0.6 default */
+}
+
+/* Next/in-progress match — vivid green border on the dark surface. */
+.theme-dark .match-card--next {
+  opacity: 1;
+  border-color: #22c55e;
 }
 
 .theme-dark .match-card__round {

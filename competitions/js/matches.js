@@ -131,6 +131,15 @@ const Matches = (() => {
     // Sort all matches per court by date/time
     courtNames.forEach(c => courts[c].sort(sortByDateTime));
 
+    // The first not-yet-played match in each court is effectively the one being
+    // played right now (scores are entered after play). Mark it so the grid can
+    // highlight it green as the "court in progress".
+    const nextByCourt = new Set();
+    courtNames.forEach(c => {
+      const next = courts[c].find(m => !isLive(m) && !hasScores(m));
+      if (next) nextByCourt.add(next);
+    });
+
     // Collect all unique time slots across all courts, in order
     const timeSlots = [];
     const seenSlots = new Set();
@@ -175,7 +184,7 @@ const Matches = (() => {
           }
           const cards = matchesInSlot.map(m => {
             const type = isLive(m) ? 'live' : hasScores(m) ? 'done' : 'upcoming';
-            return renderMatchCard(m, type);
+            return renderMatchCard(m, type, nextByCourt.has(m));
           }).join('');
           return `<div class="matches-grid__cell">${cards}</div>`;
         }).join('');
@@ -241,14 +250,15 @@ const Matches = (() => {
     }
   }
 
-  function renderMatchCard(match, type) {
+  function renderMatchCard(match, type, isNext) {
     const winner = Data.getWinner(match);
     const roundLower = (match.round || '').toLowerCase();
     const isFinals = roundLower.includes('finals') || roundLower.includes('final');
     const isThirdPlace = roundLower.includes('3rd place');
     const roundClass = isFinals ? 'match-card--finals' : isThirdPlace ? 'match-card--third-place' : '';
     const roundLabelClass = isFinals ? 'match-card__round--finals' : isThirdPlace ? 'match-card__round--third-place' : '';
-    const statusClass = type === 'live' ? 'match-card--live' : type === 'upcoming' ? 'match-card--upcoming' : 'match-card--done';
+    let statusClass = type === 'live' ? 'match-card--live' : type === 'upcoming' ? 'match-card--upcoming' : 'match-card--done';
+    if (isNext) statusClass += ' match-card--next';
 
     const liveBadge = type === 'live'
       ? `<span class="live-badge"><span class="live-badge__dot"></span>LIVE</span>`
@@ -392,6 +402,7 @@ const Matches = (() => {
           ${team2HTML}
           <div class="match-card__scores">${scores2}</div>
         </div>
+        ${isNext ? '<div class="match-card__on-court">On<br>Court</div>' : ''}
       </div>
     </div>`;
   }
