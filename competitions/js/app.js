@@ -7,6 +7,7 @@ const App = (() => {
   let ALL_VIEWS = [];       // all views including manual-only (matches)
   let ROTATION_INTERVAL = 25000;   // global fallback (ms) — config key `rotation_interval`
   let perViewMs = {};       // viewId → ms, per-page override — config key `rotation_seconds`
+  let skipViews = new Set(); // viewIds with `rotation_seconds` 0 → excluded from rotation
   let currentViewIndex = 0;
   let rotationTimer = null;
   let isRotating = true;
@@ -96,6 +97,7 @@ const App = (() => {
 
     // Determine which views to include in rotation from config
     // Accepts specific view IDs (e.g. "home, male-amateur-standings, power-bracket, matches")
+    buildPerViewMs(null);   // perViewMs + skipViews (rotation_seconds 0 → skip)
     const rotationConfig = Data.getConfigList('rotation_views');
     if (rotationConfig.length === 0) {
       // Default: home (if enabled) + all standings + all brackets (not matches)
@@ -108,6 +110,8 @@ const App = (() => {
         .map(v => v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
         .filter(v => ALL_VIEWS.includes(v));
     }
+    // Pages set to 0s in rotation_seconds are dropped from the rotation cycle.
+    VIEWS = VIEWS.filter(v => !skipViews.has(v));
 
     // Custom tab labels from config (optional)
     // Order: standings labels for each division, then bracket labels for each division
@@ -371,10 +375,10 @@ const App = (() => {
       });
     }
 
-    // Pick up rotation interval from config (global fallback + per-view overrides)
+    // Pick up rotation interval from config (global fallback; per-view overrides
+    // + skips were parsed by buildPerViewMs above, before VIEWS was filtered)
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
-    buildPerViewMs(null);   // division format: rotation_seconds keys are view ids
 
     // Check URL hash — if present, navigate to that view and disable rotation
     const hash = window.location.hash.replace('#', '');
@@ -421,6 +425,7 @@ const App = (() => {
       'consolation': 'consolation',
       'all-matches': 'matches', 'matches': 'matches'
     };
+    buildPerViewMs(ccViewAliases);   // perViewMs + skipViews (rotation_seconds 0 → skip)
     const rotationConfig = Data.getConfigList('rotation_views');
     if (rotationConfig.length === 0) {
       VIEWS = ALL_VIEWS.slice();
@@ -430,6 +435,8 @@ const App = (() => {
         .filter(v => v && ALL_VIEWS.includes(v));
       if (VIEWS.length === 0) VIEWS = ALL_VIEWS.slice();
     }
+    // Pages set to 0s in rotation_seconds are dropped from the rotation cycle.
+    VIEWS = VIEWS.filter(v => !skipViews.has(v));
 
     // Build nav (single-row layout)
     let tabsHTML = '';
@@ -484,12 +491,12 @@ const App = (() => {
       });
     });
 
-    // Rotation interval from config (global fallback + per-view overrides).
-    // rotation_seconds keys accept friendly labels via ccViewAliases, e.g.
-    //   "standings:30, main-draw:15, all-matches:20, groups:25, consolation:15"
+    // Rotation interval from config (global fallback; per-view overrides + skips
+    // were parsed by buildPerViewMs above, before VIEWS was filtered).
+    // rotation_seconds accepts friendly labels, e.g.
+    //   "standings:30, main-draw:0, all-matches:20" (0 = skip that page)
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
-    buildPerViewMs(ccViewAliases);
 
     // URL hash → initial view (and disable rotation)
     const hash = window.location.hash.replace('#', '');
@@ -642,13 +649,16 @@ const App = (() => {
   // from the map fall back to the global `rotation_interval`.
   function buildPerViewMs(aliasMap) {
     perViewMs = {};
+    skipViews = new Set();
     Data.getConfigList('rotation_seconds').forEach(entry => {
       const i = entry.lastIndexOf(':');
       if (i < 0) return;
       const token = entry.slice(0, i).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       const view = aliasMap ? aliasMap[token] : token;
       const secs = parseFloat(entry.slice(i + 1));
-      if (view && secs > 0) perViewMs[view] = secs * 1000;
+      if (!view || isNaN(secs)) return;
+      if (secs > 0) perViewMs[view] = secs * 1000;
+      else skipViews.add(view);   // 0 → drop this page from the rotation cycle
     });
   }
 
