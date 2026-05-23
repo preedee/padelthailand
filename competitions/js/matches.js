@@ -46,51 +46,9 @@ const Matches = (() => {
     return matches.filter(m => !(hasScores(m) && !isLive(m)) || keep.has(m));
   }
 
-  // ── Auto-scroll: while the All Matches view is on screen, gently cycle the
-  // grid top → bottom → back to top, looping for the whole time it's visible so
-  // a long rotation dwell never sits frozen. Always (re)starts at the top when
-  // the page (re)appears in rotation. lastMatchesHTML lets render() skip
-  // rebuilding identical DOM on each ~5s poll so the scroll isn't reset
-  // mid-animation.
+  // Auto-scroll removed per request — the All Matches grid stays static.
+  // lastMatchesHTML lets render() skip rebuilding identical DOM on each ~5s poll.
   let lastMatchesHTML = '';
-  let scrollRAF = null, scrollPos = 0, scrollLastTs = 0, scrollPauseUntil = 0;
-  let scrollWasActive = false, scrollPhase = 'pauseTop';
-  const SCROLL_SPEED = 99, TOP_PAUSE = 1800, BOTTOM_PAUSE = 1500;
-
-  function startMatchesAutoScroll(scroller) {
-    if (scrollRAF) cancelAnimationFrame(scrollRAF);
-    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0;
-    scrollWasActive = false; scrollPhase = 'pauseTop';
-    function toTop(ts) {
-      scrollPos = 0; scroller.scrollTop = 0;
-      scrollPhase = 'pauseTop'; scrollPauseUntil = ts + TOP_PAUSE;
-    }
-    function step(ts) {
-      scrollRAF = requestAnimationFrame(step);
-      const active = scroller.classList.contains('active');
-      if (active && !scrollWasActive) toTop(ts);   // (re)appeared → start at the top
-      scrollWasActive = active;
-      scrollLastTs = scrollLastTs || ts;
-      if (!active) { scrollLastTs = ts; return; }   // freeze while hidden
-      const dt = Math.min((ts - scrollLastTs) / 1000, 0.05);
-      scrollLastTs = ts;
-      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
-      if (maxScroll <= 0) return;                   // content fits — nothing to scroll
-      if (ts < scrollPauseUntil) return;            // dwell at top/bottom
-      if (scrollPhase === 'pauseTop') scrollPhase = 'down';
-      if (scrollPhase === 'down') {
-        scrollPos = Math.min(scrollPos + SCROLL_SPEED * dt, maxScroll);
-        scroller.scrollTop = scrollPos;
-        if (scrollPos >= maxScroll) {               // reached bottom → pause, then loop up
-          scrollPhase = 'pauseBottom';
-          scrollPauseUntil = ts + BOTTOM_PAUSE;
-        }
-      } else if (scrollPhase === 'pauseBottom') {
-        toTop(ts);                                  // back to the top and keep looping
-      }
-    }
-    scrollRAF = requestAnimationFrame(step);
-  }
 
   function render(container, matches) {
     matches = capCompleted(matches);
@@ -212,15 +170,10 @@ const Matches = (() => {
     }
 
     // Only rebuild the DOM when the content actually changed, so the poll
-    // (every ~5s) doesn't reset the auto-scroll position. (Re)start the scroll
-    // loop on a real change or the first render.
-    const changed = (html !== lastMatchesHTML);
-    if (changed) {
+    // (every ~5s) doesn't churn the grid.
+    if (html !== lastMatchesHTML) {
       lastMatchesHTML = html;
       container.innerHTML = html;
-    }
-    if (changed || scrollRAF === null) {
-      startMatchesAutoScroll(container);
     }
   }
 
