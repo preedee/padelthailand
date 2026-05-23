@@ -5,7 +5,8 @@
 const App = (() => {
   let VIEWS = [];           // rotating views (standings + brackets)
   let ALL_VIEWS = [];       // all views including manual-only (matches)
-  let ROTATION_INTERVAL = 25000;
+  let ROTATION_INTERVAL = 25000;   // global fallback (ms) — config key `rotation_interval`
+  let perViewMs = {};       // viewId → ms, per-page override — config key `rotation_seconds`
   let currentViewIndex = 0;
   let rotationTimer = null;
   let isRotating = true;
@@ -370,9 +371,10 @@ const App = (() => {
       });
     }
 
-    // Pick up rotation interval from config
+    // Pick up rotation interval from config (global fallback + per-view overrides)
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
+    buildPerViewMs(null);   // division format: rotation_seconds keys are view ids
 
     // Check URL hash — if present, navigate to that view and disable rotation
     const hash = window.location.hash.replace('#', '');
@@ -482,9 +484,12 @@ const App = (() => {
       });
     });
 
-    // Rotation interval from config
+    // Rotation interval from config (global fallback + per-view overrides).
+    // rotation_seconds keys accept friendly labels via ccViewAliases, e.g.
+    //   "standings:30, main-draw:15, all-matches:20, groups:25, consolation:15"
     const cfgInterval = parseInt(Data.getConfig('rotation_interval', '25'), 10) * 1000;
     if (cfgInterval > 0) ROTATION_INTERVAL = cfgInterval;
+    buildPerViewMs(ccViewAliases);
 
     // URL hash → initial view (and disable rotation)
     const hash = window.location.hash.replace('#', '');
@@ -631,18 +636,50 @@ const App = (() => {
     }
   }
 
+  // Parse the `rotation_seconds` config (e.g. "standings:30, main-draw:15") into
+  // a viewId→ms map. `aliasMap` (Community Cup) maps a normalized token to a real
+  // view id; without it the token IS the view id (division format). Views absent
+  // from the map fall back to the global `rotation_interval`.
+  function buildPerViewMs(aliasMap) {
+    perViewMs = {};
+    Data.getConfigList('rotation_seconds').forEach(entry => {
+      const i = entry.lastIndexOf(':');
+      if (i < 0) return;
+      const token = entry.slice(0, i).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const view = aliasMap ? aliasMap[token] : token;
+      const secs = parseFloat(entry.slice(i + 1));
+      if (view && secs > 0) perViewMs[view] = secs * 1000;
+    });
+  }
+
+  // ms the current page should stay before advancing — per-view override
+  // (`rotation_seconds`) if set, else the global `rotation_interval`.
+  function durationForView(viewName) {
+    const ms = perViewMs[viewName];
+    return (ms && ms > 0) ? ms : ROTATION_INTERVAL;
+  }
+
+  // Per-page timing means a single fixed setInterval won't do — each page can
+  // have its own dwell time, so re-arm a setTimeout after every switch.
+  function scheduleNextRotation() {
+    if (rotationTimer) clearTimeout(rotationTimer);
+    const delay = durationForView(VIEWS[currentViewIndex]);
+    rotationTimer = setTimeout(() => {
+      if (isRotating && VIEWS.length > 0) {
+        switchToView((currentViewIndex + 1) % VIEWS.length, true); // skip hash during auto-rotation
+        scheduleNextRotation();
+      }
+    }, delay);
+  }
+
   function startRotation() {
     isRotating = true;
-    rotationTimer = setInterval(() => {
-      if (VIEWS.length > 0) {
-        switchToView((currentViewIndex + 1) % VIEWS.length, true); // skip hash during auto-rotation
-      }
-    }, ROTATION_INTERVAL);
+    scheduleNextRotation();
   }
 
   function stopRotation() {
     isRotating = false;
-    if (rotationTimer) clearInterval(rotationTimer);
+    if (rotationTimer) { clearTimeout(rotationTimer); rotationTimer = null; }
   }
 
   function resetRotation() {
