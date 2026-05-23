@@ -230,15 +230,20 @@ const Matches = (() => {
       }
       const t1 = match.team1Players || [];
       const t2 = match.team2Players || [];
+      // Only show real names when BOTH teams have a lineup entered. If either
+      // side is missing its players, the match isn't set yet — render every
+      // slot as TBD rather than a half-filled card.
+      const bothHavePlayers = t1.some(p => p && p.name) && t2.some(p => p && p.name);
+      const slotName = p => (bothHavePlayers && p ? p.name : '');
       team1HTML = `<div class="match-card__cc-team" aria-label="${aLabel}">
         <div class="match-card__cc-logo-wrap">${aLogo}</div>
-        <div class="match-card__cc-avatars">${t1.map(p => renderAvatar(p.name)).join('')}</div>
-        <div class="match-card__cc-names">${t1.map(p => renderName(p.name)).join('')}</div>
+        <div class="match-card__cc-avatars">${t1.map(p => renderAvatar(slotName(p))).join('')}</div>
+        <div class="match-card__cc-names">${t1.map(p => renderName(slotName(p))).join('')}</div>
       </div>`;
       team2HTML = `<div class="match-card__cc-team" aria-label="${bLabel}">
         <div class="match-card__cc-logo-wrap">${bLogo}</div>
-        <div class="match-card__cc-avatars">${t2.map(p => renderAvatar(p.name)).join('')}</div>
-        <div class="match-card__cc-names">${t2.map(p => renderName(p.name)).join('')}</div>
+        <div class="match-card__cc-avatars">${t2.map(p => renderAvatar(slotName(p))).join('')}</div>
+        <div class="match-card__cc-names">${t2.map(p => renderName(slotName(p))).join('')}</div>
       </div>`;
       if (match.matchType) {
         // Group rounds (R1-R3) have room for full Male/Female; knockout uses the
