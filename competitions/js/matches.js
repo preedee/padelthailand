@@ -313,13 +313,21 @@ const Matches = (() => {
       const bLogo = cB && cB.logoPath
         ? `<img class="match-card__cc-logo" src="${cB.logoPath}" alt="${bLabel}" onerror="this.style.display='none'">`
         : `<span class="match-card__cc-logo match-card__cc-logo--fallback">${(bLabel || '?').charAt(0).toUpperCase()}</span>`;
-      function renderAvatar(name) {
+      function renderAvatar(name, id) {
         const initial = ((name || '?').charAt(0).toUpperCase());
         const url = (Data.getPlayerAvatar && Data.getPlayerAvatar(name)) || null;
-        if (url) {
-          return `<img class="match-card__cc-avatar" src="${url}" alt="${name || ''}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'match-card__cc-avatar',textContent:'${initial}'}))">`;
-        }
-        return `<span class="match-card__cc-avatar">${initial}</span>`;
+        const avatarHTML = url
+          ? `<img class="match-card__cc-avatar" src="${url}" alt="${name || ''}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'match-card__cc-avatar',textContent:'${initial}'}))">`
+          : `<span class="match-card__cc-avatar">${initial}</span>`;
+        // Flag overlay — same flag-icons style as the Groups page. Only when a
+        // real name is shown (TBD slots get no flag) and the nationality is known.
+        const nat = name && Data.getPlayerNationality ? Data.getPlayerNationality(name, id) : '';
+        const code = (nat && window.TeamCard) ? TeamCard.countryCodeFor(nat) : '';
+        const flag = code ? TeamCard.flagEmoji(code) : '';
+        const flagHTML = flag
+          ? `<span class="match-card__cc-flag" title="${TeamCard.escapeHtml(nat)}">${flag}</span>`
+          : '';
+        return `<span class="match-card__cc-avatar-wrap">${avatarHTML}${flagHTML}</span>`;
       }
       function firstName(full) {
         return String(full || '').trim().split(/[\s_]/)[0] || '';
@@ -338,12 +346,12 @@ const Matches = (() => {
       const slotName = p => (bothHavePlayers && p ? p.name : '');
       team1HTML = `<div class="match-card__cc-team" aria-label="${aLabel}">
         <div class="match-card__cc-logo-wrap">${aLogo}</div>
-        <div class="match-card__cc-avatars">${t1.map(p => renderAvatar(slotName(p))).join('')}</div>
+        <div class="match-card__cc-avatars">${t1.map(p => renderAvatar(slotName(p), p && p.id)).join('')}</div>
         <div class="match-card__cc-names">${t1.map(p => renderName(slotName(p))).join('')}</div>
       </div>`;
       team2HTML = `<div class="match-card__cc-team" aria-label="${bLabel}">
         <div class="match-card__cc-logo-wrap">${bLogo}</div>
-        <div class="match-card__cc-avatars">${t2.map(p => renderAvatar(slotName(p))).join('')}</div>
+        <div class="match-card__cc-avatars">${t2.map(p => renderAvatar(slotName(p), p && p.id)).join('')}</div>
         <div class="match-card__cc-names">${t2.map(p => renderName(slotName(p))).join('')}</div>
       </div>`;
       if (match.matchType) {

@@ -2232,6 +2232,36 @@ body:has(.theme-dark) {
   object-fit: cover;   /* photo avatars (img) fill the circle */
 }
 
+/* Avatar + flag overlay — flag sits on the avatar's bottom-left corner,
+   same style as the Groups page (.cc-groups .slot .avatar .flag). */
+.match-card__cc-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+.match-card__cc-flag {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 14px;
+  height: 10px;
+  line-height: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--dark-border, #2A3F35), 0 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 2;
+}
+.match-card__cc-flag .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}
+
 .match-card__cc-name-row {
   font-size: 15px;
   color: var(--dark-text, #E8F0EC);

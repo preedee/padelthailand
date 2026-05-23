@@ -57,23 +57,39 @@ const CCStandings = (() => {
       return;
     }
 
-    const groupSeries = Data.getSeries().filter(s =>
-      s.group === groupLetter && s.id.startsWith('R1-')
-    );
-
-    const rows = groupCommunities.map(c => ({
-      community: c,
-      ...computeRecord(c.id, groupSeries)
-    }));
-
-    // Sort by Points (= match wins) per rules:
-    // Match wins → game differential → head-to-head → name
-    rows.sort((a, b) => {
-      if (a.matchesWon !== b.matchesWon) return b.matchesWon - a.matchesWon;
-      const gd = (b.gamesWon - b.gamesLost) - (a.gamesWon - a.gamesLost);
-      if (gd !== 0) return gd;
-      return a.community.name.localeCompare(b.community.name);
-    });
+    // Prefer the authoritative "Standings" sheet (live formulas); fall back to
+    // computing from Series/Matches only if the sheet has no rows for this group.
+    const sheetGroups = (Data.getCommunityCupStandings && Data.getCommunityCupStandings()) || {};
+    const sheetRows = sheetGroups[groupLetter];
+    let rows;
+    if (sheetRows && sheetRows.length) {
+      const byName = {};
+      Data.getCommunities().forEach(c => { byName[(c.name || '').trim().toLowerCase()] = c; });
+      rows = sheetRows.slice()
+        .sort((a, b) => a.position - b.position)   // sheet's Position column is the ranking
+        .map(r => ({
+          community: byName[r.name.trim().toLowerCase()] || { name: r.name, logoPath: '' },
+          matchesWon: r.won,
+          matchesLost: r.lost,
+          gamesWon: r.gamesFor,
+          gamesLost: r.gamesAgainst,
+        }));
+    } else {
+      const groupSeries = Data.getSeries().filter(s =>
+        s.group === groupLetter && s.id.startsWith('R1-')
+      );
+      rows = groupCommunities.map(c => ({
+        community: c,
+        ...computeRecord(c.id, groupSeries)
+      }));
+      // Sort by Points (= match wins): match wins → game differential → name
+      rows.sort((a, b) => {
+        if (a.matchesWon !== b.matchesWon) return b.matchesWon - a.matchesWon;
+        const gd = (b.gamesWon - b.gamesLost) - (a.gamesWon - a.gamesLost);
+        if (gd !== 0) return gd;
+        return a.community.name.localeCompare(b.community.name);
+      });
+    }
 
     function renderLogo(c) {
       if (c.logoPath) {

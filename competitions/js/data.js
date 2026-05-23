@@ -22,9 +22,11 @@ const Data = (() => {
   let standingsData = {};       // tab name → raw CSV lines
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
+  let playerNationalities = {}; // name|id → nationality lookup (Community Cup)
   let players = [];             // Community Cup: full Teams and Players rows (1 row per player)
   let communities = [];         // Community Cup: list of community objects (8 entries)
   let seriesList = [];          // Community Cup: list of series objects (19 entries)
+  let ccStandings = {};         // Community Cup: group letter → [{position,name,won,lost,gamesFor,gamesAgainst}] from the Standings tab
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
@@ -456,6 +458,40 @@ const Data = (() => {
   }
 
   // ============================================================
+  // Community Cup — parse the dedicated "Standings" tab (authoritative,
+  // live-formula records). Data rows are: Position, Community, W, L, GF, GA, Diff.
+  // gviz flattens the merged title/section cells (and drops the "GROUP B"
+  // label), so we DON'T rely on group-header text — instead each row is
+  // assigned to a group via the community's group from the Communities tab.
+  // Returns { 'A': [{position,name,won,lost,gamesFor,gamesAgainst}], 'B': [...] }
+  // ============================================================
+  function parseCCStandingsTab(lines) {
+    const byName = {};
+    communities.forEach(c => { byName[(c.name || '').trim().toLowerCase()] = c; });
+    const groups = {};
+    for (const line of lines) {
+      const f = splitCSVLine(line);
+      const c0 = (f[0] || '').trim();
+      if (!/^\d+$/.test(c0)) continue;            // data rows have a numeric Position
+      const name = (f[1] || '').trim();
+      if (!name) continue;
+      const c = byName[name.toLowerCase()];
+      const grp = c ? (c.group || '').trim().toUpperCase() : '';
+      if (!grp) continue;                          // unknown community → skip
+      if (!groups[grp]) groups[grp] = [];
+      groups[grp].push({
+        position: parseInt(c0) || 0,
+        name,
+        won: parseInt(f[2]) || 0,
+        lost: parseInt(f[3]) || 0,
+        gamesFor: parseInt(f[4]) || 0,
+        gamesAgainst: parseInt(f[5]) || 0,
+      });
+    }
+    return groups;
+  }
+
+  // ============================================================
   // Compute standings from match-format data (when standings tab
   // has match rows instead of pre-computed standings)
   // Groups are derived from team codes: 2nd char = group letter
@@ -835,6 +871,30 @@ const Data = (() => {
     return playerAvatars[clean] || null;
   }
 
+  // name \u2192 nationality and id \u2192 nationality, from "Teams and Players" rows.
+  // Mirrors getPlayerAvatar so match cards can show the same flags as Groups.
+  function buildPlayerNationalities(rows) {
+    const map = {};
+    (rows || []).forEach(r => {
+      const nat = (r['Nationality'] || '').trim();
+      if (!nat) return;
+      const name = (r['Player Name'] || '').trim().replace(/^\u2060+/, '');
+      const id = (r['TPS User ID'] || '').trim();
+      if (name) map['name:' + name.toLowerCase()] = nat;
+      if (id) map['id:' + id] = nat;
+    });
+    return map;
+  }
+
+  // Look up a player's nationality by name, falling back to TPS User ID.
+  function getPlayerNationality(name, id) {
+    const clean = (name || '').trim().replace(/^\u2060+/, '').toLowerCase();
+    if (clean && playerNationalities['name:' + clean]) return playerNationalities['name:' + clean];
+    const cid = (id || '').trim();
+    if (cid && playerNationalities['id:' + cid]) return playerNationalities['id:' + cid];
+    return '';
+  }
+
   // Generate avatar HTML for a team (2 players split on " and ")
   function getTeamAvatarsHTML(teamName, size) {
     if (!teamName || teamName === 'TBD') return '';
@@ -955,7 +1015,8 @@ const Data = (() => {
         standingsTabs.push('Power Standings', 'Club Standings');
       }
 
-      // Community Cup extras: Communities + Series tabs
+      // Community Cup extras: Communities + Series tabs (+ the Standings tab,
+      // fetched raw so the sectioned GROUP A/B layout parses line-by-line).
       const ccTabs = ccMode ? ['Communities', 'Series'] : [];
 
       // Fetch matches + players + standings + CC tabs in parallel
@@ -965,12 +1026,14 @@ const Data = (() => {
         ...standingsTabs.map(tab => fetch(sheetURL(tab))),
         ...ccTabs.map(tab => fetch(sheetURL(tab, '&headers=1')))
       ];
+      if (ccMode) fetches.push(fetch(sheetURL('Standings')));   // raw (no headers)
       const responses = await Promise.all(fetches);
 
       const matchRes = responses[0];
       const playersRes = responses[1];
       const standingsResponses = responses.slice(2, 2 + standingsTabs.length);
-      const ccResponses = responses.slice(2 + standingsTabs.length);
+      const ccResponses = responses.slice(2 + standingsTabs.length, 2 + standingsTabs.length + ccTabs.length);
+      const ccStandingsRes = ccMode ? responses[2 + standingsTabs.length + ccTabs.length] : null;
 
       if (!matchRes.ok) throw new Error(`Matches HTTP ${matchRes.status}`);
 
@@ -995,7 +1058,10 @@ const Data = (() => {
         playerAvatars = parsePlayersTab(rows);
         // Community Cup: also stash full rows for the draft feature.
         // Schema: Community ID, TPS User ID, Player Name, Avatar, Rating, Hand, Side, Gender, Is Captain, Nationality
-        if (ccMode) players = rows;
+        if (ccMode) {
+          players = rows;
+          playerNationalities = buildPlayerNationalities(rows);
+        }
       }
 
       // Community Cup: parse Communities and Series tabs
@@ -1008,6 +1074,10 @@ const Data = (() => {
         if (seriesRes && seriesRes.ok) {
           const text = await seriesRes.text();
           seriesList = parseSeriesTab(parseCSVWithHeaders(text));
+        }
+        if (ccStandingsRes && ccStandingsRes.ok) {
+          const text = await ccStandingsRes.text();
+          ccStandings = parseCCStandingsTab(parseCSV(text));
         }
       }
 
@@ -1044,6 +1114,7 @@ const Data = (() => {
     getMatchesByCourt,
     getTeamAvatarsHTML,
     getPlayerAvatar,
+    getPlayerNationality,
     getTeamStackedHTML,
     // Dynamic standings: try pre-computed format first, fall back to computing from match data
     getStandings: (tabName) => {
@@ -1062,6 +1133,7 @@ const Data = (() => {
     get tournamentFormat() { return getConfig('tournament_format', 'divisions'); },
     getCommunities: () => communities,
     getCommunityById,
+    getCommunityCupStandings: () => ccStandings,
     // Pure helpers exposed so groups.js can do its own 3s Communities-only
     // poll without duplicating the CSV parser or URL builder.
     sheetURL,
