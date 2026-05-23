@@ -64,36 +64,6 @@
       #view-matches .match-card__set-score { font-size: 22px; }
     }
 
-    /* Projector / large screens: the footer sits at the very bottom edge, which
-       a projector tends to clip (overscan). Give it more height, lift its
-       content toward the top, and enlarge + raise the QR so it stays on-screen
-       and is scannable from a distance. Desktop only — mobile keeps the compact
-       fixed footer with no QR. */
-    @media (min-width: 769px) {
-      .footer { height: 90px; align-items: flex-start; padding-top: 12px; }
-      .footer__qr { top: 6px; transform: translateX(-50%); }
-      .footer__qr img { width: 56px; height: 56px; }
-    }
-
-    /* Projector (large fullscreen): the All Matches grid leaves vertical space,
-       so scale the match cards ~20% for legibility from a distance. Same
-       breakpoint as the standings projector tier; scoped to #view-matches so
-       bracket/standings cards are untouched. */
-    @media (min-width: 1024px) and (min-height: 1000px) {
-      #view-matches .court-column { gap: 24px; }
-      #view-matches .court-column__header { font-size: 22px; }
-      #view-matches .match-card { padding: 10px 14px; gap: 7px; }
-      #view-matches .match-card__round { font-size: 17px; }
-      #view-matches .match-card__time { font-size: 16px; }
-      #view-matches .match-card__cc-team { gap: 12px; }
-      #view-matches .match-card__cc-logo { width: 48px; height: 48px; }
-      #view-matches .match-card__cc-avatars { gap: 7px; }
-      #view-matches .match-card__cc-avatar { width: 36px; height: 36px; font-size: 16px; }
-      #view-matches .match-card__cc-names { gap: 5px; }
-      #view-matches .match-card__cc-name-row { font-size: 18px; line-height: 36px; }
-      #view-matches .match-card__set-score { font-size: 22px; }
-    }
-
     /* Mobile: pin the footer to the bottom of the screen and drop the QR.
        The tab nav sits at the top in this theme, so the bottom edge is free.
        Scoped here (not the shared engine) because other competitions keep the
