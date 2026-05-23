@@ -46,74 +46,48 @@ const Matches = (() => {
     return matches.filter(m => !(hasScores(m) && !isLive(m)) || keep.has(m));
   }
 
-  // ── Auto-scroll: scroll the All Matches view DOWN to push older completed
-  // results up off the screen, then STOP once the top 2 visible rows hold ≤5
-  // completed matches (resting the view on current/upcoming play). No loop.
-  // Restarts from the top each time the page (re)appears in rotation.
-  // lastMatchesHTML lets render() skip rebuilding identical DOM on each 5s poll
-  // so the scroll isn't reset mid-animation.
-  const MAX_TOP_DONE = 7;   // stop once the top 2 rows have this many completed (or fewer)
+  // ── Auto-scroll: while the All Matches view is on screen, gently cycle the
+  // grid top → bottom → back to top, looping for the whole time it's visible so
+  // a long rotation dwell never sits frozen. Always (re)starts at the top when
+  // the page (re)appears in rotation. lastMatchesHTML lets render() skip
+  // rebuilding identical DOM on each ~5s poll so the scroll isn't reset
+  // mid-animation.
   let lastMatchesHTML = '';
   let scrollRAF = null, scrollPos = 0, scrollLastTs = 0, scrollPauseUntil = 0;
-  let scrollTarget = 0, scrollWasActive = false, scrollDone = false;
-  const SCROLL_SPEED = 99, TOP_PAUSE = 1800;
-
-  // The scrollTop at which the top 2 visible rows first contain ≤5 completed
-  // matches. Rows are implicit grid rows; group cells by their content-Y.
-  function computeScrollTarget(scroller) {
-    const grid = scroller.querySelector('.matches-grid');
-    if (!grid) return 0;
-    const header = scroller.querySelector('.matches-grid__header-row');
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-    const cTop = scroller.getBoundingClientRect().top;
-    const cells = Array.from(grid.children).filter(c => c.classList.contains('matches-grid__cell'));
-    const rows = [];   // { top (content px), done }
-    cells.forEach(c => {
-      const top = Math.round(c.getBoundingClientRect().top - cTop + scroller.scrollTop);
-      let row = rows.find(r => Math.abs(r.top - top) < 3);
-      if (!row) { row = { top, done: 0 }; rows.push(row); }
-      row.done += c.querySelectorAll('.match-card--done').length;
-    });
-    rows.sort((a, b) => a.top - b.top);
-    const maxScroll = scroller.scrollHeight - scroller.clientHeight;
-    for (let i = 0; i < rows.length; i++) {
-      const top2 = rows[i].done + (rows[i + 1] ? rows[i + 1].done : 0);
-      if (top2 <= MAX_TOP_DONE) {
-        return Math.max(0, Math.min(rows[i].top - headerH, maxScroll));
-      }
-    }
-    return 0;
-  }
+  let scrollWasActive = false, scrollPhase = 'pauseTop';
+  const SCROLL_SPEED = 99, TOP_PAUSE = 1800, BOTTOM_PAUSE = 1500;
 
   function startMatchesAutoScroll(scroller) {
     if (scrollRAF) cancelAnimationFrame(scrollRAF);
-    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0; scrollTarget = 0;
-    scrollWasActive = false; scrollDone = false;
+    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0;
+    scrollWasActive = false; scrollPhase = 'pauseTop';
+    function toTop(ts) {
+      scrollPos = 0; scroller.scrollTop = 0;
+      scrollPhase = 'pauseTop'; scrollPauseUntil = ts + TOP_PAUSE;
+    }
     function step(ts) {
       scrollRAF = requestAnimationFrame(step);
       const active = scroller.classList.contains('active');
-      if (active && !scrollWasActive) {        // (re)appeared → restart from top, recompute stop
-        scrollPos = 0; scroller.scrollTop = 0;
-        scrollPauseUntil = ts + TOP_PAUSE;
-        scrollTarget = computeScrollTarget(scroller);
-        scrollDone = false;
-      }
+      if (active && !scrollWasActive) toTop(ts);   // (re)appeared → start at the top
       scrollWasActive = active;
       scrollLastTs = scrollLastTs || ts;
       if (!active) { scrollLastTs = ts; return; }   // freeze while hidden
-      // Once the auto-scroll has reached its target, stop driving scrollTop so
-      // the user can scroll the page manually (until it reappears in rotation).
-      if (scrollDone) { scrollLastTs = ts; return; }
-      if (ts < scrollPauseUntil) { scrollLastTs = ts; return; }
       const dt = Math.min((ts - scrollLastTs) / 1000, 0.05);
       scrollLastTs = ts;
-      if (scrollPos >= scrollTarget) {          // reached → stop, hand control to the user
-        scroller.scrollTop = scrollTarget;
-        scrollDone = true;
-        return;
+      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+      if (maxScroll <= 0) return;                   // content fits — nothing to scroll
+      if (ts < scrollPauseUntil) return;            // dwell at top/bottom
+      if (scrollPhase === 'pauseTop') scrollPhase = 'down';
+      if (scrollPhase === 'down') {
+        scrollPos = Math.min(scrollPos + SCROLL_SPEED * dt, maxScroll);
+        scroller.scrollTop = scrollPos;
+        if (scrollPos >= maxScroll) {               // reached bottom → pause, then loop up
+          scrollPhase = 'pauseBottom';
+          scrollPauseUntil = ts + BOTTOM_PAUSE;
+        }
+      } else if (scrollPhase === 'pauseBottom') {
+        toTop(ts);                                  // back to the top and keep looping
       }
-      scrollPos = Math.min(scrollPos + SCROLL_SPEED * dt, scrollTarget);
-      scroller.scrollTop = scrollPos;
     }
     scrollRAF = requestAnimationFrame(step);
   }
