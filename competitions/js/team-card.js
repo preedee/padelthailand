@@ -50,9 +50,15 @@ window.TeamCard = (function () {
       ? `<img src="${escapeHtml(community.logoPath)}" alt="${escapeHtml(community.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(tInitials)}'}))">`
       : escapeHtml(tInitials);
     const { F, M } = rosterFor(community.id, players, picks);
+    // Only link the team name when a real per-team page base is provided. With
+    // no base there is no team page, so render plain text (avoid a dead link).
     const teamHref = communityBase
       ? `${communityBase}/${escapeHtml(community.id)}/`
-      : `team.html?community=${escapeHtml(community.id)}`;
+      : '';
+    const nameText = escapeHtml(community.name || community.id);
+    const nameHtml = teamHref
+      ? `<a class="tname" href="${teamHref}">${nameText}</a>`
+      : `<span class="tname">${nameText}</span>`;
 
     const avgTeam   = averageLevel(F.concat(M));
     const avgFemale = averageLevel(F);
@@ -63,7 +69,7 @@ window.TeamCard = (function () {
 
     return `
       <div class="${cls}" style="--team-color: ${escapeHtml(teamColor)};" data-team-id="${escapeHtml(community.id)}">
-        <a class="tname" href="${teamHref}">${escapeHtml(community.name || community.id)}</a>
+        ${nameHtml}
         <div class="team-card-summary">${summaryHtml}</div>
         <div class="team-card-chevron" aria-hidden="true">▸</div>
         <div class="team-stats">
@@ -86,7 +92,7 @@ window.TeamCard = (function () {
             <div class="stat stat-male"><span class="stat-label">♂</span><span class="stat-val">${avgMale}</span></div>
           </div>
         </div>
-        <a class="team-card-nav" href="${teamHref}">View Team Page →</a>
+        ${teamHref ? `<a class="team-card-nav" href="${teamHref}">View Team Page →</a>` : ''}
       </div>`;
   }
 
