@@ -13,6 +13,12 @@ const App = (() => {
   let isRotating = true;
   let viewsBuilt = false;
 
+  // Rotation countdown (footer ring + seconds). rotationEndsAt is the wall-clock
+  // time the current view advances; countdownTimer ticks the display each second.
+  let countdownTimer = null;
+  let rotationEndsAt = 0;
+  let currentRotationMs = 0;
+
   // Capture the original page path before <base> tag affects relative URLs
   const originalPath = window.location.pathname;
 
@@ -674,6 +680,9 @@ const App = (() => {
   function scheduleNextRotation() {
     if (rotationTimer) clearTimeout(rotationTimer);
     const delay = durationForView(VIEWS[currentViewIndex]);
+    currentRotationMs = delay;
+    rotationEndsAt = Date.now() + delay;
+    updateCountdown();
     rotationTimer = setTimeout(() => {
       if (isRotating && VIEWS.length > 0) {
         switchToView((currentViewIndex + 1) % VIEWS.length, true); // skip hash during auto-rotation
@@ -682,14 +691,36 @@ const App = (() => {
     }, delay);
   }
 
+  // Footer countdown ring + seconds → time until the next view rotation.
+  // No-ops gracefully when the shell has no #rotation-countdown element.
+  const COUNTDOWN_CIRCUMFERENCE = 100;   // circle r=15.915 → 2πr ≈ 100
+  function updateCountdown() {
+    const el = document.getElementById('rotation-countdown');
+    if (!el) return;
+    if (!isRotating || !rotationEndsAt) { el.hidden = true; return; }
+    const remainingMs = Math.max(0, rotationEndsAt - Date.now());
+    const secs = Math.ceil(remainingMs / 1000);
+    const fill = el.querySelector('.footer__countdown-fill');
+    const num = el.querySelector('.footer__countdown-num');
+    const frac = currentRotationMs > 0 ? remainingMs / currentRotationMs : 0;
+    if (fill) fill.style.strokeDashoffset = String(COUNTDOWN_CIRCUMFERENCE * (1 - frac));
+    if (num) num.textContent = secs + 's';
+    el.hidden = false;
+  }
+
   function startRotation() {
     isRotating = true;
     scheduleNextRotation();
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(updateCountdown, 250);
   }
 
   function stopRotation() {
     isRotating = false;
     if (rotationTimer) { clearTimeout(rotationTimer); rotationTimer = null; }
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    const el = document.getElementById('rotation-countdown');
+    if (el) el.hidden = true;
   }
 
   function resetRotation() {

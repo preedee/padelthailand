@@ -555,6 +555,38 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* Rotation countdown — depleting ring (no number) until the next view switch.
+   Pinned to the footer's bottom-right corner; [hidden] when rotation inactive.
+   Sized to the "Last updated" text. Footer is position:relative on this page. */
+.footer__countdown {
+  position: absolute;
+  right: 14px;
+  bottom: 8px;
+  display: inline-flex;
+}
+.footer__countdown[hidden] { display: none; }
+.footer__countdown-ring {
+  width: 16px;                 /* match the 14px timestamp text height */
+  height: 16px;
+  transform: rotate(-90deg);   /* start the fill at 12 o'clock */
+}
+.footer__countdown-track,
+.footer__countdown-fill {
+  fill: none;
+  stroke-width: 4;
+}
+.footer__countdown-track { stroke: rgba(255, 255, 255, 0.18); }
+.footer__countdown-fill {
+  stroke: var(--green-support);
+  stroke-dasharray: 100;       /* circumference of r=15.915 */
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+
+/* Dark event-day theme: brighten the ring fill. */
+.dashboard.theme-draft-live .footer__countdown-fill { stroke: #5EC98A; }
+
 /* ============================================
    VIEW 1 — GROUP STANDINGS
    ============================================ */
