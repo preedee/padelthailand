@@ -809,6 +809,26 @@ const Data = (() => {
     };
   }
 
+  // Resolve a bracket result-pointer token (e.g. "<SF-1-W>", "<CSF-2-L>") to a
+  // real community id once the referenced series has clinched (majority of
+  // matches won). Returns null if it isn't such a token, the series is unknown,
+  // or the series hasn't been decided yet — so callers keep their TBD/label
+  // fallback until then. This is what auto-advances a winner into the next round
+  // without anyone editing the sheet.
+  function resolveSlotCommunityId(token) {
+    if (!token || typeof token !== 'string') return null;
+    const m = token.match(/^<((?:C?SF)-\d+)-([WL])>$/);
+    if (!m) return null;
+    const seriesId = m[1], which = m[2];
+    const series = getSeriesById(seriesId);
+    if (!series) return null;
+    const result = computeSeriesResult(seriesId);
+    if (!result.complete || !result.winnerCommunityId) return null;
+    const loserId = result.winnerCommunityId === series.communityA
+      ? series.communityB : series.communityA;
+    return which === 'W' ? result.winnerCommunityId : loserId;
+  }
+
   // ============================================================
   // Player Avatars — parsed from "Teams and Players" tab
   // Dynamically finds avatar and name columns by header name
@@ -1143,6 +1163,7 @@ const Data = (() => {
     getSeriesById,
     getMatchesBySeriesId,
     computeSeriesResult,
+    resolveSlotCommunityId,
     get matches() { return matches; },
     get lastUpdated() { return lastUpdated; },
     get configLoaded() { return configLoaded; }

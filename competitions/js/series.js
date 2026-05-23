@@ -13,6 +13,14 @@ const Series = (() => {
     if (!value || value === 'TBD') return 'TBD';
 
     if (value.startsWith('<') && value.endsWith('>')) {
+      // Auto-advance: if this points to a clinched series result, show the real
+      // community that won/lost it instead of the "Winner of SF-1" placeholder.
+      const advancedId = Data.resolveSlotCommunityId && Data.resolveSlotCommunityId(value);
+      if (advancedId) {
+        const advanced = Data.getCommunityById(advancedId);
+        if (advanced) return advanced.name;
+      }
+
       const inner = value.slice(1, -1);
 
       // Group rank pointer: A1, A2, B1, B2, A3, A4, B3, B4
@@ -56,7 +64,11 @@ const Series = (() => {
   // Logo path for a community slot — only if value is a real community ID
   function resolveLogo(value) {
     if (!value || value === 'TBD') return null;
-    if (value.startsWith('<')) return null;
+    if (value.startsWith('<')) {
+      const advancedId = Data.resolveSlotCommunityId && Data.resolveSlotCommunityId(value);
+      const advanced = advancedId ? Data.getCommunityById(advancedId) : null;
+      return advanced ? advanced.logoPath : null;
+    }
     const community = Data.getCommunityById(value);
     return community ? community.logoPath : null;
   }

@@ -46,12 +46,21 @@ const Matches = (() => {
     return matches.filter(m => !(hasScores(m) && !isLive(m)) || keep.has(m));
   }
 
-  // Auto-scroll removed per request — the All Matches grid stays static.
-  // lastMatchesHTML lets render() skip rebuilding identical DOM on each ~5s poll.
+  // Auto-scroll is opt-in via the `matches_autoscroll` config key (default off).
+  // When off the grid stays static and completed matches are capped (capCompleted).
+  // When on the cap is lifted (show everything) and the view loop-scrolls — see
+  // startAutoScroll below. lastMatchesHTML lets render() skip rebuilding identical
+  // DOM on each ~5s poll.
   let lastMatchesHTML = '';
 
+  function autoScrollEnabled() {
+    return Data.getConfig('matches_autoscroll', 'false').toLowerCase() === 'true';
+  }
+
   function render(container, matches) {
-    matches = capCompleted(matches);
+    // Only cap completed matches when auto-scroll is off; when on we want the full
+    // list so there is something to scroll through.
+    if (!autoScrollEnabled()) matches = capCompleted(matches);
     const courts = Data.getMatchesByCourt(matches);
     const courtNames = Object.keys(courts);
 
@@ -227,8 +236,18 @@ const Matches = (() => {
     };
     let roundLabel = ROUND_SHORT[match.round] || match.round || '';
     if (ccMode) {
-      const cA = Data.getCommunityById ? Data.getCommunityById(match.communityA) : null;
-      const cB = Data.getCommunityById ? Data.getCommunityById(match.communityB) : null;
+      // Resolve a community slot: direct id, or a clinched result-pointer token
+      // (<SF-1-W>) that auto-advances to the real winner/loser once decided.
+      function resolveCommunity(value) {
+        let c = Data.getCommunityById ? Data.getCommunityById(value) : null;
+        if (!c && Data.resolveSlotCommunityId) {
+          const advancedId = Data.resolveSlotCommunityId(value);
+          if (advancedId) c = Data.getCommunityById(advancedId);
+        }
+        return c;
+      }
+      const cA = resolveCommunity(match.communityA);
+      const cB = resolveCommunity(match.communityB);
       // Bracket-slot tokens (<A1>, <SF-1-W>, <SF-1-L>, ...) → readable placeholders.
       function placeholderLabel(token) {
         if (!token) return 'TBD';
@@ -461,5 +480,75 @@ const Matches = (() => {
     `;
   }
 
-  return { render, renderUpcoming, renderCC };
+  // ============================================================
+  // All Matches auto-scroll (opt-in via `matches_autoscroll`)
+  // Loops: pause at top → scroll down → pause at bottom → back to top, while the
+  // matches view is active. app.js calls startAutoScroll when the view becomes
+  // active and stopAutoScroll when it leaves. The loop reads scrollHeight /
+  // clientHeight live each frame, so it tolerates late-arriving data and the poll
+  // re-rendering the grid (which resets scrollTop to 0).
+  // ============================================================
+  let scrollRAF = null;
+
+  function stopAutoScroll() {
+    if (scrollRAF) {
+      cancelAnimationFrame(scrollRAF);
+      scrollRAF = null;
+    }
+  }
+
+  function startAutoScroll(el) {
+    stopAutoScroll();
+    if (!el || !autoScrollEnabled()) return;
+
+    // Fall back to 40 for blank/zero/negative/NaN — a non-positive speed would
+    // never reach the bottom and stall the loop.
+    const cfgSpeed = parseFloat(Data.getConfig('matches_autoscroll_speed', '40'));
+    const pxPerSec = cfgSpeed > 0 ? cfgSpeed : 40;
+    const TOP_PAUSE_MS = 2000;
+    const BOTTOM_PAUSE_MS = 2000;
+
+    el.scrollTop = 0;
+    let phase = 'top-pause';     // top-pause → down → bottom-pause → (loop)
+    let phaseStart = performance.now();
+    let lastTs = phaseStart;
+
+    function tick(ts) {
+      const max = el.scrollHeight - el.clientHeight;
+      const dt = ts - lastTs;
+      lastTs = ts;
+
+      // Nothing to scroll yet (data not loaded, or content fits) — hold at top
+      // and keep polling so we start once content grows.
+      if (max <= 4) {
+        el.scrollTop = 0;
+        phase = 'top-pause';
+        phaseStart = ts;
+        scrollRAF = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (phase === 'top-pause') {
+        if (ts - phaseStart >= TOP_PAUSE_MS) phase = 'down';
+      } else if (phase === 'down') {
+        el.scrollTop = Math.min(max, el.scrollTop + pxPerSec * dt / 1000);
+        if (el.scrollTop >= max - 1) {
+          phase = 'bottom-pause';
+          phaseStart = ts;
+        }
+      } else if (phase === 'bottom-pause') {
+        if (ts - phaseStart >= BOTTOM_PAUSE_MS) {
+          el.scrollTop = 0;
+          phase = 'top-pause';
+          phaseStart = ts;
+        }
+      }
+
+      scrollRAF = requestAnimationFrame(tick);
+    }
+
+    scrollRAF = requestAnimationFrame(tick);
+  }
+
+  return { render, renderUpcoming, renderCC, startAutoScroll, stopAutoScroll };
 })();
