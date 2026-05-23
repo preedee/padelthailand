@@ -971,6 +971,14 @@ img.avatar {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: #22c55e;
+  /* Opaque background matching the card so the row divider line behind the
+     label isn't visible through it. */
+  background: var(--white);
+  padding: 2px 6px;
+}
+
+.theme-dark .match-card__on-court {
+  background: var(--dark-surface, #122620);
 }
 
 .match-card__status {
