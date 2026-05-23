@@ -33,6 +33,17 @@
     }
     .footer__qr img { width: 36px; height: 36px; display: block; border-radius: 3px; }
 
+    /* Projector / large screens: the footer sits at the very bottom edge, which
+       a projector tends to clip (overscan). Give it more height, lift its
+       content toward the top, and enlarge + raise the QR so it stays on-screen
+       and is scannable from a distance. Desktop only — mobile keeps the compact
+       fixed footer with no QR. */
+    @media (min-width: 769px) {
+      .footer { height: 90px; align-items: flex-start; padding-top: 12px; }
+      .footer__qr { top: 6px; transform: translateX(-50%); }
+      .footer__qr img { width: 56px; height: 56px; }
+    }
+
     /* Mobile: pin the footer to the bottom of the screen and drop the QR.
        The tab nav sits at the top in this theme, so the bottom edge is free.
        Scoped here (not the shared engine) because other competitions keep the
