@@ -35,7 +35,14 @@ const Matches = (() => {
   function capCompleted(matches) {
     const done = matches.filter(m => hasScores(m) && !isLive(m)).sort(sortByDateTime);
     if (done.length <= MAX_COMPLETED) return matches;
-    const keep = new Set(done.slice(-MAX_COMPLETED));   // latest N completed
+    // Keep the most-recent MAX_COMPLETED, then expand back to the start of the
+    // earliest kept time slot — otherwise the cap can cut through a slot and
+    // leave a partial top row (e.g. only Court 5 showing). Whole rows only.
+    const slotOf = m => (m.date || '') + '|' + (m.time || '');
+    let start = done.length - MAX_COMPLETED;
+    const boundary = slotOf(done[start]);
+    while (start > 0 && slotOf(done[start - 1]) === boundary) start--;
+    const keep = new Set(done.slice(start));
     return matches.filter(m => !(hasScores(m) && !isLive(m)) || keep.has(m));
   }
 
@@ -45,11 +52,11 @@ const Matches = (() => {
   // Restarts from the top each time the page (re)appears in rotation.
   // lastMatchesHTML lets render() skip rebuilding identical DOM on each 5s poll
   // so the scroll isn't reset mid-animation.
-  const MAX_TOP_DONE = 5;   // stop once the top 2 rows have this many completed (or fewer)
+  const MAX_TOP_DONE = 7;   // stop once the top 2 rows have this many completed (or fewer)
   let lastMatchesHTML = '';
   let scrollRAF = null, scrollPos = 0, scrollLastTs = 0, scrollPauseUntil = 0;
-  let scrollTarget = 0, scrollWasActive = false;
-  const SCROLL_SPEED = 66, TOP_PAUSE = 1800;
+  let scrollTarget = 0, scrollWasActive = false, scrollDone = false;
+  const SCROLL_SPEED = 99, TOP_PAUSE = 1800;
 
   // The scrollTop at which the top 2 visible rows first contain ≤5 completed
   // matches. Rows are implicit grid rows; group cells by their content-Y.
@@ -80,7 +87,8 @@ const Matches = (() => {
 
   function startMatchesAutoScroll(scroller) {
     if (scrollRAF) cancelAnimationFrame(scrollRAF);
-    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0; scrollTarget = 0; scrollWasActive = false;
+    scrollPos = 0; scrollLastTs = 0; scrollPauseUntil = 0; scrollTarget = 0;
+    scrollWasActive = false; scrollDone = false;
     function step(ts) {
       scrollRAF = requestAnimationFrame(step);
       const active = scroller.classList.contains('active');
@@ -88,14 +96,22 @@ const Matches = (() => {
         scrollPos = 0; scroller.scrollTop = 0;
         scrollPauseUntil = ts + TOP_PAUSE;
         scrollTarget = computeScrollTarget(scroller);
+        scrollDone = false;
       }
       scrollWasActive = active;
       scrollLastTs = scrollLastTs || ts;
       if (!active) { scrollLastTs = ts; return; }   // freeze while hidden
+      // Once the auto-scroll has reached its target, stop driving scrollTop so
+      // the user can scroll the page manually (until it reappears in rotation).
+      if (scrollDone) { scrollLastTs = ts; return; }
       if (ts < scrollPauseUntil) { scrollLastTs = ts; return; }
       const dt = Math.min((ts - scrollLastTs) / 1000, 0.05);
       scrollLastTs = ts;
-      if (scrollPos >= scrollTarget) { scroller.scrollTop = scrollTarget; return; }  // reached → stop
+      if (scrollPos >= scrollTarget) {          // reached → stop, hand control to the user
+        scroller.scrollTop = scrollTarget;
+        scrollDone = true;
+        return;
+      }
       scrollPos = Math.min(scrollPos + SCROLL_SPEED * dt, scrollTarget);
       scroller.scrollTop = scrollPos;
     }
