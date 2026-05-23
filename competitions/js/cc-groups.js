@@ -10,6 +10,35 @@
 
 const CCGroups = (() => {
 
+  // Mobile tap-to-expand state, keyed by community id, mirroring the draft
+  // projector. The roster (.roster10) is hidden by CSS until `.is-expanded`
+  // is on the card; this set survives re-renders so an open card stays open.
+  const expandedTeams = new Set();
+  let tapHandlerBound = false;
+
+  // Single delegated listener (bound once). On mobile, a tap anywhere on a
+  // group card toggles expand/collapse — preventing the embedded team-name
+  // link from navigating — except the explicit "View Team Page →" button.
+  function bindTapToExpand() {
+    if (tapHandlerBound) return;
+    tapHandlerBound = true;
+    document.addEventListener('click', (e) => {
+      if (!window.matchMedia('(max-width: 900px)').matches) return;
+      if (e.target.closest('.team-card-nav')) return;
+      const card = e.target.closest('.cc-groups .team-card[data-team-id]');
+      if (!card) return;
+      e.preventDefault();
+      const teamId = card.getAttribute('data-team-id');
+      if (expandedTeams.has(teamId)) {
+        expandedTeams.delete(teamId);
+        card.classList.remove('is-expanded');
+      } else {
+        expandedTeams.add(teamId);
+        card.classList.add('is-expanded');
+      }
+    });
+  }
+
   function normGender(g) {
     const s = String(g || '').trim().toLowerCase();
     if (s === 'f' || s.startsWith('female')) return 'F';
@@ -80,7 +109,7 @@ const CCGroups = (() => {
       isLive:          false,
       isNext:          false,
       justPickedId:    null,
-      expanded:        false,
+      expanded:        expandedTeams.has(c.id),
     })).join('');
     return `
       <div class="cc-groups__half cc-groups__half--${group.toLowerCase()}">
@@ -91,6 +120,7 @@ const CCGroups = (() => {
 
   function render(container) {
     if (!container) return;
+    bindTapToExpand();
     if (typeof Data === 'undefined' || !window.TeamCard) {
       container.innerHTML = '<div class="loading">Groups unavailable</div>';
       return;
