@@ -189,7 +189,10 @@ const Matches = (() => {
   function renderMatchCard(match, type, isNext) {
     const winner = Data.getWinner(match);
     const roundLower = (match.round || '').toLowerCase();
-    const isFinals = roundLower.includes('finals') || roundLower.includes('final');
+    // Gold treatment is for the Main Draw final only — exclude the Consolation
+    // Final (which also contains "final").
+    const isConsolation = roundLower.includes('consolation');
+    const isFinals = !isConsolation && roundLower.includes('final');
     const isThirdPlace = roundLower.includes('3rd place');
     const roundClass = isFinals ? 'match-card--finals' : isThirdPlace ? 'match-card--third-place' : '';
     const roundLabelClass = isFinals ? 'match-card__round--finals' : isThirdPlace ? 'match-card__round--third-place' : '';

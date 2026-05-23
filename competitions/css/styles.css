@@ -2251,6 +2251,12 @@ body:has(.theme-dark) {
   border-color: #22c55e;
 }
 
+/* Main Draw final — gold border (the base .match-card--finals gold is otherwise
+   overridden by the higher-specificity .theme-dark .match-card border-color). */
+.theme-dark .match-card--finals {
+  border-color: var(--gold, #FFB703);
+}
+
 .theme-dark .match-card__round {
   color: var(--dark-text-muted, #9CA3AF);
 }
