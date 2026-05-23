@@ -25,17 +25,22 @@ const CCGroups = (() => {
     document.addEventListener('click', (e) => {
       if (!window.matchMedia('(max-width: 900px)').matches) return;
       if (e.target.closest('.team-card-nav')) return;
-      const card = e.target.closest('.cc-groups .team-card[data-team-id]');
-      if (!card) return;
+      // No `.cc-groups` prefix here: a poll re-render can detach the tapped
+      // node mid-click, severing it from its `.cc-groups` ancestor — match on
+      // the card alone so we can still read its team id.
+      const tapped = e.target.closest('.team-card[data-team-id]');
+      if (!tapped) return;
       e.preventDefault();
-      const teamId = card.getAttribute('data-team-id');
-      if (expandedTeams.has(teamId)) {
-        expandedTeams.delete(teamId);
-        card.classList.remove('is-expanded');
-      } else {
-        expandedTeams.add(teamId);
-        card.classList.add('is-expanded');
-      }
+      const teamId = tapped.getAttribute('data-team-id');
+      // The Set is the source of truth; flip it, then apply to the LIVE card
+      // node (re-queried fresh) so a mid-tap re-render can't leave the visible
+      // DOM out of sync with the Set and strand a card open.
+      const willExpand = !expandedTeams.has(teamId);
+      if (willExpand) expandedTeams.add(teamId);
+      else expandedTeams.delete(teamId);
+      const esc = window.CSS && CSS.escape ? CSS.escape(teamId) : teamId.replace(/"/g, '\\"');
+      const live = document.querySelector(`.cc-groups .team-card[data-team-id="${esc}"]`);
+      if (live) live.classList.toggle('is-expanded', willExpand);
     });
   }
 
@@ -131,6 +136,11 @@ const CCGroups = (() => {
       return;
     }
     const data = buildRosterData();
+    // A poll can return HTTP 200 with an empty/partial body, leaving the
+    // players array empty for one cycle. Don't repaint good cards with empty
+    // rosters (which looks broken on an expanded mobile card) — keep the last
+    // good render until real roster data returns.
+    if (!data.players.length && container.querySelector('.team-card')) return;
     container.innerHTML = `<div class="cc-groups">
       ${renderHalf(communities, 'A', data)}
       <div class="cc-groups__divider" aria-hidden="true"></div>
