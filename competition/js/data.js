@@ -594,6 +594,45 @@ const Data = (() => {
   }
 
   // ============================================================
+  // Consolation bracket from the Matches tab. Gated by config
+  // `show_consolation`; division-mode only. Consolation matches have
+  // Division = the category (e.g. "Gold") and Round containing
+  // "Consolation" (e.g. "Consolation SF", "Consolation Final").
+  // Round is normalized to 'Semi Finals' vs 'Finals' for column layout.
+  // ============================================================
+  function getConsolationFromMatches(divisionPrefix) {
+    const prefix = (divisionPrefix || '').toLowerCase();
+    const consMatches = matches.filter(m => {
+      const div = (m.division || '').toLowerCase();
+      if (div !== prefix && !div.startsWith(prefix + ' play')) return false;
+      return (m.round || '').toLowerCase().includes('consolation');
+    });
+
+    const out = [];
+    consMatches.forEach(m => {
+      const winner = getWinner(m);
+      const played = hasScores(m);
+      const roundLower = (m.round || '').toLowerCase();
+      const round = roundLower.includes('final') ? 'Finals' : 'Semi Finals';
+      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
+      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
+      out.push({
+        round,
+        team1, team2, sets: m.sets,
+        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        score: '',
+        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
+        section: 'CONSOLATION',
+        division: divisionPrefix,
+        date: m.date, time: m.time
+      });
+    });
+
+    return { matches: out };
+  }
+
+  // ============================================================
   // Player Avatars — parsed from "Teams and Players" tab
   // Dynamically finds avatar and name columns by header name
   // ============================================================
@@ -843,6 +882,7 @@ const Data = (() => {
       return computeStandingsFromMatchData(standingsRawText[tabName]);
     },
     getKnockout: (division) => getKnockoutFromMatches(division),
+    getConsolation: (division) => getConsolationFromMatches(division),
     isMultiDay: () => {
       const dates = new Set(matches.map(m => m.date).filter(Boolean));
       return dates.size > 1;

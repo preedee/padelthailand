@@ -81,10 +81,16 @@ const App = (() => {
     const standingsViews = divisions.map(d => d.slug + '-standings');
     const bracketViews = divisions.map(d => d.slug + '-bracket');
 
+    // Consolation: single combined view across all divisions (config-gated).
+    // Off by default → RPA/LPS and other division comps are unaffected.
+    const showConsolation = Data.getConfig('show_consolation', 'false').toLowerCase() === 'true';
+
     // All possible views
     ALL_VIEWS = [];
     if (showHomePage) ALL_VIEWS.push('home');
-    ALL_VIEWS.push(...standingsViews, ...bracketViews, 'matches');
+    ALL_VIEWS.push(...standingsViews, ...bracketViews);
+    if (showConsolation) ALL_VIEWS.push('consolation');
+    ALL_VIEWS.push('matches');
 
     // Determine which views to include in rotation from config
     // Accepts specific view IDs (e.g. "home, male-amateur-standings, power-bracket, matches")
@@ -94,6 +100,7 @@ const App = (() => {
       VIEWS = [];
       if (showHomePage) VIEWS.push('home');
       VIEWS.push(...standingsViews, ...bracketViews);
+      if (showConsolation) VIEWS.push('consolation');
     } else {
       // Filter to only valid view IDs
       VIEWS = rotationConfig
@@ -121,6 +128,9 @@ const App = (() => {
       }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab${!showHomePage ? ' active' : ''}" data-type="standings">Standings</button>`;
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Brackets</button>`;
+      if (showConsolation) {
+        tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="consolation">Consolation</button>`;
+      }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="matches">All Matches</button>`;
       tabsHTML += `<div class="view-bar__dots">`;
       VIEWS.forEach((_, i) => {
@@ -149,6 +159,7 @@ const App = (() => {
       function resolveViewId(type, division) {
         if (type === 'home') return 'home';
         if (type === 'matches') return 'matches';
+        if (type === 'consolation') return 'consolation';
         return division + '-' + type;
       }
 
@@ -193,8 +204,8 @@ const App = (() => {
       viewBar.querySelectorAll('.view-bar__div-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           const division = tab.dataset.division;
-          // If current type is Home or Matches, default to Standings
-          const type = (currentType === 'home' || currentType === 'matches') ? 'standings' : currentType;
+          // If current type is a global view (Home/Matches/Consolation), default to Standings
+          const type = (currentType === 'home' || currentType === 'matches' || currentType === 'consolation') ? 'standings' : currentType;
           updateTwoRowNav(type, division);
           const viewId = resolveViewId(type, division);
           const idx = VIEWS.indexOf(viewId);
@@ -259,6 +270,11 @@ const App = (() => {
         tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
         tabIndex++;
       });
+
+      // Consolation tab (single combined, config-gated)
+      if (showConsolation) {
+        tabsHTML += `<button class="view-bar__tab" data-view="consolation">Consolation</button>`;
+      }
 
       // All Matches tab (manual only, pushed right)
       tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
@@ -338,6 +354,13 @@ const App = (() => {
         <div class="loading">Loading ${d.name} bracket...</div>
       </section>`;
     });
+
+    // Consolation view (single combined, config-gated)
+    if (showConsolation) {
+      viewsHTML += `<section class="view" id="view-consolation">
+        <div class="loading">Loading consolation bracket...</div>
+      </section>`;
+    }
 
     // All Matches view
     viewsHTML += `<section class="view" id="view-matches">
@@ -433,6 +456,12 @@ const App = (() => {
         Bracket.render(container, d.name, d.name + ' Knockout');
       }
     });
+
+    // Render combined consolation bracket (only present when config-enabled)
+    const consolationContainer = document.getElementById('view-consolation');
+    if (consolationContainer && Bracket.renderConsolationCombined) {
+      Bracket.renderConsolationCombined(consolationContainer, divisions);
+    }
 
     // Render All Matches
     const matchesContainer = document.getElementById('view-matches');
