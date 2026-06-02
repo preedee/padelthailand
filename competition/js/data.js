@@ -355,6 +355,7 @@ const Data = (() => {
       // Data row — use column map if available, else fallback to positional
       if (col1 && currentGroup) {
         const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
+        const s = (name) => colMap && colMap[name] !== undefined ? (fields[colMap[name]] || '').trim() : '';
         const mp = colMap ? c('MP') : (parseInt(col2) || 0);
         const w = colMap ? c('W') : (parseInt(fields[3]) || 0);
         const l = colMap ? c('L') : (parseInt(fields[4]) || 0);
@@ -378,7 +379,13 @@ const Data = (() => {
           gamesWon: gamesW,
           gamesLost: gamesL,
           gamesDiff: gamesDiff,
-          points: w
+          points: w,
+          // Optional per-player avatar + country (resolved in-sheet from Users by ID).
+          // Absent for tournaments without these columns → '' → graceful fallback.
+          p1Avatar: s('P1 Avatar'),
+          p1Country: s('P1 Country'),
+          p2Avatar: s('P2 Avatar'),
+          p2Country: s('P2 Country')
         });
       }
     }
@@ -711,6 +718,55 @@ const Data = (() => {
     }).join('');
   }
 
+  // Country name → ISO 3166-1 alpha-2 (subset; falls back to a 2-letter input).
+  const COUNTRY_CODE = {
+    'thailand':'TH','spain':'ES','united kingdom':'GB','uk':'GB','england':'GB','scotland':'GB','wales':'GB',
+    'united states':'US','usa':'US','us':'US','america':'US','russia':'RU','germany':'DE','france':'FR','italy':'IT',
+    'india':'IN','japan':'JP','china':'CN','south korea':'KR','korea':'KR','argentina':'AR','mexico':'MX','chile':'CL',
+    'colombia':'CO','peru':'PE','brazil':'BR','australia':'AU','canada':'CA','new zealand':'NZ','netherlands':'NL',
+    'belgium':'BE','switzerland':'CH','austria':'AT','sweden':'SE','norway':'NO','denmark':'DK','finland':'FI',
+    'portugal':'PT','poland':'PL','czech republic':'CZ','czechia':'CZ','singapore':'SG','malaysia':'MY','indonesia':'ID',
+    'philippines':'PH','vietnam':'VN','hong kong':'HK','taiwan':'TW','south africa':'ZA','ireland':'IE','greece':'GR',
+    'israel':'IL','uae':'AE','united arab emirates':'AE','saudi arabia':'SA','ukraine':'UA','romania':'RO','hungary':'HU',
+    'serbia':'RS','croatia':'HR','bangladesh':'BD','sri lanka':'LK','luxembourg':'LU','myanmar':'MM','burma':'MM',
+    'turkey':'TR','egypt':'EG','morocco':'MA','nigeria':'NG','kenya':'KE','pakistan':'PK','nepal':'NP'
+  };
+  function countryCodeFor(name) {
+    if (!name) return '';
+    const k = String(name).trim().toLowerCase();
+    return COUNTRY_CODE[k] || (k.length === 2 ? k.toUpperCase() : '');
+  }
+  // Unicode regional-indicator flag from a country name. No CSS dependency.
+  function flagEmoji(country) {
+    const cc = countryCodeFor(country);
+    if (cc.length !== 2) return '';
+    return String.fromCodePoint(...[...cc].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
+  }
+
+  // Per-player avatar + country flag for a standings team. Uses per-player
+  // avatar/country resolved in-sheet (team.p1Avatar/p1Country/p2Avatar/p2Country).
+  // Falls back to the initial when avatar is missing/'null'.
+  function getTeamAvatarFlagHTML(team, size) {
+    if (!team) return '';
+    const sz = size || 26;
+    const names = (team.name || '').replace(/⁠/g, '').split(/ & | and /);
+    const units = [
+      { url: team.p1Avatar, country: team.p1Country, name: (names[0] || '').trim() },
+      { url: team.p2Avatar, country: team.p2Country, name: (names[1] || '').trim() }
+    ].filter(u => u.name || (u.url && u.url !== 'null' && u.url !== '#N/A'));
+    if (units.length === 0) return '';
+    return units.map(u => {
+      const initial = (u.name || '?').charAt(0).toUpperCase();
+      const valid = u.url && u.url !== 'null' && u.url !== '#N/A';
+      const avatar = valid
+        ? `<img class="avatar" src="${u.url}" alt="${u.name}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`
+        : `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+      const flag = flagEmoji(u.country);
+      const flagHTML = flag ? `<span class="player-flag" style="font-size:${Math.round(sz*0.62)}px;line-height:1;margin-left:1px">${flag}</span>` : '';
+      return `<span class="avatar-flag" style="display:inline-flex;align-items:center;margin-right:4px">${avatar}${flagHTML}</span>`;
+    }).join('');
+  }
+
   // Generate stacked avatar+name HTML (one player per row)
   function getTeamStackedHTML(teamName, size) {
     if (!teamName || teamName === 'TBD') return `<div class="team-stacked team-stacked--placeholder"><span class="team-stacked__name">TBD</span></div>`;
@@ -873,6 +929,7 @@ const Data = (() => {
     hasScores,
     getMatchesByCourt,
     getTeamAvatarsHTML,
+    getTeamAvatarFlagHTML,
     getTeamStackedHTML,
     // Dynamic standings: try pre-computed format first, fall back to computing from match data
     getStandings: (tabName) => {

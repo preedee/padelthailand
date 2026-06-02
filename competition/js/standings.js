@@ -141,8 +141,14 @@ const Standings = (() => {
   function renderGroup(name, teams, qualifiedNames) {
     const rows = teams.map(team => {
       const isQualifier = qualifiedNames.has(team.name);
+      // Prefer per-player avatar+flag (resolved in-sheet from Users by ID);
+      // fall back to name-based avatars when those columns aren't present.
+      const hasAvatarFlag = team.p1Avatar || team.p2Avatar || team.p1Country || team.p2Country;
+      const avatarsHTML = hasAvatarFlag && Data.getTeamAvatarFlagHTML
+        ? Data.getTeamAvatarFlagHTML(team, 26)
+        : Data.getTeamAvatarsHTML(team.name, 26);
       return `<tr class="${isQualifier ? 'qualifier' : ''}">
-        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 26)}<span class="team-name">${team.name}</span></div></td>
+        <td><div class="team-with-avatars">${avatarsHTML}<span class="team-name">${team.name}</span></div></td>
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
