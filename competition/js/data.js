@@ -22,6 +22,7 @@ const Data = (() => {
   let standingsData = {};       // tab name → raw CSV lines
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
+  let playerMetaByCode = {};    // team code → {p1Avatar,p1Country,p2Avatar,p2Country} from Teams and Players
   let lastUpdated = null;
   let pollTimer = null;
   let onUpdate = null;
@@ -313,6 +314,11 @@ const Data = (() => {
     const groups = {};
     let currentGroup = '';
     let colMap = null;
+    // Prefer a Teams&Players value, treating '', 'null' and '#N/A' as absent.
+    const pickStr = (a, b) => {
+      const v = (a || '').trim();
+      return (v && v !== 'null' && v !== '#N/A') ? v : (b || '');
+    };
 
     for (const line of lines) {
       const fields = splitCSVLine(line);
@@ -356,6 +362,8 @@ const Data = (() => {
       if (col1 && currentGroup) {
         const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
         const s = (name) => colMap && colMap[name] !== undefined ? (fields[colMap[name]] || '').trim() : '';
+        // Avatar/country joined from Teams and Players by Team Code (col0).
+        const meta = playerMetaByCode[col0] || {};
         const mp = colMap ? c('MP') : (parseInt(col2) || 0);
         const w = colMap ? c('W') : (parseInt(fields[3]) || 0);
         const l = colMap ? c('L') : (parseInt(fields[4]) || 0);
@@ -380,12 +388,14 @@ const Data = (() => {
           gamesLost: gamesL,
           gamesDiff: gamesDiff,
           points: w,
-          // Optional per-player avatar + country (resolved in-sheet from Users by ID).
-          // Absent for tournaments without these columns → '' → graceful fallback.
-          p1Avatar: s('P1 Avatar'),
-          p1Country: s('P1 Country'),
-          p2Avatar: s('P2 Avatar'),
-          p2Country: s('P2 Country')
+          // Per-player avatar + country. Preferred source is the "Teams and Players"
+          // tab (joined by Team Code via playerMetaByCode); falls back to the legacy
+          // in-sheet Standings columns when no Teams&Players entry exists (RPA/LPS).
+          // '', 'null' and '#N/A' count as absent so the better source wins.
+          p1Avatar: pickStr(meta.p1Avatar, s('P1 Avatar')),
+          p1Country: pickStr(meta.p1Country, s('P1 Country')),
+          p2Avatar: pickStr(meta.p2Avatar, s('P2 Avatar')),
+          p2Country: pickStr(meta.p2Country, s('P2 Country'))
         });
       }
     }
@@ -701,6 +711,40 @@ const Data = (() => {
     return playerAvatars[clean] || null;
   }
 
+  // ============================================================
+  // Per-team avatar + country \u2014 parsed POSITIONALLY from the
+  // "Teams and Players" tab (cols G/H = P1 Avatar/Country, K/L = P2).
+  // That tab repeats the headers ID/Avatar/Country once per player, so
+  // header-keyed parsing collapses them \u2014 we must index by column position.
+  // Layout is located by header name: the "Team Code" column is the join key,
+  // and the 1st/2nd "Avatar" and "Country" columns map to player 1 / player 2.
+  // Keyed by Team Code (GA1\u2026SC4) so it joins onto standings rows by `code`.
+  // Returns {} (no-op) for tournaments whose tab lacks these columns.
+  // ============================================================
+  function parsePlayersMeta(text) {
+    const byCode = {};
+    const lines = parseCSV(text);
+    if (lines.length < 2) return byCode;
+    const headers = splitCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+    const codeIdx = headers.indexOf('team code');
+    const avatarIdx = headers.reduce((a, h, i) => { if (h === 'avatar') a.push(i); return a; }, []);
+    const countryIdx = headers.reduce((a, h, i) => { if (h === 'country') a.push(i); return a; }, []);
+    if (codeIdx < 0 || avatarIdx.length === 0) return byCode;
+    const at = (f, idx) => (idx != null && idx >= 0 ? (f[idx] || '').trim() : '');
+    for (let i = 1; i < lines.length; i++) {
+      const f = splitCSVLine(lines[i]);
+      const code = (f[codeIdx] || '').trim();
+      if (!code) continue;
+      byCode[code] = {
+        p1Avatar: at(f, avatarIdx[0]),
+        p1Country: at(f, countryIdx[0]),
+        p2Avatar: at(f, avatarIdx[1]),
+        p2Country: at(f, countryIdx[1])
+      };
+    }
+    return byCode;
+  }
+
   // Generate avatar HTML for a team (2 players split on " and ")
   function getTeamAvatarsHTML(teamName, size) {
     if (!teamName || teamName === 'TBD') return '';
@@ -895,6 +939,8 @@ const Data = (() => {
         const text = await playersRes.text();
         const rows = parseCSVWithHeaders(text);
         playerAvatars = parsePlayersTab(rows);
+        // Per-team avatar+country, joined onto standings by Team Code (positional parse).
+        playerMetaByCode = parsePlayersMeta(text);
       }
 
       lastUpdated = new Date();
