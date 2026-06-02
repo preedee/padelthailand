@@ -1704,3 +1704,36 @@ img.avatar {
   background-position: center;
   line-height: 0;
 }
+
+
+/* ============================================================
+   Combined standings — all divisions on one full-width view.
+   Added for big-screen TV (combined_standings config). Self-
+   contained: this engine copy has no projector @media tiers.
+   ============================================================ */
+.standings-divisions--combined { gap: 18px; }
+.standings-divisions--combined .standings-division { display: flex; flex-direction: column; }
+.standings-divisions--combined .standings-grid { flex: 1; grid-template-rows: 1fr auto; }
+.standings-divisions--combined .group-card__table { height: 100%; }
+
+.content-area:has(#view-standings.view.active) .sidebar { display: none; }
+
+@media (min-width: 1024px) {
+  .standings-division__title { font-size: 24px; margin-bottom: 14px; }
+  .standings-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .group-card__header { font-size: 16px; padding: 9px 14px; }
+  .group-card__table th { font-size: 15px; padding: 8px; }
+  .group-card__table th:not(:first-child) { width: 44px; }
+  .group-card__table td { font-size: 22px; height: auto; padding: 10px 12px; }
+  .standings-footnote { font-size: 15px; }
+}
+@media (min-width: 1024px) and (min-height: 1000px) {
+  .standings-division__title { font-size: 30px; margin-bottom: 16px; }
+  .standings-grid { gap: 20px; }
+  .group-card__header { font-size: 19px; padding: 12px 16px; letter-spacing: 2px; }
+  .group-card__table th { font-size: 17px; padding: 10px; }
+  .group-card__table th:not(:first-child) { width: 50px; }
+  .group-card__table td { font-size: 26px; padding: 14px; }
+  .group-card__table .team-name { font-size: 26px; }
+  .standings-footnote { font-size: 17px; }
+}

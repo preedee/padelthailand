@@ -16,6 +16,7 @@ const App = (() => {
 
   // Division config: each has a standings tab, a bracket, and a slug
   let divisions = [];       // [{ name, slug, standingsTab }]
+  let combinedStandings = false;  // config-gated: all divisions' standings on one view
 
   function init() {
     // Keyboard nav: arrow keys to switch views, space to pause/resume
@@ -77,8 +78,13 @@ const App = (() => {
     // Check if home page is enabled
     const showHomePage = Data.getConfig('show_home_page', 'false').toLowerCase() === 'true';
 
+    // Combined standings: show every division's standings on ONE view (config-gated,
+    // only meaningful with 2+ divisions). Off by default → per-division views as before.
+    combinedStandings = Data.getConfig('combined_standings', 'false').toLowerCase() === 'true'
+      && divisions.length > 1;
+
     // Build all view IDs
-    const standingsViews = divisions.map(d => d.slug + '-standings');
+    const standingsViews = combinedStandings ? ['standings'] : divisions.map(d => d.slug + '-standings');
     const bracketViews = divisions.map(d => d.slug + '-bracket');
 
     // Consolation: single combined view across all divisions (config-gated).
@@ -160,6 +166,7 @@ const App = (() => {
         if (type === 'home') return 'home';
         if (type === 'matches') return 'matches';
         if (type === 'consolation') return 'consolation';
+        if (type === 'standings' && combinedStandings) return 'standings';
         return division + '-' + type;
       }
 
@@ -173,7 +180,7 @@ const App = (() => {
         });
 
         // Update division tabs — deselect all for Home/Matches, highlight for Standings/Brackets
-        const showDivisionHighlight = (type === 'standings' || type === 'bracket');
+        const showDivisionHighlight = (type === 'bracket') || (type === 'standings' && !combinedStandings);
         viewBar.querySelectorAll('.view-bar__div-tab').forEach(t => {
           t.classList.toggle('active', showDivisionHighlight && t.dataset.division === division);
         });
@@ -228,6 +235,8 @@ const App = (() => {
           updateTwoRowNav('home', currentDivision);
         } else if (viewName === 'matches') {
           updateTwoRowNav('matches', currentDivision);
+        } else if (viewName === 'standings') {
+          updateTwoRowNav('standings', currentDivision);
         } else {
           // Parse "slug-type" from view name
           const parts = viewName.split('-');
@@ -254,14 +263,21 @@ const App = (() => {
         tabsHTML += `<button class="view-bar__tab active" data-view="home">Home</button>`;
       }
 
-      // Standings tabs
-      divisions.forEach((d, i) => {
-        const viewId = d.slug + '-standings';
-        const active = (!showHomePage && i === 0) ? ' active' : '';
-        const label = customLabels[tabIndex] || (d.name + ' Standings');
-        tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+      // Standings tabs — one combined tab, or one per division
+      if (combinedStandings) {
+        const active = !showHomePage ? ' active' : '';
+        const label = customLabels[tabIndex] || 'Standings';
+        tabsHTML += `<button class="view-bar__tab${active}" data-view="standings">${label}</button>`;
         tabIndex++;
-      });
+      } else {
+        divisions.forEach((d, i) => {
+          const viewId = d.slug + '-standings';
+          const active = (!showHomePage && i === 0) ? ' active' : '';
+          const label = customLabels[tabIndex] || (d.name + ' Standings');
+          tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+          tabIndex++;
+        });
+      }
 
       // Bracket tabs
       divisions.forEach(d => {
@@ -337,15 +353,22 @@ const App = (() => {
       </section>`;
     }
 
-    // Standings views
+    // Standings views — one combined section, or one per division
     const firstNonHome = !showHomePage;
-    divisions.forEach((d, i) => {
-      const viewId = d.slug + '-standings';
-      const active = (i === 0 && firstNonHome) ? ' active' : '';
-      viewsHTML += `<section class="view${active}" id="view-${viewId}">
-        <div class="loading">Loading ${d.name} standings...</div>
+    if (combinedStandings) {
+      const active = firstNonHome ? ' active' : '';
+      viewsHTML += `<section class="view${active}" id="view-standings">
+        <div class="loading">Loading standings...</div>
       </section>`;
-    });
+    } else {
+      divisions.forEach((d, i) => {
+        const viewId = d.slug + '-standings';
+        const active = (i === 0 && firstNonHome) ? ' active' : '';
+        viewsHTML += `<section class="view${active}" id="view-${viewId}">
+          <div class="loading">Loading ${d.name} standings...</div>
+        </section>`;
+      });
+    }
 
     // Bracket views
     divisions.forEach(d => {
@@ -441,13 +464,18 @@ const App = (() => {
   function renderAllViews(matches) {
     if (!viewsBuilt) return;
 
-    // Render standings for each division
-    divisions.forEach(d => {
-      const container = document.getElementById('view-' + d.slug + '-standings');
-      if (container) {
-        Standings.render(container, d.standingsTab, d.name + ' Standings', d.name);
-      }
-    });
+    // Render standings — combined (all divisions on one view) or per division
+    if (combinedStandings) {
+      const container = document.getElementById('view-standings');
+      if (container) Standings.renderCombined(container, divisions);
+    } else {
+      divisions.forEach(d => {
+        const container = document.getElementById('view-' + d.slug + '-standings');
+        if (container) {
+          Standings.render(container, d.standingsTab, d.name + ' Standings', d.name);
+        }
+      });
+    }
 
     // Render brackets for each division
     divisions.forEach(d => {
