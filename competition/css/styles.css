@@ -1674,3 +1674,33 @@ img.avatar {
     padding: 24px 16px;
   }
 }
+
+/* Standings (division mode): rectangular flag-icons badge on the avatar's
+   bottom-left corner — same treatment as the CC match cards, tuned with a
+   white ring for the light standings background. */
+.team-with-avatars .avatar-flag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.team-with-avatars .avatar-flag__badge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 14px;
+  height: 10px;
+  line-height: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+.team-with-avatars .avatar-flag__badge .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}

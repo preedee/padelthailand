@@ -805,9 +805,14 @@ const Data = (() => {
       const avatar = valid
         ? `<img class="avatar" src="${u.url}" alt="${u.name}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`
         : `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
-      const flag = flagEmoji(u.country);
-      const flagHTML = flag ? `<span class="player-flag" style="font-size:${Math.round(sz*0.62)}px;line-height:1;margin-left:1px">${flag}</span>` : '';
-      return `<span class="avatar-flag" style="display:inline-flex;align-items:center;margin-right:4px">${avatar}${flagHTML}</span>`;
+      // Rectangular flag-icons SVG badged on the avatar's bottom-left corner
+      // (same style as the Community Cup match cards / Groups page). Needs the
+      // flag-icons stylesheet loaded by the shell.
+      const cc = countryCodeFor(u.country);
+      const flagHTML = cc
+        ? `<span class="avatar-flag__badge" title="${u.country}"><span class="fi fi-${cc.toLowerCase()}"></span></span>`
+        : '';
+      return `<span class="avatar-flag">${avatar}${flagHTML}</span>`;
     }).join('');
   }
 
