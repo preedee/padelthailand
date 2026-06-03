@@ -122,6 +122,16 @@ const Data = (() => {
       if (faviconEl) faviconEl.href = config.favicon;
     }
 
+    // Social / link-preview image (og:image + twitter:image) from config.
+    // NOTE: most link-preview crawlers read the STATIC shell og:image and don't
+    // run JS, so the per-shell static value stays authoritative for them; this
+    // keeps the live document in sync and covers JS-rendering consumers.
+    const previewImg = config.preview_logo || config.og_image;
+    if (previewImg && !previewImg.includes('example.com')) {
+      document.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]')
+        .forEach(m => m.setAttribute('content', previewImg));
+    }
+
     // Apply footer text
     if (config.footer_text) {
       const footerTextEl = document.querySelector('.footer__powered-text');
@@ -208,6 +218,14 @@ const Data = (() => {
     // Show/hide page titles based on config (default: show)
     if (config.show_page_titles && config.show_page_titles.toLowerCase() === 'false') {
       document.querySelector('.dashboard').classList.add('hide-page-titles');
+    }
+
+    // Upcoming Matches sidebar — shown by default; remove it when
+    // show_upcoming = false. The .content-area flex layout reflows
+    // .main-content to full width on its own (renderUpcoming is a no-op
+    // once .sidebar__content is gone).
+    if (config.show_upcoming && config.show_upcoming.toLowerCase() === 'false') {
+      document.getElementById('sidebar-upcoming')?.remove();
     }
 
     // Reveal dashboard now that config is applied
