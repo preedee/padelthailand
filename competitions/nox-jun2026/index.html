@@ -87,6 +87,12 @@
       .bracket-consolation--inline .bracket-match .avatar-flag__badge {
         width: 16px; height: 11px;
       }
+      /* Cards the same WIDTH as the knockout. The consolation bracket has only 2
+         round columns, which (flex:1) each stretched to ~50% → double-wide cards.
+         Constrain to the knockout column width (25%), left-aligned. Stays compact
+         (heights/fonts above unchanged) so the page still fits one screen. */
+      .bracket-consolation--inline .bracket { justify-content: flex-start; }
+      .bracket-consolation--inline .bracket__round { flex: 0 0 25%; }
     }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
@@ -130,7 +136,7 @@
   <script src="js/data.js?v=233"></script>
   <script src="js/standings.js?v=227"></script>
   <script src="js/matches.js?v=234"></script>
-  <script src="js/bracket.js?v=233"></script>
+  <script src="js/bracket.js?v=234"></script>
   <script src="js/app.js?v=232"></script>
 </body>
 </html>

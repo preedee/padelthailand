@@ -120,9 +120,17 @@ const Bracket = (() => {
       ? validSets.map(s => `<span class="bracket-match__set${s.b > s.a ? ' bracket-match__set--high' : ''}">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
-    const avatar = (code, name) => (Data.getTeamAvatarFlagByCode
-      ? Data.getTeamAvatarFlagByCode(code, name, 20)
-      : Data.getTeamAvatarsHTML(name, 20));
+    const avatar = (code, name) => {
+      const base = Data.getTeamAvatarFlagByCode
+        ? Data.getTeamAvatarFlagByCode(code, name, 20)
+        : Data.getTeamAvatarsHTML(name, 20);
+      // Guarantee two avatar slots per team. A placeholder / flow label ("Seed 1",
+      // "Winner QF1", "TBD") has no "&" so it yields a single avatar — pad with a
+      // second neutral circle so every bracket team shows two placeholders.
+      return / & | and /.test((name || '').replace(/⁠/g, ''))
+        ? base
+        : base + `<span class="avatar avatar--fallback" style="width:20px;height:20px"></span>`;
+    };
     const team1Avatars = avatar(match.team1Code, team1Name);
     const team1Content = `<div class="team-with-avatars">${team1Avatars}<span class="bracket-match__team-name">${team1Name}</span></div>`;
     const team2Avatars = avatar(match.team2Code, team2Name);
