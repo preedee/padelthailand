@@ -1020,6 +1020,10 @@ const Data = (() => {
   function getPlayerAvatar(playerName) {
     if (!playerName) return null;
     const clean = playerName.trim().replace(/^\u2060+/, '');
+    // Placeholder names must never resolve to a real player's avatar. "TBD" is
+    // reused across unfilled slots, so a single name\u2192avatar entry for it would
+    // otherwise paint every TBD with one stranger's face.
+    if (!clean || clean.toUpperCase() === 'TBD') return null;
     return playerAvatars[clean] || null;
   }
 
