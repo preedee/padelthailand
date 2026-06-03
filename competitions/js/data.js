@@ -23,6 +23,7 @@ const Data = (() => {
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
   let playerMetaByCode = {};    // team code → {p1Avatar,p1Country,p2Avatar,p2Country} from Teams and Players
+  let teamCodeByName = {};      // normalized team name → team code (from group-stage match rows)
   let playerNationalities = {}; // name|id → nationality lookup (Community Cup)
   let players = [];             // Community Cup: full Teams and Players rows (1 row per player)
   let communities = [];         // Community Cup: list of community objects (8 entries)
@@ -1192,12 +1193,22 @@ const Data = (() => {
     return (code && playerMetaByCode[code]) || null;
   }
 
+  // Resolve a usable team code: prefer the given code, else look it up from the
+  // team name (group-stage rows carry both) so knockout rows that hold a real
+  // team name but no code still find the team's avatar+flag metadata.
+  function resolveTeamCode(code, name) {
+    if (code && playerMetaByCode[code]) return code;
+    const k = (name || '').replace(/⁠/g, '').trim().toLowerCase();
+    if (k && teamCodeByName[k]) return teamCodeByName[k];
+    return code || '';
+  }
+
   // INLINE avatars + flag badge for a team, keyed by Team Code — same format as
   // the Standings tab (getTeamAvatarFlagHTML). Falls back to name-based avatars
   // (no per-player country available) when no per-code meta exists (RPA/LPS).
   // Used by the knockout / consolation bracket match cards.
   function getTeamAvatarFlagByCode(code, teamName, size) {
-    const meta = getTeamMeta(code);
+    const meta = getTeamMeta(resolveTeamCode(code, teamName));
     if (meta && (meta.p1Avatar || meta.p2Avatar || meta.p1Country || meta.p2Country)) {
       return getTeamAvatarFlagHTML({ name: teamName, p1Avatar: meta.p1Avatar, p1Country: meta.p1Country, p2Avatar: meta.p2Avatar, p2Country: meta.p2Country }, size);
     }
@@ -1221,7 +1232,7 @@ const Data = (() => {
       const initial = trimmed.charAt(0).toUpperCase();
       return `<div class="team-stacked team-stacked--placeholder"><span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span><span class="team-stacked__name">${trimmed}</span></div>`;
     }
-    const meta = getTeamMeta(code) || {};
+    const meta = getTeamMeta(resolveTeamCode(code, teamName)) || {};
     const units = [
       { name: (players[0] || '').trim(), url: meta.p1Avatar, country: meta.p1Country },
       { name: (players[1] || '').trim(), url: meta.p2Avatar, country: meta.p2Country }
@@ -1347,6 +1358,16 @@ const Data = (() => {
       const matchText = await matchRes.text();
       const matchRows = parseCSVWithHeaders(matchText);
       matches = matchRows.map(toMatch).filter(isValidMatch);
+
+      // Index team name → code from rows that carry both (group stage). Lets the
+      // brackets / All Matches resolve avatars+flags by code even when a knockout
+      // row holds a real team NAME but no code (e.g. "Lara & Zeus" typed into a QF).
+      teamCodeByName = {};
+      const _regCode = (name, code) => {
+        const k = (name || '').replace(/⁠/g, '').trim().toLowerCase();
+        if (k && code && !teamCodeByName[k]) teamCodeByName[k] = code;
+      };
+      matches.forEach(m => { _regCode(m.team1, m.team1Code); _regCode(m.team2, m.team2Code); });
 
       // Parse each standings tab — store both raw lines and raw text
       standingsData = {};
