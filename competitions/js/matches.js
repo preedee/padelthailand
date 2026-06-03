@@ -329,8 +329,14 @@ const Matches = (() => {
         roundLabel = `${roundLabel} - <span class="match-card__cc-type ${typeClass}">${typeText}${slotSuffix}</span>`;
       }
     } else {
-      team1HTML = Data.getTeamStackedHTML(match.team1, 30);
-      team2HTML = Data.getTeamStackedHTML(match.team2, 30);
+      // Code-keyed avatars + country flags (same source/format as Standings),
+      // falling back to name-based stacked avatars on older engines.
+      team1HTML = Data.getTeamStackedFlagHTML
+        ? Data.getTeamStackedFlagHTML(match.team1Code, match.team1, 30)
+        : Data.getTeamStackedHTML(match.team1, 30);
+      team2HTML = Data.getTeamStackedFlagHTML
+        ? Data.getTeamStackedFlagHTML(match.team2Code, match.team2, 30)
+        : Data.getTeamStackedHTML(match.team2, 30);
     }
 
     // Round label: avoid leading "—" when there's no division text (CC mode).

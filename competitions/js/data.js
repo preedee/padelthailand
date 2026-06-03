@@ -729,6 +729,8 @@ const Data = (() => {
         round: round,
         team1: team1,
         team2: team2,
+        team1Code: m.team1Code || '',
+        team2Code: m.team2Code || '',
         sets: m.sets,
         score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
         score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
@@ -748,7 +750,10 @@ const Data = (() => {
       const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
       allBracketMatches.push({
         round: m.round,
-        team1, team2, sets: m.sets,
+        team1, team2,
+        team1Code: m.team1Code || '',
+        team2Code: m.team2Code || '',
+        sets: m.sets,
         score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
         score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
@@ -816,7 +821,10 @@ const Data = (() => {
       const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
       out.push({
         round,
-        team1, team2, sets: m.sets,
+        team1, team2,
+        team1Code: m.team1Code || '',
+        team2Code: m.team2Code || '',
+        sets: m.sets,
         score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
         score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
         score: '',
@@ -1179,6 +1187,60 @@ const Data = (() => {
     }).join('')}</div>`;
   }
 
+  // Per-code meta (avatar+country per player) from the Teams and Players tab.
+  function getTeamMeta(code) {
+    return (code && playerMetaByCode[code]) || null;
+  }
+
+  // INLINE avatars + flag badge for a team, keyed by Team Code — same format as
+  // the Standings tab (getTeamAvatarFlagHTML). Falls back to name-based avatars
+  // (no per-player country available) when no per-code meta exists (RPA/LPS).
+  // Used by the knockout / consolation bracket match cards.
+  function getTeamAvatarFlagByCode(code, teamName, size) {
+    const meta = getTeamMeta(code);
+    if (meta && (meta.p1Avatar || meta.p2Avatar || meta.p1Country || meta.p2Country)) {
+      return getTeamAvatarFlagHTML({ name: teamName, p1Avatar: meta.p1Avatar, p1Country: meta.p1Country, p2Avatar: meta.p2Avatar, p2Country: meta.p2Country }, size);
+    }
+    return getTeamAvatarsHTML(teamName, size);
+  }
+
+  // STACKED avatar + flag + name (one player per row), keyed by Team Code.
+  // Per-player avatar+country from playerMetaByCode (same source as Standings);
+  // flag badge bottom-left. Falls back to name-based avatar lookup per player so
+  // coverage is maximized. Used by the All Matches division match cards.
+  function getTeamStackedFlagHTML(code, teamName, size) {
+    if (!teamName || teamName === 'TBD') {
+      return `<div class="team-stacked team-stacked--placeholder"><span class="team-stacked__name">TBD</span></div>`;
+    }
+    const sz = size || 22;
+    const cleanName = teamName.replace(/⁠/g, '');
+    const players = cleanName.split(/ & | and /);
+    // Single name (placeholder / flow label) — render as before, no flag.
+    if (players.length === 1) {
+      const trimmed = players[0].trim();
+      const initial = trimmed.charAt(0).toUpperCase();
+      return `<div class="team-stacked team-stacked--placeholder"><span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span><span class="team-stacked__name">${trimmed}</span></div>`;
+    }
+    const meta = getTeamMeta(code) || {};
+    const units = [
+      { name: (players[0] || '').trim(), url: meta.p1Avatar, country: meta.p1Country },
+      { name: (players[1] || '').trim(), url: meta.p2Avatar, country: meta.p2Country }
+    ];
+    return `<div class="team-stacked">${units.map(u => {
+      const initial = (u.name || '?').charAt(0).toUpperCase();
+      const metaValid = u.url && u.url !== 'null' && u.url !== '#N/A';
+      const url = metaValid ? u.url : getPlayerAvatar(u.name);  // fall back to name-based avatar
+      const avatarHTML = url
+        ? `<img class="avatar" src="${url}" alt="${u.name}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`
+        : `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+      const cc = countryCodeFor(u.country);
+      const flagHTML = cc
+        ? `<span class="avatar-flag__badge" title="${u.country}"><span class="fi fi-${cc.toLowerCase()}"></span></span>`
+        : '';
+      return `<div class="team-stacked__player"><span class="avatar-flag">${avatarHTML}${flagHTML}</span><span class="team-stacked__name">${u.name}</span></div>`;
+    }).join('')}</div>`;
+  }
+
   // --- Time helper ---
   function timeToMinutes(t) {
     if (!t) return 9999;
@@ -1361,6 +1423,9 @@ const Data = (() => {
     getMatchesByCourt,
     getTeamAvatarsHTML,
     getTeamAvatarFlagHTML,
+    getTeamAvatarFlagByCode,
+    getTeamStackedFlagHTML,
+    getTeamMeta,
     getPlayerAvatar,
     getPlayerNationality,
     getTeamStackedHTML,

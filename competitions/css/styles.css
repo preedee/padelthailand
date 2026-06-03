@@ -2516,6 +2516,35 @@ body:has(.theme-dark) {
   line-height: 0;
 }
 
+/* Same avatar + bottom-left flag badge in the stacked layout used by the
+   All Matches cards (one player per row). Mirrors the Standings treatment. */
+.team-stacked .avatar-flag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.team-stacked .avatar-flag__badge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 14px;
+  height: 10px;
+  line-height: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+.team-stacked .avatar-flag__badge .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}
+
 .match-card__cc-name-row {
   font-size: 15px;
   color: var(--dark-text, #E8F0EC);

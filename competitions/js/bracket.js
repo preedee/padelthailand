@@ -120,9 +120,12 @@ const Bracket = (() => {
       ? validSets.map(s => `<span class="bracket-match__set${s.b > s.a ? ' bracket-match__set--high' : ''}">${s.b}</span>`).join('')
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
-    const team1Avatars = Data.getTeamAvatarsHTML(team1Name, 20);
+    const avatar = (code, name) => (Data.getTeamAvatarFlagByCode
+      ? Data.getTeamAvatarFlagByCode(code, name, 20)
+      : Data.getTeamAvatarsHTML(name, 20));
+    const team1Avatars = avatar(match.team1Code, team1Name);
     const team1Content = `<div class="team-with-avatars">${team1Avatars}<span class="bracket-match__team-name">${team1Name}</span></div>`;
-    const team2Avatars = Data.getTeamAvatarsHTML(team2Name, 20);
+    const team2Avatars = avatar(match.team2Code, team2Name);
     const team2Content = `<div class="team-with-avatars">${team2Avatars}<span class="bracket-match__team-name">${team2Name}</span></div>`;
 
     const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
