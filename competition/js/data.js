@@ -379,22 +379,35 @@ const Data = (() => {
         continue;
       }
 
-      // Column header row — detect column positions by name
-      // Only rebuild colMap if this header row has actual column names (not blank)
-      if (col0 === 'Code') {
-        if (col2 && col2 !== '') {
-          colMap = {};
-          fields.forEach((f, idx) => { colMap[f.trim()] = idx; });
-        }
+      // Column header row — detect column positions by name. "Code" may sit in
+      // col0 (legacy) OR col1 (newer layout with a leading "-"/blank marker column,
+      // e.g. "-","Code","Team","TM",... or "","Code","Team",...). Build colMap by name.
+      if ((col0 === 'Code' && col2) || (col1 === 'Code' && col2 === 'Team')) {
+        colMap = {};
+        fields.forEach((f, idx) => { const k = f.trim(); if (k) colMap[k] = idx; });
         continue;
       }
 
-      // Data row — use column map if available, else fallback to positional
-      if (col1 && currentGroup) {
+      // Data row — locate Code/Team via colMap so it works whether the team code is
+      // in col0 (legacy) or col1 (newer "-"-prefixed layout); stats read by name.
+      const codeIdx = (colMap && colMap['Code'] !== undefined) ? colMap['Code'] : 0;
+      const teamIdx = (colMap && colMap['Team'] !== undefined) ? colMap['Team'] : 1;
+      const teamCode = (fields[codeIdx] || '').trim();
+      const teamName = (fields[teamIdx] || '').trim();
+      // Group: prefer an explicit "Group X" label row; if the sheet omits those,
+      // derive from the team-code suffix (GA1/SB3 -> Group A / Group B). Only for
+      // rows whose col0 is blank, so the Overall ranking block (position in col0) is
+      // skipped and teams are not duplicated into groups.
+      let grp = currentGroup;
+      if (!grp && col0 === '') {
+        const gm = teamCode.match(/([A-Za-z])\d+$/);
+        if (gm) grp = 'Group ' + gm[1].toUpperCase();
+      }
+      if (teamName && grp) {
         const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
         const s = (name) => colMap && colMap[name] !== undefined ? (fields[colMap[name]] || '').trim() : '';
-        // Avatar/country joined from Teams and Players by Team Code (col0).
-        const meta = playerMetaByCode[col0] || {};
+        // Avatar/country joined from Teams and Players by Team Code.
+        const meta = playerMetaByCode[teamCode] || {};
         const mp = colMap ? c('MP') : (parseInt(col2) || 0);
         const w = colMap ? c('W') : (parseInt(fields[3]) || 0);
         const l = colMap ? c('L') : (parseInt(fields[4]) || 0);
@@ -405,10 +418,10 @@ const Data = (() => {
         const gamesL = colMap ? c('Games L') : (parseInt(fields[9]) || 0);
         const gamesDiff = colMap ? c('Games Difference') : (parseInt(fields[10]) || 0);
 
-        if (!groups[currentGroup]) groups[currentGroup] = [];
-        groups[currentGroup].push({
-          code: col0,
-          name: col1,
+        if (!groups[grp]) groups[grp] = [];
+        groups[grp].push({
+          code: teamCode,
+          name: teamName,
           played: mp,
           won: w,
           lost: l,
