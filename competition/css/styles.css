@@ -1795,3 +1795,18 @@ body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__
    the full width; left-align to match the Knockout columns above. */
 .bracket-division-page .bracket-combined__division--consolation .bracket { justify-content: flex-start; gap: 1.5vw; }
 .bracket-division-page .bracket-combined__division--consolation .bracket__round { flex: 0 1 22vw; }
+
+/* ============================================================
+   Footer QR — centered "Scan Here / <QR> / With Your Phone" linking to
+   the dashboard, injected by data.js applyConfig() on every dashboard
+   (mirrors the Community Cup). Base 44px-footer treatment; hidden on
+   mobile to avoid colliding with the side items.
+   ============================================================ */
+.footer { position: relative; }
+.footer__qr {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.footer__qr img { width: 36px; height: 36px; display: block; border-radius: 3px; background: #FFFFFF; }
+.footer__qr-label { color: #FFFFFF; font-size: 11px; white-space: nowrap; }
+@media (max-width: 768px) { .footer__qr { display: none; } }

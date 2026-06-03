@@ -142,6 +142,37 @@ const Data = (() => {
       });
     }
 
+    // Footer QR — centered "Scan Here / <QR> / With Your Phone" linking to this
+    // dashboard, ON by default for EVERY dashboard (mirrors the Community Cup).
+    // Opt out with config footer_qr in {off,false,none}. Reliability: set
+    // footer_qr to a static image URL/path; otherwise the QR auto-generates from
+    // the page URL. Guard: skip if a shell already provides its own .footer__qr.
+    (function injectFooterQR() {
+      const footer = document.querySelector('.footer');
+      if (!footer || footer.querySelector('.footer__qr')) return;
+      const raw = (config.footer_qr || '').trim();
+      if (['off', 'false', 'none'].includes(raw.toLowerCase())) return;
+      // Canonical dashboard URL — drop rotation #hash / ?query so the QR stays clean.
+      const pageUrl = location.origin + location.pathname;
+      const link = (config.footer_qr_link || '').trim() || pageUrl;
+      const isImg = /^(https?:\/\/|[.\/]|assets\/)/i.test(raw);
+      const qrSrc = isImg
+        ? raw
+        : 'https://api.qrserver.com/v1/create-qr-code/?margin=0&size=240x240&data=' + encodeURIComponent(link);
+      const labelColor = config.footer_text_color || '#FFFFFF';
+      const top = config.footer_qr_top || 'Scan Here';
+      const bottom = config.footer_qr_bottom || 'With Your Phone';
+      const a = document.createElement('a');
+      a.className = 'footer__qr';
+      a.href = link;
+      a.title = 'Scan to open this dashboard';
+      a.innerHTML =
+        '<span class="footer__qr-label" style="color:' + labelColor + '">' + top + '</span>' +
+        '<img src="' + qrSrc + '" alt="QR code linking to this dashboard">' +
+        '<span class="footer__qr-label" style="color:' + labelColor + '">' + bottom + '</span>';
+      footer.appendChild(a);
+    })();
+
     // Apply nav bar colors
     const viewBar = document.querySelector('.view-bar');
     if (viewBar) {
