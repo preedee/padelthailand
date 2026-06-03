@@ -11,15 +11,16 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/tps-favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css?v=229">
+  <link rel="stylesheet" href="css/styles.css?v=230">
   <style>
     /* NOX-only cosmetic overrides (per-competition; keeps shared engine CSS intact).
-       Larger nav-bar + footer text for big-screen readability. */
-    #view-bar .view-bar__tab { font-size: 20px; }
-    #view-bar .view-bar__tab.active { font-size: 22px; }
-    .footer { height: 56px; }
-    .footer__powered-text, .footer__timestamp { font-size: 18px; }
-    .footer__qr-label { font-size: 14px; }
+       Nav + footer text scale with viewport height (clamped), matching the
+       dynamic standings sizing. ~1080px-tall ≈ the previous fixed sizes. */
+    #view-bar .view-bar__tab { font-size: clamp(14px, 1.85vh, 24px); }
+    #view-bar .view-bar__tab.active { font-size: clamp(15px, 2vh, 26px); }
+    .footer { height: clamp(44px, 5.2vh, 64px); }
+    .footer__powered-text, .footer__timestamp { font-size: clamp(12px, 1.7vh, 22px); }
+    .footer__qr-label { font-size: clamp(10px, 1.3vh, 16px); }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>

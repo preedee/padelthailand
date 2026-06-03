@@ -648,7 +648,7 @@ html, body {
   justify-content: center;
   gap: 6px 28px;
   font-family: var(--font);
-  font-size: 18px;
+  font-size: clamp(12px, 1.7vh, 22px);
   color: var(--green);
   padding: 10px 4px 4px;
   margin-top: 6px;
@@ -3289,15 +3289,16 @@ body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__
 }
 @media (min-width: 1024px) {
   .standings-divisions--combined { gap: 12px; }
-  .standings-divisions--combined .standings-division__title { font-size: 22px; margin-bottom: 8px; }
-  .standings-divisions--combined .group-card__header { font-size: 17px; padding: 7px 12px; letter-spacing: 1px; }
-  .standings-divisions--combined .group-card__table th { font-size: 16px; padding: 7px 6px; }
-  .standings-divisions--combined .group-card__table th.group-card__name { font-size: 22px; }
-  /* Rows: explicit compact height (down from the stretched ~81px), with the
-     avatar sized to fit just inside it. */
-  .standings-divisions--combined .group-card__table td { font-size: 23px; height: 54px; padding: 4px 10px; }
-  .standings-divisions--combined .group-card__table .team-name { font-size: 23px; }
-  .standings-divisions--combined .standings-footnote { font-size: 14px; }
+  /* Everything scales with viewport height (vh), clamped to sane min/max — so the
+     whole table grows/shrinks smoothly with the screen instead of jumping at the
+     breakpoint. Values are tuned so 1080px-tall ≈ the previous fixed sizes. */
+  .standings-divisions--combined .standings-division__title { font-size: clamp(15px, 2vh, 26px); margin-bottom: 8px; }
+  .standings-divisions--combined .group-card__header { font-size: clamp(12px, 1.6vh, 19px); padding: 7px 12px; letter-spacing: 1px; }
+  .standings-divisions--combined .group-card__table th { font-size: clamp(11px, 1.5vh, 19px); padding: 7px 6px; }
+  .standings-divisions--combined .group-card__table th.group-card__name { font-size: clamp(15px, 2vh, 26px); }
+  .standings-divisions--combined .group-card__table td { font-size: clamp(15px, 2.1vh, 28px); height: clamp(40px, 5vh, 64px); padding: 4px 10px; }
+  .standings-divisions--combined .group-card__table .team-name { font-size: clamp(15px, 2.1vh, 28px); }
+  .standings-divisions--combined .standings-footnote { font-size: clamp(11px, 1.3vh, 17px); }
   .standings-divisions--combined .team-with-avatars { gap: 5px; }
   /* Avatar scales with viewport height, kept smaller than the row so it never
      overflows into the next row. ~4vh ≈ 43px at 1080, clamped 32–44px. */
