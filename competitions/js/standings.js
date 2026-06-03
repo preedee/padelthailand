@@ -49,6 +49,22 @@ const Standings = (() => {
     renderSingleDivision(container, 'Club Play Standings', Data.getClubStandings(), rule);
   }
 
+  // Config-gated UI bits. Defaults preserve existing behavior for all other
+  // competitions — only a comp that opts in (via its Config tab) changes.
+  function qualifyNoteEnabled() {
+    return String(Data.getConfig('show_qualify_note', 'true')).toLowerCase() !== 'false';
+  }
+  function columnLegendHTML() {
+    const show = String(Data.getConfig('show_column_legend', 'false')).toLowerCase() === 'true';
+    if (!show) return '';
+    return `<div class="standings-legend">
+        <span><strong>MP</strong> Matches Played</span>
+        <span><strong>W</strong> Wins</span>
+        <span><strong>L</strong> Losses</span>
+        <span><strong>GD</strong> Games Difference</span>
+      </div>`;
+  }
+
   // Shared comparator for ranking teams within a group / among remaining teams.
   function compareTeams(a, b) {
     return b.won - a.won ||
@@ -119,6 +135,7 @@ const Standings = (() => {
     container.innerHTML = `
       <div class="standings-divisions">
         ${renderDivision(title, groupNames, groups, qualifiedNames, footnote)}
+        ${columnLegendHTML()}
       </div>`;
   }
 
@@ -134,7 +151,7 @@ const Standings = (() => {
     }).filter(Boolean);
 
     container.innerHTML = blocks.length
-      ? `<div class="standings-divisions standings-divisions--combined">${blocks.join('')}</div>`
+      ? `<div class="standings-divisions standings-divisions--combined">${blocks.join('')}${columnLegendHTML()}</div>`
       : '<div class="loading">No group standings data available</div>';
   }
 
@@ -144,7 +161,7 @@ const Standings = (() => {
         <div class="standings-division__title">${title}</div>
         <div class="standings-grid">
           ${groupNames.map(name => renderGroup(name, groups[name], qualifiedNames)).join('')}
-          <div class="standings-footnote">${footnote}</div>
+          ${qualifyNoteEnabled() ? `<div class="standings-footnote">${footnote}</div>` : ''}
         </div>
       </div>`;
   }
