@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/tps-favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css?v=230">
+  <link rel="stylesheet" href="css/styles.css?v=232">
   <style>
     /* NOX-only cosmetic overrides (per-competition; keeps shared engine CSS intact).
        Nav + footer text scale with viewport height (clamped), matching the
@@ -58,6 +58,21 @@
         height: clamp(32px, 4vh, 44px) !important;
         font-size: clamp(14px, 1.8vh, 21px) !important;
       }
+
+      /* Inline consolation = a smaller bracket beneath the knockout */
+      .bracket-consolation--inline .bracket-match__team-name {
+        font-size: clamp(12px, 1.6vh, 20px) !important;
+      }
+      .bracket-consolation--inline .bracket__round-title {
+        font-size: clamp(10px, 1.1vh, 15px) !important;
+      }
+      .bracket-consolation--inline .bracket-match .avatar,
+      .bracket-consolation--inline .bracket-match .avatar--fallback {
+        width: clamp(20px, 2.4vh, 28px) !important;
+        height: clamp(20px, 2.4vh, 28px) !important;
+        min-width: clamp(20px, 2.4vh, 28px); min-height: clamp(20px, 2.4vh, 28px);
+        font-size: clamp(10px, 1.3vh, 15px) !important;
+      }
     }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
@@ -101,7 +116,7 @@
   <script src="js/data.js?v=231"></script>
   <script src="js/standings.js?v=227"></script>
   <script src="js/matches.js?v=224"></script>
-  <script src="js/bracket.js?v=224"></script>
-  <script src="js/app.js?v=224"></script>
+  <script src="js/bracket.js?v=232"></script>
+  <script src="js/app.js?v=232"></script>
 </body>
 </html>

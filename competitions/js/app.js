@@ -639,6 +639,10 @@ const App = (() => {
       const container = document.getElementById('view-' + d.slug + '-bracket');
       if (container) {
         Bracket.render(container, d.name, d.name + ' Knockout');
+        // Show this division's consolation as a small bracket beneath the knockout.
+        if (Bracket.appendConsolation && Bracket.appendConsolation(container, d.name)) {
+          container.classList.add('view--with-consolation');
+        }
       }
     });
 

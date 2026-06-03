@@ -213,5 +213,29 @@ const Bracket = (() => {
       </div>`;
   }
 
-  return { render, renderConsolationCombined };
+  // Append a single division's consolation bracket beneath its knockout, inside
+  // the same division view. Compact "small bracket" (SF column + Final column).
+  // No-ops when the division has no consolation matches. Driven by
+  // Data.getConsolation(divisionName) (Matches rows with Round ~ "Consolation").
+  function appendConsolation(container, divisionName) {
+    if (!container || !Data.getConsolation) return false;
+    const data = Data.getConsolation(divisionName);
+    const ms = (data && data.matches) || [];
+    const sf = ms.filter(m => m.round === 'Semi Finals');
+    const fin = ms.filter(m => m.round === 'Finals');
+    if (sf.length === 0 && fin.length === 0) return false;
+
+    const block = document.createElement('div');
+    block.className = 'bracket-single bracket-consolation bracket-consolation--inline';
+    block.innerHTML = `
+      <div class="bracket-consolation__label">Consolation</div>
+      <div class="bracket">
+        ${sf.length ? renderRound('Semi Finals', sf) : ''}
+        ${fin.length ? renderRound('Finals', fin) : ''}
+      </div>`;
+    container.appendChild(block);
+    return true;
+  }
+
+  return { render, renderConsolationCombined, appendConsolation };
 })();
