@@ -29,12 +29,9 @@
       .bracket-division__title       { font-size: clamp(13px, 1.7vh, 22px); }
       .bracket__round-title          { font-size: clamp(11px, 1.3vh, 18px); }
       .bracket-match__datetime       { font-size: clamp(11px, 1.3vh, 18px); }
-      .bracket-match__team-name      { font-size: clamp(12px, 1.5vh, 20px); }
       .bracket-match__score,
       .bracket-match__set            { font-size: clamp(12px, 1.5vh, 20px); }
       .team-stacked__place           { font-size: clamp(9px, 1vh, 14px); }
-      .team-stacked__name,
-      .team-stacked__standing-team   { font-size: clamp(12px, 1.5vh, 20px); }
       /* All Matches court grid */
       .court-column__header          { font-size: clamp(13px, 1.7vh, 22px); }
       .match-card__round,
@@ -42,6 +39,25 @@
       .match-card__round-name        { font-size: clamp(11px, 1.3vh, 18px); }
       .match-card__time              { font-size: clamp(10px, 1.2vh, 16px); }
       .match-card__on-court          { font-size: clamp(11px, 1.4vh, 19px); }
+
+      /* Team names + avatars on brackets & All Matches match the Standings page
+         exactly (team-stacked is used by both views; standings uses .team-name
+         at clamp(15px,2.1vh,28px) and avatars at clamp(32px,4vh,44px)). */
+      .bracket-match__team-name,
+      .team-stacked__name,
+      .team-stacked__standing-team   { font-size: clamp(15px, 2.1vh, 28px); }
+      .team-stacked .avatar,
+      .bracket-match .avatar {
+        width: clamp(32px, 4vh, 44px) !important;
+        height: clamp(32px, 4vh, 44px) !important;
+        min-width: clamp(32px, 4vh, 44px); min-height: clamp(32px, 4vh, 44px);
+      }
+      .team-stacked .avatar--fallback,
+      .bracket-match .avatar--fallback {
+        width: clamp(32px, 4vh, 44px) !important;
+        height: clamp(32px, 4vh, 44px) !important;
+        font-size: clamp(14px, 1.8vh, 21px) !important;
+      }
     }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
