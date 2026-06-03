@@ -27,13 +27,13 @@
     @media (min-width: 1024px) {
       /* Gold/Silver bracket pages */
       .bracket-division__title       { font-size: clamp(13px, 1.7vh, 22px); }
-      .bracket__round-title          { font-size: clamp(11px, 1.3vh, 18px); }
+      .bracket__round-title          { font-size: clamp(15px, 2vh, 26px); } /* match Standings group-name */
       .bracket-match__datetime       { font-size: clamp(11px, 1.3vh, 18px); }
       .bracket-match__score,
       .bracket-match__set            { font-size: clamp(12px, 1.5vh, 20px); }
       .team-stacked__place           { font-size: clamp(9px, 1vh, 14px); }
       /* All Matches court grid */
-      .court-column__header          { font-size: clamp(13px, 1.7vh, 22px); }
+      .court-column__header          { font-size: clamp(15px, 2vh, 26px); } /* match Standings group-name */
       .match-card__round,
       .match-card__division,
       .match-card__round-name        { font-size: clamp(11px, 1.3vh, 18px); }
@@ -67,6 +67,12 @@
       .bracket-match .avatar-flag__badge,
       .match-card .team-with-avatars .avatar-flag__badge {
         width: 24px; height: 17px;
+      }
+      /* Bracket teams on a single line (match Standings / All Matches): the
+         engine default lets long names wrap onto a second row — keep one line. */
+      .bracket-match .team-with-avatars { min-width: 0; flex: 1; }
+      .bracket-match__team-name {
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
 
       /* Inline consolation = a smaller bracket beneath the knockout */
