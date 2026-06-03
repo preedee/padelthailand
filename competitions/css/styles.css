@@ -3290,3 +3290,10 @@ body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__
 .footer__qr img { width: 36px; height: 36px; display: block; border-radius: 3px; background: #FFFFFF; }
 .footer__qr-label { color: #FFFFFF; font-size: 11px; white-space: nowrap; }
 @media (max-width: 768px) { .footer__qr { display: none; } }
+
+
+/* Merged group header — the table header row IS the group bar: the group name
+   (where "Team" used to be) on the left + stat labels (MP/W/L/GD) on the right.
+   The separate .group-card__header div is no longer rendered. */
+.group-card__table thead th { background: var(--green); color: var(--white); border-bottom: none; }
+.group-card__table th.group-card__name { text-align: left; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }

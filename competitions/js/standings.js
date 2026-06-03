@@ -163,21 +163,18 @@ const Standings = (() => {
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
-        <td>${team.setsDiff != null ? team.setsDiff : (team.setsWon - team.setsLost)}</td>
         <td>${team.gamesDiff != null ? team.gamesDiff : (team.gamesWon - team.gamesLost)}</td>
       </tr>`;
     }).join('');
 
     return `<div class="group-card">
-      <div class="group-card__header">${name}</div>
       <table class="group-card__table">
         <thead>
           <tr>
-            <th>Team</th>
+            <th class="group-card__name">${name}</th>
             <th>MP</th>
             <th>W</th>
             <th>L</th>
-            <th>SD</th>
             <th>GD</th>
           </tr>
         </thead>
