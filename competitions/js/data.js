@@ -1206,10 +1206,11 @@ const Data = (() => {
       if (!courts[court]) courts[court] = [];
       courts[court].push(m);
     });
-    // Sort courts: Court 1-4 first, then others
+    // Sort courts: config `court_order` first (verbatim names), then the
+    // default Court 1-4 priority, then any remaining in insertion order.
     const sortedCourts = {};
-    const courtOrder = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
-    courtOrder.forEach(c => { if (courts[c]) sortedCourts[c] = courts[c]; });
+    const courtOrder = [...getConfigList('court_order'), 'Court 1', 'Court 2', 'Court 3', 'Court 4'];
+    courtOrder.forEach(c => { if (courts[c] && !sortedCourts[c]) sortedCourts[c] = courts[c]; });
     Object.keys(courts).forEach(c => { if (!sortedCourts[c]) sortedCourts[c] = courts[c]; });
     for (const court of Object.keys(sortedCourts)) {
       sortedCourts[court].sort((a, b) => {
