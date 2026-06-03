@@ -32,9 +32,14 @@ const Bracket = (() => {
   }
 
   function renderDivision(container, title, divData) {
+    container.innerHTML = buildDivisionHTML(title, divData);
+  }
+
+  // Build one division's knockout bracket as an HTML string (shared by the single
+  // per-division view and the combined all-divisions view).
+  function buildDivisionHTML(title, divData) {
     if (!divData || divData.matches.length === 0) {
-      container.innerHTML = '<div class="loading">No knockout bracket data available</div>';
-      return;
+      return '<div class="loading">No knockout bracket data available</div>';
     }
 
     // Get main playoff matches
@@ -75,7 +80,23 @@ const Bracket = (() => {
         ${Object.keys(tiers).length > 0 ? renderTiers(tiers) : ''}
       </div>`;
 
-    container.innerHTML = html;
+    return html;
+  }
+
+  // Combined knockout view — one screen, all divisions stacked vertically
+  // (mirrors renderConsolationCombined). Each division shows its full knockout.
+  function renderKnockoutCombined(container, divisions) {
+    const blocks = (divisions || []).map(d => {
+      const data = Data.getKnockout(d.name);
+      const hasData = data && data.matches && data.matches.length > 0;
+      const inner = hasData
+        ? buildDivisionHTML(d.name + ' — Knockout', data)
+        : `<div class="bracket-division__title">${d.name} — Knockout</div><div class="loading">No knockout matches yet</div>`;
+      return `<div class="bracket-combined__division">${inner}</div>`;
+    });
+    container.innerHTML = blocks.length
+      ? `<div class="bracket-combined">${blocks.join('')}</div>`
+      : '<div class="loading">No knockout bracket data available</div>';
   }
 
   function renderRound(roundKey, roundMatches) {
@@ -213,5 +234,5 @@ const Bracket = (() => {
       </div>`;
   }
 
-  return { render, renderConsolationCombined };
+  return { render, renderKnockoutCombined, renderConsolationCombined };
 })();

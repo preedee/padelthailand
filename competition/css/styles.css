@@ -1737,3 +1737,10 @@ img.avatar {
   .group-card__table .team-name { font-size: 26px; }
   .standings-footnote { font-size: 17px; }
 }
+
+
+/* Combined knockout view — all divisions stacked vertically on one screen
+   (companion to combined standings / consolation). */
+.bracket-combined { display: flex; flex-direction: column; gap: 2vmin; height: 100%; }
+.bracket-combined__division { min-height: 0; }
+.bracket-combined .bracket-single { height: auto; }
