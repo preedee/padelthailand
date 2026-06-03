@@ -21,6 +21,28 @@
     .footer { height: clamp(44px, 5.2vh, 64px); }
     .footer__powered-text, .footer__timestamp { font-size: clamp(12px, 1.7vh, 22px); }
     .footer__qr-label { font-size: clamp(10px, 1.3vh, 16px); }
+
+    /* Brackets + All Matches: same viewport-height scaling as Standings.
+       Gated to >=1024px so mobile keeps the engine's own tiers. 1080px ~= prior sizes. */
+    @media (min-width: 1024px) {
+      /* Gold/Silver bracket pages */
+      .bracket-division__title       { font-size: clamp(13px, 1.7vh, 22px); }
+      .bracket__round-title          { font-size: clamp(11px, 1.3vh, 18px); }
+      .bracket-match__datetime       { font-size: clamp(11px, 1.3vh, 18px); }
+      .bracket-match__team-name      { font-size: clamp(12px, 1.5vh, 20px); }
+      .bracket-match__score,
+      .bracket-match__set            { font-size: clamp(12px, 1.5vh, 20px); }
+      .team-stacked__place           { font-size: clamp(9px, 1vh, 14px); }
+      .team-stacked__name,
+      .team-stacked__standing-team   { font-size: clamp(12px, 1.5vh, 20px); }
+      /* All Matches court grid */
+      .court-column__header          { font-size: clamp(13px, 1.7vh, 22px); }
+      .match-card__round,
+      .match-card__division,
+      .match-card__round-name        { font-size: clamp(11px, 1.3vh, 18px); }
+      .match-card__time              { font-size: clamp(10px, 1.2vh, 16px); }
+      .match-card__on-court          { font-size: clamp(11px, 1.4vh, 19px); }
+    }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
