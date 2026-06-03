@@ -49,23 +49,21 @@ const Standings = (() => {
     renderSingleDivision(container, 'Club Play Standings', Data.getClubStandings(), rule);
   }
 
-  function renderSingleDivision(container, title, groups, rule) {
+  // Shared comparator for ranking teams within a group / among remaining teams.
+  function compareTeams(a, b) {
+    return b.won - a.won ||
+      a.lost - b.lost ||
+      (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
+      (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost);
+  }
+
+  // Sort groups in place, compute the qualifier set + footnote for one division.
+  // Returns { groupNames, qualifiedNames, footnote } — the renderable building blocks.
+  function prepareDivision(groups, rule) {
     const groupNames = Object.keys(groups);
 
-    if (groupNames.length === 0) {
-      container.innerHTML = '<div class="loading">No group standings data available</div>';
-      return;
-    }
-
     // Sort teams within each group first
-    groupNames.forEach(name => {
-      groups[name].sort((a, b) =>
-        b.won - a.won ||
-        a.lost - b.lost ||
-        (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
-        (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
-      );
-    });
+    groupNames.forEach(name => groups[name].sort(compareTeams));
 
     // Determine qualifiers — only if at least one team has played
     const qualifiedNames = new Set();
@@ -76,7 +74,6 @@ const Standings = (() => {
     // Top N per group (only if matches have been played)
     if (anyMatchesPlayed) {
       groupNames.forEach(name => {
-        // Only qualify from groups where at least one team has played
         const groupHasPlayed = groups[name].some(team => team.played > 0);
         if (groupHasPlayed) {
           groups[name].forEach((team, idx) => {
@@ -91,21 +88,11 @@ const Standings = (() => {
       const remaining = [];
       groupNames.forEach(name => {
         groups[name].forEach((team, idx) => {
-          if (idx >= rule.perGroup) {
-            remaining.push(team);
-          }
+          if (idx >= rule.perGroup) remaining.push(team);
         });
       });
-      // Sort remaining by same criteria
-      remaining.sort((a, b) =>
-        b.won - a.won ||
-        a.lost - b.lost ||
-        (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
-        (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost)
-      );
-      if (remaining.length > 0) {
-        qualifiedNames.add(remaining[0].name);
-      }
+      remaining.sort(compareTeams);
+      if (remaining.length > 0) qualifiedNames.add(remaining[0].name);
     }
 
     // Build descriptive footnote text
@@ -119,12 +106,36 @@ const Standings = (() => {
       footnote = '*Top ' + rule.perGroup + ' per group qualify for the next round';
     }
 
-    const html = `
+    return { groupNames, qualifiedNames, footnote };
+  }
+
+  function renderSingleDivision(container, title, groups, rule) {
+    if (Object.keys(groups).length === 0) {
+      container.innerHTML = '<div class="loading">No group standings data available</div>';
+      return;
+    }
+    const { groupNames, qualifiedNames, footnote } = prepareDivision(groups, rule);
+
+    container.innerHTML = `
       <div class="standings-divisions">
         ${renderDivision(title, groupNames, groups, qualifiedNames, footnote)}
       </div>`;
+  }
 
-    container.innerHTML = html;
+  // Combined view — render every division's group standings stacked on one page.
+  // Used for big-screen comps where show_all categories at a glance (config-gated).
+  function renderCombined(container, divisions) {
+    const blocks = divisions.map(d => {
+      const groups = Data.getStandings(d.standingsTab);
+      if (!groups || Object.keys(groups).length === 0) return '';
+      const rule = getQualificationRule(d.name);
+      const { groupNames, qualifiedNames, footnote } = prepareDivision(groups, rule);
+      return renderDivision(d.name, groupNames, groups, qualifiedNames, footnote);
+    }).filter(Boolean);
+
+    container.innerHTML = blocks.length
+      ? `<div class="standings-divisions standings-divisions--combined">${blocks.join('')}</div>`
+      : '<div class="loading">No group standings data available</div>';
   }
 
   function renderDivision(title, groupNames, groups, qualifiedNames, footnote) {
@@ -141,8 +152,14 @@ const Standings = (() => {
   function renderGroup(name, teams, qualifiedNames) {
     const rows = teams.map(team => {
       const isQualifier = qualifiedNames.has(team.name);
+      // Prefer per-player avatar+flag (resolved in-sheet from Users by ID);
+      // fall back to name-based avatars when those columns aren't present.
+      const hasAvatarFlag = team.p1Avatar || team.p2Avatar || team.p1Country || team.p2Country;
+      const avatarsHTML = hasAvatarFlag && Data.getTeamAvatarFlagHTML
+        ? Data.getTeamAvatarFlagHTML(team, 26)
+        : Data.getTeamAvatarsHTML(team.name, 26);
       return `<tr class="${isQualifier ? 'qualifier' : ''}">
-        <td><div class="team-with-avatars">${Data.getTeamAvatarsHTML(team.name, 26)}<span class="team-name">${team.name}</span></div></td>
+        <td><div class="team-with-avatars">${avatarsHTML}<span class="team-name">${team.name}</span></div></td>
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
@@ -169,5 +186,5 @@ const Standings = (() => {
     </div>`;
   }
 
-  return { render, renderPower, renderClub };
+  return { render, renderPower, renderClub, renderCombined };
 })();

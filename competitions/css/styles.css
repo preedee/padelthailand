@@ -636,6 +636,30 @@ html, body {
   padding: 2px;
 }
 
+/* Combined standings — every division stacked on one view, sized to fill the
+   screen (big-screen comps via combined_standings config). Each division flexes
+   to share the height; its grid + tables stretch so rows fill the space. */
+.standings-divisions--combined {
+  gap: 18px;
+}
+.standings-divisions--combined .standings-division {
+  display: flex;
+  flex-direction: column;
+}
+.standings-divisions--combined .standings-grid {
+  flex: 1;
+  grid-template-rows: 1fr auto;   /* group cards stretch, footnote hugs bottom */
+}
+.standings-divisions--combined .group-card__table {
+  height: 100%;                   /* distribute extra height across team rows */
+}
+
+/* The combined standings view is full-width — drop the Upcoming sidebar there
+   only (selector matches nothing unless the combined view exists + is active). */
+.content-area:has(#view-standings.view.active) .sidebar {
+  display: none;
+}
+
 .group-card {
   background: var(--white);
   border: 1px solid rgba(8, 93, 60, 0.1);
@@ -2400,6 +2424,36 @@ body:has(.theme-dark) {
   line-height: 0;
 }
 
+/* Standings (division mode): rectangular flag-icons badge on the avatar's
+   bottom-left corner — same treatment as the CC match cards above, tuned
+   with a white ring for the light standings background. */
+.team-with-avatars .avatar-flag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.team-with-avatars .avatar-flag__badge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 14px;
+  height: 10px;
+  line-height: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+.team-with-avatars .avatar-flag__badge .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}
+
 .match-card__cc-name-row {
   font-size: 15px;
   color: var(--dark-text, #E8F0EC);
@@ -2762,6 +2816,16 @@ td.cc-standings__community {
   .cc-standings__logo { width: 64px; height: 64px; }
   .cc-standings__logo--fallback { font-size: 32px; }
   .cc-standings__footnote { font-size: 14px; margin-top: 16px; }
+
+  /* Division-mode standings — bigger + 3-column for projector/TV (the .cc-standings
+     tiers above never covered these). 3 columns = Group A | B | C side by side. */
+  .standings-division__title { font-size: 24px; margin-bottom: 14px; }
+  .standings-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .group-card__header { font-size: 16px; padding: 9px 14px; }
+  .group-card__table th { font-size: 15px; padding: 8px; }
+  .group-card__table th:not(:first-child) { width: 44px; }
+  .group-card__table td { font-size: 22px; height: auto; padding: 10px 12px; }
+  .standings-footnote { font-size: 15px; }
 }
 
 /* Tier 2 — a gentle bump on a tall (fullscreen projector) viewport. Header
@@ -2777,6 +2841,17 @@ td.cc-standings__community {
   .cc-standings__logo { width: 84px; height: 84px; }
   .cc-standings__logo--fallback { font-size: 42px; }
   .cc-standings__footnote { font-size: 15px; margin-top: 18px; }
+
+  /* Division-mode standings — full 1080p TV sizing (hits readable-from-distance
+     targets: titles 30px, headers 17px, team rows 26px). */
+  .standings-division__title { font-size: 30px; margin-bottom: 16px; }
+  .standings-grid { gap: 20px; }
+  .group-card__header { font-size: 19px; padding: 12px 16px; letter-spacing: 2px; }
+  .group-card__table th { font-size: 17px; padding: 10px; }
+  .group-card__table th:not(:first-child) { width: 50px; }
+  .group-card__table td { font-size: 26px; padding: 14px; }
+  .group-card__table .team-name { font-size: 26px; }
+  .standings-footnote { font-size: 17px; }
 }
 
 /* ============================================
@@ -3172,3 +3247,46 @@ td.cc-standings__community {
             mask-image: linear-gradient(to right, #000 88%, transparent 100%);
   }
 }
+
+/* ============================================================
+   NOX combined standings — fit all 6 groups on one screen.
+   Hide the redundant Gold/Silver division row on this view and
+   shrink fonts + avatars. Scoped to .standings-divisions--combined
+   so per-division standings (RPA/LPS) are unaffected.
+   ============================================================ */
+body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__row--secondary {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .standings-divisions--combined { gap: 12px; }
+  .standings-divisions--combined .standings-division__title { font-size: 19px; margin-bottom: 8px; }
+  .standings-divisions--combined .group-card__header { font-size: 13px; padding: 6px 12px; letter-spacing: 1px; }
+  .standings-divisions--combined .group-card__table th { font-size: 12px; padding: 5px 6px; }
+  .standings-divisions--combined .group-card__table td { font-size: 15px; padding: 6px 10px; }
+  .standings-divisions--combined .group-card__table .team-name { font-size: 15px; }
+  .standings-divisions--combined .standings-footnote { font-size: 12px; }
+  .standings-divisions--combined .team-with-avatars .avatar {
+    width: 20px !important; height: 20px !important;
+    min-width: 20px; min-height: 20px;
+  }
+  .standings-divisions--combined .team-with-avatars .avatar--fallback {
+    width: 20px !important; height: 20px !important; font-size: 9px !important;
+  }
+  .standings-divisions--combined .avatar-flag__badge { width: 12px; height: 9px; }
+}
+
+/* ============================================================
+   Footer QR — centered "Scan Here / <QR> / With Your Phone" linking to
+   the dashboard, injected by data.js applyConfig() on every dashboard
+   (mirrors the Community Cup). Base 44px-footer treatment; per-page shells
+   may enlarge it for projectors. Hidden on mobile to avoid colliding with
+   the side items.
+   ============================================================ */
+.footer { position: relative; }
+.footer__qr {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.footer__qr img { width: 36px; height: 36px; display: block; border-radius: 3px; background: #FFFFFF; }
+.footer__qr-label { color: #FFFFFF; font-size: 11px; white-space: nowrap; }
+@media (max-width: 768px) { .footer__qr { display: none; } }

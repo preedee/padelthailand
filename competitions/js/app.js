@@ -24,6 +24,7 @@ const App = (() => {
 
   // Division config: each has a standings tab, a bracket, and a slug
   let divisions = [];       // [{ name, slug, standingsTab }]
+  let combinedStandings = false;  // config-gated: all divisions' standings on one view
 
   function init() {
     // Keyboard nav: arrow keys to switch views, space to pause/resume
@@ -92,14 +93,25 @@ const App = (() => {
     // Check if home page is enabled
     const showHomePage = Data.getConfig('show_home_page', 'false').toLowerCase() === 'true';
 
+    // Combined standings: show every division's standings on ONE view (config-gated,
+    // only meaningful with 2+ divisions). Off by default → per-division views as before.
+    combinedStandings = Data.getConfig('combined_standings', 'false').toLowerCase() === 'true'
+      && divisions.length > 1;
+
     // Build all view IDs
-    const standingsViews = divisions.map(d => d.slug + '-standings');
+    const standingsViews = combinedStandings ? ['standings'] : divisions.map(d => d.slug + '-standings');
     const bracketViews = divisions.map(d => d.slug + '-bracket');
+
+    // Consolation: single combined view across all divisions (config-gated).
+    // Off by default → RPA/LPS and other division comps are unaffected.
+    const showConsolation = Data.getConfig('show_consolation', 'false').toLowerCase() === 'true';
 
     // All possible views
     ALL_VIEWS = [];
     if (showHomePage) ALL_VIEWS.push('home');
-    ALL_VIEWS.push(...standingsViews, ...bracketViews, 'matches');
+    ALL_VIEWS.push(...standingsViews, ...bracketViews);
+    if (showConsolation) ALL_VIEWS.push('consolation');
+    ALL_VIEWS.push('matches');
 
     // Determine which views to include in rotation from config
     // Accepts specific view IDs (e.g. "home, male-amateur-standings, power-bracket, matches")
@@ -110,6 +122,7 @@ const App = (() => {
       VIEWS = [];
       if (showHomePage) VIEWS.push('home');
       VIEWS.push(...standingsViews, ...bracketViews);
+      if (showConsolation) VIEWS.push('consolation');
     } else {
       // Filter to only valid view IDs
       VIEWS = rotationConfig
@@ -139,6 +152,9 @@ const App = (() => {
       }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab${!showHomePage ? ' active' : ''}" data-type="standings">Standings</button>`;
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Brackets</button>`;
+      if (showConsolation) {
+        tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="consolation">Consolation</button>`;
+      }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="matches">All Matches</button>`;
       tabsHTML += `<div class="view-bar__dots">`;
       VIEWS.forEach((_, i) => {
@@ -167,6 +183,8 @@ const App = (() => {
       function resolveViewId(type, division) {
         if (type === 'home') return 'home';
         if (type === 'matches') return 'matches';
+        if (type === 'consolation') return 'consolation';
+        if (type === 'standings' && combinedStandings) return 'standings';
         return division + '-' + type;
       }
 
@@ -179,8 +197,9 @@ const App = (() => {
           t.classList.toggle('active', t.dataset.type === type);
         });
 
-        // Update division tabs — deselect all for Home/Matches, highlight for Standings/Brackets
-        const showDivisionHighlight = (type === 'standings' || type === 'bracket');
+        // Update division tabs — deselect all for Home/Matches, highlight for Standings/Brackets.
+        // Combined standings shows all divisions at once → no single division is "current".
+        const showDivisionHighlight = (type === 'bracket') || (type === 'standings' && !combinedStandings);
         viewBar.querySelectorAll('.view-bar__div-tab').forEach(t => {
           t.classList.toggle('active', showDivisionHighlight && t.dataset.division === division);
         });
@@ -211,8 +230,8 @@ const App = (() => {
       viewBar.querySelectorAll('.view-bar__div-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           const division = tab.dataset.division;
-          // If current type is Home or Matches, default to Standings
-          const type = (currentType === 'home' || currentType === 'matches') ? 'standings' : currentType;
+          // If current type is a global view (Home/Matches/Consolation), default to Standings
+          const type = (currentType === 'home' || currentType === 'matches' || currentType === 'consolation') ? 'standings' : currentType;
           updateTwoRowNav(type, division);
           const viewId = resolveViewId(type, division);
           const idx = VIEWS.indexOf(viewId);
@@ -235,6 +254,9 @@ const App = (() => {
           updateTwoRowNav('home', currentDivision);
         } else if (viewName === 'matches') {
           updateTwoRowNav('matches', currentDivision);
+        } else if (viewName === 'standings') {
+          // Combined standings view — keep the remembered division for Brackets.
+          updateTwoRowNav('standings', currentDivision);
         } else {
           // Parse "slug-type" from view name
           const parts = viewName.split('-');
@@ -261,14 +283,21 @@ const App = (() => {
         tabsHTML += `<button class="view-bar__tab active" data-view="home">Home</button>`;
       }
 
-      // Standings tabs
-      divisions.forEach((d, i) => {
-        const viewId = d.slug + '-standings';
-        const active = (!showHomePage && i === 0) ? ' active' : '';
-        const label = customLabels[tabIndex] || (d.name + ' Standings');
-        tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+      // Standings tabs — one combined tab, or one per division
+      if (combinedStandings) {
+        const active = !showHomePage ? ' active' : '';
+        const label = customLabels[tabIndex] || 'Standings';
+        tabsHTML += `<button class="view-bar__tab${active}" data-view="standings">${label}</button>`;
         tabIndex++;
-      });
+      } else {
+        divisions.forEach((d, i) => {
+          const viewId = d.slug + '-standings';
+          const active = (!showHomePage && i === 0) ? ' active' : '';
+          const label = customLabels[tabIndex] || (d.name + ' Standings');
+          tabsHTML += `<button class="view-bar__tab${active}" data-view="${viewId}">${label}</button>`;
+          tabIndex++;
+        });
+      }
 
       // Bracket tabs
       divisions.forEach(d => {
@@ -277,6 +306,11 @@ const App = (() => {
         tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
         tabIndex++;
       });
+
+      // Consolation tab (single combined, config-gated)
+      if (showConsolation) {
+        tabsHTML += `<button class="view-bar__tab" data-view="consolation">Consolation</button>`;
+      }
 
       // All Matches tab (manual only, pushed right)
       tabsHTML += `<button class="view-bar__tab view-bar__tab--right" data-view="matches">All Matches</button>`;
@@ -339,15 +373,22 @@ const App = (() => {
       </section>`;
     }
 
-    // Standings views
+    // Standings views — one combined section, or one per division
     const firstNonHome = !showHomePage;
-    divisions.forEach((d, i) => {
-      const viewId = d.slug + '-standings';
-      const active = (i === 0 && firstNonHome) ? ' active' : '';
-      viewsHTML += `<section class="view${active}" id="view-${viewId}">
-        <div class="loading">Loading ${d.name} standings...</div>
+    if (combinedStandings) {
+      const active = firstNonHome ? ' active' : '';
+      viewsHTML += `<section class="view${active}" id="view-standings">
+        <div class="loading">Loading standings...</div>
       </section>`;
-    });
+    } else {
+      divisions.forEach((d, i) => {
+        const viewId = d.slug + '-standings';
+        const active = (i === 0 && firstNonHome) ? ' active' : '';
+        viewsHTML += `<section class="view${active}" id="view-${viewId}">
+          <div class="loading">Loading ${d.name} standings...</div>
+        </section>`;
+      });
+    }
 
     // Bracket views
     divisions.forEach(d => {
@@ -356,6 +397,13 @@ const App = (() => {
         <div class="loading">Loading ${d.name} bracket...</div>
       </section>`;
     });
+
+    // Consolation view (single combined, config-gated)
+    if (showConsolation) {
+      viewsHTML += `<section class="view" id="view-consolation">
+        <div class="loading">Loading consolation bracket...</div>
+      </section>`;
+    }
 
     // All Matches view
     viewsHTML += `<section class="view" id="view-matches">
@@ -573,13 +621,18 @@ const App = (() => {
       return;
     }
 
-    // Render standings for each division
-    divisions.forEach(d => {
-      const container = document.getElementById('view-' + d.slug + '-standings');
-      if (container) {
-        Standings.render(container, d.standingsTab, d.name + ' Standings', d.name);
-      }
-    });
+    // Render standings — combined (all divisions on one view) or per division
+    if (combinedStandings) {
+      const container = document.getElementById('view-standings');
+      if (container) Standings.renderCombined(container, divisions);
+    } else {
+      divisions.forEach(d => {
+        const container = document.getElementById('view-' + d.slug + '-standings');
+        if (container) {
+          Standings.render(container, d.standingsTab, d.name + ' Standings', d.name);
+        }
+      });
+    }
 
     // Render brackets for each division
     divisions.forEach(d => {
@@ -588,6 +641,12 @@ const App = (() => {
         Bracket.render(container, d.name, d.name + ' Knockout');
       }
     });
+
+    // Render combined consolation bracket (only present when config-enabled)
+    const consolationContainer = document.getElementById('view-consolation');
+    if (consolationContainer && Bracket.renderConsolationCombined) {
+      Bracket.renderConsolationCombined(consolationContainer, divisions);
+    }
 
     // Render All Matches
     const matchesContainer = document.getElementById('view-matches');
@@ -627,6 +686,20 @@ const App = (() => {
     if (!skipHash) {
       history.replaceState(null, '', originalPath + '#' + viewName);
     }
+
+    syncMatchesAutoScroll(viewName);
+  }
+
+  // Start the All-Matches auto-scroll when its view is active, stop it otherwise.
+  // No-op unless the `matches_autoscroll` config key is on (Matches owns that check).
+  function syncMatchesAutoScroll(viewName) {
+    if (typeof Matches === 'undefined' || !Matches.startAutoScroll) return;
+    if (viewName === 'matches') {
+      const el = document.getElementById('view-matches');
+      if (el) Matches.startAutoScroll(el);
+    } else {
+      Matches.stopAutoScroll();
+    }
   }
 
   function showManualView(viewName, skipHash) {
@@ -647,6 +720,8 @@ const App = (() => {
     if (!skipHash) {
       history.replaceState(null, '', originalPath + '#' + viewName);
     }
+
+    syncMatchesAutoScroll(viewName);
   }
 
   // Parse the `rotation_seconds` config (e.g. "standings:30, main-draw:15") into

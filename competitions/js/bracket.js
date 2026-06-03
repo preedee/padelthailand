@@ -176,5 +176,42 @@ const Bracket = (() => {
     </div>`;
   }
 
-  return { render };
+  // Combined consolation view — one screen, all divisions. Each division shows
+  // its Consolation Semi-Finals column then Final column. Driven by
+  // Data.getConsolation(divisionName) (Matches rows with Round ~ "Consolation").
+  function renderConsolationCombined(container, divisions) {
+    const blocks = (divisions || []).map(d => {
+      const data = Data.getConsolation(d.name);
+      const ms = (data && data.matches) || [];
+      const sf = ms.filter(m => m.round === 'Semi Finals');
+      const fin = ms.filter(m => m.round === 'Finals');
+      if (sf.length === 0 && fin.length === 0) {
+        return `<div class="bracket-consolation__division">
+          <div class="bracket-division__title">${d.name} — Consolation</div>
+          <div class="loading">No consolation matches yet</div>
+        </div>`;
+      }
+      return `<div class="bracket-consolation__division">
+        <div class="bracket-division__title">${d.name} — Consolation</div>
+        <div class="bracket">
+          ${sf.length ? renderRound('Semi Finals', sf) : ''}
+          ${fin.length ? renderRound('Finals', fin) : ''}
+        </div>
+      </div>`;
+    });
+
+    if (blocks.length === 0) {
+      container.innerHTML = '<div class="loading">No consolation bracket data available</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="bracket-single bracket-consolation">
+        <div class="bracket-consolation__grid" style="display:flex;flex-wrap:wrap;gap:4vmin;justify-content:center;align-items:flex-start;">
+          ${blocks.join('')}
+        </div>
+      </div>`;
+  }
+
+  return { render, renderConsolationCombined };
 })();

@@ -22,6 +22,7 @@ const Data = (() => {
   let standingsData = {};       // tab name → raw CSV lines
   let standingsRawText = {};    // tab name → raw CSV text (for match-format fallback)
   let playerAvatars = {};       // name → avatar URL lookup
+  let playerMetaByCode = {};    // team code → {p1Avatar,p1Country,p2Avatar,p2Country} from Teams and Players
   let playerNationalities = {}; // name|id → nationality lookup (Community Cup)
   let players = [];             // Community Cup: full Teams and Players rows (1 row per player)
   let communities = [];         // Community Cup: list of community objects (8 entries)
@@ -150,6 +151,37 @@ const Data = (() => {
         el.style.color = config.footer_text_color;
       });
     }
+
+    // Footer QR — centered "Scan Here / <QR> / With Your Phone" linking to this
+    // dashboard, ON by default for EVERY dashboard (mirrors the Community Cup).
+    // Opt out with config footer_qr in {off,false,none}. Reliability: set
+    // footer_qr to a static image URL/path; otherwise the QR auto-generates from
+    // the page URL. Guard: skip if a shell already provides its own .footer__qr.
+    (function injectFooterQR() {
+      const footer = document.querySelector('.footer');
+      if (!footer || footer.querySelector('.footer__qr')) return;
+      const raw = (config.footer_qr || '').trim();
+      if (['off', 'false', 'none'].includes(raw.toLowerCase())) return;
+      // Canonical dashboard URL — drop rotation #hash / ?query so the QR stays clean.
+      const pageUrl = location.origin + location.pathname;
+      const link = (config.footer_qr_link || '').trim() || pageUrl;
+      const isImg = /^(https?:\/\/|[.\/]|assets\/)/i.test(raw);
+      const qrSrc = isImg
+        ? raw
+        : 'https://api.qrserver.com/v1/create-qr-code/?margin=0&size=240x240&data=' + encodeURIComponent(link);
+      const labelColor = config.footer_text_color || '#FFFFFF';
+      const top = config.footer_qr_top || 'Scan Here';
+      const bottom = config.footer_qr_bottom || 'With Your Phone';
+      const a = document.createElement('a');
+      a.className = 'footer__qr';
+      a.href = link;
+      a.title = 'Scan to open this dashboard';
+      a.innerHTML =
+        '<span class="footer__qr-label" style="color:' + labelColor + '">' + top + '</span>' +
+        '<img src="' + qrSrc + '" alt="QR code linking to this dashboard">' +
+        '<span class="footer__qr-label" style="color:' + labelColor + '">' + bottom + '</span>';
+      footer.appendChild(a);
+    })();
 
     // Apply nav bar colors
     const viewBar = document.querySelector('.view-bar');
@@ -384,6 +416,11 @@ const Data = (() => {
     const groups = {};
     let currentGroup = '';
     let colMap = null;
+    // Prefer a Teams&Players value, treating '', 'null' and '#N/A' as absent.
+    const pickStr = (a, b) => {
+      const v = (a || '').trim();
+      return (v && v !== 'null' && v !== '#N/A') ? v : (b || '');
+    };
 
     for (const line of lines) {
       const fields = splitCSVLine(line);
@@ -413,19 +450,31 @@ const Data = (() => {
         continue;
       }
 
-      // Column header row — detect column positions by name
-      // Only rebuild colMap if this header row has actual column names (not blank)
-      if (col0 === 'Code') {
-        if (col2 && col2 !== '') {
-          colMap = {};
-          fields.forEach((f, idx) => { colMap[f.trim()] = idx; });
-        }
+      // Column header row — detect column positions by name. 'Code' may sit in
+      // col0 (legacy layout) or be shifted right by a leading Pos/'-' column that
+      // aligns the group blocks with the Overall block (NOX). Trigger on any row
+      // carrying both a 'Code' and a 'Team' header cell, and map every named cell.
+      const headerCodeIdx = fields.findIndex(f => (f || '').trim() === 'Code');
+      if (headerCodeIdx !== -1 && fields.some(f => (f || '').trim() === 'Team')) {
+        colMap = {};
+        fields.forEach((f, idx) => { const k = (f || '').trim(); if (k) colMap[k] = idx; });
         continue;
       }
 
       // Data row — use column map if available, else fallback to positional
       if (col1 && currentGroup) {
         const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
+        const s = (name) => colMap && colMap[name] !== undefined ? (fields[colMap[name]] || '').trim() : '';
+        // Code/Team default to col0/col1 but follow the column map when a leading
+        // column has shifted them right.
+        const codeCol = colMap && colMap['Code'] !== undefined ? colMap['Code'] : 0;
+        const teamCol = colMap && colMap['Team'] !== undefined ? colMap['Team'] : 1;
+        const code = (fields[codeCol] || '').trim();
+        const name = (fields[teamCol] || '').trim();
+        // Skip blank spacer rows (a group line with no team code).
+        if (!code) continue;
+        // Avatar/country joined from Teams and Players by Team Code.
+        const meta = playerMetaByCode[code] || {};
         const mp = colMap ? c('MP') : (parseInt(col2) || 0);
         const w = colMap ? c('W') : (parseInt(fields[3]) || 0);
         const l = colMap ? c('L') : (parseInt(fields[4]) || 0);
@@ -438,8 +487,8 @@ const Data = (() => {
 
         if (!groups[currentGroup]) groups[currentGroup] = [];
         groups[currentGroup].push({
-          code: col0,
-          name: col1,
+          code: code,
+          name: name,
           played: mp,
           won: w,
           lost: l,
@@ -449,7 +498,15 @@ const Data = (() => {
           gamesWon: gamesW,
           gamesLost: gamesL,
           gamesDiff: gamesDiff,
-          points: w
+          points: w,
+          // Per-player avatar + country. Preferred source is the "Teams and Players"
+          // tab (joined by Team Code via playerMetaByCode); falls back to the legacy
+          // in-sheet Standings columns when no Teams&Players entry exists (RPA/LPS).
+          // '', 'null' and '#N/A' count as absent so the better source wins.
+          p1Avatar: pickStr(meta.p1Avatar, s('P1 Avatar')),
+          p1Country: pickStr(meta.p1Country, s('P1 Country')),
+          p2Avatar: pickStr(meta.p2Avatar, s('P2 Avatar')),
+          p2Country: pickStr(meta.p2Country, s('P2 Country'))
         });
       }
     }
@@ -699,6 +756,45 @@ const Data = (() => {
   }
 
   // ============================================================
+  // Consolation bracket from the Matches tab. Gated by config
+  // `show_consolation`; division-mode only. Consolation matches have
+  // Division = the category (e.g. "Gold") and Round containing
+  // "Consolation" (e.g. "Consolation SF", "Consolation Final").
+  // Round is normalized to 'Semi Finals' vs 'Finals' for column layout.
+  // ============================================================
+  function getConsolationFromMatches(divisionPrefix) {
+    const prefix = (divisionPrefix || '').toLowerCase();
+    const consMatches = matches.filter(m => {
+      const div = (m.division || '').toLowerCase();
+      if (div !== prefix && !div.startsWith(prefix + ' play')) return false;
+      return (m.round || '').toLowerCase().includes('consolation');
+    });
+
+    const out = [];
+    consMatches.forEach(m => {
+      const winner = getWinner(m);
+      const played = hasScores(m);
+      const roundLower = (m.round || '').toLowerCase();
+      const round = roundLower.includes('final') ? 'Finals' : 'Semi Finals';
+      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
+      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
+      out.push({
+        round,
+        team1, team2, sets: m.sets,
+        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+        score: '',
+        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
+        section: 'CONSOLATION',
+        division: divisionPrefix,
+        date: m.date, time: m.time
+      });
+    });
+
+    return { matches: out };
+  }
+
+  // ============================================================
   // Community Cup — Communities tab parser
   // Each row = one community (8 expected)
   // Required columns: Community ID, Name. Others optional.
@@ -891,6 +987,40 @@ const Data = (() => {
     return playerAvatars[clean] || null;
   }
 
+  // ============================================================
+  // Per-team avatar + country \u2014 parsed POSITIONALLY from the
+  // "Teams and Players" tab (cols G/H = P1 Avatar/Country, K/L = P2).
+  // That tab repeats the headers ID/Avatar/Country once per player, so
+  // header-keyed parsing collapses them \u2014 we must index by column position.
+  // Layout is located by header name: the "Team Code" column is the join key,
+  // and the 1st/2nd "Avatar" and "Country" columns map to player 1 / player 2.
+  // Keyed by Team Code (GA1\u2026SC4) so it joins onto standings rows by `code`.
+  // Returns {} (no-op) for tournaments whose tab lacks these columns.
+  // ============================================================
+  function parsePlayersMeta(text) {
+    const byCode = {};
+    const lines = parseCSV(text);
+    if (lines.length < 2) return byCode;
+    const headers = splitCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+    const codeIdx = headers.indexOf('team code');
+    const avatarIdx = headers.reduce((a, h, i) => { if (h === 'avatar') a.push(i); return a; }, []);
+    const countryIdx = headers.reduce((a, h, i) => { if (h === 'country') a.push(i); return a; }, []);
+    if (codeIdx < 0 || avatarIdx.length === 0) return byCode;
+    const at = (f, idx) => (idx != null && idx >= 0 ? (f[idx] || '').trim() : '');
+    for (let i = 1; i < lines.length; i++) {
+      const f = splitCSVLine(lines[i]);
+      const code = (f[codeIdx] || '').trim();
+      if (!code) continue;
+      byCode[code] = {
+        p1Avatar: at(f, avatarIdx[0]),
+        p1Country: at(f, countryIdx[0]),
+        p2Avatar: at(f, avatarIdx[1]),
+        p2Country: at(f, countryIdx[1])
+      };
+    }
+    return byCode;
+  }
+
   // name \u2192 nationality and id \u2192 nationality, from "Teams and Players" rows.
   // Mirrors getPlayerAvatar so match cards can show the same flags as Groups.
   function buildPlayerNationalities(rows) {
@@ -929,6 +1059,60 @@ const Data = (() => {
         return `<img class="avatar" src="${url}" alt="${trimmed}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`;
       }
       return `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+    }).join('');
+  }
+
+  // Country name → ISO 3166-1 alpha-2 (subset; falls back to a 2-letter input).
+  const COUNTRY_CODE = {
+    'thailand':'TH','spain':'ES','united kingdom':'GB','uk':'GB','england':'GB','scotland':'GB','wales':'GB',
+    'united states':'US','usa':'US','us':'US','america':'US','russia':'RU','germany':'DE','france':'FR','italy':'IT',
+    'india':'IN','japan':'JP','china':'CN','south korea':'KR','korea':'KR','argentina':'AR','mexico':'MX','chile':'CL',
+    'colombia':'CO','peru':'PE','brazil':'BR','australia':'AU','canada':'CA','new zealand':'NZ','netherlands':'NL',
+    'belgium':'BE','switzerland':'CH','austria':'AT','sweden':'SE','norway':'NO','denmark':'DK','finland':'FI',
+    'portugal':'PT','poland':'PL','czech republic':'CZ','czechia':'CZ','singapore':'SG','malaysia':'MY','indonesia':'ID',
+    'philippines':'PH','vietnam':'VN','hong kong':'HK','taiwan':'TW','south africa':'ZA','ireland':'IE','greece':'GR',
+    'israel':'IL','uae':'AE','united arab emirates':'AE','saudi arabia':'SA','ukraine':'UA','romania':'RO','hungary':'HU',
+    'serbia':'RS','croatia':'HR','bangladesh':'BD','sri lanka':'LK','luxembourg':'LU','myanmar':'MM','burma':'MM',
+    'turkey':'TR','egypt':'EG','morocco':'MA','nigeria':'NG','kenya':'KE','pakistan':'PK','nepal':'NP'
+  };
+  function countryCodeFor(name) {
+    if (!name) return '';
+    const k = String(name).trim().toLowerCase();
+    return COUNTRY_CODE[k] || (k.length === 2 ? k.toUpperCase() : '');
+  }
+  // Unicode regional-indicator flag from a country name. No CSS dependency.
+  function flagEmoji(country) {
+    const cc = countryCodeFor(country);
+    if (cc.length !== 2) return '';
+    return String.fromCodePoint(...[...cc].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65));
+  }
+
+  // Per-player avatar + country flag for a standings team. Uses per-player
+  // avatar/country resolved in-sheet (team.p1Avatar/p1Country/p2Avatar/p2Country).
+  // Falls back to the initial when avatar is missing/'null'.
+  function getTeamAvatarFlagHTML(team, size) {
+    if (!team) return '';
+    const sz = size || 26;
+    const names = (team.name || '').replace(/⁠/g, '').split(/ & | and /);
+    const units = [
+      { url: team.p1Avatar, country: team.p1Country, name: (names[0] || '').trim() },
+      { url: team.p2Avatar, country: team.p2Country, name: (names[1] || '').trim() }
+    ].filter(u => u.name || (u.url && u.url !== 'null' && u.url !== '#N/A'));
+    if (units.length === 0) return '';
+    return units.map(u => {
+      const initial = (u.name || '?').charAt(0).toUpperCase();
+      const valid = u.url && u.url !== 'null' && u.url !== '#N/A';
+      const avatar = valid
+        ? `<img class="avatar" src="${u.url}" alt="${u.name}" width="${sz}" height="${sz}" onerror="var s=document.createElement('span');s.className='avatar avatar--fallback';s.style.width='${sz}px';s.style.height='${sz}px';s.style.fontSize='${Math.round(sz*0.45)}px';s.textContent='${initial}';this.parentNode.replaceChild(s,this)">`
+        : `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.45)}px">${initial}</span>`;
+      // Rectangular flag-icons SVG badged on the avatar's bottom-left corner
+      // (same style as the Community Cup match cards / Groups page). Needs the
+      // flag-icons stylesheet loaded by the shell.
+      const cc = countryCodeFor(u.country);
+      const flagHTML = cc
+        ? `<span class="avatar-flag__badge" title="${u.country}"><span class="fi fi-${cc.toLowerCase()}"></span></span>`
+        : '';
+      return `<span class="avatar-flag">${avatar}${flagHTML}</span>`;
     }).join('');
   }
 
@@ -1076,6 +1260,8 @@ const Data = (() => {
         const text = await playersRes.text();
         const rows = parseCSVWithHeaders(text);
         playerAvatars = parsePlayersTab(rows);
+        // Per-team avatar+country, joined onto standings by Team Code (positional parse).
+        playerMetaByCode = parsePlayersMeta(text);
         // Community Cup: also stash full rows for the draft feature.
         // Schema: Community ID, TPS User ID, Player Name, Avatar, Rating, Hand, Side, Gender, Is Captain, Nationality
         if (ccMode) {
@@ -1133,6 +1319,7 @@ const Data = (() => {
     hasScores,
     getMatchesByCourt,
     getTeamAvatarsHTML,
+    getTeamAvatarFlagHTML,
     getPlayerAvatar,
     getPlayerNationality,
     getTeamStackedHTML,
@@ -1144,6 +1331,7 @@ const Data = (() => {
       return computeStandingsFromMatchData(standingsRawText[tabName]);
     },
     getKnockout: (division) => getKnockoutFromMatches(division),
+    getConsolation: (division) => getConsolationFromMatches(division),
     isMultiDay: () => {
       const dates = new Set(matches.map(m => m.date).filter(Boolean));
       return dates.size > 1;
