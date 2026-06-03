@@ -450,19 +450,37 @@ const Data = (() => {
         continue;
       }
 
-      // Column header row — detect column positions by name. 'Code' may sit in
-      // col0 (legacy layout) or be shifted right by a leading Pos/'-' column that
-      // aligns the group blocks with the Overall block (NOX). Trigger on any row
-      // carrying both a 'Code' and a 'Team' header cell, and map every named cell.
-      const headerCodeIdx = fields.findIndex(f => (f || '').trim() === 'Code');
-      if (headerCodeIdx !== -1 && fields.some(f => (f || '').trim() === 'Team')) {
-        colMap = {};
-        fields.forEach((f, idx) => { const k = (f || '').trim(); if (k) colMap[k] = idx; });
+      // Column header row — detect by the presence of both a 'Code' and a 'Team'
+      // header cell. 'Code' may sit in col0 (legacy) or be shifted right by a
+      // leading Pos/'-' column that aligns the group blocks with the Overall block
+      // (NOX). gviz blanks text that lands in a numeric column, so the per-group
+      // *repeat* of the header arrives as just Code/Team — recognise it as a header
+      // (skip it) but only (re)build the column map from a COMPLETE header that
+      // still carries the stat columns (has 'MP'), so we don't clobber the map.
+      if (fields.some(f => (f || '').trim() === 'Code') && fields.some(f => (f || '').trim() === 'Team')) {
+        if (fields.some(f => (f || '').trim() === 'MP')) {
+          colMap = {};
+          fields.forEach((f, idx) => { const k = (f || '').trim(); if (k) colMap[k] = idx; });
+        }
         continue;
       }
 
-      // Data row — use column map if available, else fallback to positional
-      if (col1 && currentGroup) {
+      // Data row — resolve the group. An explicit "Group X" label (currentGroup)
+      // wins; but gviz drops those label-only rows from this multi-block layout,
+      // so when none is active we derive the group from a 2-letter+digits team
+      // code (GA1 -> Group A). Rows carrying a numeric first column are the
+      // Overall ranking block (Pos 1..12) and are skipped — the per-group blocks
+      // (blank first column) are the authoritative source.
+      let rowGroup = currentGroup;
+      if (!rowGroup) {
+        const probeCol = colMap && colMap['Code'] !== undefined ? colMap['Code'] : 0;
+        const probeCode = (fields[probeCol] || '').trim();
+        const firstCol = (fields[0] || '').trim();
+        if (firstCol === '' && /^[A-Za-z]{2}\d+$/.test(probeCode)) {
+          rowGroup = 'Group ' + probeCode.charAt(1).toUpperCase();
+        }
+      }
+      if (col1 && rowGroup) {
         const c = (name) => colMap && colMap[name] !== undefined ? parseInt(fields[colMap[name]]) || 0 : 0;
         const s = (name) => colMap && colMap[name] !== undefined ? (fields[colMap[name]] || '').trim() : '';
         // Code/Team default to col0/col1 but follow the column map when a leading
@@ -485,8 +503,8 @@ const Data = (() => {
         const gamesL = colMap ? c('Games L') : (parseInt(fields[9]) || 0);
         const gamesDiff = colMap ? c('Games Difference') : (parseInt(fields[10]) || 0);
 
-        if (!groups[currentGroup]) groups[currentGroup] = [];
-        groups[currentGroup].push({
+        if (!groups[rowGroup]) groups[rowGroup] = [];
+        groups[rowGroup].push({
           code: code,
           name: name,
           played: mp,
