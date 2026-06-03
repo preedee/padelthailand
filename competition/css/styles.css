@@ -1740,10 +1740,18 @@ img.avatar {
 
 
 /* Combined knockout view — all divisions stacked vertically on one screen
-   (companion to combined standings / consolation). */
-.bracket-combined { display: flex; flex-direction: column; gap: 2vmin; height: 100%; }
-.bracket-combined__division { min-height: 0; }
-.bracket-combined .bracket-single { height: auto; }
+   (companion to combined standings / consolation). Each division fills half the
+   height; the bracket's flex space-around distributes its rounds into that half.
+   Modest compression so the 4-match QF column fits without overlap. */
+.bracket-combined { display: flex; flex-direction: column; gap: 1vmin; height: 100%; }
+.bracket-combined__division { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.bracket-combined .bracket-single { flex: 1; min-height: 0; }
+.bracket-combined .bracket { flex: 1; min-height: 0; }
+.bracket-combined .bracket__matches { padding-top: 22px; }
+.bracket-combined .bracket-match { margin: 2px 0; }
+.bracket-combined .bracket-match__datetime { font-size: 11px; padding: 0 10px 2px; }
+.bracket-combined .bracket__round-title { font-size: 12px; }
+.bracket-combined .bracket-division__title { font-size: 20px; margin-bottom: 4px; padding-bottom: 4px; }
 
 
 /* In COMBINED views the division label is the only thing distinguishing Gold from
