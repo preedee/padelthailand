@@ -1788,3 +1788,10 @@ body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__
   }
   .standings-divisions--combined .avatar-flag__badge { width: 12px; height: 9px; }
 }
+
+
+/* Per-division page (Gold/Silver) = Knockout above Consolation, reusing
+   .bracket-combined. Consolation has only 2 rounds — keep them from stretching
+   the full width; left-align to match the Knockout columns above. */
+.bracket-division-page .bracket-combined__division--consolation .bracket { justify-content: flex-start; gap: 1.5vw; }
+.bracket-division-page .bracket-combined__division--consolation .bracket__round { flex: 0 1 22vw; }

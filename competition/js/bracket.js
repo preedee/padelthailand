@@ -197,29 +197,29 @@ const Bracket = (() => {
     </div>`;
   }
 
-  // Combined consolation view — one screen, all divisions. Each division shows
-  // its Consolation Semi-Finals column then Final column. Driven by
-  // Data.getConsolation(divisionName) (Matches rows with Round ~ "Consolation").
-  function renderConsolationCombined(container, divisions) {
-    const blocks = (divisions || []).map(d => {
-      const data = Data.getConsolation(d.name);
-      const ms = (data && data.matches) || [];
-      const sf = ms.filter(m => m.round === 'Semi Finals');
-      const fin = ms.filter(m => m.round === 'Finals');
-      if (sf.length === 0 && fin.length === 0) {
-        return `<div class="bracket-consolation__division">
-          <div class="bracket-division__title">${d.name} — Consolation</div>
-          <div class="loading">No consolation matches yet</div>
-        </div>`;
-      }
-      return `<div class="bracket-consolation__division">
-        <div class="bracket-division__title">${d.name} — Consolation</div>
-        <div class="bracket">
-          ${sf.length ? renderRound('Semi Finals', sf) : ''}
-          ${fin.length ? renderRound('Finals', fin) : ''}
-        </div>
+  // One division's consolation bracket as HTML (title + SF/Final rounds, or empty
+  // state). Driven by Data.getConsolation (Matches rows with Round ~ "Consolation").
+  function buildConsolationHTML(divisionName) {
+    const data = Data.getConsolation(divisionName);
+    const ms = (data && data.matches) || [];
+    const sf = ms.filter(m => m.round === 'Semi Finals');
+    const fin = ms.filter(m => m.round === 'Finals');
+    if (sf.length === 0 && fin.length === 0) {
+      return `<div class="bracket-division__title">${divisionName} — Consolation</div>
+        <div class="loading">No consolation matches yet</div>`;
+    }
+    return `<div class="bracket-division__title">${divisionName} — Consolation</div>
+      <div class="bracket">
+        ${sf.length ? renderRound('Semi Finals', sf) : ''}
+        ${fin.length ? renderRound('Finals', fin) : ''}
       </div>`;
-    });
+  }
+
+  // Combined consolation view — one screen, all divisions side by side.
+  function renderConsolationCombined(container, divisions) {
+    const blocks = (divisions || []).map(d =>
+      `<div class="bracket-consolation__division">${buildConsolationHTML(d.name)}</div>`
+    );
 
     if (blocks.length === 0) {
       container.innerHTML = '<div class="loading">No consolation bracket data available</div>';
@@ -234,5 +234,19 @@ const Bracket = (() => {
       </div>`;
   }
 
-  return { render, renderKnockoutCombined, renderConsolationCombined };
+  // Per-division page — that division's Knockout bracket stacked above its
+  // Consolation bracket (reuses the .bracket-combined fit layout).
+  function renderDivisionFull(container, divisionName) {
+    const koData = Data.getKnockout(divisionName);
+    const koHTML = (koData && koData.matches && koData.matches.length > 0)
+      ? buildDivisionHTML(divisionName + ' — Knockout', koData)
+      : `<div class="bracket-division__title">${divisionName} — Knockout</div><div class="loading">No knockout matches yet</div>`;
+    container.innerHTML = `
+      <div class="bracket-combined bracket-division-page">
+        <div class="bracket-combined__division">${koHTML}</div>
+        <div class="bracket-combined__division bracket-combined__division--consolation">${buildConsolationHTML(divisionName)}</div>
+      </div>`;
+  }
+
+  return { render, renderKnockoutCombined, renderConsolationCombined, renderDivisionFull };
 })();

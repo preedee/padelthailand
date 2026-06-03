@@ -18,6 +18,7 @@ const App = (() => {
   let divisions = [];       // [{ name, slug, standingsTab }]
   let combinedStandings = false;  // config-gated: all divisions' standings on one view
   let combinedBrackets = false;   // config-gated: all divisions' knockout on one view
+  let divisionBracketPages = false; // config-gated: per-division page = its KO + Consolation
 
   function init() {
     // Keyboard nav: arrow keys to switch views, space to pause/resume
@@ -88,11 +89,17 @@ const App = (() => {
     const standingsViews = combinedStandings ? ['standings'] : divisions.map(d => d.slug + '-standings');
     combinedBrackets = Data.getConfig('combined_brackets', 'false').toLowerCase() === 'true'
       && divisions.length > 1;
+    // Per-division pages (Gold/Silver), each = that division's Knockout + Consolation.
+    // Overrides combined brackets and the standalone consolation tab.
+    divisionBracketPages = Data.getConfig('division_bracket_pages', 'false').toLowerCase() === 'true'
+      && divisions.length > 0;
+    if (divisionBracketPages) combinedBrackets = false;
     const bracketViews = combinedBrackets ? ['bracket'] : divisions.map(d => d.slug + '-bracket');
 
     // Consolation: single combined view across all divisions (config-gated).
     // Off by default → RPA/LPS and other division comps are unaffected.
-    const showConsolation = Data.getConfig('show_consolation', 'false').toLowerCase() === 'true';
+    const showConsolation = !divisionBracketPages
+      && Data.getConfig('show_consolation', 'false').toLowerCase() === 'true';
 
     // All possible views
     ALL_VIEWS = [];
@@ -136,9 +143,15 @@ const App = (() => {
         tabsHTML += `<button class="view-bar__tab view-bar__type-tab active" data-type="home">Home</button>`;
       }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab${!showHomePage ? ' active' : ''}" data-type="standings">Standings</button>`;
-      tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Knockout</button>`;
-      if (showConsolation) {
-        tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="consolation">Consolation</button>`;
+      if (divisionBracketPages) {
+        divisions.forEach(d => {
+          tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="${d.slug}">${d.name}</button>`;
+        });
+      } else {
+        tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="bracket">Knockout</button>`;
+        if (showConsolation) {
+          tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="consolation">Consolation</button>`;
+        }
       }
       tabsHTML += `<button class="view-bar__tab view-bar__type-tab" data-type="matches">All Matches</button>`;
       tabsHTML += `<div class="view-bar__dots">`;
@@ -150,7 +163,7 @@ const App = (() => {
 
       // Row 2: Division selector — only when some view is still per-division. With
       // standings AND brackets combined, nothing selects a division → drop the row.
-      const hasDivisionTabs = !combinedStandings || !combinedBrackets;
+      const hasDivisionTabs = !divisionBracketPages && (!combinedStandings || !combinedBrackets);
       if (hasDivisionTabs) {
         const initialType = showHomePage ? 'home' : 'standings';
         const showInitialDivision = (initialType === 'standings' || initialType === 'bracket');
@@ -175,6 +188,7 @@ const App = (() => {
         if (type === 'consolation') return 'consolation';
         if (type === 'standings' && combinedStandings) return 'standings';
         if (type === 'bracket' && combinedBrackets) return 'bracket';
+        if (divisionBracketPages && divisions.some(d => d.slug === type)) return type + '-bracket';
         return division + '-' + type;
       }
 
@@ -247,6 +261,9 @@ const App = (() => {
           updateTwoRowNav('standings', currentDivision);
         } else if (viewName === 'bracket') {
           updateTwoRowNav('bracket', currentDivision);
+        } else if (divisionBracketPages && viewName.endsWith('-bracket')) {
+          const slug = viewName.slice(0, -('-bracket'.length));
+          updateTwoRowNav(slug, slug);
         } else {
           // Parse "slug-type" from view name
           const parts = viewName.split('-');
@@ -297,7 +314,7 @@ const App = (() => {
       } else {
         divisions.forEach(d => {
           const viewId = d.slug + '-bracket';
-          const label = customLabels[tabIndex] || (d.name + ' Bracket');
+          const label = customLabels[tabIndex] || (divisionBracketPages ? d.name : (d.name + ' Bracket'));
           tabsHTML += `<button class="view-bar__tab" data-view="${viewId}">${label}</button>`;
           tabIndex++;
         });
@@ -507,7 +524,11 @@ const App = (() => {
       divisions.forEach(d => {
         const container = document.getElementById('view-' + d.slug + '-bracket');
         if (container) {
-          Bracket.render(container, d.name, d.name + ' Knockout');
+          if (divisionBracketPages && Bracket.renderDivisionFull) {
+            Bracket.renderDivisionFull(container, d.name);
+          } else {
+            Bracket.render(container, d.name, d.name + ' Knockout');
+          }
         }
       });
     }
