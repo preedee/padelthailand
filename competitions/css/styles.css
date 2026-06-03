@@ -3287,20 +3287,22 @@ body:has(#view-standings.view.active .standings-divisions--combined) .view-bar__
 }
 @media (min-width: 1024px) {
   .standings-divisions--combined { gap: 12px; }
-  .standings-divisions--combined .standings-division__title { font-size: 19px; margin-bottom: 8px; }
-  .standings-divisions--combined .group-card__header { font-size: 13px; padding: 6px 12px; letter-spacing: 1px; }
-  .standings-divisions--combined .group-card__table th { font-size: 12px; padding: 5px 6px; }
-  .standings-divisions--combined .group-card__table td { font-size: 15px; padding: 6px 10px; }
-  .standings-divisions--combined .group-card__table .team-name { font-size: 15px; }
-  .standings-divisions--combined .standings-footnote { font-size: 12px; }
+  .standings-divisions--combined .standings-division__title { font-size: 22px; margin-bottom: 8px; }
+  .standings-divisions--combined .group-card__header { font-size: 17px; padding: 7px 12px; letter-spacing: 1px; }
+  .standings-divisions--combined .group-card__table th { font-size: 16px; padding: 7px 6px; }
+  .standings-divisions--combined .group-card__table th.group-card__name { font-size: 18px; }
+  .standings-divisions--combined .group-card__table td { font-size: 23px; padding: 5px 10px; }
+  .standings-divisions--combined .group-card__table .team-name { font-size: 23px; }
+  .standings-divisions--combined .standings-footnote { font-size: 14px; }
+  .standings-divisions--combined .team-with-avatars { gap: 5px; }
   .standings-divisions--combined .team-with-avatars .avatar {
-    width: 20px !important; height: 20px !important;
-    min-width: 20px; min-height: 20px;
+    width: 66px !important; height: 66px !important;
+    min-width: 66px; min-height: 66px;
   }
   .standings-divisions--combined .team-with-avatars .avatar--fallback {
-    width: 20px !important; height: 20px !important; font-size: 9px !important;
+    width: 66px !important; height: 66px !important; font-size: 27px !important;
   }
-  .standings-divisions--combined .avatar-flag__badge { width: 12px; height: 9px; }
+  .standings-divisions--combined .avatar-flag__badge { width: 28px; height: 20px; }
 }
 
 /* ============================================================

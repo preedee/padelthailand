@@ -147,7 +147,9 @@ const Standings = (() => {
       if (!groups || Object.keys(groups).length === 0) return '';
       const rule = getQualificationRule(d.name);
       const { groupNames, qualifiedNames, footnote } = prepareDivision(groups, rule);
-      return renderDivision(d.name, groupNames, groups, qualifiedNames, footnote);
+      // Combined view stacks every division — prefix each group card with its
+      // division ("Gold Group A") so Gold/Silver are distinguishable.
+      return renderDivision(d.name, groupNames, groups, qualifiedNames, footnote, d.name);
     }).filter(Boolean);
 
     container.innerHTML = blocks.length
@@ -155,18 +157,19 @@ const Standings = (() => {
       : '<div class="loading">No group standings data available</div>';
   }
 
-  function renderDivision(title, groupNames, groups, qualifiedNames, footnote) {
+  function renderDivision(title, groupNames, groups, qualifiedNames, footnote, groupPrefix) {
     return `
       <div class="standings-division">
         <div class="standings-division__title">${title}</div>
         <div class="standings-grid">
-          ${groupNames.map(name => renderGroup(name, groups[name], qualifiedNames)).join('')}
+          ${groupNames.map(name => renderGroup(name, groups[name], qualifiedNames, groupPrefix)).join('')}
           ${qualifyNoteEnabled() ? `<div class="standings-footnote">${footnote}</div>` : ''}
         </div>
       </div>`;
   }
 
-  function renderGroup(name, teams, qualifiedNames) {
+  function renderGroup(name, teams, qualifiedNames, groupPrefix) {
+    const displayName = groupPrefix ? `${groupPrefix} ${name}` : name;
     const rows = teams.map(team => {
       const isQualifier = qualifiedNames.has(team.name);
       // Prefer per-player avatar+flag (resolved in-sheet from Users by ID);
@@ -188,7 +191,7 @@ const Standings = (() => {
       <table class="group-card__table">
         <thead>
           <tr>
-            <th class="group-card__name">${name}</th>
+            <th class="group-card__name">${displayName}</th>
             <th>MP</th>
             <th>W</th>
             <th>L</th>
