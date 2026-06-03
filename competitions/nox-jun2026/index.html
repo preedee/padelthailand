@@ -58,6 +58,12 @@
         height: clamp(32px, 4vh, 44px) !important;
         font-size: clamp(14px, 1.8vh, 21px) !important;
       }
+      /* Flag badge size matches the Standings tab (24x17) on All Matches +
+         knockout brackets, so avatars AND flags are identical across pages. */
+      .team-stacked .avatar-flag__badge,
+      .bracket-match .avatar-flag__badge {
+        width: 24px; height: 17px;
+      }
 
       /* Inline consolation = a smaller bracket beneath the knockout */
       .bracket-consolation--inline .bracket-match__team-name {
@@ -72,6 +78,10 @@
         height: clamp(20px, 2.4vh, 28px) !important;
         min-width: clamp(20px, 2.4vh, 28px); min-height: clamp(20px, 2.4vh, 28px);
         font-size: clamp(10px, 1.3vh, 15px) !important;
+      }
+      /* Inline consolation has smaller avatars → keep its flag proportional. */
+      .bracket-consolation--inline .bracket-match .avatar-flag__badge {
+        width: 16px; height: 11px;
       }
     }
   </style>
