@@ -329,14 +329,17 @@ const Matches = (() => {
         roundLabel = `${roundLabel} - <span class="match-card__cc-type ${typeClass}">${typeText}${slotSuffix}</span>`;
       }
     } else {
-      // Code-keyed avatars + country flags (same source/format as Standings),
-      // falling back to name-based stacked avatars on older engines.
-      team1HTML = Data.getTeamStackedFlagHTML
-        ? Data.getTeamStackedFlagHTML(match.team1Code, match.team1, 30)
-        : Data.getTeamStackedHTML(match.team1, 30);
-      team2HTML = Data.getTeamStackedFlagHTML
-        ? Data.getTeamStackedFlagHTML(match.team2Code, match.team2, 30)
-        : Data.getTeamStackedHTML(match.team2, 30);
+      // One-line team layout (inline avatars + country flags + team name),
+      // same format as the Standings page. Code-keyed avatar+flag lookup with
+      // a name-based fallback on older engines.
+      const inlineTeam = (code, name) => {
+        const avatars = Data.getTeamAvatarFlagByCode
+          ? Data.getTeamAvatarFlagByCode(code, name, 30)
+          : Data.getTeamAvatarsHTML(name, 30);
+        return `<div class="team-with-avatars">${avatars}<span class="match-card__team-name">${name || 'TBD'}</span></div>`;
+      };
+      team1HTML = inlineTeam(match.team1Code, match.team1);
+      team2HTML = inlineTeam(match.team2Code, match.team2);
     }
 
     // Round label: avoid leading "—" when there's no division text (CC mode).

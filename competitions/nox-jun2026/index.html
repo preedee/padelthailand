@@ -45,15 +45,18 @@
          at clamp(15px,2.1vh,28px) and avatars at clamp(32px,4vh,44px)). */
       .bracket-match__team-name,
       .team-stacked__name,
-      .team-stacked__standing-team   { font-size: clamp(15px, 2.1vh, 28px); }
+      .team-stacked__standing-team,
+      .match-card__team-name         { font-size: clamp(15px, 2.1vh, 28px); }
       .team-stacked .avatar,
-      .bracket-match .avatar {
+      .bracket-match .avatar,
+      .match-card .team-with-avatars .avatar {
         width: clamp(32px, 4vh, 44px) !important;
         height: clamp(32px, 4vh, 44px) !important;
         min-width: clamp(32px, 4vh, 44px); min-height: clamp(32px, 4vh, 44px);
       }
       .team-stacked .avatar--fallback,
-      .bracket-match .avatar--fallback {
+      .bracket-match .avatar--fallback,
+      .match-card .team-with-avatars .avatar--fallback {
         width: clamp(32px, 4vh, 44px) !important;
         height: clamp(32px, 4vh, 44px) !important;
         font-size: clamp(14px, 1.8vh, 21px) !important;
@@ -61,7 +64,8 @@
       /* Flag badge size matches the Standings tab (24x17) on All Matches +
          knockout brackets, so avatars AND flags are identical across pages. */
       .team-stacked .avatar-flag__badge,
-      .bracket-match .avatar-flag__badge {
+      .bracket-match .avatar-flag__badge,
+      .match-card .team-with-avatars .avatar-flag__badge {
         width: 24px; height: 17px;
       }
 
@@ -125,7 +129,7 @@
   </div>
   <script src="js/data.js?v=233"></script>
   <script src="js/standings.js?v=227"></script>
-  <script src="js/matches.js?v=233"></script>
+  <script src="js/matches.js?v=234"></script>
   <script src="js/bracket.js?v=233"></script>
   <script src="js/app.js?v=232"></script>
 </body>
