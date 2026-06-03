@@ -1744,3 +1744,12 @@ img.avatar {
 .bracket-combined { display: flex; flex-direction: column; gap: 2vmin; height: 100%; }
 .bracket-combined__division { min-height: 0; }
 .bracket-combined .bracket-single { height: auto; }
+
+
+/* In COMBINED views the division label is the only thing distinguishing Gold from
+   Silver, so it must show even when show_page_titles=FALSE hides single-view titles. */
+.hide-page-titles .standings-divisions--combined .standings-division__title,
+.hide-page-titles .bracket-combined .bracket-division__title,
+.hide-page-titles .bracket-consolation .bracket-division__title {
+  display: block;
+}
