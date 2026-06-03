@@ -200,6 +200,14 @@ const Data = (() => {
       document.querySelector('.dashboard').classList.add('hide-page-titles');
     }
 
+    // Upcoming Matches sidebar — shown by default; remove it when
+    // show_upcoming = false. The .content-area flex layout reflows
+    // .main-content to full width on its own (renderUpcoming is a no-op
+    // once .sidebar__content is gone).
+    if (config.show_upcoming && config.show_upcoming.toLowerCase() === 'false') {
+      document.getElementById('sidebar-upcoming')?.remove();
+    }
+
     // Reveal dashboard now that config is applied
     const dashboard = document.querySelector('.dashboard');
     if (dashboard) dashboard.classList.add('config-loaded');
