@@ -121,15 +121,20 @@ const Bracket = (() => {
       : `<span class="bracket-match__set">${match.score2 != null ? match.score2 : ''}</span>`;
 
     const avatar = (code, name) => {
-      const base = Data.getTeamAvatarFlagByCode
-        ? Data.getTeamAvatarFlagByCode(code, name, 20)
-        : Data.getTeamAvatarsHTML(name, 20);
-      // Guarantee two avatar slots per team. A placeholder / flow label ("Seed 1",
-      // "Winner QF1", "TBD") has no "&" so it yields a single avatar — pad with a
-      // second neutral circle so every bracket team shows two placeholders.
-      return / & | and /.test((name || '').replace(/⁠/g, ''))
-        ? base
-        : base + `<span class="avatar avatar--fallback" style="width:20px;height:20px"></span>`;
+      const clean = (name || '').replace(/⁠/g, '').trim();
+      // Real two-player team ("A & B") → resolved avatars + flags by team code.
+      if (/ & | and /.test(clean)) {
+        return Data.getTeamAvatarFlagByCode
+          ? Data.getTeamAvatarFlagByCode(code, clean, 20)
+          : Data.getTeamAvatarsHTML(clean, 20);
+      }
+      // Placeholder / flow label ("Seed 1", "Winner QF1", "TBD") → two initial
+      // circles split across the label's words, e.g. "Seed 1" → "S" + "1".
+      const words = clean.split(/\s+/).filter(Boolean);
+      const i1 = (words[0] || '?').charAt(0).toUpperCase();
+      const i2 = (words[1] ? words[1].charAt(0) : (words[0] || '').charAt(1)).toUpperCase();
+      const circle = t => `<span class="avatar avatar--fallback" style="width:20px;height:20px">${t}</span>`;
+      return circle(i1) + circle(i2);
     };
     const team1Avatars = avatar(match.team1Code, team1Name);
     const team1Content = `<div class="team-with-avatars">${team1Avatars}<span class="bracket-match__team-name">${team1Name}</span></div>`;

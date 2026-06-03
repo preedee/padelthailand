@@ -804,7 +804,11 @@ const App = (() => {
 
   function resetRotation() {
     stopRotation();
-    startRotation();
+    // Only (re)start rotation if it's actually enabled. Tab clicks call this, so
+    // without the guard a click would re-enable rotation even when autorotate=false.
+    const autorotate = Data.getConfig('autorotate', 'true').toLowerCase() !== 'false';
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile && autorotate && VIEWS.length > 1) startRotation();
   }
 
   function toggleRotation() {
