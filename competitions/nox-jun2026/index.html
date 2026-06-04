@@ -144,8 +144,8 @@
          vertically (engine .bracket__matches uses justify-content:space-around),
          so the cards spread out to fill the page instead of bunching at the top.
          Knockout gets ~2× the consolation's share (it has more rounds/matches). */
-      #view-gold-bracket, #view-silver-bracket { padding-top: 8px; padding-bottom: 6px; display: flex; flex-direction: column; }
-      .view--with-consolation { gap: 6px; }
+      #view-gold-bracket, #view-silver-bracket { padding-top: 6px; padding-bottom: 4px; display: flex; flex-direction: column; }
+      .view--with-consolation { gap: 4px; }
       /* Sections GROW to fill spare height (so cards spread out on Gold) but never
          SHRINK below their natural height (so the taller cards never overlap; the
          view scrolls instead when knockout + full consolation exceed one screen). */
@@ -155,13 +155,18 @@
       #view-silver-bracket .bracket-single > .bracket { flex: 1; min-height: 0; }
       /* Provisional notice pinned to the very bottom; text matches the Standings
          legend size (--fs-meta). */
-      .bracket-provisional { order: 99; font-size: var(--fs-meta); padding: 6px 12px; line-height: 1.25; }
+      .bracket-provisional { order: 99; font-size: var(--fs-meta); padding: 3px 12px; line-height: 1.25; }
       /* Knockout columns: clear the (now larger) round title so the first match
          card doesn't overlap it. Consolation has no titles → minimal top pad. */
-      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 30px; }
-      .bracket-single .bracket-match { margin: 3px 0; }
-      /* Cards ~50% taller (roomier) — extra vertical padding in each team row. */
-      .bracket-single .bracket-match__team { padding: 15px 12px; min-height: 0; }
+      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 26px; }
+      .bracket-single .bracket-match { margin: 2px 0; }
+      /* Knockout cards ~25% taller (roomier) via extra team-row padding. The
+         consolation keeps the base height so the knockout + consolation still fit
+         one screen on Silver. */
+      .bracket-single:not(.bracket-consolation--inline) .bracket-match__team { padding: 9px 12px; min-height: 0; }
+      .bracket-consolation--inline .bracket-match__team { padding: 3px 12px; min-height: 0; }
+      /* Final Standings: trophy/medal + place text 2× bigger. */
+      .team-stacked__standing .team-stacked__place { font-size: calc(var(--fs-small) * 2); }
     }
 
     /* ===== Standings table tweaks =====
