@@ -144,6 +144,26 @@
       .bracket-single .bracket-match { margin: 5px 0; }
       .bracket-single .bracket-match__team { padding: 4px 12px; min-height: 0; }
     }
+
+    /* ===== Standings table tweaks =====
+       (1) Breathing room on the far-left (Team) and far-right (GD) columns so
+           content isn't jammed against the card edges.
+       (2) Stat columns MP/W/L/GD widened ~50% per responsive tier. */
+    .group-card__table th:first-child,
+    .group-card__table td:first-child { padding-left: 18px; }
+    .group-card__table th:last-child,
+    .group-card__table td:last-child  { padding-right: 18px; }
+
+    .group-card__table th:not(:first-child) { width: 60px; }   /* base 40 → 60 */
+    @media (min-width: 1024px) {
+      .group-card__table th:not(:first-child) { width: 66px; } /* 44 → 66 */
+    }
+    @media (min-width: 1024px) and (min-height: 1000px) {
+      .group-card__table th:not(:first-child) { width: 75px; } /* 50 → 75 (1080p TV) */
+    }
+    @media (max-width: 767px) {
+      .group-card__table th:not(:first-child) { width: 57px; } /* 38 → 57 */
+    }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
