@@ -174,7 +174,8 @@ const Bracket = (() => {
     const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || '';
     const dateTimeStr = dateStr ? (timeStr ? `${dateStr} · ${timeStr}` : dateStr) : timeStr;
-    const dateTimeHTML = dateTimeStr ? `<div class="bracket-match__datetime">${dateTimeStr}</div>` : '';
+    // Hide the scheduled time once the match has a score — the score takes its place.
+    const dateTimeHTML = (dateTimeStr && validSets.length === 0) ? `<div class="bracket-match__datetime">${dateTimeStr}</div>` : '';
 
     return `<div class="bracket-match ${extraClass || ''}">
       ${dateTimeHTML}

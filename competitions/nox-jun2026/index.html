@@ -128,12 +128,13 @@
          title row of space at the top of each column. */
       .bracket-consolation--inline .bracket__matches { padding-top: 4px; }
 
-      /* Match time pinned to each card's top-right corner (out of normal flow)
-         so it no longer costs a row of height — recovers vertical space on the
-         bracket page. (.bracket-match is already position:relative in the engine.) */
+      /* Match time (only shown when there's no score yet) sits out of flow,
+         vertically centered on the right with a white background so the divider
+         line between the two team rows doesn't show through it. */
       .bracket-match__datetime {
-        position: absolute; top: 3px; right: 10px;
-        margin: 0; padding: 0; line-height: 1;
+        position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+        margin: 0; padding: 1px 6px; line-height: 1;
+        background: #fff; border-radius: 3px;
       }
       /* Fit the knockout + the full-size consolation on ONE screen (no scroll).
          With the time out of flow the cards need far less squeezing, so spacing
@@ -145,10 +146,11 @@
          Knockout gets ~2× the consolation's share (it has more rounds/matches). */
       #view-gold-bracket, #view-silver-bracket { padding-top: 8px; padding-bottom: 6px; display: flex; flex-direction: column; }
       .view--with-consolation { gap: 6px; }
-      #view-gold-bracket > .bracket-single:not(.bracket-consolation--inline),
-      #view-silver-bracket > .bracket-single:not(.bracket-consolation--inline) { flex: 2 1 0; min-height: 0; }
-      #view-gold-bracket > .bracket-consolation--inline,
-      #view-silver-bracket > .bracket-consolation--inline { flex: 1 1 0; min-height: 0; }
+      /* Sections GROW to fill spare height (so cards spread out on Gold) but never
+         SHRINK below their natural height (so the taller cards never overlap; the
+         view scrolls instead when knockout + full consolation exceed one screen). */
+      #view-gold-bracket > .bracket-single,
+      #view-silver-bracket > .bracket-single { flex: 1 0 auto; }
       #view-gold-bracket .bracket-single > .bracket,
       #view-silver-bracket .bracket-single > .bracket { flex: 1; min-height: 0; }
       /* Provisional notice pinned to the very bottom; text matches the Standings
@@ -158,7 +160,8 @@
          card doesn't overlap it. Consolation has no titles → minimal top pad. */
       .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 30px; }
       .bracket-single .bracket-match { margin: 3px 0; }
-      .bracket-single .bracket-match__team { padding: 3px 12px; min-height: 0; }
+      /* Cards ~50% taller (roomier) — extra vertical padding in each team row. */
+      .bracket-single .bracket-match__team { padding: 15px 12px; min-height: 0; }
     }
 
     /* ===== Standings table tweaks =====
@@ -222,7 +225,7 @@
   <script src="js/data.js?v=241"></script>
   <script src="js/standings.js?v=230"></script>
   <script src="js/matches.js?v=235"></script>
-  <script src="js/bracket.js?v=242"></script>
+  <script src="js/bracket.js?v=243"></script>
   <script src="js/app.js?v=234"></script>
 </body>
 </html>
