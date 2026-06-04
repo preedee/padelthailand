@@ -85,12 +85,14 @@
         height: clamp(32px, 4vh, 44px) !important;
         font-size: clamp(14px, 1.8vh, 21px) !important;
       }
-      /* Flag badge size matches the Standings tab (24x17) on All Matches +
-         knockout brackets, so avatars AND flags are identical across pages. */
+      /* Flag badge size, consistent across All Matches + knockout brackets +
+         Standings. Reduced ~16% (24x17 -> 20x14) per request — flags read a
+         touch smaller relative to the avatars. */
       .team-stacked .avatar-flag__badge,
       .bracket-match .avatar-flag__badge,
-      .match-card .team-with-avatars .avatar-flag__badge {
-        width: 24px; height: 17px;
+      .match-card .team-with-avatars .avatar-flag__badge,
+      .standings-divisions--combined .avatar-flag__badge {
+        width: 20px; height: 14px;
       }
       /* Bracket teams on a single line (match Standings / All Matches): the
          engine default lets long names wrap onto a second row — keep one line. */
