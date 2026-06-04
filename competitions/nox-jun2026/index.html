@@ -99,12 +99,23 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
 
-      /* Inline consolation is now IDENTICAL to the knockout (same avatar/font/flag
-         sizes — inherits the general bracket rules above; no compacting). Only its
-         column width is constrained so the 2-column layout isn't double-wide.
-         (Consequence: full-size consolation pushes the page to scroll below the fold.) */
+      /* Inline consolation is IDENTICAL to the knockout (same avatar/font/flag
+         sizes — inherits the general bracket rules above). Column width is
+         constrained so the 2-column layout isn't double-wide. */
       .bracket-consolation--inline .bracket { justify-content: flex-start; }
       .bracket-consolation--inline .bracket__round { flex: 0 0 25%; }
+
+      /* Fit the knockout + the full-size consolation on ONE screen (no scroll):
+         trim only the vertical WHITESPACE between/inside match cards. Fonts,
+         avatars and flags stay full-size — we just remove dead space so both
+         brackets share the viewport height. */
+      #view-gold-bracket, #view-silver-bracket { padding-top: 4px; padding-bottom: 4px; }
+      .view--with-consolation { gap: 2px; }
+      .bracket-single .bracket__matches { padding-top: 24px; }
+      .bracket-single .bracket-match { margin: 2px 0; }
+      .bracket-single .bracket-match__team { padding: 2px 12px; min-height: 0; }
+      .bracket-single .bracket-match__datetime { padding: 0 12px 0; }
+      .bracket-consolation--inline .bracket-consolation__label { margin: 2px 0; }
     }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
