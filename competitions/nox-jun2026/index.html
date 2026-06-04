@@ -200,6 +200,84 @@
       .standings-divisions--combined .standings-grid { gap: 12px; }
       .standings-divisions--combined .standings-legend { margin-top: 2px; padding-top: 4px; }
     }
+
+    /* Footer QR: hide on phones/tablets. The QR is injected by data.js at its
+       full 240×240 size and absolutely centered; on the LIVE site (older shared
+       styles.css) it has no size cap or mobile-hide, so it renders huge and
+       overlaps Home + Brackets. Scanning a QR with the same phone you're reading
+       on is pointless anyway. Self-contained here so it's fixed regardless of
+       which shared-CSS version is deployed. Desktop/projector keeps the QR. */
+    @media (max-width: 768px) {
+      .footer__qr { display: none !important; }
+    }
+
+    /* ============================================================
+       PHONE (≤430px) — NOX-only mobile refinements.
+       Layered on top of the shared engine's ≤768px tier; scoped to
+       this nox-only shell so Community Cup / shared engine are intact.
+       ============================================================ */
+    @media (max-width: 430px) {
+
+      /* ---- Header: the long tournament title was colliding with the
+         left event logo and right partner logo. Shrink both logos,
+         tighten padding, and let the title use the center column and
+         wrap to (at most) two lines instead of overrunning the rails. */
+      .header { padding: 6px 10px; height: auto; min-height: 50px; column-gap: 8px; }
+      .header__lps-logo, .header__rpa-logo { height: 32px; }
+      .header__tps-logo { height: 28px; }
+      .header__title h1 {
+        font-size: 13px; line-height: 1.12; letter-spacing: 0.3px;
+        white-space: normal; overflow-wrap: anywhere;
+      }
+      .header__title p { font-size: 9px; letter-spacing: 0.5px; margin-top: 1px; }
+
+      /* ---- Brackets: stack the rounds vertically so the FINAL (and the
+         champion) is always on-screen. Before, the bracket was a
+         horizontal flex that overflowed right behind a hard-to-discover
+         scroll, hiding the final. Each round becomes a full-width block,
+         its title sits above its matches, connector stubs are hidden. */
+      #view-gold-bracket .bracket,
+      #view-silver-bracket .bracket {
+        flex-direction: column;
+        overflow-x: visible;
+      }
+      #view-gold-bracket .bracket__round,
+      #view-silver-bracket .bracket__round {
+        min-width: 0; width: 100%; padding: 0; margin-bottom: 14px;
+      }
+      /* round title back into normal flow (engine default is absolute) */
+      #view-gold-bracket .bracket__round-title,
+      #view-silver-bracket .bracket__round-title {
+        position: static; margin: 0 0 6px; font-size: 12px;
+      }
+      #view-gold-bracket .bracket__matches,
+      #view-silver-bracket .bracket__matches { padding-top: 0; }
+      /* hide the horizontal connector stubs in the vertical layout */
+      #view-gold-bracket .bracket-match::after,
+      #view-silver-bracket .bracket-match::after { display: none; }
+      /* team names: one line + ellipsis (engine ≤768 wraps them) */
+      #view-gold-bracket .bracket-match__team-name,
+      #view-silver-bracket .bracket-match__team-name {
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        word-break: normal; font-size: 14px;
+      }
+
+      /* ---- All Matches: keep the engine's original per-court layout (the
+         "old layout" — court headers + readable cards). With 3 courts they
+         can't fit a phone without overlapping, so the cards stay full-size and
+         the courts scroll horizontally (engine ≤768 default). No override here. */
+
+      /* ---- Home: fill the phone viewport so the event logo centers and
+         the footer sits at the bottom, instead of the logo card sitting
+         at the top with a large empty gap and the footer floating. */
+      #view-home { padding: 0; }
+      #view-home .home-page {
+        height: auto;
+        min-height: calc(100dvh - 140px);
+        justify-content: center;
+        padding: 24px;
+      }
+    }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
