@@ -1366,7 +1366,11 @@ const Data = (() => {
 
       // Fetch matches + players + standings + CC tabs in parallel
       const fetches = [
-        fetch(sheetURL(matchesTab)),
+        // Force a single header row: the Matches tab is text-heavy (team names,
+        // statuses, "Group stage" trackers), which makes gviz's auto-detection
+        // merge several top rows into one header → column names get polluted and
+        // every match is dropped. &headers=1 pins exactly one header row.
+        fetch(sheetURL(matchesTab, '&headers=1')),
         fetch(sheetURL(playersTab)),
         ...standingsTabs.map(tab => fetch(sheetURL(tab))),
         ...ccTabs.map(tab => fetch(sheetURL(tab, '&headers=1')))
