@@ -105,12 +105,14 @@
       }
       /* Flag badge size, consistent across All Matches + knockout brackets +
          Standings. Reduced ~16% (24x17 -> 20x14) per request — flags read a
-         touch smaller relative to the avatars. */
+         touch smaller relative to the avatars. BLACK outline (was white) so
+         light flags (e.g. Japan: white field) stay distinct from the card. */
       .team-stacked .avatar-flag__badge,
       .bracket-match .avatar-flag__badge,
       .match-card .team-with-avatars .avatar-flag__badge,
       .standings-divisions--combined .avatar-flag__badge {
         width: 20px; height: 14px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.35);
       }
       /* Bracket teams on a single line (match Standings / All Matches): the
          engine default lets long names wrap onto a second row — keep one line. */
