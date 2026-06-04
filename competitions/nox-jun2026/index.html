@@ -138,14 +138,22 @@
       /* Fit the knockout + the full-size consolation on ONE screen (no scroll).
          With the time out of flow the cards need far less squeezing, so spacing
          is comfortable again. Fonts, avatars and flags stay full-size. */
-      /* Bracket view is a flex column so the provisional-seeds notice can sit at
-         the very BOTTOM of the page (order:99 + margin-top:auto pushes it down,
-         below the knockout and consolation). */
+      /* Bracket view is a flex column. The knockout + consolation sections GROW
+         to fill the height, and their match columns distribute the cards
+         vertically (engine .bracket__matches uses justify-content:space-around),
+         so the cards spread out to fill the page instead of bunching at the top.
+         Knockout gets ~2× the consolation's share (it has more rounds/matches). */
       #view-gold-bracket, #view-silver-bracket { padding-top: 8px; padding-bottom: 6px; display: flex; flex-direction: column; }
       .view--with-consolation { gap: 6px; }
-      /* Provisional notice pinned to the very bottom, compact so it costs little
-         height (the knockout + full-size consolation already fill the screen). */
-      .bracket-provisional { order: 99; margin-top: auto; font-size: clamp(11px, 1.4vh, 15px); padding: 3px 12px; line-height: 1.25; }
+      #view-gold-bracket > .bracket-single:not(.bracket-consolation--inline),
+      #view-silver-bracket > .bracket-single:not(.bracket-consolation--inline) { flex: 2 1 0; min-height: 0; }
+      #view-gold-bracket > .bracket-consolation--inline,
+      #view-silver-bracket > .bracket-consolation--inline { flex: 1 1 0; min-height: 0; }
+      #view-gold-bracket .bracket-single > .bracket,
+      #view-silver-bracket .bracket-single > .bracket { flex: 1; min-height: 0; }
+      /* Provisional notice pinned to the very bottom; text matches the Standings
+         legend size (--fs-meta). */
+      .bracket-provisional { order: 99; font-size: var(--fs-meta); padding: 6px 12px; line-height: 1.25; }
       /* Knockout columns: clear the (now larger) round title so the first match
          card doesn't overlap it. Consolation has no titles → minimal top pad. */
       .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 30px; }
