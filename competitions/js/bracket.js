@@ -79,9 +79,9 @@ const Bracket = (() => {
     container.innerHTML = html;
   }
 
-  function renderRound(roundKey, roundMatches) {
+  function renderRound(roundKey, roundMatches, hideTitle) {
     return `<div class="bracket__round">
-      <div class="bracket__round-title">${ROUND_DISPLAY[roundKey] || roundKey}</div>
+      ${hideTitle ? '' : `<div class="bracket__round-title">${ROUND_DISPLAY[roundKey] || roundKey}</div>`}
       <div class="bracket__matches">
         ${roundMatches.map(m => renderBracketMatch(m)).join('')}
       </div>
@@ -182,13 +182,13 @@ const Bracket = (() => {
     </div>`;
   }
 
-  function renderChampion(standings) {
+  function renderChampion(standings, hideTitle) {
     if (!standings || standings.length === 0) return '';
 
     const placeClasses = ['bracket-match--gold', 'bracket-match--silver', 'bracket-match--bronze'];
 
     return `<div class="bracket__round">
-      <div class="bracket__round-title">Final Standings</div>
+      ${hideTitle ? '' : `<div class="bracket__round-title">Final Standings</div>`}
       <div class="bracket__matches">
         ${standings.slice(0, 3).map((s, i) => {
           const teamContent = `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${Data.getTeamStackedHTML(s.team, 18)}</span></div>`;
@@ -269,10 +269,12 @@ const Bracket = (() => {
     const ko = Data.getKnockout ? Data.getKnockout(divisionName) : null;
     const cols = (ko && knockoutColumnKeys(ko)) || ['Quarters', 'Semi Finals', 'Finals', 'Standings'];
 
+    // Round titles are HIDDEN on the consolation — its columns line up under the
+    // knockout's, whose titles already label them (no duplicate labels).
     const colHTML = cols.map(key => {
-      if (key === 'Semi Finals') return sf.length ? renderRound('Semi Finals', sf) : emptyRound();
-      if (key === 'Finals')      return fin.length ? renderRound('Finals', fin) : emptyRound();
-      if (key === 'Standings')   return renderChampion(cons.standings) || emptyRound();
+      if (key === 'Semi Finals') return sf.length ? renderRound('Semi Finals', sf, true) : emptyRound();
+      if (key === 'Finals')      return fin.length ? renderRound('Finals', fin, true) : emptyRound();
+      if (key === 'Standings')   return renderChampion(cons.standings, true) || emptyRound();
       return emptyRound();  // knockout-only rounds (e.g. Quarter-Finals) → spacer
     }).join('');
 

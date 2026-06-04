@@ -106,18 +106,26 @@
          the rounds line up vertically — Consolation Semi-Finals sits directly
          under Knockout Semi-Finals, etc. No column override needed. */
 
-      /* Centered, full-width section labels ("KNOCKOUT" / "CONSOLATION") so each
-         section is clearly and consistently headed. */
+      /* Section labels ("KNOCKOUT" / "CONSOLATION") as a centered filled pill —
+         white text on the brand colour. High-contrast and readable at a distance;
+         modest letter-spacing (not the old wide-tracked full-width bar). */
       .bracket-section__label {
+        display: block;
+        width: -moz-fit-content;
+        width: fit-content;
+        margin: 0 auto 6px;
+        padding: 3px 26px;
+        background: var(--green);
+        color: #fff;
+        border-radius: 999px;
         text-align: center;
-        font: 700 var(--fs-title)/1.2 var(--font, inherit);
-        letter-spacing: 3px;
+        font: 700 var(--fs-title)/1.25 var(--font, inherit);
+        letter-spacing: 1px;
         text-transform: uppercase;
-        color: var(--green);
-        border-bottom: 2px solid var(--green);
-        padding-bottom: 5px;
-        margin: 0 0 8px;
       }
+      /* Consolation columns have no round titles now → no need to reserve the
+         title row of space at the top of each column. */
+      .bracket-consolation--inline .bracket__matches { padding-top: 4px; }
 
       /* Match time pinned to each card's top-right corner (out of normal flow)
          so it no longer costs a row of height — recovers vertical space on the
@@ -177,7 +185,7 @@
   <script src="js/data.js?v=238"></script>
   <script src="js/standings.js?v=229"></script>
   <script src="js/matches.js?v=234"></script>
-  <script src="js/bracket.js?v=236"></script>
+  <script src="js/bracket.js?v=237"></script>
   <script src="js/app.js?v=233"></script>
 </body>
 </html>
