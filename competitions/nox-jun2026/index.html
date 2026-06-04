@@ -138,11 +138,19 @@
       /* Fit the knockout + the full-size consolation on ONE screen (no scroll).
          With the time out of flow the cards need far less squeezing, so spacing
          is comfortable again. Fonts, avatars and flags stay full-size. */
-      #view-gold-bracket, #view-silver-bracket { padding-top: 10px; padding-bottom: 10px; }
-      .view--with-consolation { gap: 8px; }
-      .bracket-single .bracket__matches { padding-top: 24px; } /* clears the round title */
-      .bracket-single .bracket-match { margin: 5px 0; }
-      .bracket-single .bracket-match__team { padding: 4px 12px; min-height: 0; }
+      /* Bracket view is a flex column so the provisional-seeds notice can sit at
+         the very BOTTOM of the page (order:99 + margin-top:auto pushes it down,
+         below the knockout and consolation). */
+      #view-gold-bracket, #view-silver-bracket { padding-top: 8px; padding-bottom: 6px; display: flex; flex-direction: column; }
+      .view--with-consolation { gap: 6px; }
+      /* Provisional notice pinned to the very bottom, compact so it costs little
+         height (the knockout + full-size consolation already fill the screen). */
+      .bracket-provisional { order: 99; margin-top: auto; font-size: clamp(11px, 1.4vh, 15px); padding: 3px 12px; line-height: 1.25; }
+      /* Knockout columns: clear the (now larger) round title so the first match
+         card doesn't overlap it. Consolation has no titles → minimal top pad. */
+      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 30px; }
+      .bracket-single .bracket-match { margin: 3px 0; }
+      .bracket-single .bracket-match__team { padding: 3px 12px; min-height: 0; }
     }
 
     /* ===== Standings table tweaks =====
@@ -206,7 +214,7 @@
   <script src="js/data.js?v=241"></script>
   <script src="js/standings.js?v=230"></script>
   <script src="js/matches.js?v=235"></script>
-  <script src="js/bracket.js?v=239"></script>
+  <script src="js/bracket.js?v=242"></script>
   <script src="js/app.js?v=234"></script>
 </body>
 </html>

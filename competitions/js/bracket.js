@@ -74,14 +74,14 @@ const Bracket = (() => {
       <div class="bracket-single">
         <div class="bracket-section__label">Knockout</div>
         <div class="bracket-division__title">${title}</div>
-        ${provisionalNote}
         <div class="bracket">
           ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
           ${(has3rd || hasFinals) ? renderCombinedFinalsRound(rounds['3rd Place'] || [], rounds['Finals'] || []) : ''}
           ${renderChampion(divData.standings)}
         </div>
         ${Object.keys(tiers).length > 0 ? renderTiers(tiers) : ''}
-      </div>`;
+      </div>
+      ${provisionalNote}`;
 
     container.innerHTML = html;
   }
