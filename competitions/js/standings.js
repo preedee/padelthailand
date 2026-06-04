@@ -22,11 +22,11 @@ const Standings = (() => {
       const name = parts[0].trim();
       const value = parts[1].trim().toLowerCase();
       if (name.toLowerCase() === divisionName.toLowerCase()) {
-        if (value.includes('+best')) {
-          const n = parseInt(value, 10) || 1;
-          return { perGroup: n, best: true };
-        }
-        return { perGroup: parseInt(value, 10) || 2, best: false };
+        // "N+best" → top N per group + 1 best remaining.
+        // "N+Mbest" → top N per group + M best remaining (e.g. 2+2best = 8 of 3×4).
+        const m = value.match(/^(\d+)\s*\+\s*(\d*)\s*best$/);
+        if (m) return { perGroup: parseInt(m[1], 10) || 1, best: parseInt(m[2], 10) || 1 };
+        return { perGroup: parseInt(value, 10) || 2, best: 0 };
       }
     }
     return { perGroup: 2, best: false }; // default
@@ -108,14 +108,15 @@ const Standings = (() => {
         });
       });
       remaining.sort(compareTeams);
-      if (remaining.length > 0) qualifiedNames.add(remaining[0].name);
+      remaining.slice(0, rule.best).forEach(t => qualifiedNames.add(t.name));
     }
 
     // Build descriptive footnote text
     let footnote;
     const numGroups = groupNames.length;
     if (rule.best) {
-      footnote = '*Top ' + rule.perGroup + ' per group + best remaining qualify for the next round';
+      const bestTxt = rule.best > 1 ? rule.best + ' best remaining' : 'best remaining';
+      footnote = '*Top ' + rule.perGroup + ' per group + ' + bestTxt + ' qualify for the next round';
     } else if (numGroups === 1) {
       footnote = '*Top ' + rule.perGroup + ' qualify for the next round';
     } else {
@@ -183,7 +184,7 @@ const Standings = (() => {
         <td>${team.played}</td>
         <td>${team.won}</td>
         <td>${team.lost}</td>
-        <td>${team.gamesDiff != null ? team.gamesDiff : (team.gamesWon - team.gamesLost)}</td>
+        <td>${team.gamesDiff || (team.gamesWon - team.gamesLost)}</td>
       </tr>`;
     }).join('');
 
