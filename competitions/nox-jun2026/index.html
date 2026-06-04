@@ -190,6 +190,16 @@
     @media (max-width: 767px) {
       .group-card__table th:not(:first-child) { width: 57px; } /* 38 → 57 */
     }
+
+    /* (3) Taller standings rows for more vertical breathing room (combined view).
+       Was clamp(40px,5vh,64px) ≈ 54px @1080 → bumped. Trim a little surrounding
+       vertical space so the taller rows still fit one screen. */
+    @media (min-width: 1024px) {
+      .standings-divisions--combined .group-card__table td { height: clamp(46px, 6vh, 74px); }
+      .standings-divisions--combined { gap: 12px; }
+      .standings-divisions--combined .standings-grid { gap: 12px; }
+      .standings-divisions--combined .standings-legend { margin-top: 2px; padding-top: 4px; }
+    }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
