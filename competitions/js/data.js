@@ -451,6 +451,11 @@ const Data = (() => {
   function parseStandingsTab(lines) {
     const groups = {};
     let currentGroup = '';
+    // True once we've passed the Overall block (i.e. seen a per-group sub-header).
+    // The Overall block's data rows carry a numeric first column (Pos) and must be
+    // skipped; group rows may ALSO carry a numeric first column (display position),
+    // so we tell them apart by this flag, not by "blank first column".
+    let pastOverall = false;
     let colMap = null;
     // Prefer a Teams&Players value, treating '', 'null' and '#N/A' as absent.
     const pickStr = (a, b) => {
@@ -498,6 +503,9 @@ const Data = (() => {
           colMap = {};
           fields.forEach((f, idx) => { const k = (f || '').trim(); if (k) colMap[k] = idx; });
         }
+        // A per-group sub-header (Code/Team repeat) marks the end of the Overall
+        // block — the group blocks follow it.
+        pastOverall = true;
         continue;
       }
 
@@ -512,7 +520,7 @@ const Data = (() => {
         const probeCol = colMap && colMap['Code'] !== undefined ? colMap['Code'] : 0;
         const probeCode = (fields[probeCol] || '').trim();
         const firstCol = (fields[0] || '').trim();
-        if (firstCol === '' && /^[A-Za-z]{2}\d+$/.test(probeCode)) {
+        if ((firstCol === '' || pastOverall) && /^[A-Za-z]{2}\d+$/.test(probeCode)) {
           rowGroup = 'Group ' + probeCode.charAt(1).toUpperCase();
         }
       }
