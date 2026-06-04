@@ -22,8 +22,12 @@ const Standings = (() => {
       const name = parts[0].trim();
       const value = parts[1].trim().toLowerCase();
       if (name.toLowerCase() === divisionName.toLowerCase()) {
+        // "topN" → best N OVERALL across the division (ranked by wins → game diff),
+        //   ignoring groups (matches "best 8 by games won & games difference").
         // "N+best" → top N per group + 1 best remaining.
-        // "N+Mbest" → top N per group + M best remaining (e.g. 2+2best = 8 of 3×4).
+        // "N+Mbest" → top N per group + M best remaining (e.g. 2+2best).
+        const top = value.match(/^top\s*(\d+)$/);
+        if (top) return { perGroup: 0, best: 0, topOverall: parseInt(top[1], 10) || 0 };
         const m = value.match(/^(\d+)\s*\+\s*(\d*)\s*best$/);
         if (m) return { perGroup: parseInt(m[1], 10) || 1, best: parseInt(m[2], 10) || 1 };
         return { perGroup: parseInt(value, 10) || 2, best: 0 };
@@ -87,8 +91,15 @@ const Standings = (() => {
       groups[name].some(team => team.played > 0)
     );
 
-    // Top N per group (only if matches have been played)
-    if (anyMatchesPlayed) {
+    if (anyMatchesPlayed && rule.topOverall) {
+      // Top N OVERALL across the division — pool every team, rank by wins → game
+      // difference (compareTeams), take the best N regardless of group.
+      const all = [];
+      groupNames.forEach(name => groups[name].forEach(t => all.push(t)));
+      all.sort(compareTeams);
+      all.slice(0, rule.topOverall).forEach(t => qualifiedNames.add(t.name));
+    } else if (anyMatchesPlayed) {
+      // Top N per group ...
       groupNames.forEach(name => {
         const groupHasPlayed = groups[name].some(team => team.played > 0);
         if (groupHasPlayed) {
@@ -97,24 +108,25 @@ const Standings = (() => {
           });
         }
       });
-    }
-
-    // Best remaining (for "N+best" rule)
-    if (rule.best && anyMatchesPlayed) {
-      const remaining = [];
-      groupNames.forEach(name => {
-        groups[name].forEach((team, idx) => {
-          if (idx >= rule.perGroup) remaining.push(team);
+      // ... + M best remaining (for "N+Mbest" rule)
+      if (rule.best) {
+        const remaining = [];
+        groupNames.forEach(name => {
+          groups[name].forEach((team, idx) => {
+            if (idx >= rule.perGroup) remaining.push(team);
+          });
         });
-      });
-      remaining.sort(compareTeams);
-      remaining.slice(0, rule.best).forEach(t => qualifiedNames.add(t.name));
+        remaining.sort(compareTeams);
+        remaining.slice(0, rule.best).forEach(t => qualifiedNames.add(t.name));
+      }
     }
 
     // Build descriptive footnote text
     let footnote;
     const numGroups = groupNames.length;
-    if (rule.best) {
+    if (rule.topOverall) {
+      footnote = '*Top ' + rule.topOverall + ' overall qualify for the next round';
+    } else if (rule.best) {
       const bestTxt = rule.best > 1 ? rule.best + ' best remaining' : 'best remaining';
       footnote = '*Top ' + rule.perGroup + ' per group + ' + bestTxt + ' qualify for the next round';
     } else if (numGroups === 1) {
