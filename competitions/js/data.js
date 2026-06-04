@@ -443,6 +443,31 @@ const Data = (() => {
     return m.sets && m.sets.some(s => s.a > 0 || s.b > 0);
   }
 
+  // Build a bracket-match render object from a raw Matches row. Single source of
+  // truth for the bracket shape — the knockout, tier, and consolation parsers all
+  // go through this so a new field is added once, not three times. Caller supplies
+  // the bits that differ per section (round label, section name, division).
+  function toBracketMatch(m, { round, section, division }) {
+    const winner = getWinner(m);
+    const played = hasScores(m);
+    const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
+    const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
+    return {
+      round, team1, team2,
+      team1Code: m.team1Code || '',
+      team2Code: m.team2Code || '',
+      sets: m.sets,
+      score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
+      score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
+      score: '',
+      winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
+      section,
+      division,
+      date: m.date,
+      time: m.time
+    };
+  }
+
   // ============================================================
   // Group Stage Standings — parsed from dedicated tab
   // The tab has a non-standard layout: division headers as rows,
@@ -743,51 +768,14 @@ const Data = (() => {
     const allBracketMatches = [];
 
     mainMatches.forEach(m => {
-      const winner = getWinner(m);
-      const played = hasScores(m);
       // Normalize round: "Quarters #1" → "Quarters", "Semis #2" → "Semi Finals"
       let round = m.round.replace(/\s*#\d+$/, '');
       if (round === 'Semis') round = 'Semi Finals';
-      // Fall back to team code if team name is empty or "TBD"
-      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
-      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
-      allBracketMatches.push({
-        round: round,
-        team1: team1,
-        team2: team2,
-        team1Code: m.team1Code || '',
-        team2Code: m.team2Code || '',
-        sets: m.sets,
-        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
-        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
-        score: '',
-        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
-        section: 'PLAYOFFS',
-        division: divisionPrefix,
-        date: m.date,
-        time: m.time
-      });
+      allBracketMatches.push(toBracketMatch(m, { round, section: 'PLAYOFFS', division: divisionPrefix }));
     });
 
     tierMatches.forEach(m => {
-      const winner = getWinner(m);
-      const played = hasScores(m);
-      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
-      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
-      allBracketMatches.push({
-        round: m.round,
-        team1, team2,
-        team1Code: m.team1Code || '',
-        team2Code: m.team2Code || '',
-        sets: m.sets,
-        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
-        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
-        score: '',
-        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
-        section: m.division,
-        division: divisionPrefix,
-        date: m.date, time: m.time
-      });
+      allBracketMatches.push(toBracketMatch(m, { round: m.round, section: m.division, division: divisionPrefix }));
     });
 
     // Derive final standings from Finals and 3rd Place results
@@ -854,26 +842,9 @@ const Data = (() => {
 
     const out = [];
     consMatches.forEach(m => {
-      const winner = getWinner(m);
-      const played = hasScores(m);
       const roundLower = (m.round || '').toLowerCase();
       const round = roundLower.includes('final') ? 'Finals' : 'Semi Finals';
-      const team1 = (m.team1 && m.team1 !== 'TBD') ? m.team1 : m.team1Code || 'TBD';
-      const team2 = (m.team2 && m.team2 !== 'TBD') ? m.team2 : m.team2Code || 'TBD';
-      out.push({
-        round,
-        team1, team2,
-        team1Code: m.team1Code || '',
-        team2Code: m.team2Code || '',
-        sets: m.sets,
-        score1: played ? m.sets.reduce((sum, s) => sum + s.a, 0) : null,
-        score2: played ? m.sets.reduce((sum, s) => sum + s.b, 0) : null,
-        score: '',
-        winner: played ? (winner === 1 ? team1 : winner === 2 ? team2 : '') : '',
-        section: 'CONSOLATION',
-        division: divisionPrefix,
-        date: m.date, time: m.time
-      });
+      out.push(toBracketMatch(m, { round, section: 'CONSOLATION', division: divisionPrefix }));
     });
 
     // Consolation final standings (mirrors the knockout's): winner of the
