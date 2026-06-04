@@ -199,7 +199,13 @@ const Bracket = (() => {
       ${hideTitle ? '' : `<div class="bracket__round-title">Final Standings</div>`}
       <div class="bracket__matches">
         ${standings.slice(0, 3).map((s, i) => {
-          const teamContent = `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${Data.getTeamStackedHTML(s.team, 18)}</span></div>`;
+          // Full team name + code-keyed avatars & flags (same as the other bracket
+          // cards), instead of the old name-based stacked split.
+          const teamName = cleanTeamName(s.team) || 'TBD';
+          const teamDisplay = Data.getTeamAvatarFlagByCode
+            ? `<div class="team-with-avatars">${Data.getTeamAvatarFlagByCode('', s.team, 22)}<span class="bracket-match__team-name">${teamName}</span></div>`
+            : Data.getTeamStackedHTML(s.team, 18);
+          const teamContent = `<div class="team-stacked__standing"><span class="team-stacked__place">${s.place}</span><span class="team-stacked__standing-team">${teamDisplay}</span></div>`;
           return `<div class="bracket-match ${placeClasses[i]}">
             <div class="bracket-match__team">
               ${teamContent}
