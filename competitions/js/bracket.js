@@ -66,6 +66,7 @@ const Bracket = (() => {
 
     const html = `
       <div class="bracket-single">
+        <div class="bracket-section__label">Knockout</div>
         <div class="bracket-division__title">${title}</div>
         <div class="bracket">
           ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
@@ -96,6 +97,28 @@ const Bracket = (() => {
         ${thirdPlaceMatches.map(m => renderBracketMatch(m, 'bracket-match--bronze')).join('')}
       </div>
     </div>`;
+  }
+
+  // Ordered column keys for a knockout bracket: each regular round, then the
+  // combined Final/3rd-place column ('Finals'), then the 'Standings' column.
+  // The inline consolation mirrors these so its rounds line up under the
+  // knockout's (e.g. consolation Semi-Finals under knockout Semi-Finals).
+  function knockoutColumnKeys(divData) {
+    const playoff = ((divData && divData.matches) || []).filter(m => ROUND_ORDER.includes(m.round));
+    const rounds = {};
+    playoff.forEach(m => { (rounds[m.round] = rounds[m.round] || []).push(m); });
+    const present = ROUND_ORDER.filter(r => rounds[r] && rounds[r].length > 0);
+    const keys = present.filter(r => r !== '3rd Place' && r !== 'Finals');
+    if ((rounds['3rd Place'] && rounds['3rd Place'].length) ||
+        (rounds['Finals'] && rounds['Finals'].length)) keys.push('Finals');
+    keys.push('Standings');
+    return keys;
+  }
+
+  // An empty column that occupies a round slot (keeps consolation aligned with
+  // the knockout when the consolation has no match for that round).
+  function emptyRound() {
+    return `<div class="bracket__round bracket__round--empty"></div>`;
   }
 
   function renderBracketMatch(match, extraClass) {
@@ -235,20 +258,29 @@ const Bracket = (() => {
   // Data.getConsolation(divisionName) (Matches rows with Round ~ "Consolation").
   function appendConsolation(container, divisionName) {
     if (!container || !Data.getConsolation) return false;
-    const data = Data.getConsolation(divisionName);
-    const ms = (data && data.matches) || [];
+    const cons = Data.getConsolation(divisionName);
+    const ms = (cons && cons.matches) || [];
     const sf = ms.filter(m => m.round === 'Semi Finals');
     const fin = ms.filter(m => m.round === 'Finals');
     if (sf.length === 0 && fin.length === 0) return false;
 
+    // Mirror the knockout's column layout so the consolation's rounds line up
+    // vertically with the knockout's, and add a Final Standings column to match.
+    const ko = Data.getKnockout ? Data.getKnockout(divisionName) : null;
+    const cols = (ko && knockoutColumnKeys(ko)) || ['Quarters', 'Semi Finals', 'Finals', 'Standings'];
+
+    const colHTML = cols.map(key => {
+      if (key === 'Semi Finals') return sf.length ? renderRound('Semi Finals', sf) : emptyRound();
+      if (key === 'Finals')      return fin.length ? renderRound('Finals', fin) : emptyRound();
+      if (key === 'Standings')   return renderChampion(cons.standings) || emptyRound();
+      return emptyRound();  // knockout-only rounds (e.g. Quarter-Finals) → spacer
+    }).join('');
+
     const block = document.createElement('div');
     block.className = 'bracket-single bracket-consolation bracket-consolation--inline';
     block.innerHTML = `
-      <div class="bracket-consolation__label">Consolation</div>
-      <div class="bracket">
-        ${sf.length ? renderRound('Semi Finals', sf) : ''}
-        ${fin.length ? renderRound('Finals', fin) : ''}
-      </div>`;
+      <div class="bracket-section__label">Consolation</div>
+      <div class="bracket">${colHTML}</div>`;
     container.appendChild(block);
     return true;
   }

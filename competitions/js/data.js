@@ -853,7 +853,23 @@ const Data = (() => {
       });
     });
 
-    return { matches: out };
+    // Consolation final standings (mirrors the knockout's): winner of the
+    // consolation Final = 1st, loser = 2nd. Placeholders before it's played.
+    const standings = [];
+    const finalMatch = out.find(m => m.round === 'Finals');
+    if (finalMatch) {
+      if (finalMatch.winner) {
+        const w = finalMatch.winner;
+        const l = w === finalMatch.team1 ? finalMatch.team2 : finalMatch.team1;
+        standings.push({ place: '🥇 1st', team: w, note: divisionPrefix + ' Consolation Winner' });
+        standings.push({ place: '🥈 2nd', team: l, note: '' });
+      } else {
+        standings.push({ place: '🥇 1st', team: 'TBD', note: '' });
+        standings.push({ place: '🥈 2nd', team: 'TBD', note: '' });
+      }
+    }
+
+    return { matches: out, standings: standings };
   }
 
   // ============================================================

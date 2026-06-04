@@ -101,11 +101,23 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
 
-      /* Inline consolation is IDENTICAL to the knockout (same avatar/font/flag
-         sizes — inherits the general bracket rules above). Column width is
-         constrained so the 2-column layout isn't double-wide. */
-      .bracket-consolation--inline .bracket { justify-content: flex-start; }
-      .bracket-consolation--inline .bracket__round { flex: 0 0 25%; }
+      /* Inline consolation now mirrors the knockout's columns exactly (same
+         number of flex:1 columns, with empty spacers where it has no match) so
+         the rounds line up vertically — Consolation Semi-Finals sits directly
+         under Knockout Semi-Finals, etc. No column override needed. */
+
+      /* Centered, full-width section labels ("KNOCKOUT" / "CONSOLATION") so each
+         section is clearly and consistently headed. */
+      .bracket-section__label {
+        text-align: center;
+        font: 700 var(--fs-title)/1.2 var(--font, inherit);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--green);
+        border-bottom: 2px solid var(--green);
+        padding-bottom: 5px;
+        margin: 0 0 8px;
+      }
 
       /* Match time pinned to each card's top-right corner (out of normal flow)
          so it no longer costs a row of height — recovers vertical space on the
@@ -122,7 +134,6 @@
       .bracket-single .bracket__matches { padding-top: 24px; } /* clears the round title */
       .bracket-single .bracket-match { margin: 5px 0; }
       .bracket-single .bracket-match__team { padding: 4px 12px; min-height: 0; }
-      .bracket-consolation--inline .bracket-consolation__label { margin: 2px 0 4px; }
     }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
@@ -163,10 +174,10 @@
       <span class="footer__timestamp" id="last-updated">Last updated: --</span>
     </footer>
   </div>
-  <script src="js/data.js?v=236"></script>
+  <script src="js/data.js?v=237"></script>
   <script src="js/standings.js?v=229"></script>
   <script src="js/matches.js?v=234"></script>
-  <script src="js/bracket.js?v=235"></script>
+  <script src="js/bracket.js?v=236"></script>
   <script src="js/app.js?v=233"></script>
 </body>
 </html>
