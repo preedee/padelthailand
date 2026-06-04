@@ -34,6 +34,24 @@
     .footer__powered-text, .footer__timestamp { font-size: clamp(12px, 1.7vh, 22px); }
     .footer__qr-label { font-size: clamp(10px, 1.3vh, 16px); }
 
+    /* Bracket section labels ("KNOCKOUT" / "CONSOLATION") as a centered filled
+       pill — white text on the brand colour. Defined at top level (NOT inside the
+       desktop @media) so the pill also shows on mobile/tablet, not just ≥1024px. */
+    .bracket-section__label {
+      display: block;
+      width: -moz-fit-content;
+      width: fit-content;
+      margin: 0 auto 6px;
+      padding: 3px 26px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 999px;
+      text-align: center;
+      font: 700 var(--fs-title)/1.25 var(--font, inherit);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
     /* Brackets + All Matches: same viewport-height scaling as Standings.
        Gated to >=1024px so mobile keeps the engine's own tiers. 1080px ~= prior sizes. */
     @media (min-width: 1024px) {
@@ -106,23 +124,6 @@
          the rounds line up vertically — Consolation Semi-Finals sits directly
          under Knockout Semi-Finals, etc. No column override needed. */
 
-      /* Section labels ("KNOCKOUT" / "CONSOLATION") as a centered filled pill —
-         white text on the brand colour. High-contrast and readable at a distance;
-         modest letter-spacing (not the old wide-tracked full-width bar). */
-      .bracket-section__label {
-        display: block;
-        width: -moz-fit-content;
-        width: fit-content;
-        margin: 0 auto 6px;
-        padding: 3px 26px;
-        background: var(--green);
-        color: #fff;
-        border-radius: 999px;
-        text-align: center;
-        font: 700 var(--fs-title)/1.25 var(--font, inherit);
-        letter-spacing: 1px;
-        text-transform: uppercase;
-      }
       /* Consolation columns have no round titles now → no need to reserve the
          title row of space at the top of each column. */
       .bracket-consolation--inline .bracket__matches { padding-top: 4px; }
