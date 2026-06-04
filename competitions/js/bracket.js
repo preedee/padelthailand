@@ -64,10 +64,17 @@ const Bracket = (() => {
     const has3rd = rounds['3rd Place'] && rounds['3rd Place'].length > 0;
     const hasFinals = rounds['Finals'] && rounds['Finals'].length > 0;
 
+    // Provisional QF seeding notice — shown while the group stage is unfinished
+    // but the quarterfinals already display teams from live standings.
+    const provisionalNote = divData.provisional
+      ? `<div class="bracket-provisional">${(Data.getConfig && Data.getConfig('provisional_note', '')) || '⚠ Quarter-final seeds are provisional — based on live group standings until the group stage finishes'}</div>`
+      : '';
+
     const html = `
       <div class="bracket-single">
         <div class="bracket-section__label">Knockout</div>
         <div class="bracket-division__title">${title}</div>
+        ${provisionalNote}
         <div class="bracket">
           ${regularRounds.map(roundKey => renderRound(roundKey, rounds[roundKey])).join('')}
           ${(has3rd || hasFinals) ? renderCombinedFinalsRound(rounds['3rd Place'] || [], rounds['Finals'] || []) : ''}

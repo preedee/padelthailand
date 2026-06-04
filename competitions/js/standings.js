@@ -13,7 +13,7 @@ const Standings = (() => {
   // Format: "Division:rule, Division:rule" e.g. "Male Amateur:2, Male Advanced:1+best, Female Amateur:4"
   function getQualificationRule(divisionName) {
     const rulesStr = Data.getConfig('qualification_rules', '');
-    if (!rulesStr) return { perGroup: 2, best: false }; // default: top 2
+    if (!rulesStr) return { perGroup: 2, best: 0, topOverall: 0 }; // default: top 2
 
     const rules = rulesStr.split(',').map(s => s.trim());
     for (const rule of rules) {
@@ -29,11 +29,11 @@ const Standings = (() => {
         const top = value.match(/^top\s*(\d+)$/);
         if (top) return { perGroup: 0, best: 0, topOverall: parseInt(top[1], 10) || 0 };
         const m = value.match(/^(\d+)\s*\+\s*(\d*)\s*best$/);
-        if (m) return { perGroup: parseInt(m[1], 10) || 1, best: parseInt(m[2], 10) || 1 };
-        return { perGroup: parseInt(value, 10) || 2, best: 0 };
+        if (m) return { perGroup: parseInt(m[1], 10) || 1, best: parseInt(m[2], 10) || 1, topOverall: 0 };
+        return { perGroup: parseInt(value, 10) || 2, best: 0, topOverall: 0 };
       }
     }
-    return { perGroup: 2, best: false }; // default
+    return { perGroup: 2, best: 0, topOverall: 0 }; // default
   }
 
   // Generic render: pass tab name, display title, and division name for qualification lookup
@@ -71,8 +71,11 @@ const Standings = (() => {
 
   // Shared comparator for ranking teams within a group / among remaining teams.
   function compareTeams(a, b) {
+    // Mirror the Sheet's authoritative Overall self-sort key exactly:
+    // W → Set Difference → Game Difference (no "losses" term — in a completed
+    // round-robin it's anti-correlated with wins, and mid-tournament it would
+    // diverge from the Sheet's qualifier cut-line).
     return b.won - a.won ||
-      a.lost - b.lost ||
       (b.setsDiff || b.setsWon - b.setsLost) - (a.setsDiff || a.setsWon - a.setsLost) ||
       (b.gamesDiff || b.gamesWon - b.gamesLost) - (a.gamesDiff || a.gamesWon - a.gamesLost);
   }

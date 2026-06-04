@@ -819,7 +819,22 @@ const Data = (() => {
       }
     }
 
-    return { matches: allBracketMatches, standings: standings };
+    // Provisional seeding flag: the quarterfinal slots may be filled from LIVE
+    // group standings (sheet formulas) before the group stage is finished. We
+    // surface this so the bracket can warn that QF seeds are not yet final.
+    // True when: the division's group stage is NOT complete AND the QF round
+    // already shows real teams (a "A & B" name rather than a Seed/Winner/TBD
+    // placeholder). Self-clears once every group match has a score.
+    const groupMatches = matches.filter(m => {
+      const div = (m.division || '').toLowerCase();
+      return (div === prefix || div.startsWith(prefix + ' play')) && /group/i.test(m.round || '');
+    });
+    const groupComplete = groupMatches.length > 0 && groupMatches.every(m => hasScores(m));
+    const qfHasRealTeams = allBracketMatches.some(m =>
+      m.round === 'Quarters' && (/ & | and /.test(m.team1 || '') || / & | and /.test(m.team2 || '')));
+    const provisional = !groupComplete && qfHasRealTeams;
+
+    return { matches: allBracketMatches, standings: standings, provisional: provisional, groupComplete: groupComplete };
   }
 
   // ============================================================
