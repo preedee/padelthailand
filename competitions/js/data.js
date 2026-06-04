@@ -66,6 +66,23 @@ const Data = (() => {
     if (config.primary_color) root.style.setProperty('--green', config.primary_color);
     if (config.support_color) root.style.setProperty('--green-support', config.support_color);
 
+    // Font-size scale — Config-driven so sizes can be tuned from the Config tab
+    // without editing CSS. Each key accepts a bare number (treated as px) or any
+    // CSS size, e.g. "24px" or "clamp(15px,2vh,26px)". Empty → the stylesheet's
+    // responsive default applies. Consumed by the dashboard's --fs-* variables.
+    const fontVars = {
+      font_size_title: '--fs-title',   // section / group / court / division / round titles
+      font_size_name:  '--fs-name',    // team & player names
+      font_size_meta:  '--fs-meta',    // labels, dates/times, scores, column headers
+      font_size_small: '--fs-small'    // small print (medal place, on-court badge)
+    };
+    Object.keys(fontVars).forEach(key => {
+      const raw = (config[key] || '').trim();
+      if (!raw) return;
+      const val = /^[0-9.]+$/.test(raw) ? raw + 'px' : raw;
+      root.style.setProperty(fontVars[key], val);
+    });
+
     // Apply header text
     const titleEl = document.querySelector('.header__title h1');
     const subtitleEl = document.querySelector('.header__title p');
