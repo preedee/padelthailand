@@ -738,6 +738,53 @@ const Data = (() => {
     return groups;
   }
 
+  // Group-stage matches for a division prefix (already lowercased).
+  function groupMatchesFor(prefix) {
+    return matches.filter(m => {
+      const div = (m.division || '').toLowerCase();
+      return (div === prefix || div.startsWith(prefix + ' play')) && /group/i.test(m.round || '');
+    });
+  }
+
+  // Provisional seeds gate: true once EVERY team in the division's group stage
+  // has played at least `minPlayed` matches (a played match = has a score). Until
+  // then the live standings order is noise, so the bracket shows seed placeholders
+  // instead of provisionally-seeded teams. Threshold is config-driven (default 1).
+  function groupSeedsReady(prefix, minPlayed) {
+    const n = parseInt(minPlayed, 10) || 1;
+    const codes = new Set();
+    const playedCount = {};
+    groupMatchesFor(prefix).forEach(m => {
+      [m.team1Code, m.team2Code].forEach(c => { if (c) codes.add(c); });
+      if (hasScores(m)) {
+        [m.team1Code, m.team2Code].forEach(c => { if (c) playedCount[c] = (playedCount[c] || 0) + 1; });
+      }
+    });
+    return codes.size > 0 && [...codes].every(c => (playedCount[c] || 0) >= n);
+  }
+
+  // Friendly placeholder from a seed code: "S-1st"→"Seed 1", "GA-3rd"→"Seed A3",
+  // "S-12th"→"Seed 12". Falls back to the raw code (then TBD) if it doesn't parse.
+  function seedLabel(code) {
+    const m = /^([GS])([AB])?-(\d+)(?:st|nd|rd|th)$/.exec(code || '');
+    return m ? ('Seed ' + (m[2] || '') + m[3]) : (code || 'TBD');
+  }
+
+  // Replace the first-round seeded teams with seed-label placeholders (in place)
+  // while the provisional gate is closed. Clears any (impossible-yet) scores too.
+  function maskSeededRound(bracketMatches, roundName) {
+    bracketMatches.forEach(bm => {
+      if (bm.round === roundName) {
+        bm.team1 = seedLabel(bm.team1Code);
+        bm.team2 = seedLabel(bm.team2Code);
+        bm.winner = '';
+        bm.score1 = null;
+        bm.score2 = null;
+        bm.sets = [];
+      }
+    });
+  }
+
   // ============================================================
   // Knockout Stage — built entirely from the Matches tab
   // Filters matches by division, groups by round, derives winners
@@ -813,11 +860,16 @@ const Data = (() => {
     // True when: the division's group stage is NOT complete AND the QF round
     // already shows real teams (a "A & B" name rather than a Seed/Winner/TBD
     // placeholder). Self-clears once every group match has a score.
-    const groupMatches = matches.filter(m => {
-      const div = (m.division || '').toLowerCase();
-      return (div === prefix || div.startsWith(prefix + ' play')) && /group/i.test(m.round || '');
-    });
+    const groupMatches = groupMatchesFor(prefix);
     const groupComplete = groupMatches.length > 0 && groupMatches.every(m => hasScores(m));
+
+    // Hold provisional QF seeds until every group team has played at least N
+    // matches (config; default 1). Until then show seed placeholders, not the
+    // noisy live-standings order.
+    if (!groupSeedsReady(prefix, getConfig('provisional_min_group_matches', '1'))) {
+      maskSeededRound(allBracketMatches, 'Quarters');
+    }
+
     const qfHasRealTeams = allBracketMatches.some(m =>
       m.round === 'Quarters' && (/ & | and /.test(m.team1 || '') || / & | and /.test(m.team2 || '')));
     const provisional = !groupComplete && qfHasRealTeams;
@@ -846,6 +898,12 @@ const Data = (() => {
       const round = roundLower.includes('final') ? 'Finals' : 'Semi Finals';
       out.push(toBracketMatch(m, { round, section: 'CONSOLATION', division: divisionPrefix }));
     });
+
+    // Same provisional gate as the knockout: hold the consolation's group-seeded
+    // first round until every group team has played the configured minimum.
+    if (!groupSeedsReady(prefix, getConfig('provisional_min_group_matches', '1'))) {
+      maskSeededRound(out, 'Semi Finals');
+    }
 
     // Consolation final standings (mirrors the knockout's): winner of the
     // consolation Final = 1st, loser = 2nd. Placeholders before it's played.
