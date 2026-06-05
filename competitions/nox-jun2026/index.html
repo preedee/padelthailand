@@ -258,6 +258,26 @@
          can't fit a phone without overlapping, so the cards stay full-size and
          the courts scroll horizontally (engine ≤768 default). No override here. */
 
+      /* ---- Bigger player avatars on mobile (were 26px from the JS width attr,
+         too small to recognise faces). 40px across Standings / All Matches /
+         Brackets. The projector tier (≥1024px) is SEPARATE and unaffected — it
+         stays at its tuned ~43px (already at the no-scroll limit). Mobile scrolls,
+         so the taller row is fine. ---- */
+      .team-with-avatars .avatar,
+      .team-with-avatars .avatar--fallback,
+      .bracket-match .avatar,
+      .bracket-match .avatar--fallback,
+      .match-card .team-with-avatars .avatar,
+      .match-card .team-with-avatars .avatar--fallback {
+        width: 40px !important; height: 40px !important;
+        min-width: 40px !important; min-height: 40px !important;
+      }
+      .team-with-avatars .avatar--fallback,
+      .bracket-match .avatar--fallback,
+      .match-card .team-with-avatars .avatar--fallback { font-size: 18px !important; }
+      /* a little more row height so the 40px avatars breathe in standings */
+      .standings-divisions--combined .group-card__table td { height: 50px; }
+
       /* ---- Footer: pin the brown footer to the very bottom of the screen,
          BENEATH the black bottom-nav (footer is the bottom-most element; the
          nav sits directly on top of it). The QR is hidden on phones, so the
