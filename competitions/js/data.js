@@ -785,6 +785,32 @@ const Data = (() => {
     });
   }
 
+  // True when a team code is a group-seed slot ("S-1st", "GA-3rd", "S-9th"…),
+  // i.e. a knockout/consolation slot filled live from the standings — as opposed
+  // to a real group code (GA1, SB2) or a winner-flow label (W-QF1).
+  function isSeedSlotCode(code) {
+    return /^[GS][AB]?-\d+(?:st|nd|rd|th)$/.test(code || '');
+  }
+
+  // Apply the provisional-seed gate to the RAW match list (in place): any match
+  // seeded live from a group standing shows a seed placeholder until that
+  // division's group stage has every team at >= N matches. Done at the source so
+  // the bracket AND the All Matches view (and the upcoming sidebar) stay
+  // consistent — they all read these match objects.
+  function maskProvisionalSeeds() {
+    const minPlayed = getConfig('provisional_min_group_matches', '1');
+    const readyByPrefix = {};
+    const ready = prefix => (prefix in readyByPrefix)
+      ? readyByPrefix[prefix]
+      : (readyByPrefix[prefix] = groupSeedsReady(prefix, minPlayed));
+    matches.forEach(m => {
+      if (!isSeedSlotCode(m.team1Code) && !isSeedSlotCode(m.team2Code)) return;
+      if (ready((m.division || '').toLowerCase())) return;
+      if (isSeedSlotCode(m.team1Code)) m.team1 = seedLabel(m.team1Code);
+      if (isSeedSlotCode(m.team2Code)) m.team2 = seedLabel(m.team2Code);
+    });
+  }
+
   // ============================================================
   // Knockout Stage — built entirely from the Matches tab
   // Filters matches by division, groups by round, derives winners
@@ -1457,6 +1483,11 @@ const Data = (() => {
         if (k && code && !teamCodeByName[k]) teamCodeByName[k] = code;
       };
       matches.forEach(m => { _regCode(m.team1, m.team1Code); _regCode(m.team2, m.team2Code); });
+
+      // Hold provisional knockout/consolation seeds (group-seeded slots) across
+      // ALL views until each division's group stage reaches the configured
+      // minimum. Runs after the name→code index so real group names register first.
+      maskProvisionalSeeds();
 
       // Parse each standings tab — store both raw lines and raw text
       standingsData = {};

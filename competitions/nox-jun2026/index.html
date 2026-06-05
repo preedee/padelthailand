@@ -282,13 +282,26 @@
          can't fit a phone without overlapping, so the cards stay full-size and
          the courts scroll horizontally (engine ≤768 default). No override here. */
 
-      /* ---- Home: fill the phone viewport so the event logo centers and
-         the footer sits at the bottom, instead of the logo card sitting
-         at the top with a large empty gap and the footer floating. */
+      /* ---- Footer: pin the brown footer to the very bottom of the screen,
+         BENEATH the black bottom-nav (footer is the bottom-most element; the
+         nav sits directly on top of it). The QR is hidden on phones, so the
+         footer is just the "Powered by / Last updated" line. ---- */
+      .footer {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 101;
+        height: 44px; min-height: 44px; margin-bottom: 0; padding: 8px 16px;
+      }
+      /* Lift the bottom nav to rest directly above the fixed footer. */
+      .view-bar { bottom: 44px; }
+      /* Keep scrollable views clear of the stacked nav (~52px) + footer (44px). */
+      .view.active { padding-bottom: 104px; }
+
+      /* ---- Home: center the logo in the area above the fixed nav + footer
+         (header ~50 + nav ~52 + footer 44). The footer no longer lives in
+         flow here — it's pinned above. ---- */
       #view-home { padding: 0; }
       #view-home .home-page {
         height: auto;
-        min-height: calc(100dvh - 140px);
+        min-height: calc(100dvh - 146px);
         justify-content: center;
         padding: 24px;
       }
@@ -332,7 +345,7 @@
       <span class="footer__timestamp" id="last-updated">Last updated: --</span>
     </footer>
   </div>
-  <script src="js/data.ce4b3c0a16.js"></script>
+  <script src="js/data.90ef907137.js"></script>
   <script src="js/standings.d151844ce0.js"></script>
   <script src="js/matches.37f23775ee.js"></script>
   <script src="js/bracket.4039b6ce7e.js"></script>
