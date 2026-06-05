@@ -137,10 +137,12 @@
       .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 24px !important; }
       .bracket-single .bracket-match { margin: 3px 0 !important; }
 
-      /* All Matches: cards were full-width in each court column, so the score sat
-         far to the right and the eye had to travel. Make each card 80% width
-         (20% narrower), left-aligned, bringing the score closer to the names. */
-      #view-matches .match-card { width: 80%; max-width: 80%; margin-right: auto; }
+      /* All Matches: cards 80% width (20% narrower) so the score isn't so far
+         right, and CENTERED in each court column. The court header + its bottom
+         bar are matched to the same 80% width and centered so they line up with
+         the cards. */
+      #view-matches .match-card { width: 80%; max-width: 80%; margin: 0 auto; }
+      #view-matches .court-column__header { width: 80%; margin: 0 auto; }
       /* Flag badge size: reduced ~16% (24x17 -> 20x14) per request — flags read
          a touch smaller relative to the 50px projector avatars. SIZE only is
          projector-scoped; the BLACK outline lives in an unscoped rule below so
@@ -216,6 +218,11 @@
     .group-card__table td:first-child { padding-left: 18px; }
     .group-card__table th:last-child,
     .group-card__table td:last-child  { padding-right: 18px; }
+
+    /* Right-align the MP/W/L/GD values (and their column headers, so they line
+       up above the numbers) in their cells. */
+    .group-card__table th:not(:first-child),
+    .group-card__table td:not(:first-child) { text-align: right; }
 
     .group-card__table th:not(:first-child) { width: 52px; }   /* MP/W/L/GD — single digits + a -10 GD */
     @media (min-width: 1024px) {
