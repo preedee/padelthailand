@@ -32,14 +32,28 @@ const Matches = (() => {
   // whole view; always keep live + upcoming. Stops the All Matches grid from
   // growing without bound as results come in.
   const MAX_COMPLETED = 7;
+  // The cap is config-driven via `matches_max_completed`:
+  //   (empty/unset) → default 7 (live-projector behaviour, keeps the grid bounded)
+  //   "all" / "0" / "unlimited" → show every completed match (full history)
+  //   <positive integer> → keep that many most-recent completed matches
+  // Default preserved so other competitions (e.g. Community Cup) are unchanged.
+  function maxCompleted() {
+    const v = String(Data.getConfig('matches_max_completed', '') || '').trim().toLowerCase();
+    if (v === '') return MAX_COMPLETED;
+    if (v === 'all' || v === '0' || v === 'unlimited') return Infinity;
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : MAX_COMPLETED;
+  }
   function capCompleted(matches) {
+    const cap = maxCompleted();
+    if (!Number.isFinite(cap)) return matches;   // unlimited → show all
     const done = matches.filter(m => hasScores(m) && !isLive(m)).sort(sortByDateTime);
-    if (done.length <= MAX_COMPLETED) return matches;
-    // Keep the most-recent MAX_COMPLETED, then expand back to the start of the
+    if (done.length <= cap) return matches;
+    // Keep the most-recent `cap`, then expand back to the start of the
     // earliest kept time slot — otherwise the cap can cut through a slot and
     // leave a partial top row (e.g. only Court 5 showing). Whole rows only.
     const slotOf = m => (m.date || '') + '|' + (m.time || '');
-    let start = done.length - MAX_COMPLETED;
+    let start = done.length - cap;
     const boundary = slotOf(done[start]);
     while (start > 0 && slotOf(done[start - 1]) === boundary) start--;
     const keep = new Set(done.slice(start));

@@ -30,9 +30,11 @@
 
     #view-bar .view-bar__tab { font-size: clamp(14px, 1.85vh, 24px); }
     #view-bar .view-bar__tab.active { font-size: clamp(15px, 2vh, 26px); }
-    .footer { height: clamp(44px, 5.2vh, 64px); }
+    .footer { height: clamp(56px, 8vh, 84px); } /* grown to fit the doubled QR */
     .footer__powered-text, .footer__timestamp { font-size: clamp(12px, 1.7vh, 22px); }
     .footer__qr-label { font-size: clamp(10px, 1.3vh, 16px); }
+    /* Doubled QR (shared CSS = 36px); scales with viewport height, caps at 72px. */
+    .footer__qr img { width: clamp(48px, 6.8vh, 72px); height: clamp(48px, 6.8vh, 72px); }
 
     /* Bracket section labels ("KNOCKOUT" / "CONSOLATION") as a centered filled
        pill — white text on the brand colour. Defined at top level (NOT inside the
@@ -319,7 +321,7 @@
   </div>
   <script src="js/data.js?v=241"></script>
   <script src="js/standings.js?v=230"></script>
-  <script src="js/matches.js?v=235"></script>
+  <script src="js/matches.js?v=236"></script>
   <script src="js/bracket.js?v=244"></script>
   <script src="js/app.js?v=234"></script>
 </body>
