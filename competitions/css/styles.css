@@ -1905,7 +1905,7 @@ img.avatar {
 
   .match-card__set-score {
     font-size: 18px;
-    min-width: 20px;
+    min-width: 1.5em;   /* fit a 2-digit super-tiebreak ("10") so columns align */
   }
 
   .match-card__round {
