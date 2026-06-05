@@ -190,7 +190,20 @@
       .group-card__table th:not(:first-child) { width: 75px; } /* 50 → 75 (1080p TV) */
     }
     @media (max-width: 767px) {
-      .group-card__table th:not(:first-child) { width: 57px; } /* 38 → 57 */
+      /* Phones: the MP/W/L/GD columns were 57px each (~228px total), squeezing
+         the team names. Tighten them so names get the room. Single digits / a
+         "-10" GD fit comfortably in 32px. */
+      .group-card__table th:not(:first-child),
+      .group-card__table td:not(:first-child) {
+        width: 32px; min-width: 32px; padding-left: 2px; padding-right: 2px;
+      }
+      /* Let the team-name column use all the freed space (engine caps it at
+         180px on mobile); it still ellipsises rather than overflowing. */
+      .group-card__table td:first-child { max-width: none; }
+      .group-card__table th:first-child,
+      .group-card__table td:first-child { padding-left: 10px; }
+      .group-card__table th:last-child,
+      .group-card__table td:last-child  { padding-right: 8px; }
     }
 
     /* (3) Taller standings rows for more vertical breathing room (combined view).
