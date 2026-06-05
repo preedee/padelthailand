@@ -1177,14 +1177,25 @@ img.avatar {
 .match-card__scores {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;        /* never collapse the set cells */
 }
+
+/* Keep both team rows at the card width when the card is narrow (mobile court
+   columns): the name shrinks/ellipsizes instead of overflowing, so the
+   right-pinned per-set scores of the two rows line up vertically — important
+   for finals whose 3rd set is a two-digit super-tiebreak. */
+.match-card__team .team-with-avatars { flex: 1 1 auto; min-width: 0; }
+.match-card__team .match-card__team-name { min-width: 0; }
 
 .match-card__set-score {
   font-family: var(--font);
   font-weight: 400;
   font-size: var(--fs-meta, 18px);
   color: var(--green);
-  min-width: 20px;
+  /* Wide enough for a two-digit super-tiebreak score ("10"), in em so it scales
+     with the font. Every set cell is then the same width regardless of 1- vs
+     2-digit content, so the columns line up between both team rows. */
+  min-width: 1.5em;
   text-align: center;
   /* tabular-nums: every digit (and the bold winner sets) takes the same advance
      width, so the per-set columns line up vertically across both team rows. */
@@ -1314,7 +1325,9 @@ img.avatar {
 }
 
 .bracket-match__set {
-  min-width: 16px;
+  /* Wide enough for a two-digit super-tiebreak ("10") so 1- and 2-digit cells
+     are equal width and the per-set columns align across both team rows. */
+  min-width: 1.5em;
   text-align: center;
   /* Uniform size + tabular figures so the winner row (larger) and loser row
      (smaller) keep their per-set columns vertically aligned; the winner is
