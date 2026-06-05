@@ -1,0 +1,2095 @@
+/* ============================================
+   Draft Projector — PadelThailand re-skin of projector-v12
+   Designed for 1920x1080 (16:9). Scales down for laptops.
+   ============================================ */
+
+:root {
+  /* PadelThailand brand tokens (re-skinned from v12 navy/yellow) */
+  --bg-deep:    #061712;                 /* deeper than primary, near-black green */
+  --bg-elev:    #0E2A1E;                 /* community_cup primary */
+  --bg-chrome:  #122620;                 /* matches --dark-surface in styles.css for cross-page header consistency */
+  --line:       #1A3A2E;                 /* nav_bg from Config */
+  --line-bright:#3A5C36;                 /* green-support */
+  --ink:        #FFFFFF;
+  --ink-dim:    #C8D6CE;
+  --ink-faint:  #6B8276;
+
+  /* Accents */
+  --accent:      #FFB703;                /* brand-accent (ON CLOCK, brand mark) — community_cup accent */
+  --accent-warm: #FF8A3D;
+  --accent-cool: #7CC4E8;                /* NEXT */
+  --picked:      #3FD391;
+
+  /* Timer state colors */
+  --timer-green:  #3FD391;
+  --timer-orange: #FF8A3D;
+  --timer-red:    #FF5470;
+  --danger:       #FF5470;
+
+  /* Gender (load-bearing) */
+  --female: #FF0066;
+  --male:   #00AAFF;
+
+  --moment-grid: 1fr 1fr 1fr;
+  --bar-progress: 0%;
+}
+
+/* ---- Reset & shell ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background:
+    radial-gradient(ellipse at top, rgba(255,183,3,0.04) 0%, transparent 55%),
+    var(--bg-deep);
+  color: var(--ink);
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 300;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The page IS the projector — no chrome */
+.projector {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding: clamp(14px, 1.4vw, 28px) clamp(20px, 2.2vw, 44px);
+  gap: clamp(8px, 0.8vw, 16px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle grid overlay — broadcast feel without v12's heavy cross-hatch */
+.projector::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none; z-index: 0;
+}
+
+.projector > * { position: relative; z-index: 1; }
+
+/* ============== HEADER ============== */
+.top-strip {
+  display: grid;
+  grid-template-columns: var(--moment-grid);
+  gap: 16px;
+  align-items: center;
+  padding-top: clamp(8px, 0.8vw, 16px);
+  padding-bottom: clamp(8px, 0.8vw, 16px);
+  background: var(--bg-chrome);
+  border-bottom: 1px solid var(--line);
+}
+.header-left   { display: flex; align-items: center; gap: 14px; }
+.header-center { display: flex; justify-content: center; align-items: center; }
+.header-right  { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+
+.brand-logo {
+  height: clamp(44px, 3.4vw, 64px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+/* Logotype (wordmark) renders 25% smaller than the default .brand-logo
+   so it balances visually next to the square monogram beside it.
+   Explicit align-self: center as a safety belt over the parent's
+   align-items: center, so the smaller logotype always sits on the
+   monogram's vertical midline. */
+#brandLogo {
+  height: clamp(33px, 2.55vw, 48px);
+  align-self: center;
+}
+
+.tournament {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.4vw, 28px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--ink);
+}
+
+.live-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--danger);
+  padding: 6px 12px;
+  border: 1px solid var(--danger);
+  background: rgba(255,84,112,0.10);
+  text-transform: uppercase;
+  height: clamp(40px, 3vw, 50px);
+}
+.live-pill .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger);
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,84,112,0.6); }
+  50%      { opacity: 0.35; box-shadow: 0 0 0 6px rgba(255,84,112,0); }
+}
+
+/* Draft-complete variant — swap red→green and stop the blink so the badge
+   reads as "settled" rather than "live." */
+.live-pill.is-complete {
+  color: var(--picked);
+  border-color: var(--picked);
+  background: rgba(63,211,145,0.10);
+}
+.live-pill.is-complete .dot {
+  background: var(--picked);
+  animation: none;
+  box-shadow: none;
+}
+
+.tournament-logo {
+  height: clamp(44px, 3.4vw, 64px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* RECONNECTING indicator — header right area, small */
+.reconnect {
+  display: none;
+  align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(9px, 0.7vw, 11px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  padding: 4px 10px;
+  border: 1px solid var(--accent-warm);
+  background: rgba(255,138,61,0.10);
+}
+.reconnect.show { display: inline-flex; }
+.reconnect .pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-warm);
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+/* ============== MOMENT BLOCK (with converging bars) ============== */
+.moment-block {
+  position: relative;
+  --timer-state: var(--timer-green);
+}
+.moment-block.state-green  { --timer-state: var(--timer-green); }
+.moment-block.state-orange { --timer-state: var(--timer-orange); }
+.moment-block.state-red    { --timer-state: var(--timer-red); }
+
+.converge-bar {
+  height: 6px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  overflow: visible; /* allow overshoot overlap to draw outside the 50/50 split */
+}
+.converge-bar .seg {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--timer-state);
+  transition: width 0.6s linear, background 0.4s ease;
+}
+.converge-bar .seg-left  { left:  0; width: var(--bar-progress, 0%); }
+.converge-bar .seg-right { right: 0; width: var(--bar-progress, 0%); }
+
+/* Overshoot: when --bar-progress > 50%, the two segments overlap.
+   We intensify the overlap visually via mix-blend-mode on a thin highlight stripe. */
+.moment-block.overshoot .converge-bar .seg {
+  box-shadow: 0 0 12px var(--timer-state);
+}
+
+/* Red-state pulse on bars */
+.moment-block.state-red .converge-bar .seg {
+  animation: bar-pulse 0.9s ease-in-out infinite;
+}
+@keyframes bar-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* MOMENT cells */
+.moment {
+  display: grid;
+  grid-template-columns: var(--moment-grid);
+  gap: clamp(12px, 1.2vw, 24px);
+  padding: clamp(14px, 1.4vw, 26px) clamp(8px, 0.8vw, 16px);
+  align-items: center;
+  /* Lock the moment-row height so the bar stays identical across:
+       1. live draft state (timer-cell dominates the row height)
+       2. draft-complete state (complete-banner is shorter and would shrink)
+       3. groups page (shorter content than draft)
+     Value matches the live-draft natural height (border-box total): the
+     .timer-num line-box (4.6vw × 0.85) + label margin (8) + label line-box
+     (0.8vw × ~1.4) + .moment padding × 2 (1.4vw × 2). Clamps tuned so the
+     bar doesn't visibly shrink when the celebration banner replaces the
+     live cells. */
+  min-height: clamp(94px, 8.4vw, 160px);
+}
+.moment-cell { display: flex; align-items: center; min-width: 0; }
+
+/* NEXT cell — dimmed */
+.next-cell { opacity: 0.55; gap: clamp(10px, 0.9vw, 16px); padding-right: 12px; }
+.next-cell .nlogo {
+  width: clamp(40px, 3vw, 56px); aspect-ratio: 1;
+  background: var(--bg-elev);
+  border: 1px solid var(--line-bright);
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(15px, 1.1vw, 22px);
+  color: var(--ink);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.next-cell .nlogo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+.next-cell .info { display: flex; flex-direction: column; min-width: 0; }
+.next-cell .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.next-cell .tname {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  /* QA m-10 — was clamp(18px, 1.5vw, 28px) — couldn't shrink below 18px on
+     phone, so "SUNSHINE PADEL" truncated to "SUNSHINE P...". Allow more
+     aggressive shrink + wrapping for narrow viewports. */
+  font-size: clamp(13px, 3.6vw, 28px);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  color: var(--ink);
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* ON CLOCK cell — center, gold accent */
+.clock-cell { justify-content: center; gap: clamp(14px, 1.2vw, 22px); }
+.clock-cell .clogo {
+  width: clamp(60px, 4.4vw, 90px); aspect-ratio: 1;
+  background: var(--bg-elev);
+  border: 2px solid var(--clock-team-color, var(--accent));
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 1.8vw, 36px);
+  color: var(--accent);
+  flex-shrink: 0;
+  box-shadow: 0 0 30px rgba(255,183,3,0.32);
+  overflow: hidden;
+}
+.clock-cell .clogo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.clock-cell .info { display: flex; flex-direction: column; min-width: 0; }
+.clock-cell .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.95vw, 16px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.clock-cell .team-name {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.4vw, 48px);
+  letter-spacing: 0.07em;
+  line-height: 0.95;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.clock-cell .pick-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.95vw, 16px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--ink-dim);
+  margin-top: 6px;
+}
+
+/* TIMER cell */
+.timer-cell { flex-direction: column; align-items: flex-end; justify-content: center; }
+.timer-wrap { display: flex; flex-direction: column; align-items: flex-end; }
+.timer-num {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(52px, 4.6vw, 96px);
+  line-height: 0.85;
+  letter-spacing: 0.04em;
+  color: var(--timer-state);
+  text-shadow: 0 0 28px var(--timer-shadow, rgba(63,211,145,0.35));
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+.timer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.moment-block.state-green  .timer-cell { --timer-shadow: rgba(63,211,145,0.35); }
+.moment-block.state-orange .timer-cell { --timer-shadow: rgba(255,138,61,0.4); }
+.moment-block.state-red    .timer-cell { --timer-shadow: rgba(255,84,112,0.55); }
+
+/* Expired (timer hit zero) — clamp text to 0:00 in JS and blink here. */
+.moment-block.expired .timer-num {
+  animation: timer-blink-projector 1.4s steps(1, end) infinite;
+}
+@keyframes timer-blink-projector {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
+/* ============== DRAFT-COMPLETE BANNER ==============
+   When .moment-block.is-complete is on, hide the three live cells and show
+   the celebration banner instead. The banner spans the full row. */
+.moment-cell--complete { display: none; }
+.moment-block.is-complete .moment-cell { display: none; }
+.moment-block.is-complete .moment-cell--complete {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: center;
+  align-items: center;
+}
+/* Mute the converging bars in complete state — keep the rule line but stop
+   the timer-driven progress, neutralize the state color. */
+.moment-block.is-complete {
+  --timer-state: var(--picked);
+  --bar-progress: 50%;
+}
+
+/* Sized to match the live moment row: title mirrors .timer-num metrics,
+   sub mirrors .timer-label. Zero padding so the row height collapses to
+   what the live cells produce.
+   Three-column grid: left (draft complete + sub), center (Saturday
+   tagline), right (countdown to Sat May 23 09:00). 1fr-auto-1fr keeps
+   the centre tagline visually centred regardless of side-column widths. */
+.complete-banner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  gap: 24px;
+  animation: complete-banner-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.complete-banner__col {
+  display: flex;
+  flex-direction: column;
+}
+.complete-banner__col--left   { align-items: flex-start; text-align: left; }
+.complete-banner__col--center { align-items: center;     text-align: center; }
+.complete-banner__col--right  { align-items: flex-end;   text-align: right; }
+
+.complete-banner__title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-size: clamp(28px, 2.4vw, 48px);   /* match .clock-cell .team-name */
+  font-weight: 700;
+  line-height: 0.95;                     /* match .clock-cell .team-name */
+  letter-spacing: 0.07em;                /* match .clock-cell .team-name */
+  color: var(--picked);
+  text-shadow: 0 0 28px rgba(63,211,145,0.35);
+}
+.complete-banner__sub {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(10px, 0.8vw, 13px);   /* match .timer-label */
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-top: 8px;                       /* match .timer-label */
+}
+
+/* Left column: keep the default title-on-top / sub-below hierarchy
+   from .complete-banner__title and __sub. Override only the title
+   colour to gold (the celebration accent) — the default green
+   (--picked) loses on contrast against the brighter green LIVE pill
+   and stat ticks. */
+.complete-banner__col--left .complete-banner__title {
+  /* Match the countdown title on the right column so the two
+     side-column headlines read as a balanced pair. */
+  font-size: clamp(18px, 1.6vw, 28px);
+  color: var(--accent);
+  text-shadow: 0 0 28px rgba(255, 183, 3, 0.35);
+}
+
+/* Right column countdown — monospace with tabular-nums so digits don't
+   re-jitter every second. Slightly smaller than the base title since the
+   "3D 14H 22M 18S" string is longer than the centre tagline. */
+.complete-banner__col--right .complete-banner__title {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: clamp(18px, 1.6vw, 28px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--danger);
+  text-shadow: 0 0 24px rgba(255, 84, 112, 0.35);
+}
+@keyframes complete-banner-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Center column's "NEXT: GROUP DRAW" link — inherits .complete-banner__title
+   sizing, just strips default anchor styling. Gold underline on hover so it
+   reads as clickable from the projector. */
+.complete-banner__link {
+  color: var(--accent);
+  text-decoration: none;
+  text-shadow: 0 0 24px rgba(255, 183, 3, 0.35);
+  transition: text-shadow 0.2s ease, opacity 0.15s ease;
+}
+.complete-banner__link:hover,
+.complete-banner__link:focus-visible {
+  text-shadow: 0 0 32px rgba(255, 183, 3, 0.7);
+  outline: none;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
+/* Mobile: the projector's 1fr-auto-1fr complete banner doesn't fit a phone —
+   the right-hand countdown ("2D 11H 14M 59S") wraps to four stacked lines and
+   the centre headline breaks mid-phrase. Stack the three cells into a single
+   centred column, keep the centre headline as the hero, and force the
+   countdown onto one line. */
+@media (max-width: 900px) {
+  .complete-banner {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: center;
+  }
+  .complete-banner__col--left,
+  .complete-banner__col--center,
+  .complete-banner__col--right { align-items: center; text-align: center; }
+  .complete-banner__col--center .complete-banner__title { font-size: clamp(22px, 6.5vw, 32px); }
+  .complete-banner__col--left .complete-banner__title,
+  .complete-banner__col--right .complete-banner__title { font-size: clamp(15px, 4.5vw, 20px); }
+  .complete-banner__col--right .complete-banner__title { white-space: nowrap; }
+  .complete-banner__sub { margin-top: 4px; }
+}
+
+/* ============== TEAM GRID ============== */
+.teams {
+  display: grid;
+  grid-template-rows: 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(8px, 0.7vw, 14px);
+  min-height: 0;
+}
+
+.team-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--team-color, var(--line));
+  padding: clamp(8px, 0.7vw, 14px);
+  /* Two-column grid: name + stats on the left, big logo spans both rows on
+     the right. Row 3 is the roster, spanning the full width. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto 1fr;
+  column-gap: clamp(8px, 0.8vw, 14px);
+  row-gap: clamp(4px, 0.4vw, 8px);
+  position: relative;
+  min-height: 0;
+  --team-color: #6b7a99;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
+}
+.team-card > .tname      { grid-column: 1; grid-row: 1; }
+.team-card > .team-stats { grid-column: 1; grid-row: 2; align-self: end; }
+.team-card > .team-logo  { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; }
+.team-card > .roster10   { grid-column: 1 / -1; grid-row: 3; }
+
+/* Mobile-only adornments. Hidden on the broadcast/projector view; the
+   @media block below re-enables them with explicit grid placement. */
+.team-card > .team-card-summary,
+.team-card > .team-card-chevron,
+.team-card > .team-card-nav { display: none; }
+/* The 3×4 expanded-roster plaque (logo + stats in the two center cells).
+   Hidden by default on the broadcast view — the @media block re-enables them. */
+.roster10 > .roster-plaque-logo,
+.roster10 > .roster-plaque-stats { display: none; }
+
+.team-card.live {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(255,183,3,0.14), rgba(255,183,3,0.02));
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px rgba(255,183,3,0.28);
+}
+.team-card.live::before {
+  content: 'ON CLOCK';
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+.team-card.next {
+  border-color: var(--accent-cool);
+  border-style: dashed;
+  background: linear-gradient(135deg, rgba(124,196,232,0.06), transparent);
+}
+.team-card.next::after {
+  content: 'NEXT';
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--accent-cool); color: var(--bg-deep);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(8px, 0.55vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  z-index: 2;
+}
+
+/* Snake-draft round boundary: one team is both ON CLOCK and NEXT. Replace
+   the two overlapping badges with a single BACK-TO-BACK chip. Source order
+   matters — these rules ride on top of `.live::before` and `.next::after`. */
+.team-card.back-to-back::before { content: 'BACK-TO-BACK'; }
+.team-card.back-to-back::after  { content: none; }
+
+/* Hand-off cue when the pick-confirm overlay closes: the receiving team's
+   card pulses with a golden ring so the audience's eye lands on the freshly-
+   updated roster. JS adds .just-picked-flash for ~2s, then removes it. The
+   animation uses only box-shadow (no layout-affecting properties) so it
+   layers cleanly on top of .live / .next / .back-to-back states. */
+.team-card.just-picked-flash {
+  animation: team-card-flash 1.8s ease-out 1 both;
+  /* z-stack so the glow isn't clipped by sibling cards. */
+  z-index: 3;
+}
+@keyframes team-card-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+  18% {
+    box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.85),
+                0 0 36px 10px rgba(255, 183, 3, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.45),
+                0 0 28px 6px rgba(255, 183, 3, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.0),
+                0 0 0 0 rgba(255, 183, 3, 0.0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-card.just-picked-flash {
+    animation: team-card-flash-reduced 600ms linear 1 both;
+  }
+  @keyframes team-card-flash-reduced {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+    50%      { box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.6); }
+  }
+}
+
+.team-card > .tname {
+  display: block;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 26px);
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  color: var(--ink);
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: end;
+}
+.team-card > a.tname:hover { text-decoration: underline; }
+
+/* Logo spans the name + stats rows on the right. It's a square sized by the
+   stack's height, so it grows as the card grows and shrinks gracefully on
+   smaller viewports. object-fit: contain handles the wildly different logo
+   aspect ratios (Sabai Sabai is tall, Deuce / Wall Whackers are wide). */
+.team-logo {
+  height: 100%;
+  aspect-ratio: 1;
+  width: auto;
+  max-width: clamp(64px, 5vw, 96px);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.6vw, 28px);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.team-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.team-card.live .team-logo {
+  /* No background or border on the logo itself — ON CLOCK state is signaled by
+     the card border + chip + glow. Keep a soft drop-shadow for emphasis. */
+  filter: drop-shadow(0 0 8px rgba(255,183,3,0.55));
+}
+
+/* Average-level strip — Team / Female / Male, recomputed every render */
+.team-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(3px, 0.3vw, 6px);
+}
+/* Label + value share a row — ♀ / ⚥ / ♂ on the left, the avg on the right. */
+.team-stats .stat {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(3px, 0.35vw, 6px);
+  padding: clamp(2px, 0.3vw, 5px) clamp(4px, 0.5vw, 8px);
+  background: rgba(255,255,255,0.03);
+  border-top: 1px solid var(--ink-faint);
+  min-width: 0;
+}
+.team-stats .stat-female { border-top-color: var(--female); }
+.team-stats .stat-male   { border-top-color: var(--male); }
+.team-stats .stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.9vw, 16px);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.1;
+}
+/* All three labels are single-glyph symbols (♀ ⚥ ♂) — same family + size,
+   gender-coloured for the side boxes, white for the combined. */
+.team-stats .stat-female .stat-label,
+.team-stats .stat-team   .stat-label,
+.team-stats .stat-male   .stat-label {
+  font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
+  font-size: clamp(12px, 0.9vw, 16px);
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.team-stats .stat-female .stat-label { color: var(--female); }
+.team-stats .stat-male   .stat-label { color: var(--male); }
+.team-stats .stat-team   .stat-label { color: var(--ink); }
+.team-stats .stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(11px, 0.8vw, 14px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.team-stats .stat-female .stat-val { color: var(--female); }
+.team-stats .stat-male   .stat-val { color: var(--male); }
+
+/* Roster: 5 columns × 2 rows, female on top, male on bottom */
+.roster10 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(4px, 0.4vw, 8px);
+  min-height: 0;
+}
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.32vw, 6px);
+  padding: 2px 1px;
+  min-width: 0;
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+.row-female .slot.empty {
+  background: rgba(255,133,184,0.08);
+  border: 1px dashed rgba(255,133,184,0.32);
+}
+.row-male .slot.empty {
+  background: rgba(94,200,255,0.08);
+  border: 1px dashed rgba(94,200,255,0.32);
+}
+
+.slot .avatar {
+  width: clamp(40px, 3.4vw, 64px); aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--team-color);
+  color: white;
+  display: grid; place-items: center;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.2vw, 22px);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1.5px transparent;
+  position: relative;
+}
+.slot .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* Gender rings — load-bearing */
+.row-female .slot .avatar { box-shadow: 0 0 0 2px var(--female); }
+.row-male   .slot .avatar { box-shadow: 0 0 0 2px var(--male); }
+
+/* Captain ring — load-bearing */
+.slot.captain .avatar {
+  box-shadow: 0 0 0 2px var(--accent) !important;
+}
+.slot.captain .fname { color: var(--accent); font-weight: 700; }
+
+/* Flag sits on the avatar's bottom-left corner as a small rectangular badge
+   rendered by the flag-icons SVG library. A thin outline + faint shadow
+   keeps it legible against any avatar background. */
+.slot .avatar .flag {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  width: clamp(14px, 1.05vw, 18px);
+  height: clamp(10px, 0.78vw, 13px);
+  line-height: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 2;
+}
+.slot .avatar .flag .fi {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  line-height: 0;
+}
+.slot.empty .flag { display: none; }
+
+.slot .fname {
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 500;
+  color: var(--ink-dim);
+  line-height: 1.2;             /* room for y / g / p / j descenders */
+  padding-bottom: 1px;          /* extra safety against overflow clip */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  max-width: 100%;
+  text-align: center;
+}
+.slot.filled .fname { color: var(--ink); }
+.slot.empty .avatar { display: none; }
+.slot.empty .fname  { display: none; }
+
+/* Just-picked fade-in (~300ms) */
+.slot[data-just-picked="1"] .avatar,
+.slot[data-just-picked="1"] .fname {
+  animation: avatar-in 0.3s ease-out;
+}
+@keyframes avatar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── PICK OVERLAY ────────────────────────────────────────────────────────
+   Full-screen suspense + reveal for the audience. Driven by:
+   - the `pending_pick` Realtime broadcast (suspense start / cancel),
+   - the existing `draft_picks` INSERT subscription (the authoritative reveal).
+   Keyframes use ONLY transform/opacity/box-shadow/background-position so the
+   board behind the overlay never reflows. State machine:
+     [hidden] →(.is-suspense)→ [suspense] →(.is-revealed)→ [reveal]
+              →(.is-exiting)→ [hidden].
+*/
+.pick-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.pick-overlay[hidden] { display: none; }
+
+.pick-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 14, 11, 0.92);
+  backdrop-filter: blur(10px) saturate(0.85);
+  -webkit-backdrop-filter: blur(10px) saturate(0.85);
+  opacity: 0;
+  animation: pick-backdrop-in 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pick-overlay__inner {
+  position: relative;
+  width: min(1200px, 94vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+.pick-overlay__header {
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--ink-dim);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-16px);
+  animation: pick-header-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards;
+}
+
+.pick-overlay.is-revealed .pick-overlay__header {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.pick-overlay__row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.pick-overlay__block {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 32px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.pick-overlay__player {
+  transform: translateX(-20px) scale(0.94);
+  animation: pick-block-in-left 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards;
+}
+.pick-overlay__team {
+  transform: translateX(20px) scale(0.94);
+  animation: pick-block-in-right 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 600ms forwards;
+}
+
+.pick-overlay__avatar,
+.pick-overlay__logo-img {
+  display: block;
+  object-fit: cover;
+}
+.pick-overlay__avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid var(--line-bright);
+}
+.pick-overlay__avatar--f { border-color: var(--female); --pick-ring: rgba(255, 133, 184, 0.35); }
+.pick-overlay__avatar--m { border-color: var(--male);   --pick-ring: rgba(94,  200, 255, 0.35); }
+
+/* Avatar ring breathing during suspense — gender accent expands and fades. */
+.pick-overlay.is-suspense .pick-overlay__avatar {
+  animation: pick-ring-breathe 2400ms ease-in-out infinite alternate;
+}
+
+.pick-overlay__logo-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  background: var(--bg-deep);
+  border: 2px solid var(--line);
+}
+/* Letter fallback when no logo image is available. */
+.pick-overlay__logo-fallback {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  background: var(--bg-deep);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pick-overlay__name {
+  font-size: clamp(32px, 3vw, 56px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-align: center;
+  white-space: nowrap;
+  /* overflow handled by the parent .pick-overlay__block; clipping here
+     sliced descenders (j, y, g) off at the line-box. */
+  overflow: visible;
+  max-width: 100%;
+  /* JS (_fitOverlayName in draft-projector.js) shrinks font-size after
+     render so long names like "Kristina Kolesnikova" or "Sunshine Padel"
+     always fit on one line. */
+}
+
+.pick-overlay__stat {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  color: var(--ink-dim);
+  text-align: center;
+}
+.pick-overlay__sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.pick-overlay__arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--ink-dim);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: left center;
+  animation: pick-arrow-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards;
+  transition: color 250ms ease-out;
+}
+/* Suspense idle motion on the arrow. */
+.pick-overlay.is-suspense .pick-overlay__arrow {
+  animation:
+    pick-arrow-in   400ms cubic-bezier(0.16, 1, 0.3, 1) 480ms forwards,
+    pick-arrow-idle 1800ms ease-in-out 900ms infinite;
+}
+.pick-overlay.is-revealed .pick-overlay__arrow {
+  color: var(--accent);
+}
+
+/* Gold shine sweep across each block during reveal. */
+.pick-overlay__block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 183, 3, 0.55) 50%, transparent 60%);
+  transform: translateX(-120%);
+  opacity: 0;
+}
+.pick-overlay.is-revealed .pick-overlay__block::after {
+  opacity: 1;
+  animation: pick-shine-sweep 700ms cubic-bezier(0.4, 0, 0.2, 1) 120ms forwards;
+}
+
+/* Spring pop on the row at the moment of reveal. */
+.pick-overlay.is-revealed .pick-overlay__row {
+  animation: pick-row-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pick-overlay.is-revealed .pick-overlay__team {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  animation: pick-team-emphasis 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* "PICK #N LOCKED" stamp — absolutely positioned over the seam. */
+.pick-overlay__stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 2px solid var(--accent);
+  background: var(--bg-deep);
+  color: var(--accent);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(2.4) rotate(-20deg);
+  pointer-events: none;
+}
+.pick-overlay.is-revealed .pick-overlay__stamp {
+  animation:
+    pick-stamp-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards,
+    pick-stamp-thunk 500ms cubic-bezier(0.16, 1, 0.3, 1) 320ms;
+}
+
+/* Exit: the entire overlay fades + slightly scales down. The board behind
+   reappears as the backdrop's blur unwinds. */
+.pick-overlay.is-exiting .pick-overlay__backdrop,
+.pick-overlay.is-exiting .pick-overlay__inner {
+  animation: pick-exit 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Undo variant ─────────────────────────────────────────────────────
+   Same skeleton as a pick reveal, but recolored red and the header stays
+   visible (it carries the "UNDONE" message instead of being replaced by
+   the LOCKED stamp). Triggered together with .is-revealed.
+*/
+.pick-overlay.is-undone .pick-overlay__header        { color: var(--danger); }
+.pick-overlay.is-undone.is-revealed .pick-overlay__header { opacity: 1; }   /* don't fade out */
+
+.pick-overlay.is-undone .pick-overlay__sub           { color: var(--danger); }
+.pick-overlay.is-undone .pick-overlay__arrow         { color: var(--danger); }
+.pick-overlay.is-undone.is-revealed .pick-overlay__arrow { color: var(--danger); }
+
+.pick-overlay.is-undone .pick-overlay__stamp {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* Red shine sweep instead of gold. */
+.pick-overlay.is-undone .pick-overlay__block::after {
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 84, 112, 0.45) 50%, transparent 60%);
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────────── */
+@keyframes pick-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pick-header-in {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+@keyframes pick-header-swap {
+  0%  { opacity: 0.4; transform: translateY(-4px); }
+  100%{ opacity: 1;   transform: translateY(0);    }
+}
+@keyframes pick-block-in-left {
+  from { opacity: 0; transform: translateX(-20px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(0)     scale(1);    }
+}
+@keyframes pick-block-in-right {
+  from { opacity: 0; transform: translateX(20px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+}
+@keyframes pick-arrow-in {
+  from { opacity: 0; transform: scaleX(0.4); }
+  to   { opacity: 1; transform: scaleX(1);   }
+}
+@keyframes pick-arrow-idle {
+  0%, 100% { transform: scaleX(1) translateX(0);    opacity: 0.7; }
+  50%      { transform: scaleX(1) translateX(10px); opacity: 1;   }
+}
+@keyframes pick-ring-breathe {
+  from { box-shadow: 0 0 0   0  var(--pick-ring, transparent); transform: scale(1);     }
+  to   { box-shadow: 0 0 24px 4px var(--pick-ring, transparent); transform: scale(1.015); }
+}
+@keyframes pick-row-pop {
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1);    }
+}
+@keyframes pick-team-emphasis {
+  0%   { transform: translateX(0) scale(1);    }
+  50%  { transform: translateX(0) scale(1.08); }
+  100% { transform: translateX(0) scale(1);    }
+}
+@keyframes pick-shine-sweep {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120%);  }
+}
+@keyframes pick-stamp-in {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(2.4) rotate(-20deg); }
+  60%  { opacity: 1; transform: translate(-50%, -50%) scale(0.92) rotate(-8deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1)    rotate(-8deg); }
+}
+@keyframes pick-stamp-thunk {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+  40%  { box-shadow: 0 8px 40px rgba(255, 183, 3, 0.5); }
+  100% { box-shadow: 0 8px 20px rgba(255, 183, 3, 0.0); }
+}
+@keyframes pick-exit {
+  from { opacity: 1; transform: scale(1);    }
+  to   { opacity: 0; transform: scale(0.97); }
+}
+
+/* Reduce-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
+}
+
+/* ============================================================
+   MOBILE / PORTRAIT (max-width: 900px)
+   The projector is designed for 1920x1080 broadcast. For remote viewers
+   on a phone, reflow into a single-column scrollable view: simplified
+   header, sticky moment block at the top, and a 1×8 list of compact
+   team cards (tap to expand the full roster). Desktop layout above is
+   untouched.
+   ============================================================ */
+@media (max-width: 900px) {
+  /* Shell — allow page-scroll, drop the 16:9 viewport lock */
+  html, body { overflow: auto; height: auto; }
+  body { min-height: 100%; }
+
+  .projector {
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    grid-template-rows: auto auto auto;
+    /* Hug content at the top. Without this the default align-content:stretch
+       inflates the three auto rows to fill 100vh whenever content is shorter
+       than the viewport (e.g. the groups page before cards fill in) — which
+       made the header band and the moment block balloon with empty space. */
+    align-content: start;
+    padding: 10px 12px 24px;
+    gap: 10px;
+    overflow: visible;
+  }
+  .projector::before { background-size: 32px 32px; }   /* tighter grid on small screens */
+
+  /* ============== HEADER — single row, brand left / tournament logo right ============== */
+  .top-strip {
+    display: flex;
+    flex-wrap: nowrap;          /* keep brand + name + live + logo on one row */
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .header-left,
+  .header-center,
+  .header-right { display: flex; align-items: center; }
+  .header-left   { flex: 0 0 auto; }
+  .header-center { flex: 1 1 auto; justify-content: center; min-width: 0; }
+  .header-right  { flex: 0 0 auto; gap: 6px; }
+
+  .brand-logo      { height: 32px; }
+  /* Tournament logo on the right — matches the desktop layout but scaled down
+     to ~brand-logo height so the whole header still fits on one row. */
+  .tournament-logo {
+    display: block;
+    height: 28px;
+  }
+  .tournament {
+    font-size: 13px;
+    letter-spacing: 0.10em;
+    line-height: 1.15;          /* room for descenders when it wraps */
+    white-space: normal;        /* allow 2-line wrap on narrow headers */
+    max-width: 100%;
+  }
+  .live-pill {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    padding: 3px 7px;
+    height: 22px;
+  }
+  .live-pill .dot { width: 6px; height: 6px; }
+  .reconnect {
+    font-size: 9px;
+    padding: 3px 7px;
+    letter-spacing: 0.12em;
+  }
+
+  /* ============== MOMENT BLOCK — sticky, vertical stack ============== */
+  .moment-block {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Bleed left/right edge-to-edge so the sticky band feels intentional. */
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    /* Solid bg so cards scrolling underneath are occluded. */
+    background:
+      radial-gradient(ellipse at top, rgba(255,183,3,0.05) 0%, transparent 60%),
+      var(--bg-deep);
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Two-row moment layout:
+       Row 1:  [ON CLOCK logo + team + pick-meta]  |  [TIMER]
+       Row 2:  [NEXT UP chip — full width, demoted]
+     Grid: 2 cols × 2 rows; on-clock takes the flexible space, timer is
+     auto-sized on the right; NEXT spans both cols on row 2. Generous
+     column-gap so the team name's ellipsis doesn't visually touch the
+     timer at overtime (negative 6-char) values. */
+  .moment {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: 16px;
+    row-gap: 6px;
+    padding: 10px 4px 8px;
+    align-items: center;
+  }
+  .moment-cell { width: auto; min-width: 0; }
+  .converge-bar { height: 4px; }
+
+  /* ON CLOCK — row 1, left. Hero of the moment block. */
+  .clock-cell {
+    grid-column: 1; grid-row: 1;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0;
+    min-width: 0;
+  }
+  .clock-cell .info { min-width: 0; }
+  .clock-cell .clogo {
+    width: 50px;
+    font-size: 22px;
+  }
+  .clock-cell .label {
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    margin-bottom: 2px;
+  }
+  .clock-cell .team-name {
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .clock-cell .pick-meta {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-top: 3px;
+  }
+
+  /* TIMER — row 1, right. Stacked number + label, right-aligned. */
+  .timer-cell {
+    grid-column: 2; grid-row: 1;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    border-top: none;
+  }
+  .timer-wrap {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  /* Timer scales down on phones — at overtime the value grows to 6 chars
+     (`-14:42`); a 36px font crowds the team-name. clamp() keeps it
+     readable but compact, growing back on larger phones. */
+  .timer-num {
+    font-size: clamp(26px, 8vw, 36px);
+    line-height: 0.85;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    margin-top: 0;
+  }
+
+  /* NEXT — row 2 full-width chip. Label and team name read inline:
+     "NEXT UP · PADEL PA?" */
+  .next-cell {
+    grid-column: 1 / -1; grid-row: 2;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 6px 0 0;
+    border-top: 1px dashed var(--line);
+    opacity: 0.7;
+  }
+  /* The tiny nlogo placeholder doesn't render an image (the moment-bar
+     mini-box is too small to be readable on phone) — hide it entirely. */
+  .next-cell .nlogo {
+    display: none;
+  }
+  .next-cell .info {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+  }
+  .next-cell .label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .next-cell .tname {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* ============== TEAM GRID — 1 col × 8 rows, compact cards ============== */
+  .teams {
+    grid-template-rows: auto;
+    overflow: visible;
+  }
+  .teams-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 8px;
+  }
+
+  /* Reflow each card: 4-col header
+       col 1: logo (spans both rows, vertically centered)
+       col 2: team name (spans both rows, vertically centered)
+       col 3: summary on row 1 / ratings on row 2 (the right-side stack)
+       col 4: chevron (spans both rows, vertically centered)
+     Roster stays hidden until `.is-expanded` is added by the tap handler. */
+  .team-card {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    padding: 10px 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .team-card > .team-logo {
+    grid-column: 1; grid-row: 1 / span 2;
+    height: 44px; width: 44px;
+    aspect-ratio: 1;
+    max-width: none;
+    align-self: center;
+  }
+  .team-card > .tname {
+    grid-column: 2; grid-row: 1 / span 2;
+    align-self: center;          /* vertically centered alongside the logo */
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+  /* Summary on the right side, top row (col 3, row 1). Kept on one line so
+     the right-side stack stays exactly two rows. */
+  .team-card > .team-card-summary {
+    display: block;
+    grid-column: 3; grid-row: 1;
+    align-self: end;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .team-card > .team-card-summary .count {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .team-card > .team-card-summary .sep {
+    color: var(--ink-faint);
+    margin: 0 6px;
+  }
+  .team-card > .team-card-chevron {
+    display: block;
+    grid-column: 4; grid-row: 1 / span 2;
+    align-self: center;
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 200ms ease;
+    padding: 6px;       /* generous tap target */
+  }
+  .team-card.is-expanded > .team-card-chevron {
+    transform: rotate(90deg);
+    color: var(--ink);
+  }
+
+  /* "View Team Page →" button — only visible inside an expanded card.
+     Tapping this is the ONLY way to navigate to the team page on mobile;
+     every other tap on the card body toggles expand/collapse. */
+  .team-card.is-expanded > .team-card-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    grid-row: 5;
+    margin-top: 10px;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-bright);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: rgba(255, 183, 3, 0.2);
+  }
+  .team-card.is-expanded > .team-card-nav:active {
+    background: rgba(255, 183, 3, 0.1);
+    border-color: var(--accent);
+  }
+
+  /* Hide the roster until tap-to-expand. */
+  .team-card > .roster10 { display: none; }
+
+  /* Ratings on the right side of the header (col 3, row 2 — beneath the
+     summary). Three stats inline: ♀ 3.9  ⚥ 3.9  ♂ 4.0. Always visible
+     (collapsed AND expanded). */
+  .team-card > .team-stats {
+    display: flex;
+    flex-direction: row;
+    grid-column: 3; grid-row: 2;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: start;
+    gap: 6px;
+    padding: 0;
+  }
+  .team-card > .team-stats .stat {
+    display: inline-flex;
+    flex-direction: row;
+    /* `center`, not `baseline` — the symbol glyphs (♀ ⚥ ♂) and the
+       JetBrains Mono digits don't share a baseline on iOS Safari, so
+       baseline alignment makes the symbols look offset. Center keeps
+       them visually aligned regardless of font metrics. */
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    background: none;
+    border-top: none;
+    min-width: 0;
+  }
+  /* The Apple-Color-Emoji glyphs for ♀ ⚥ ♂ on iOS sit lower than the
+     JetBrains Mono digit baseline, so even `align-items: center` looks
+     off. Forcing the system font (Apple's SF Pro / Segoe UI on Win)
+     for symbols pulls them into a normal text baseline, matching the
+     digit's visual center. Identical font-size + line-height on both
+     also guarantees equal box heights so the centers actually meet. */
+  .team-card > .team-stats .stat-label,
+  .team-card > .team-stats .stat-val {
+    display: inline-flex;
+    align-items: center;
+    height: 14px;
+    line-height: 1;
+    font-size: 11px;
+  }
+  .team-card > .team-stats .stat-label {
+    font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
+    font-weight: 600;
+  }
+  .team-card > .team-stats .stat-female .stat-label { color: var(--female); }
+  .team-card > .team-stats .stat-male   .stat-label { color: var(--male); }
+  .team-card > .team-stats .stat-team   .stat-label { color: var(--ink); }
+  .team-card > .team-stats .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .team-card > .team-stats .stat-female .stat-val { color: var(--female); }
+  .team-card > .team-stats .stat-male   .stat-val { color: var(--male); }
+
+  /* Roster: 4 columns × 3 rows of uniform squares. Captains anchor the
+     top-middle cells, the logo + stats sit beneath them in the center,
+     and drafted players radiate outward around the perimeter — female
+     counter-clockwise from F-captain, male clockwise from M-captain:
+        [F1]   [F-CAP]  [M-CAP]  [M1]    row 1
+        [F2]   [LOGO ]  [STATS]  [M2]    row 2
+        [F3]   [F4   ]  [M4   ]  [M3]    row 3
+     Index-driven placement (via :nth-child below) lets each slot land
+     in the correct cell — F[0]=captain → (2,1), F[1..4] fill ccw; M
+     analogously fills cw. `aspect-ratio: 1` keeps every cell a perfect
+     square; interior elements scale via %/vw units. */
+  .team-card.is-expanded > .roster10 {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .team-card.is-expanded .slot,
+  .team-card.is-expanded .roster-plaque-logo,
+  .team-card.is-expanded .roster-plaque-stats {
+    aspect-ratio: 1;
+    min-height: 0;
+  }
+  /* Explicit slot placement — counter-clockwise fill for F, clockwise for M,
+     each starting at the respective captain in row 1 of the middle. The
+     :nth-child indices line up with the F[0..4] / M[0..4] arrays produced
+     by rosterFor() (index 0 = captain, 1..4 = drafted picks in pick order). */
+  .team-card.is-expanded .row-female > .slot:nth-child(1) { grid-column: 2; grid-row: 1; }  /* F captain */
+  .team-card.is-expanded .row-female > .slot:nth-child(2) { grid-column: 1; grid-row: 1; }  /* F1 — ccw */
+  .team-card.is-expanded .row-female > .slot:nth-child(3) { grid-column: 1; grid-row: 2; }  /* F2 */
+  .team-card.is-expanded .row-female > .slot:nth-child(4) { grid-column: 1; grid-row: 3; }  /* F3 */
+  .team-card.is-expanded .row-female > .slot:nth-child(5) { grid-column: 2; grid-row: 3; }  /* F4 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(1) { grid-column: 3; grid-row: 1; }  /* M captain */
+  .team-card.is-expanded .row-male   > .slot:nth-child(2) { grid-column: 4; grid-row: 1; }  /* M1 — cw */
+  .team-card.is-expanded .row-male   > .slot:nth-child(3) { grid-column: 4; grid-row: 2; }  /* M2 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(4) { grid-column: 4; grid-row: 3; }  /* M3 */
+  .team-card.is-expanded .row-male   > .slot:nth-child(5) { grid-column: 3; grid-row: 3; }  /* M4 */
+  /* Player slot interior — avatar fills 62% of the cell (cell-relative,
+     so it scales with the grid), name uses clamp() viewport units so
+     text grows on bigger phones without overflowing tiny ones. */
+  .team-card.is-expanded .slot {
+    padding: 4% 2%;
+    gap: 4%;
+    overflow: hidden;
+  }
+  .team-card.is-expanded .slot .avatar {
+    width: 62%;
+    height: auto;        /* aspect-ratio: 1 from base rule keeps it circular */
+    font-size: clamp(12px, 3.4vw, 20px);
+  }
+  /* Flag sits on the avatar — size it as a fraction of the avatar so
+     the badge stays proportional whether the avatar is 45px or 100px. */
+  .team-card.is-expanded .slot .avatar .flag {
+    width: 34%;
+    height: 26%;
+    bottom: -4%;
+    left: -4%;
+  }
+  .team-card.is-expanded .slot .fname {
+    font-size: clamp(9px, 2.6vw, 13px);
+    letter-spacing: 0.02em;
+    max-width: 100%;
+  }
+  /* Merged center plaque: the team logo spans both inner cells (col 2-3,
+     row 2) as one 2:1 rectangle. Ratings moved to the team-card header.
+     `aspect-ratio: 2 / 1` caps the cell height so it matches a single
+     row (cell width = 2 cols ≈ 160px → height ≈ 80px = one row height),
+     preventing the image from stretching row 2 vertically. */
+  .team-card.is-expanded .roster-plaque-logo {
+    display: flex;
+    grid-column: 2 / span 2;
+    grid-row: 2;
+    aspect-ratio: 2 / 1;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+  .team-card.is-expanded .roster-plaque-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    /* `height: 100%`, not `auto`. Safari/WebKit ignores `max-height: 100%`
+       on a flex-child img inside a parent with aspect-ratio set, so on
+       iOS the logo would render at its full intrinsic-aspect width and
+       blow past the cell into the surrounding slot grid. Setting height
+       directly (not as a max-) is a constraint WebKit respects. */
+    height: 100%;
+    object-fit: contain;
+  }
+  /* The inner ratings plaque moved into the team-card header — hide it
+     here so the merged logo can span both inner cells. The .stat children
+     style rules below still exist as a safety net but are inert while the
+     parent is display:none. */
+  .team-card.is-expanded .roster-plaque-stats {
+    display: none;
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat {
+    flex: 1 1 0;                  /* each stat row fills 1/3 of cell height */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8%;
+    padding: 0 6%;
+    background: rgba(255,255,255,0.04);
+    border-top: 2px solid var(--ink-faint);
+    min-width: 0;
+    min-height: 0;
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat-female { border-top-color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   { border-top-color: var(--male); }
+  .team-card.is-expanded .roster-plaque-stats .stat-label {
+    font-family: 'Segoe UI Symbol', 'Apple Color Emoji', 'JetBrains Mono', sans-serif;
+    font-size: clamp(11px, 3vw, 18px);
+    line-height: 1;
+    color: var(--ink-faint);
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat-female .stat-label { color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-label { color: var(--male); }
+  .team-card.is-expanded .roster-plaque-stats .stat-team   .stat-label { color: var(--ink); }
+  .team-card.is-expanded .roster-plaque-stats .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(10px, 2.8vw, 16px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .team-card.is-expanded .roster-plaque-stats .stat-female .stat-val { color: var(--female); }
+  .team-card.is-expanded .roster-plaque-stats .stat-male   .stat-val { color: var(--male); }
+
+  /* The desktop status chips overlap the team-name on a compact card.
+     The sticky moment-block already shows ON CLOCK / NEXT — drop the
+     per-card badges and let the border glow carry the state. */
+  .team-card.live::before,
+  .team-card.next::after { content: none; }
+
+  /* ============== PICK OVERLAY — portrait stack ============== */
+  /* The desktop overlay is a centered flex-column with `max-height: 80vh`
+     and child blocks declared `flex: 1 1 0` so the two blocks split the
+     row-width evenly when rendered side-by-side. In portrait we stack
+     them vertically, so the same `flex: 1 1 0` collapses each block's
+     height to ~0 (basis 0, no available row-height to grow into) and
+     the avatar overflows the clipped block — the bug in the screenshot.
+     Fix: blocks size to their natural content height, inner allows
+     scroll if the stack is too tall, no max-height cap. */
+  .pick-overlay__inner {
+    width: 100%;
+    max-height: none;
+    height: auto;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 14px;
+    padding: 18px 14px;
+  }
+  .pick-overlay__header {
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  .pick-overlay__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    flex: none;
+    width: 100%;
+  }
+  .pick-overlay__block {
+    flex: none;             /* override desktop `flex: 1 1 0` */
+    min-height: auto;
+    padding: 18px 14px;
+    gap: 8px;
+    border-radius: 10px;
+    width: 100%;
+  }
+  .pick-overlay__avatar,
+  .pick-overlay__logo-img,
+  .pick-overlay__logo-fallback {
+    width: 72px;
+    height: 72px;
+  }
+  .pick-overlay__logo-fallback { font-size: 32px; }
+  .pick-overlay__name {
+    font-size: 22px;
+    white-space: normal;       /* allow wrap on narrow screens */
+    line-height: 1.15;
+  }
+  .pick-overlay__stat,
+  .pick-overlay__sub { font-size: 12px; }
+  /* Rotate the arrow indicator from → to ↓ by hiding the inline glyph
+     and rendering a vertical one via ::before. Avoids fighting the
+     existing scaleX entry animation. */
+  .pick-overlay__arrow {
+    font-size: 0;
+    animation: none !important;
+    transform: none !important;
+    opacity: 1;
+    height: 28px;
+  }
+  .pick-overlay__arrow::before {
+    content: '↓';
+    display: block;
+    font-size: 32px;
+    line-height: 1;
+    color: inherit;
+  }
+  .pick-overlay.is-revealed .pick-overlay__arrow::before { color: var(--accent); }
+  .pick-overlay.is-undone   .pick-overlay__arrow::before,
+  .pick-overlay.is-undone.is-revealed .pick-overlay__arrow::before { color: var(--danger); }
+
+  .pick-overlay__stamp {
+    font-size: 13px;
+    padding: 5px 9px;
+    letter-spacing: 1.5px;
+  }
+}
+
+/* ── START GATE ──────────────────────────────────────────────────────
+   Covers the projector until the first user click. Required by browser
+   autoplay policy so the audio chime at 0:00 can play. Doubles as a
+   visible "projector ready" check for the operator before doors open.
+*/
+#startGate {
+  position: fixed; inset: 0; z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(ellipse at top, rgba(255,183,3,0.06) 0%, transparent 55%),
+    var(--bg-deep);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#startGate.is-hidden { display: none; }
+.start-gate__inner {
+  text-align: center; padding: 60px 80px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line-bright);
+  border-radius: 18px;
+  box-shadow: 0 0 80px rgba(255,183,3,0.18);
+  max-width: 640px;
+}
+.start-gate__title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.4vw, 44px);
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.start-gate__sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 0.9vw, 15px);
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+}
+.start-gate__btn {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.8vw, 32px);
+  letter-spacing: 0.14em;
+  padding: 22px 56px;
+  background: var(--accent);
+  color: var(--bg-deep);
+  border: none; border-radius: 8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 0 rgba(255,183,3,0.6);
+}
+.start-gate__btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(255,183,3,0.45);
+}
+.start-gate__btn:active { transform: scale(0.99); }
+.start-gate__hint {
+  margin-top: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 0.7vw, 12px);
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+}
+
+/* ============== GROUPS PAGE (body.groups) ============== */
+/* Reuses .moment-block, .converge-bar, .pick-overlay, .team-card from draft
+   page. Layout overrides only — no token or animation duplication.
+   Live group draw at /competitions/tps-may2026/groups/. */
+
+/* V4 group identity — coral for A, teal for B. Applied to letter, card
+   border-left (via --team-color), and a 3px top bar over each grid
+   (rendered as an absolutely positioned ::before so the half's box
+   dimensions don't shift). */
+body.groups {
+  --grp-a: #FF6B6B;
+  --grp-b: #4ECDC4;
+}
+body.groups .groups-moment__half--a .groups-moment__letter { color: var(--grp-a); }
+body.groups .groups-moment__half--b .groups-moment__letter { color: var(--grp-b); }
+body.groups .groups-teams__half { position: relative; }
+body.groups .groups-teams__half--a::before,
+body.groups .groups-teams__half--b::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 2;
+  pointer-events: none;
+}
+body.groups .groups-teams__half--a::before { background: var(--grp-a); }
+body.groups .groups-teams__half--b::before { background: var(--grp-b); }
+body.groups .groups-teams__half--a .team-card { --team-color: var(--grp-a); }
+body.groups .groups-teams__half--b .team-card { --team-color: var(--grp-b); }
+
+body.groups .moment {
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(16px, 1.6vw, 32px);
+}
+
+.groups-moment__half {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(4px, 0.4vw, 8px);
+  /* Vertical padding removed — the .moment row's own padding already provides
+     the chrome, and adding it here pushed the groups moment-bar taller than
+     the draft moment-bar (which has no inner-cell vertical padding). */
+  padding: 0 clamp(12px, 1.2vw, 22px);
+}
+.groups-moment__half--a { align-items: flex-start; text-align: left; }
+.groups-moment__half--b { align-items: flex-end;   text-align: right; }
+
+.groups-moment__letter {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(32px, 3vw, 56px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--accent, #FFB703);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.groups-moment__count {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: clamp(13px, 1.1vw, 20px);
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.groups-moment__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+}
+.groups-moment__divider {
+  width: 2px;
+  align-self: stretch;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--line-bright, rgba(255,255,255,0.25)) 20%,
+    var(--line-bright, rgba(255,255,255,0.25)) 80%,
+    transparent 100%);
+}
+
+/* "See you on Saturday!" — replaces the divider once both groups are full
+   (body.groups.is-complete added by draft-groups.js when 4-of-4 + 4-of-4).
+   Hierarchy flips: this becomes the dominant text, Group A/B shrinks to a
+   subtitle role (see body.groups.is-complete .groups-moment__letter below). */
+.groups-moment__complete-msg {
+  display: none;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 2.6vw, 48px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent, #FFB703);
+  text-shadow: 0 0 28px rgba(255, 183, 3, 0.4);
+  text-align: center;
+  padding: 0 clamp(12px, 1.4vw, 28px);
+  white-space: nowrap;
+  line-height: 1;
+}
+body.groups.is-complete .groups-moment__divider { display: none; }
+body.groups.is-complete .groups-moment__complete-msg {
+  display: block;
+  animation: groups-complete-msg-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Countdown below "See you on Saturday!" — red, monospace, tabular nums so
+   digits don't jitter every second. Same visibility gate as the message. */
+.groups-moment__center-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 0.4vw, 8px);
+}
+.groups-moment__countdown {
+  display: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 26px);
+  letter-spacing: 0.06em;
+  color: var(--timer-red, var(--danger, #FF5470));
+  text-shadow: 0 0 20px rgba(255, 84, 112, 0.35);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+body.groups.is-complete .groups-moment__countdown {
+  display: block;
+  animation: groups-complete-msg-in 600ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+body.groups.is-complete .groups-moment__letter {
+  font-size: clamp(18px, 1.8vw, 30px);
+}
+body.groups.is-complete .groups-moment__count {
+  font-size: clamp(12px, 1vw, 18px);
+}
+@keyframes groups-complete-msg-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+/* Mobile (≤900px): the projector's 1fr-auto-1fr split moment overlaps on phones —
+   the centred "SEE YOU ON SATURDAY!" collides with the Group A / Group B labels,
+   and the projector min-height leaves a tall empty band above the cards. Switch to
+   a centred flex stack: hero message + countdown on its own full-width row, the two
+   group tallies side-by-side below; let the bar hug its content. */
+@media (max-width: 900px) {
+  body.groups .moment {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 20px;
+    min-height: 0;
+    padding: 12px 8px;
+  }
+  .groups-moment__center { order: -1; flex: 1 1 100%; }
+  .groups-moment__divider { display: none; }
+  .groups-moment__complete-msg {
+    white-space: normal;
+    font-size: clamp(24px, 7vw, 40px);
+    padding: 0;
+  }
+  .groups-moment__half {
+    flex: 1 1 0;
+    align-items: center;
+    text-align: center;
+    padding: 0 8px;
+  }
+  .groups-moment__half--a,
+  .groups-moment__half--b { align-items: center; text-align: center; }
+  .groups-moment__letter { font-size: clamp(18px, 5.5vw, 28px); white-space: nowrap; }
+  body.groups.is-complete .groups-moment__letter { font-size: clamp(16px, 5vw, 24px); }
+}
+
+/* Two-column teams area: A grid | divider | B grid */
+body.groups .teams { padding: 0; }
+.groups-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(16px, 1.6vw, 32px);
+  align-items: stretch;
+  padding: clamp(14px, 1.4vw, 26px);
+}
+.groups-teams__half { min-width: 0; display: flex; flex-direction: column; }
+.groups-teams__divider {
+  width: 2px;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--line, rgba(255,255,255,0.12)) 15%,
+    var(--line, rgba(255,255,255,0.12)) 85%,
+    transparent 100%);
+}
+
+/* Each half is a 2x2 grid filling its allocated vertical space — matches the
+   .teams-grid 1fr-row sizing on draft.html so cards aren't undersized. */
+body.groups .groups-teams__half { min-height: 0; }
+body.groups .teams-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(8px, 0.7vw, 14px);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Card land-in when JS appends it (after the overlay closes). Mirrors the
+   .pick-overlay teardown timing so the audience eye lands cleanly on the
+   grid card right as the overlay exits. */
+body.groups .team-card {
+  animation: groups-card-land 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes groups-card-land {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Group-reveal overlay variant — single centered block (no player+team).
+   .pick-overlay__block defaults to opacity:0 and only animates when given
+   the __player/__team child class. Under body.groups, the lone block
+   springs in centered. The GROUP A/B banner starts hidden and bursts in
+   when .is-revealed lands. */
+body.groups .pick-overlay__block {
+  animation: groups-overlay-block-in 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms forwards;
+}
+@keyframes groups-overlay-block-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+body.groups .pick-overlay__group-banner {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.2vw, 40px);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--accent, #FFB703);
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0;
+  transform: scale(0.7);
+}
+body.groups .pick-overlay.is-revealed .pick-overlay__group-banner {
+  animation: groups-banner-burst 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes groups-banner-burst {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); text-shadow: 0 0 32px rgba(255,183,3,0.6); }
+}
+
+/* ≤480px phone layout — stack the two halves vertically */
+@media (max-width: 480px) {
+  body.groups .moment {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .groups-moment__divider { display: none; }
+  .groups-moment__half { padding: 6px 10px; }
+  .groups-moment__half--b { justify-content: flex-start; flex-direction: row-reverse; }
+  .groups-moment__info--right { align-items: flex-start; text-align: left; }
+
+  .groups-teams {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 12px;
+  }
+  .groups-teams__divider { display: none; }
+  body.groups .teams-grid { grid-template-columns: 1fr; }
+}

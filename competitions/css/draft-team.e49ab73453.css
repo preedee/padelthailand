@@ -1,0 +1,1280 @@
+/* =====================================================================
+   Team Page — Pool + Team views
+   Reuses PadelThailand tokens from styles.css (.theme-dark):
+     --dark-bg, --dark-surface, --dark-border, --dark-text, --dark-text-muted, --dark-accent
+     --gold, --green, --silver, --radius, --transition
+
+   Load-bearing visual decisions preserved from 04-visual-intent.md:
+     #3 Gender ring on avatars      (pink F / blue M)
+     #4 Captain ring                (var(--dark-accent) — PadelThailand gold)
+     #5 Gender-tinted empty slots   (dashed border)
+     #9 Vertical pill toggle, symmetric Pool↔Team
+     #10 Tournament logo 40px top-right
+   ===================================================================== */
+
+:root {
+  --female: #ff0066;
+  --male:   #00aaff;
+  --team-danger: #ef4444;
+}
+
+/* ---------- Reset (page is the app — full-screen mobile) ---------- */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.team {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+button { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
+input  { font: inherit; color: inherit; }
+
+/* ---------- App shell ---------- */
+.team__app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Header ---------- */
+.team__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--dark-surface);
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.team__header-left,
+.team__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+.team__header-right { justify-content: flex-end; }
+.team__header-center {
+  flex: 1 1 auto;
+  min-width: 0;            /* allow shrink so it can't squeeze out the chevron */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* keep title centered when there IS room */
+}
+.team__brand-logo {
+  height: 26px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+.team__title {
+  margin: 0;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tournament logo — 40px (visual decision #10).
+   The CC mark PNG carries its own transparent background; the container
+   has no fill or border so the badge floats in the header rather than
+   sitting inside a dark box. (Previously was box + 3px padding — looked
+   heavy and obscured the transparent design.) */
+.team__tournament-logo {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.team__tournament-logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  box-sizing: border-box;
+}
+.team__tournament-logo .ph {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--dark-text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ---------- Reconnecting banner ---------- */
+.team__reconnect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--team-danger);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.30);
+  flex-shrink: 0;
+}
+.team__reconnect[hidden] { display: none; }
+.team__reconnect .pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--team-danger);
+  animation: team-pulse 1.2s ease-in-out infinite;
+}
+@keyframes team-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* ---------- View visibility (driven by data-view on .team__app) ---------- */
+.team__app[data-view="pool"] #team-view-pool { display: flex; }
+.team__app[data-view="team"] #team-view-team { display: flex; }
+.team__app[data-view="hub"]  #team-view-hub  { display: flex; }
+
+/* Rec #6 — in neutral pool mode (no community), suppress the POOL/TEAM
+   pill since there's no TEAM destination to swap to. The "← HUB" chevron
+   in the header is the only navigation out. */
+.team__app.is-no-community .team__view--pool .team__pill { display: none; }
+/* Overall-pool stub (body.is-overall-pool) opts back IN to showing the
+   pill, with TEAM rewired as a link to /home/ (Option 3). The /home/
+   stub stays hidden by the rule above because it lands on hub view
+   and the pool-pill there would be redundant nav. */
+body.is-overall-pool .team__app.is-no-community .team__view--pool .team__pill {
+  display: flex;
+}
+.team__view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+
+/* ---------- Vertical pill toggle (POOL / TEAM) — load-bearing #9 ---------- */
+.team__pill {
+  display: flex;
+  flex-direction: column;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.team__pill-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--dark-text-muted);
+  text-align: center;
+  border-radius: 3px;
+  text-transform: uppercase;
+  min-width: 56px;
+  min-height: 44px;        /* QA M-4 — height was 25, below tap-target floor */
+  transition: all 0.12s linear;
+}
+.team__app[data-view="pool"] .team__pill-tab[data-view-target="pool"],
+.team__app[data-view="team"] .team__pill-tab[data-view-target="team"],
+.team__pill-tab[aria-current="page"] {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  font-weight: 700;
+}
+
+/* =====================================================================
+   POOL VIEW
+   ===================================================================== */
+/* Row 1 — horizontal pill [HUB · TEAM · POOL] above the search row.
+   This is the only place where the pill renders horizontally — the
+   pill inside the team view header stays vertical (sits beside the
+   team name in a narrow column). */
+.team__pool-pill-row {
+  padding: 6px 14px 6px;
+  flex-shrink: 0;
+}
+.team__pool-pill-row .team__pill {
+  flex-direction: row;
+  width: 100%;
+  gap: 0;
+}
+.team__pool-pill-row .team__pill-tab {
+  flex: 1;
+  min-width: 0;
+  /* Match chip vertical metrics so this row is the same visual height
+     as the FILTER and PREFERS rows below it. min-height was 44px (iOS
+     tap-target floor) — explicitly relaxed here per user request for
+     a compact, uniform layout. The active-tab amber background still
+     provides clear hit feedback. */
+  min-height: 0;
+  padding: 5px 10px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  /* Reset vertical-pill HUB divider in the horizontal context. */
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.team__pool-search-row {
+  padding: 0 14px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+/* SORT label + sort chip-group live INSIDE the search row so search +
+   sort share one row. The chip-group default is flex:1 (so it stretches
+   on its own row); inside the search row we cap it to its content width
+   to leave the search input as the only flexible element. */
+.team__pool-search-row .team__filter-label {
+  padding-left: 4px;
+  min-width: 0;
+}
+.team__pool-search-row .team__chip-group {
+  flex: 0 0 auto;
+}
+/* Search input inside the compact search row — match chip vertical
+   metrics so the row height equals the FILTER and PREFERS rows. */
+.team__pool-search-row .team__search-input {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.team__search-input {
+  flex: 1;
+  padding: 11px 12px;
+  font-size: 14px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--radius);
+  color: var(--dark-text);
+  outline: none;
+  min-width: 0;
+  transition: border-color var(--transition);
+}
+.team__search-input::placeholder { color: var(--dark-text-muted); }
+.team__search-input:focus { border-color: var(--dark-accent); }
+
+.team__filter-row {
+  padding: 0 14px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.team__filter-row:last-of-type { padding-bottom: 10px; }
+.team__filter-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: var(--dark-text-muted);
+  text-transform: uppercase;
+  min-width: 38px;
+  text-align: right;
+  padding-right: 4px;
+}
+.team__chip-group {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  padding: 3px;
+  background: var(--dark-surface);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.team__chip-group::-webkit-scrollbar { display: none; }
+.team__chip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 0;
+  color: var(--dark-text-muted);
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.12s linear;
+}
+.team__chip:hover { color: var(--dark-text); }
+.team__chip.is-active-sort,
+.team__chip.is-active-filter {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  font-weight: 700;
+}
+/* Sort-direction arrow — fixed-width slot so the chip doesn't jump
+   as the arrow appears/disappears on the inactive sort button. */
+.team__sort-arrow {
+  display: inline-block;
+  width: 0.8em;
+  text-align: center;
+}
+.team__chip--female { color: var(--female); }
+.team__chip--male   { color: var(--male); }
+.team__chip--female.is-active-filter {
+  background: var(--female);
+  color: var(--dark-bg);
+}
+.team__chip--male.is-active-filter {
+  background: var(--male);
+  color: var(--dark-bg);
+}
+/* PREFERS filter row — one chip per community (logo + short name), multi-select */
+.team__prefs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 3px;
+}
+.team__prefs-chip-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 18px;
+}
+.team__prefs-chip-name {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+/* Rec #6 — captain-mine accent ring removed: pool view is now neutral
+   for all viewers (captains see the same chips spectators do). */
+.team__prefs-chip.is-active-filter {
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+}
+.team__prefs-chip.is-active-filter .team__prefs-chip-logo {
+  border-color: var(--dark-bg);
+}
+
+.team__row-prefs {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+}
+.team__pref-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--dark-border);
+  background: var(--dark-surface);
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dark-text-muted);
+  flex: 0 0 24px;
+}
+.team__pref-logo--0 { opacity: 1; }
+.team__pref-logo--1 { opacity: 0.75; }
+.team__pref-logo--2 { opacity: 0.55; }
+.team__pref-logo--unknown { border-style: dashed; }
+
+.team__pool-list {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
+}
+
+.team__player-row {
+  display: grid;
+  /* photo · flag · name · prefs · gender · rating · hand · side
+     Fixed-width data columns (like the commissioner pool) so rating /
+     hand / side line up vertically down the whole list. Name takes the
+     remaining space and ellipsises. Prefs widened to fit 24px logos
+     (3 logos + 1px gap × 2 = 74px → 80px col w/ small padding). Hand
+     and side widened so the both-handed/either-side "L X R" labels
+     don't clip. */
+  /* photo · flag · name · prefs · hand · side · rating  (rating moved to
+     the rightmost column). Hand/side/rating cols tightened so the values
+     sit close together instead of swimming in padding. Gap reduced 6→4px. */
+  grid-template-columns: 32px 18px minmax(0, 1fr) 80px 44px 44px 38px;
+  gap: 4px;
+  align-items: center;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--dark-border);
+}
+
+/* Center the fixed data cells within their grid track so they align. */
+.team__player-row > .team__row-prefs,
+.team__player-row > .team__row-tag,
+.team__player-row > .team__player-rating {
+  justify-self: center;
+  text-align: center;
+}
+/* `.is-top` (top-3 by rating-desc) used to highlight rows with a gold
+   outline + background tint. Visual was dropped on request — class still
+   emitted by JS in case we want to re-apply differentiation later. The
+   rating-cell colour override below also kept (gold value still works
+   as a subtler accent). */
+
+.team__player-photo {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--silver);
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark-text);
+  background: var(--dark-border);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.team__player-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.team__player-photo--female { border-color: var(--female); }
+.team__player-photo--male   { border-color: var(--male); }
+
+.team__row-flag {
+  flex: 0 0 auto;
+  line-height: 1;
+  width: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.team__row-flag .fi {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.team__player-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dark-text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.team__row-tag {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--dark-text-muted);
+  letter-spacing: 0.1px;
+  line-height: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.team__row-tag--gender-f { color: var(--female); font-weight: 700; }
+.team__row-tag--gender-m { color: var(--male);   font-weight: 700; }
+
+/* Hand & side cells — 3-track grid (left-letter | icon | right-letter)
+   so the icon always sits in the same middle column. Reading down the
+   column you get a clean vertical row of icons regardless of which
+   side-letter is present. The L / R letters peek out on whichever side
+   the player favours (B shows both). */
+.team__row-handside {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  display: inline-grid;
+  grid-template-columns: 10px 18px 10px;
+  align-items: center;
+  justify-items: center;
+}
+.team__row-handside .hs-letter,
+.team__row-handside .hs-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.team__row-handside .hs-icon { font-size: 12px; }
+.team__row-handside .hs-cell--empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--dark-text-muted);
+}
+.team__player-rating {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dark-text);
+  letter-spacing: 0.2px;
+  line-height: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.team__player-row.is-top .team__player-rating { color: var(--dark-accent); }
+
+.team__pool-empty {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  letter-spacing: 1.5px;
+  text-align: center;
+  padding: 40px 20px;
+  text-transform: uppercase;
+}
+
+/* =====================================================================
+   TEAM VIEW
+   ===================================================================== */
+.team__team-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--dark-surface);
+  border-bottom: 1px solid var(--dark-border);
+  flex-shrink: 0;
+}
+.team__team-info { flex: 1; min-width: 0; }
+.team__team-logo {
+  width: 56px; height: 56px;
+  background: var(--dark-bg);
+  border: 2px solid var(--team-color, var(--dark-accent));
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-text);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.team__team-logo img { width: 100%; height: 100%; object-fit: contain; }
+.team__team-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+  color: var(--dark-text);
+}
+.team__team-pick {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--dark-text-muted);
+  letter-spacing: 1.2px;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.team__roster-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
+}
+.team__roster-section { padding: 14px 16px 6px; }
+.team__roster-head { margin-bottom: 8px; }
+.team__roster-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.team__roster-lbl--female { color: var(--female); }
+.team__roster-lbl--male   { color: var(--male); }
+
+.team__roster-grid {
+  display: grid;
+  /* Rec #10 — adaptive column count: 5 columns on iPhone 12+/SE2 (390-414px
+     viewport ≈ 362-386px usable), 4 columns on iPhone SE1 / Android-mini
+     (<373px usable). Wider cells = more legible names/ratings in dim venue
+     light. Female + male sections still stack vertically (load-bearing #5). */
+  /* QA M-7 — was minmax(72px) which delivered 4/3 cols (not the spec'd
+     5/4). Lowering the min to 62px restores 5 cols at 390px, 4 cols at 320px. */
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 6px;
+}
+.team__roster-divider {
+  height: 1px;
+  background: var(--dark-border);
+  margin: 0 16px;
+}
+
+.team__roster-cell {
+  background: var(--dark-surface);
+  /* All cells render a 3px border so filled / empty / captain are the
+     same outer size — no layout shift across the 4×3 grid. Filled +
+     captain use a transparent border (the avatar ring carries gender +
+     captain identity); empty cells override with the dashed gender tint
+     below. Captain has no cell border by design — captaincy reads from
+     the gold avatar ring (load-bearing #4). */
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 8px 3px 10px;
+  position: relative;
+  min-height: 120px;
+}
+/* Empty cells — gender-tinted dashed border (load-bearing #5).
+   Full saturation pink / blue at 3px so empty slots read as bright
+   "halos" against the dark canvas — they're the only cells carrying
+   a visible cell-level border, so they need to pop. */
+.team__roster-cell.is-empty.is-female {
+  background: color-mix(in srgb, var(--female) 12%, transparent);
+  border: 3px dashed var(--female);
+}
+.team__roster-cell.is-empty.is-male {
+  background: color-mix(in srgb, var(--male) 12%, transparent);
+  border: 3px dashed var(--male);
+}
+.team__roster-cell.is-empty .team__cell-avatar,
+.team__roster-cell.is-empty .team__cell-fname,
+.team__roster-cell.is-empty .team__cell-rating,
+.team__roster-cell.is-empty .team__cell-handside { display: none; }
+
+.team__cell-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--dark-border);
+  color: var(--dark-text);
+  display: grid; place-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  /* Gender ring — load-bearing #3 */
+  box-shadow: 0 0 0 2px var(--team-cell-ring, var(--silver));
+  overflow: hidden;
+  position: relative;
+  margin-top: 2px;
+}
+.team__cell-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.team__roster-cell.is-female .team__cell-avatar { --team-cell-ring: var(--female); }
+.team__roster-cell.is-male   .team__cell-avatar { --team-cell-ring: var(--male); }
+/* Captain ring — load-bearing #4 — uses PadelThailand gold */
+.team__roster-cell.is-captain .team__cell-avatar {
+  --team-cell-ring: var(--dark-accent);
+  box-shadow: 0 0 0 2px var(--dark-accent);
+}
+
+.team__cell-fname {
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  max-width: 100%;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+.team__cell-flag {
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.team__cell-flag .fi {
+  width: 13px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.team__roster-cell.is-captain .team__cell-fname { color: var(--dark-accent); }
+.team__roster-cell.is-filled  .team__cell-fname { color: var(--dark-text); }
+
+.team__cell-rating {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Star icon + digits — each its own flex item so the parent's align-items
+   centers them by box-center instead of mixed-glyph baselines. */
+.rating-star,
+.rating-val {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+.rating-star {
+  font-size: 0.92em;
+  margin-right: 4px;
+}
+/* No-rating rows still emit a star span so the value digits line up
+   vertically with rated rows. Just hide the glyph but reserve its width. */
+.rating-star--empty {
+  visibility: hidden;
+}
+.team__roster-cell.is-captain .team__cell-rating { color: var(--dark-accent); }
+.team__roster-cell.is-filled  .team__cell-rating { color: var(--dark-text); }
+
+.team__cell-handside {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: var(--dark-text-muted);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.2px;
+}
+.team__cell-handside .sep {
+  color: var(--dark-border);
+  font-size: 8px;
+}
+
+/* ---------- Error block ---------- */
+.team__error {
+  margin: 24px 16px;
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  border-radius: var(--radius);
+  color: var(--team-danger);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.team__error[hidden] { display: none; }
+.team__error strong {
+  display: block;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+/* ---------- Small-viewport tuning ---------- */
+@media (max-width: 360px) {
+  .team__roster-cell { min-height: 110px; }
+  .team__cell-avatar { width: 32px; height: 32px; font-size: 13px; }
+  .team__title       { font-size: 14px; }
+  .team__search-input { padding: 10px; font-size: 13px; }
+}
+
+/* (Removed: previous rule hid .team__header-center on phones < 520px
+   for pool/team views so the now-defunct ← HUB header chevron had room.
+   With the chevron gone and HOME living in the in-view horizontal pill
+   below the header, the title fits in the center on mobile across all
+   views.) */
+
+/* ---------- QA M-8 — give the pool player name more room on phone.
+   Default grid is `32 18 1fr 48 14 46 48 50` (256px fixed + name) which
+   leaves ~60px for names at 390px → "Frede..." truncation. Compress
+   the secondary data columns + drop the prefs slot on narrow phones. */
+@media (max-width: 419px) {
+  .team__player-row {
+    /* Mobile: prefs cell is display:none, so 6 visible items map to 6 tracks
+       in HTML order — photo, flag, name, hand, side, rating. */
+    grid-template-columns: 30px 14px minmax(0, 1fr) 30px 30px 34px;
+    gap: 4px;
+    padding: 9px 8px;
+  }
+  /* The prefs column (index 4 in default grid) becomes gender — hide the
+     8-track prefs by setting it to display:none in JS, OR collapse the
+     default grid to 7 tracks here. Native CSS solution: the row's HTML
+     order is photo · flag · name · prefs · gender · rating · hand · side,
+     so dropping the prefs slot needs JS coordination; for the phone
+     breakpoint we just suppress the prefs cell visually. */
+  .team__player-row > .team__row-prefs { display: none; }
+}
+
+/* ---------- QA m-9 — team page on desktop was 420px of content in 1920px
+   of dark void. Center the roster scroll content with a max-width so the
+   page reads as intentional, not "broken / still loading". */
+@media (min-width: 1024px) {
+  .team__roster-scroll > * {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .team__roster-divider {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ============================================================
+   HUB VIEW (Rec #6 — front-door page)
+   The bare team.html URL (no ?community= param) renders this view:
+   prominent "Watch Live Draft" card, secondary "Browse Pool" card,
+   then a 2-col grid of team tiles for captains to tap their community.
+   ============================================================ */
+#team-view-hub {
+  flex-direction: column;
+  /* padding-top: 0 (was 16px) so the .team__pool-pill-row at the top of
+     the hub view sits at the same 6px-from-view-top distance as on the
+     pool/community pages (where pill row provides its own 6px padding
+     and the section adds nothing on top). Keeps row 1 in a consistent
+     vertical position across every page. */
+  padding: 0 14px 32px;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+/* Primary CTA: WATCH LIVE DRAFT — gold border, pulsing icon */
+.hub__watch {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(255,183,3,0.16), rgba(255,183,3,0.04));
+  border: 1px solid var(--dark-accent);
+  border-radius: 10px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+.hub__watch:active { transform: scale(0.985); }
+.hub__watch::after {
+  content: '→';
+  margin-left: auto;
+  color: var(--dark-accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+.hub__watch-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  display: grid; place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  position: relative;
+}
+.hub__watch-icon::before {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dark-accent);
+  opacity: 0.45;
+  animation: hub-pulse 1.8s ease-in-out infinite;
+}
+@keyframes hub-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.45; }
+  50%      { transform: scale(1.18); opacity: 0; }
+}
+.hub__watch-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hub__watch-title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.hub__watch-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--dark-text-muted);
+  text-transform: uppercase;
+}
+
+/* Secondary CTA: BROWSE PLAYER POOL — same shape, quieter palette */
+.hub__pool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 10px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  margin-top: -8px;   /* hug the watch-live card so they read as a pair */
+}
+.hub__pool:active {
+  transform: scale(0.985);
+  border-color: var(--dark-text-muted);
+}
+.hub__pool::after {
+  content: '→';
+  margin-left: auto;
+  color: var(--dark-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+}
+.hub__pool-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--dark-bg);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-muted);
+  display: grid; place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.hub__pool-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hub__pool-title {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.hub__pool-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dark-text-faint);
+  text-transform: uppercase;
+}
+
+/* Section divider between CTAs and team grid */
+.hub__divider { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.hub__divider::before,
+.hub__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dark-border);
+}
+.hub__divider-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  color: var(--dark-text-faint);
+  text-transform: uppercase;
+}
+
+/* 2-column grid of team tiles (8 communities, logo + name only) */
+.hub__teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hub__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px 12px;
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  border-radius: 8px;
+  color: var(--dark-text);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.hub__tile:active {
+  transform: scale(0.97);
+  border-color: var(--dark-accent);
+}
+.hub__tile-logo {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--dark-bg);
+  overflow: hidden;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.hub__tile-logo img { width: 100%; height: 100%; object-fit: cover; }
+.hub__tile-name {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* "← HUB" tab inside the vertical POOL/TEAM pill — sits above POOL as a
+   third tab. Visually anchored to the pill so it reads as one cohesive
+   nav stack rather than a stray button. Anchor (not button) so it does
+   normal browser navigation to the home/hub URL. */
+.team__pill-tab--hub {
+  color: var(--dark-text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--dark-border);   /* subtle divider from POOL/TEAM */
+  margin-bottom: 2px;
+  padding-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  transition: color 0.12s ease;
+}
+.team__pill-tab--hub:hover { color: var(--dark-accent); }
+/* (Previously: .team__app[data-view="hub"] .team__pill-tab--hub { display: none; }
+   That rule made sense when HOME was just a back-nav chevron. With the new
+   horizontal pill, the HOME tab on the hub view should be visible AND show
+   as the active tab — handled by .team__pill-tab[aria-current="page"]). */
+
+/* ============================================================
+   PICK NOTIFICATION (Rec #5 — audit Variant B)
+   Spring-in + gold ring on the just-filled cell, plus a toast
+   banner sliding down from the top. JS adds .just-picked to the
+   cell and .show to #pick-toast when a NEW pick lands for this team.
+   ============================================================ */
+.team__roster-cell.just-picked {
+  animation:
+    cell-pick-spring 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 1 both,
+    cell-pick-glow   1.8s  ease-out                            1 both;
+  z-index: 3;   /* glow shouldn't be clipped by sibling cell borders */
+}
+@keyframes cell-pick-spring {
+  0%   { transform: scale(0.88); opacity: 0.55; }
+  55%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes cell-pick-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+  15%  { box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.85),
+                     0 0 36px 10px rgba(255, 183, 3, 0.50); }
+  65%  { box-shadow: 0 0 0 1px rgba(255, 183, 3, 0.30),
+                     0 0 14px 4px rgba(255, 183, 3, 0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 183, 3, 0); }
+}
+
+.pick-toast {
+  position: fixed;
+  /* QA C-3 — was top: 8px which collided with the sticky header. Push it
+     below the header (~52px content + 12px breathing room = 64px) so the
+     toast and "BANGKOK COMMUNITY CUP" title don't share Z-space. */
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  background: var(--dark-accent);
+  color: var(--dark-bg);
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow:
+    0 6px 24px rgba(255, 183, 3, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.10);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pick-toast .toast__pre {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  opacity: 0.75;
+  margin-right: 6px;
+}
+/* 3.2s total: 250ms slide-in, 2.15s hold, 800ms slide-out
+   (~1s longer than the original demo per user feedback). */
+.pick-toast.show {
+  animation: pick-toast-in 3.2s cubic-bezier(0.16, 1, 0.3, 1) 1 forwards;
+}
+@keyframes pick-toast-in {
+  0%   { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+  8%   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+  75%  { transform: translateX(-50%) translateY(0);     opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+}
+
+/* Honor the OS preference. Disable cell spring/glow and collapse the
+   toast to an instant fade so screen readers still hear the aria-live
+   announcement but motion-sensitive users don't get the bounce. */
+@media (prefers-reduced-motion: reduce) {
+  .team__roster-cell.just-picked,
+  .pick-toast.show {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ============================================================
+   CAPTAIN-CENTERED RADIAL ROSTER  (4×3 grid)
+   Ported from the draft-projector expanded-card layout. Replaces the
+   stacked Female / Male sections with a single 4-col × 3-row grid:
+        [F1]   [F-CAP]  [M-CAP]   [M1]    row 1
+        [F2]   [LOGO          ]   [M2]    row 2  ← logo spans 2 cells
+        [F3]   [F4   ]  [M4   ]   [M3]    row 3
+   Captains anchor the top-middle cells; drafted players radiate
+   outward — F counter-clockwise, M clockwise. Index-driven placement
+   via :nth-child aligns with femaleFilled / maleFilled arrays produced
+   by renderRoster() (index 0 = captain).
+   ============================================================ */
+.team__roster-radial {
+  display: grid;
+  /* `minmax(0, 1fr)` — not plain `1fr` — so the columns stay perfectly
+     equal regardless of any single cell's intrinsic min-content. Plain
+     `1fr` is `minmax(auto, 1fr)`: the captain cells (avatar + name +
+     rating + hand/side stack) have a min-content larger than the
+     fr-share, which steals width from neighbouring columns and makes
+     the captain cells render 3px wider than empty cells. minmax(0,..)
+     allows the cell to shrink below its min-content, forcing equal cols. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* No explicit row sizing — rows auto-size from the cells. The cells
+     declare `aspect-ratio: 1` so their height matches their (col-width)
+     width; setting `1fr` rows here would compete with that and force
+     cells to grow vertically to fill the flex parent's height, which
+     then drives col widths past viewport. */
+  gap: 6px;
+  padding: 14px 16px 16px;
+  --team-color: #ff8a3d;
+}
+/* Only the player cells get aspect-ratio: 1 — the logo plaque needs 2/1
+   (declared in its own rule below) so it fills 2 cols without doubling
+   its height. Keeping the plaque OUT of this selector group so the 2/1
+   rule isn't overridden by 1/1 here. */
+.team__roster-radial .team__roster-cell {
+  aspect-ratio: 1;
+  min-height: 0;
+}
+/* Slot placement — F ccw from F-CAP, M cw from M-CAP. */
+.team__roster-radial > .team__roster-female-row > .team__roster-cell:nth-child(1) { grid-column: 2; grid-row: 1; }  /* F captain */
+.team__roster-radial > .team__roster-female-row > .team__roster-cell:nth-child(2) { grid-column: 1; grid-row: 1; }  /* F1 */
+.team__roster-radial > .team__roster-female-row > .team__roster-cell:nth-child(3) { grid-column: 1; grid-row: 2; }  /* F2 */
+.team__roster-radial > .team__roster-female-row > .team__roster-cell:nth-child(4) { grid-column: 1; grid-row: 3; }  /* F3 */
+.team__roster-radial > .team__roster-female-row > .team__roster-cell:nth-child(5) { grid-column: 2; grid-row: 3; }  /* F4 */
+.team__roster-radial > .team__roster-male-row   > .team__roster-cell:nth-child(1) { grid-column: 3; grid-row: 1; }  /* M captain */
+.team__roster-radial > .team__roster-male-row   > .team__roster-cell:nth-child(2) { grid-column: 4; grid-row: 1; }  /* M1 */
+.team__roster-radial > .team__roster-male-row   > .team__roster-cell:nth-child(3) { grid-column: 4; grid-row: 2; }  /* M2 */
+.team__roster-radial > .team__roster-male-row   > .team__roster-cell:nth-child(4) { grid-column: 4; grid-row: 3; }  /* M3 */
+.team__roster-radial > .team__roster-male-row   > .team__roster-cell:nth-child(5) { grid-column: 3; grid-row: 3; }  /* M4 */
+
+/* Merged center logo plaque — col 2-3, row 2, as a 2:1 rectangle so the
+   row stays the same height as the other rows (logo width = 2 cols). */
+.team__roster-plaque-logo {
+  display: flex;
+  grid-column: 2 / span 2;
+  grid-row: 2;
+  aspect-ratio: 2 / 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--dark-surface);
+  border: 2px solid var(--team-color, var(--dark-border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.team__roster-plaque-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.team__roster-plaque-logo .team__plaque-fallback {
+  font-family: 'SuperBlue', Georgia, serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dark-text);
+  text-align: center;
+}
+
+/* Interior compaction — cells in the radial grid are smaller squares
+   than the legacy F/M section cells, so tighten everything inside. */
+.team__roster-radial .team__roster-cell {
+  padding: 6% 2% 4%;
+  gap: 3px;
+  min-height: 0;
+  justify-content: center;
+}
+.team__roster-radial .team__cell-avatar {
+  width: 48%;
+  height: auto;
+  aspect-ratio: 1;       /* Without this, text-only fallbacks (no <img> to prop
+                            up height via intrinsic ratio) collapse to line-height
+                            of the initial → oval. */
+  font-size: clamp(11px, 3.4vw, 16px);
+  margin-top: 0;
+}
+.team__roster-radial .team__cell-fname {
+  font-size: 10px;
+  margin-top: 2px;
+}
+.team__roster-radial .team__cell-rating {
+  font-size: 10px;
+}
+.team__roster-radial .team__cell-handside {
+  font-size: 8px;
+  gap: 3px;
+}
+.team__roster-radial .team__cell-flag .fi {
+  width: 11px;
+  height: 8px;
+}
+
+/* ============================================================
+   FORCE MOBILE VIEW on desktop  (opt-in via body.force-mobile-view)
+   The team app shell is built mobile-first. On wide viewports we
+   center it in a phone-shaped column (~480px) with dead space on
+   either side, the way Instagram / Threads web does for their
+   mobile-only flows. The body gets the page background so the
+   margins outside the column read as intentional, and the column
+   itself carries a soft drop-shadow to feel like a discrete device.
+   ============================================================ */
+@media (min-width: 600px) {
+  body.force-mobile-view {
+    /* Body becomes the desktop "canvas". The radial accent matches
+       the broadcast view's brand glow so it doesn't feel naked. */
+    background:
+      radial-gradient(ellipse at top, rgba(255,183,3,0.06) 0%, transparent 55%),
+      var(--dark-bg);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    overflow: auto;
+  }
+  body.force-mobile-view .team__app {
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--dark-bg);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--dark-border);
+    overflow: hidden;     /* internal views scroll, the shell does not */
+  }
+}
