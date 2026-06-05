@@ -78,6 +78,16 @@
     #view-silver-bracket.nox-show-consolation .bracket-single:not(.bracket-consolation--inline) { display: none; }
     #view-silver-bracket.nox-show-consolation .bracket-consolation--inline { display: flex; }
 
+    /* Gold's single "Knockout" pill must match the Silver toggle bar's box so the
+       round labels land at the EXACT same Y when switching Gold ↔ Silver. (2px
+       border to match the toggle pills' border; 12px bottom margin matches the
+       toggle bar's total height + 8px margin.) */
+    #view-gold-bracket .bracket-section__label { border: 2px solid var(--green); margin: 0 auto 12px; }
+    /* Silver consolation shows ALONE now (toggle), not stacked under the knockout,
+       so drop the inline-stack separator border + 0.8vh top padding — that was
+       pushing its round labels ~10px below the knockout's. */
+    #view-silver-bracket .bracket-consolation--inline { border-top: none; padding-top: 0; }
+
     /* Flag-badge outline — BLACK ring (overrides the engine's white) so light
        flags (e.g. Japan) stay distinct. UNSCOPED on purpose: it must apply at
        every width. The badge SIZE override lives in the >=1024px block (it is
@@ -178,9 +188,10 @@
          the rounds line up vertically — Consolation Semi-Finals sits directly
          under Knockout Semi-Finals, etc. No column override needed. */
 
-      /* Consolation columns have no round titles now → no need to reserve the
-         title row of space at the top of each column. */
-      .bracket-consolation--inline .bracket__matches { padding-top: 4px; }
+      /* Consolation now gets round titles injected by the toggle script (so the
+         labels match the knockout's position) → reserve the same title-row space
+         as the knockout (26px) so cards don't overlap the labels. */
+      .bracket-consolation--inline .bracket__matches { padding-top: 26px; }
 
       /* Match time (only shown when there's no score yet) sits out of flow,
          vertically centered on the right with a white background so the divider
@@ -429,12 +440,35 @@
   (function () {
     var VIEW_ID = 'view-silver-bracket';
 
+    // Give the consolation columns the same round-title labels as the knockout,
+    // in the same column positions, so toggling doesn't move them and the
+    // consolation isn't label-less. Reads the knockout's titles by column index.
+    function labelConsolation(view) {
+      var ko = view.querySelector('.bracket-single:not(.bracket-consolation--inline)');
+      var co = view.querySelector('.bracket-consolation--inline');
+      if (!ko || !co) return;
+      var koTitles = [].map.call(ko.querySelectorAll('.bracket__round'), function (r) {
+        var t = r.querySelector('.bracket__round-title'); return t ? t.textContent : '';
+      });
+      [].forEach.call(co.querySelectorAll('.bracket__round'), function (rd, i) {
+        if (rd.querySelector('.bracket__round-title')) return;   // already labelled
+        if (!rd.querySelector('.bracket-match')) return;         // empty spacer column → no label
+        var label = koTitles[i];
+        if (!label) return;
+        var t = document.createElement('div');
+        t.className = 'bracket__round-title';
+        t.textContent = label;
+        rd.insertBefore(t, rd.firstChild);
+      });
+    }
+
     function ensureBar() {
       var view = document.getElementById(VIEW_ID);
       if (!view) return;
-      if (view.querySelector('.nox-silver-toggle')) return;        // already present
       var consolation = view.querySelector('.bracket-consolation--inline');
       if (!view.querySelector('.bracket-single') || !consolation) return; // not rendered yet
+      labelConsolation(view);
+      if (view.querySelector('.nox-silver-toggle')) return;        // bar already present
       var showCons = view.classList.contains('nox-show-consolation');
       var bar = document.createElement('div');
       bar.className = 'nox-silver-toggle';
