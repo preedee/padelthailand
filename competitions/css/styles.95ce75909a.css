@@ -1163,6 +1163,16 @@ img.avatar {
   color: rgba(0, 0, 0, 0.5);
   padding: 8px 4px 2px;
 }
+/* Same provisional-seed treatment in the knockout bracket cards. */
+.bracket-match__team-name--provisional {
+  font-style: italic;
+}
+.bracket-match__prov-star {
+  color: #b8860b;
+  font-style: normal;
+  font-weight: 700;
+  margin-left: 2px;
+}
 
 .match-card__scores {
   display: flex;
@@ -1176,6 +1186,9 @@ img.avatar {
   color: var(--green);
   min-width: 20px;
   text-align: center;
+  /* tabular-nums: every digit (and the bold winner sets) takes the same advance
+     width, so the per-set columns line up vertically across both team rows. */
+  font-variant-numeric: tabular-nums;
 }
 
 .match-card__set-score--high {
@@ -1301,8 +1314,13 @@ img.avatar {
 }
 
 .bracket-match__set {
-  min-width: 14px;
+  min-width: 16px;
   text-align: center;
+  /* Uniform size + tabular figures so the winner row (larger) and loser row
+     (smaller) keep their per-set columns vertically aligned; the winner is
+     distinguished by weight (--high), not by digit size. */
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
 }
 
 .bracket-match__set--high {

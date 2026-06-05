@@ -166,10 +166,17 @@ const Bracket = (() => {
       const circle = t => `<span class="avatar avatar--fallback" style="width:20px;height:20px">${t}</span>`;
       return circle(i1) + circle(i2);
     };
+    // Provisional seeds (QF teams pulled from a still-running group stage): show
+    // the name in italics with a trailing amber * — mirrors the All Matches view,
+    // so the bracket's "seeds are provisional" banner has a per-team marker too.
+    const prov = !!match.provisionalSeed;
+    const nameHTML = nm => prov
+      ? `<span class="bracket-match__team-name bracket-match__team-name--provisional">${nm}<span class="bracket-match__prov-star">*</span></span>`
+      : `<span class="bracket-match__team-name">${nm}</span>`;
     const team1Avatars = avatar(match.team1Code, team1Name);
-    const team1Content = `<div class="team-with-avatars">${team1Avatars}<span class="bracket-match__team-name">${team1Name}</span></div>`;
+    const team1Content = `<div class="team-with-avatars">${team1Avatars}${nameHTML(team1Name)}</div>`;
     const team2Avatars = avatar(match.team2Code, team2Name);
-    const team2Content = `<div class="team-with-avatars">${team2Avatars}<span class="bracket-match__team-name">${team2Name}</span></div>`;
+    const team2Content = `<div class="team-with-avatars">${team2Avatars}${nameHTML(team2Name)}</div>`;
 
     const dateStr = Data.isMultiDay() ? shortDate(match.date) : '';
     const timeStr = match.time || '';

@@ -464,7 +464,8 @@ const Data = (() => {
       section,
       division,
       date: m.date,
-      time: m.time
+      time: m.time,
+      provisionalSeed: !!m.provisionalSeed
     };
   }
 
