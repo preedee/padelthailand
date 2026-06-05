@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/tps-favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.f5c67ab10e.css">
+  <link rel="stylesheet" href="css/styles.4a6b208887.css">
   <style>
     /* NOX-only cosmetic overrides (per-competition; keeps shared engine CSS intact).
        Nav + footer text scale with viewport height (clamped), matching the
@@ -227,11 +227,13 @@
     }
 
     /* ============================================================
-       PHONE (≤430px) — NOX-only mobile refinements.
-       Layered on top of the shared engine's ≤768px tier; scoped to
-       this nox-only shell so Community Cup / shared engine are intact.
+       MOBILE (≤768px) — NOX-only mobile refinements.
+       Matches the shared engine's own mobile breakpoint (≤768px) — using
+       430px here previously meant large phones (e.g. iPhone Pro Max ~440px
+       CSS-wide) fell through and got none of these fixes. Scoped to this
+       nox-only shell so Community Cup / shared engine are intact.
        ============================================================ */
-    @media (max-width: 430px) {
+    @media (max-width: 768px) {
 
       /* ---- Header: the long tournament title was colliding with the
          left event logo and right partner logo. Shrink both logos,
@@ -345,9 +347,9 @@
       <span class="footer__timestamp" id="last-updated">Last updated: --</span>
     </footer>
   </div>
-  <script src="js/data.90ef907137.js"></script>
+  <script src="js/data.194099816c.js"></script>
   <script src="js/standings.d151844ce0.js"></script>
-  <script src="js/matches.37f23775ee.js"></script>
+  <script src="js/matches.5baaee3648.js"></script>
   <script src="js/bracket.4039b6ce7e.js"></script>
   <script src="js/app.cde7e8be3b.js"></script>
 </body>

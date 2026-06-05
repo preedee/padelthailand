@@ -1145,6 +1145,25 @@ img.avatar {
   font-size: 15px;
 }
 
+/* Provisional knockout seeds (teams from a still-running group stage): italic
+   name + a small amber asterisk, with a matching footnote under the grid. */
+.match-card__team-name--provisional {
+  font-style: italic;
+}
+.match-card__prov-star {
+  color: #b8860b;
+  font-style: normal;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.matches-grid__footnote {
+  font-family: var(--font);
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5);
+  padding: 8px 4px 2px;
+}
+
 .match-card__scores {
   display: flex;
   gap: 8px;

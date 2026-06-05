@@ -800,14 +800,27 @@ const Data = (() => {
   function maskProvisionalSeeds() {
     const minPlayed = getConfig('provisional_min_group_matches', '1');
     const readyByPrefix = {};
+    const completeByPrefix = {};
     const ready = prefix => (prefix in readyByPrefix)
       ? readyByPrefix[prefix]
       : (readyByPrefix[prefix] = groupSeedsReady(prefix, minPlayed));
+    const groupDone = prefix => {
+      if (prefix in completeByPrefix) return completeByPrefix[prefix];
+      const gm = groupMatchesFor(prefix);
+      return (completeByPrefix[prefix] = gm.length > 0 && gm.every(m => hasScores(m)));
+    };
     matches.forEach(m => {
       if (!isSeedSlotCode(m.team1Code) && !isSeedSlotCode(m.team2Code)) return;
-      if (ready((m.division || '').toLowerCase())) return;
-      if (isSeedSlotCode(m.team1Code)) m.team1 = seedLabel(m.team1Code);
-      if (isSeedSlotCode(m.team2Code)) m.team2 = seedLabel(m.team2Code);
+      const prefix = (m.division || '').toLowerCase();
+      if (!ready(prefix)) {
+        // Gate closed — hide the live order behind seed-label placeholders.
+        if (isSeedSlotCode(m.team1Code)) m.team1 = seedLabel(m.team1Code);
+        if (isSeedSlotCode(m.team2Code)) m.team2 = seedLabel(m.team2Code);
+      } else if (!groupDone(prefix)) {
+        // Gate open but group stage still running — real names show, but they can
+        // still change. Flag so views can mark them provisional (e.g. italic + *).
+        m.provisionalSeed = true;
+      }
     });
   }
 

@@ -192,6 +192,12 @@ const Matches = (() => {
       </div>`;
     }
 
+    // Footnote: explain the * once, only while some shown match is provisionally
+    // seeded (knockout teams from a still-running group stage).
+    if (matches.some(m => m.provisionalSeed)) {
+      html += `<div class="matches-grid__footnote"><span class="match-card__prov-star">*</span> Seeding provisional until the group stage finishes</div>`;
+    }
+
     // Only rebuild the DOM when the content actually changed, so the poll
     // (every ~5s) doesn't churn the grid.
     if (html !== lastMatchesHTML) {
@@ -346,11 +352,19 @@ const Matches = (() => {
       // One-line team layout (inline avatars + country flags + team name),
       // same format as the Standings page. Code-keyed avatar+flag lookup with
       // a name-based fallback on older engines.
+      // Provisional seeds (knockout teams pulled from a still-running group
+      // stage): show the name in italics with a trailing * and a footnote below
+      // the grid, so it's clear the matchup can still change.
+      const prov = !!match.provisionalSeed;
       const inlineTeam = (code, name) => {
         const avatars = Data.getTeamAvatarFlagByCode
           ? Data.getTeamAvatarFlagByCode(code, name, 30)
           : Data.getTeamAvatarsHTML(name, 30);
-        return `<div class="team-with-avatars">${avatars}<span class="match-card__team-name">${name || 'TBD'}</span></div>`;
+        const nm = name || 'TBD';
+        const nameHTML = prov
+          ? `<span class="match-card__team-name match-card__team-name--provisional">${nm}<span class="match-card__prov-star">*</span></span>`
+          : `<span class="match-card__team-name">${nm}</span>`;
+        return `<div class="team-with-avatars">${avatars}${nameHTML}</div>`;
       };
       team1HTML = inlineTeam(match.team1Code, match.team1);
       team2HTML = inlineTeam(match.team2Code, match.team2);
