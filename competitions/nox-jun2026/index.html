@@ -286,9 +286,12 @@
          We previously stacked rounds vertically, but the horizontal scroll is
          preferred. Widen the cards (engine mobile = 200px) so team names — esp.
          provisional seeds with the trailing * — fit without fragmenting; wrap at
-         spaces, not mid-word. ---- */
-      .bracket__round { min-width: 280px; }
-      .bracket-match__team-name { word-break: normal; overflow-wrap: normal; }
+         spaces, not mid-word. Bump the name font (engine mobile = 12px) so it's
+         in proportion with the 40px avatars; widen columns to keep names on one
+         line at the larger size. ---- */
+      .bracket__round { min-width: 300px; }
+      .bracket-match__team { font-size: 16px; }
+      .bracket-match__team-name { word-break: normal; overflow-wrap: normal; font-size: 16px; line-height: 1.3; }
 
       /* ---- All Matches: keep the engine's original per-court layout (the
          "old layout" — court headers + readable cards). With 3 courts they
