@@ -54,6 +54,17 @@
       text-transform: uppercase;
     }
 
+    /* Flag-badge outline — BLACK ring (overrides the engine's white) so light
+       flags (e.g. Japan) stay distinct. UNSCOPED on purpose: it must apply at
+       every width. The badge SIZE override lives in the >=1024px block (it is
+       tied to the 50px projector avatars); only the colour belongs here. */
+    .team-stacked .avatar-flag__badge,
+    .bracket-match .avatar-flag__badge,
+    .match-card .team-with-avatars .avatar-flag__badge,
+    .standings-divisions--combined .avatar-flag__badge {
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.35);
+    }
+
     /* Brackets + All Matches: same viewport-height scaling as Standings.
        Gated to >=1024px so mobile keeps the engine's own tiers. 1080px ~= prior sizes. */
     @media (min-width: 1024px) {
@@ -108,21 +119,23 @@
         height: 50px !important;
         font-size: 24px !important;
       }
-      /* Reclaim vertical space so 50px avatars still fit the Silver bracket. */
-      .bracket-single:not(.bracket-consolation--inline) .bracket-match__team { padding: 4px 12px !important; }
+      /* Reclaim vertical space so 50px avatars still fit the Silver bracket with
+         a FULL 8-team field (Quarter-Finals has 8 rows). Tightened after the
+         venue check showed the real seeded data overflowed by ~45px. Bracket
+         height is stable (names are ellipsized/no-wrap; scores add no height). */
+      .bracket-single:not(.bracket-consolation--inline) .bracket-match__team { padding: 2px 12px !important; }
       .bracket-consolation--inline .bracket-match__team { padding: 2px 12px !important; }
-      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 20px !important; }
-      .bracket-single .bracket-match { margin: 1px 0 !important; }
-      /* Flag badge size, consistent across All Matches + knockout brackets +
-         Standings. Reduced ~16% (24x17 -> 20x14) per request — flags read a
-         touch smaller relative to the avatars. BLACK outline (was white) so
-         light flags (e.g. Japan: white field) stay distinct from the card. */
+      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 14px !important; }
+      .bracket-single .bracket-match { margin: 0 0 !important; }
+      /* Flag badge size: reduced ~16% (24x17 -> 20x14) per request — flags read
+         a touch smaller relative to the 50px projector avatars. SIZE only is
+         projector-scoped; the BLACK outline lives in an unscoped rule below so
+         it applies on mobile too (see flag-badge-outline rule near the top). */
       .team-stacked .avatar-flag__badge,
       .bracket-match .avatar-flag__badge,
       .match-card .team-with-avatars .avatar-flag__badge,
       .standings-divisions--combined .avatar-flag__badge {
         width: 20px; height: 14px;
-        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.35);
       }
       /* Bracket teams on a single line (match Standings / All Matches): the
          engine default lets long names wrap onto a second row — keep one line. */
