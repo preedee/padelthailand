@@ -54,6 +54,30 @@
       text-transform: uppercase;
     }
 
+    /* ===== Silver bracket KNOCKOUT / CONSOLATION toggle =====
+       Silver has two brackets (knockout + consolation). Instead of stacking them
+       (which crammed the cards), show ONE at a time via a pill toggle bar — so the
+       knockout renders in the same single-bracket format as Gold (and at 50px).
+       The toggle bar is injected + kept alive by the inline script at the bottom;
+       the active-tab state is a class on #view-silver-bracket (survives the 30s
+       poll re-render). Default = knockout. */
+    #view-silver-bracket .bracket-section__label,
+    #view-silver-bracket .bracket-consolation__label { display: none !important; }
+    .nox-silver-toggle {
+      display: flex; gap: 12px; justify-content: center; margin: 0 auto 8px;
+    }
+    .nox-silver-toggle .nox-pill {
+      font: 700 var(--fs-title, 18px)/1.25 var(--font, inherit);
+      letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+      padding: 3px 26px; border-radius: 999px;
+      background: transparent; color: var(--green); border: 2px solid var(--green);
+    }
+    .nox-silver-toggle .nox-pill.active { background: var(--green); color: #fff; }
+    /* Default: knockout shown, consolation hidden. */
+    #view-silver-bracket .bracket-consolation--inline { display: none; }
+    #view-silver-bracket.nox-show-consolation .bracket-single:not(.bracket-consolation--inline) { display: none; }
+    #view-silver-bracket.nox-show-consolation .bracket-consolation--inline { display: flex; }
+
     /* Flag-badge outline — BLACK ring (overrides the engine's white) so light
        flags (e.g. Japan) stay distinct. UNSCOPED on purpose: it must apply at
        every width. The badge SIZE override lives in the >=1024px block (it is
@@ -102,40 +126,29 @@
       /* T4 small — medal place + on-court badge */
       .team-stacked__place,
       .match-card__on-court          { font-size: var(--fs-small); }
-      /* Projector avatars. Standings + All Matches = 50px (they have the room).
-         Brackets = 40px: the Silver knockout (full 8-team QF + consolation) can't
-         breathe at 50px on a 1080p screen — at 50px the cards crammed, the first
-         QF card overlapped the round title, and the bottom card clipped under the
-         footer. 40px lets the bracket fit with proper spacing (restored below). */
-      .match-card .team-with-avatars .avatar {
+      /* Projector avatars: 50px everywhere (Standings, All Matches, Brackets).
+         Silver now shows ONE bracket at a time via the KNOCKOUT/CONSOLATION toggle
+         (see below), so it has the same room as Gold and 50px fits comfortably. */
+      .match-card .team-with-avatars .avatar,
+      .team-stacked .avatar,
+      .bracket-match .avatar {
         width: 50px !important;
         height: 50px !important;
         min-width: 50px !important; min-height: 50px !important;
       }
-      .match-card .team-with-avatars .avatar--fallback {
+      .match-card .team-with-avatars .avatar--fallback,
+      .team-stacked .avatar--fallback,
+      .bracket-match .avatar--fallback {
         width: 50px !important;
         height: 50px !important;
         font-size: 24px !important;
       }
-      .team-stacked .avatar,
-      .bracket-match .avatar {
-        width: 40px !important;
-        height: 40px !important;
-        min-width: 40px !important; min-height: 40px !important;
-      }
-      .team-stacked .avatar--fallback,
-      .bracket-match .avatar--fallback {
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 20px !important;
-      }
-      /* Bracket spacing restored to comfortable now that avatars are 40px: the
-         round title clears the first card, cards have a small gap, and the whole
-         Silver bracket fits one screen with the flex layout spreading cards out. */
-      .bracket-single:not(.bracket-consolation--inline) .bracket-match__team { padding: 5px 12px !important; }
-      .bracket-consolation--inline .bracket-match__team { padding: 3px 12px !important; }
-      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 24px !important; }
-      .bracket-single .bracket-match { margin: 3px 0 !important; }
+      /* Comfortable bracket spacing (each bracket shows alone now): round title
+         clears the first card, cards have a real gap. */
+      .bracket-single:not(.bracket-consolation--inline) .bracket-match__team { padding: 6px 12px !important; }
+      .bracket-consolation--inline .bracket-match__team { padding: 6px 12px !important; }
+      .bracket-single:not(.bracket-consolation--inline) .bracket__matches { padding-top: 26px !important; }
+      .bracket-single .bracket-match { margin: 4px 0 !important; }
 
       /* All Matches: cards 80% width (20% narrower) so the score isn't so far
          right, and CENTERED in each court column. The court header + its bottom
@@ -407,5 +420,54 @@
   <script src="js/matches.5baaee3648.js"></script>
   <script src="js/bracket.aba0e61686.js"></script>
   <script src="js/app.cde7e8be3b.js"></script>
+  <!-- Silver KNOCKOUT/CONSOLATION toggle. Injects a pill bar into
+       #view-silver-bracket and shows one bracket at a time. The active tab is a
+       class on the (persistent) view element, so it survives bracket.js's poll
+       re-renders; the bar itself is re-injected by a MutationObserver. Click is
+       handled by delegation on document so it never needs re-binding. -->
+  <script>
+  (function () {
+    var VIEW_ID = 'view-silver-bracket';
+
+    function ensureBar() {
+      var view = document.getElementById(VIEW_ID);
+      if (!view) return;
+      if (view.querySelector('.nox-silver-toggle')) return;        // already present
+      var consolation = view.querySelector('.bracket-consolation--inline');
+      if (!view.querySelector('.bracket-single') || !consolation) return; // not rendered yet
+      var showCons = view.classList.contains('nox-show-consolation');
+      var bar = document.createElement('div');
+      bar.className = 'nox-silver-toggle';
+      bar.setAttribute('role', 'tablist');
+      bar.innerHTML =
+        '<button class="nox-pill' + (showCons ? '' : ' active') + '" data-nox-tab="knockout" role="tab">Knockout</button>' +
+        '<button class="nox-pill' + (showCons ? ' active' : '') + '" data-nox-tab="consolation" role="tab">Consolation</button>';
+      view.insertBefore(bar, view.firstChild);
+    }
+
+    // Click handling via delegation — survives every re-render.
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.nox-silver-toggle .nox-pill') : null;
+      if (!btn) return;
+      var view = document.getElementById(VIEW_ID);
+      if (!view) return;
+      var tab = btn.getAttribute('data-nox-tab');
+      view.classList.toggle('nox-show-consolation', tab === 'consolation');
+      view.querySelectorAll('.nox-silver-toggle .nox-pill').forEach(function (p) {
+        p.classList.toggle('active', p.getAttribute('data-nox-tab') === tab);
+      });
+    });
+
+    // Keep the bar alive across bracket.js re-renders of the silver view.
+    function start() {
+      var view = document.getElementById(VIEW_ID);
+      if (!view) { setTimeout(start, 500); return; }
+      ensureBar();
+      new MutationObserver(function () { ensureBar(); }).observe(view, { childList: true });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  })();
+  </script>
 </body>
 </html>
