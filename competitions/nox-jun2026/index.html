@@ -214,6 +214,20 @@
       .standings-divisions--combined { gap: 12px; }
       .standings-divisions--combined .standings-grid { gap: 12px; }
       .standings-divisions--combined .standings-legend { margin-top: 2px; padding-top: 4px; }
+      /* Bigger projector avatars in Standings (was ~43px). The ~65px row has
+         spare height, so 56px fits cleanly WITHOUT growing rows → standings
+         still fits one screen (verified at 1920×1080). Brackets are left at
+         ~43px: the Silver bracket is already at the no-scroll limit. */
+      .standings-divisions--combined .team-with-avatars .avatar,
+      .standings-divisions--combined .team-with-avatars .avatar--fallback {
+        width: clamp(40px, 5.2vh, 56px) !important;
+        height: clamp(40px, 5.2vh, 56px) !important;
+        min-width: clamp(40px, 5.2vh, 56px) !important;
+        min-height: clamp(40px, 5.2vh, 56px) !important;
+      }
+      .standings-divisions--combined .team-with-avatars .avatar--fallback {
+        font-size: clamp(18px, 2.4vh, 26px) !important;
+      }
     }
 
     /* Footer QR: hide on phones/tablets. The QR is injected by data.js at its
