@@ -284,7 +284,11 @@
       /* ---- Brackets: keep the engine's default HORIZONTAL-SCROLL layout
          (rounds side-by-side, swipe to reach the Final) — per user preference.
          We previously stacked rounds vertically, but the horizontal scroll is
-         preferred. No override here. ---- */
+         preferred. Widen the cards (engine mobile = 200px) so team names — esp.
+         provisional seeds with the trailing * — fit without fragmenting; wrap at
+         spaces, not mid-word. ---- */
+      .bracket__round { min-width: 280px; }
+      .bracket-match__team-name { word-break: normal; overflow-wrap: normal; }
 
       /* ---- All Matches: keep the engine's original per-court layout (the
          "old layout" — court headers + readable cards). With 3 courts they
