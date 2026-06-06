@@ -602,6 +602,16 @@
       border-radius: 999px !important;
       padding: 2px 12px !important;
       z-index: 2;
+      /* Compact pill on the right, centered on the divider — on ALL widths. On
+         mobile the engine left this as a full-width block (absolute was desktop-
+         only), so it stretched across the whole card. */
+      position: absolute !important;
+      top: 50% !important;
+      right: 10px !important;
+      left: auto !important;
+      width: auto !important;
+      margin: 0 !important;
+      transform: translateY(-50%) !important;
     }
 
     /* ---- Toggle pills on dark ---- */
@@ -673,9 +683,22 @@
                   0 8px 22px rgba(46,194,126,0.10),
                   0 6px 18px rgba(0,0,0,0.45) !important;
     }
+    /* Match-card divider: the engine's line is team-2's border-top, which sits a
+       few px below the true vertical center (there's a small row gap). Replace it
+       with a pseudo-line at the exact 50% so it — and the On Court pill, which is
+       centered on the same midpoint — line up perfectly. Works on all widths. */
+    .theme-dark .match-card__teams { position: relative; }
+    .theme-dark .match-card__teams .match-card__team + .match-card__team { border-top-color: transparent !important; }
+    .theme-dark .match-card__teams::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 50%;
+      height: 1px; background: rgba(255,255,255,0.12);
+      transform: translateY(-50%); z-index: 0; pointer-events: none;
+    }
+
     /* The "On Court" badge → a filled green pill so it reads as a status chip,
        not stray green text. */
     .theme-dark .match-card__on-court {
+      z-index: 1;
       display: inline-block;
       background: #2ec27e;
       color: #06231a !important;
@@ -840,7 +863,10 @@
       });
     }
     /* The engine renders the badge as "On<br>Court" (a hard line break), so CSS
-       white-space:nowrap can't keep it on one line. Swap the <br> for a space. */
+       white-space:nowrap can't keep it on one line — swap the <br> for a space.
+       Also vertically center the pill exactly on the divider line between the two
+       team rows (the engine centers it on the teams-box midpoint, which sits a few
+       px above the divider). Applies on mobile + desktop. */
     function fixOnCourt(root) {
       var pills = (root || document).querySelectorAll('.match-card__on-court');
       [].forEach.call(pills, function (o) {
