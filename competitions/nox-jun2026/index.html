@@ -36,30 +36,21 @@
     /* Doubled QR (shared CSS = 36px); scales with viewport height, caps at 72px. */
     .footer__qr img { width: clamp(48px, 6.8vh, 72px); height: clamp(48px, 6.8vh, 72px); }
 
-    /* Light/dark theme toggle button — lives in the header (brand brown in both
-       themes), so a translucent white circular button reads well either way. */
-    .header__right { gap: 12px; }
+    /* Light/dark theme toggle — lives in the FOOTER (brand brown in both themes),
+       so a translucent white circular button reads well either way. */
+    .footer__timestamp { display: none !important; }   /* "Last updated" removed */
     .nox-theme-toggle {
       flex: 0 0 auto;
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.55);
-      background: rgba(255,255,255,0.12);
-      color: #fff; font-size: 18px; line-height: 1; cursor: pointer;
+      background: rgba(255,255,255,0.14);
+      color: #fff; font-size: 17px; line-height: 1; cursor: pointer;
       display: inline-flex; align-items: center; justify-content: center;
       padding: 0; transition: background 0.2s ease;
     }
-    .nox-theme-toggle:hover { background: rgba(255,255,255,0.24); }
-    /* Mobile: the header is too tight for a 3rd element (it overlapped the nox
-       logo), so float the toggle as a small button above the bottom nav/footer.
-       Darker translucent bg so it reads on both the light and dark backgrounds. */
+    .nox-theme-toggle:hover { background: rgba(255,255,255,0.26); }
     @media (max-width: 768px) {
-      .nox-theme-toggle {
-        position: fixed; right: 12px; bottom: 104px; z-index: 300;
-        width: 38px; height: 38px; font-size: 18px;
-        background: rgba(10,22,18,0.62);
-        border-color: rgba(255,255,255,0.6);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.35);
-      }
+      .nox-theme-toggle { width: 30px; height: 30px; font-size: 16px; }
     }
 
     /* Bracket section labels ("KNOCKOUT" / "CONSOLATION") as a centered filled
@@ -434,6 +425,12 @@
        match cards, court headers) and adds depth, connectors + a winner check.
        ============================================================ */
 
+    /* Dark-theme accent = SILVER (was gold/yellow). Overriding --dark-accent
+       re-colours everything that uses it (round titles, nav active tab, court
+       headers, KNOCKOUT pill, winner text, champion, etc.). The few hardcoded
+       rgba(194,200,208,…) accents are swapped to silver below. */
+    .theme-dark { --dark-accent: #C2C8D0; }
+
     /* ---- Chrome the engine theme-dark misses ---- */
     .theme-dark .content-area,
     .theme-dark .view { background: var(--dark-bg, #0A1612); }
@@ -547,7 +544,7 @@
     .theme-dark .view-bar__tab.active::after { width: 38px; }
     @media (hover: hover) {
       .theme-dark .view-bar__tab:not(.active):hover { color: var(--dark-text, #E8F0EC); }
-      .theme-dark .view-bar__tab:not(.active):hover::after { width: 22px; background: rgba(255,183,3,0.45); }
+      .theme-dark .view-bar__tab:not(.active):hover::after { width: 22px; background: rgba(194,200,208,0.45); }
     }
 
     /* #3 Scoreboard figures: tabular (fixed-width) numerals + tighter tracking
@@ -776,8 +773,8 @@
        2nd-place card a subtle silver tint. */
     .theme-dark .bracket-match--gold {
       border: 1.5px solid var(--dark-accent, #FFB703) !important;
-      background-image: linear-gradient(180deg, rgba(255,183,3,0.16), rgba(255,183,3,0.03)) !important;
-      box-shadow: 0 0 0 1px rgba(255,183,3,0.25), 0 8px 22px rgba(255,183,3,0.12), 0 6px 18px rgba(0,0,0,0.45) !important;
+      background-image: linear-gradient(180deg, rgba(194,200,208,0.16), rgba(194,200,208,0.03)) !important;
+      box-shadow: 0 0 0 1px rgba(194,200,208,0.25), 0 8px 22px rgba(194,200,208,0.12), 0 6px 18px rgba(0,0,0,0.45) !important;
     }
     .theme-dark .bracket-match--gold .team-stacked__place,
     .theme-dark .bracket-match--gold .bracket-match__team-name { color: var(--dark-accent, #FFB703) !important; }
@@ -817,7 +814,6 @@
         <p>Dashboard</p>
       </div>
       <div class="header__right">
-        <button type="button" id="nox-theme-toggle" class="nox-theme-toggle" aria-label="Toggle light or dark theme" title="Toggle light / dark"></button>
         <img src="/assets/tps-logo-green-on-white.png" alt="Partner Logo" class="header__tps-logo">
       </div>
     </header>
@@ -840,7 +836,10 @@
         <img src="/assets/favicon.png" alt="The Padel Society" class="footer__tps-logo">
         <span class="footer__powered-text">Powered by The Padel Society</span>
       </div>
-      <span class="footer__timestamp" id="last-updated">Last updated: --</span>
+      <!-- #last-updated kept (hidden via CSS) so data.js can still write to it; the
+           "Last updated" text is removed visually per request. -->
+      <span class="footer__timestamp" id="last-updated" hidden>Last updated: --</span>
+      <button type="button" id="nox-theme-toggle" class="nox-theme-toggle" aria-label="Toggle light or dark theme" title="Toggle light / dark"></button>
     </footer>
   </div>
   <script src="js/data.9fb94fe1b7.js"></script>
