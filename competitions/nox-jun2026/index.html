@@ -379,6 +379,10 @@
       #view-matches .match-card__team--loser .match-card__team-name { font-size: 16px; }
       #view-matches .match-card__set-score { font-size: 15px; }
       #view-matches .match-card__scores { gap: 4px; }   /* match bracket's tighter score gap */
+      /* Let names use natural flow and WRAP if a tight card (3-set finals: name +
+         three score cells) would otherwise clip — same as the bracket, which
+         wraps long names. Keeps every name fully visible. */
+      #view-matches .match-card__team-name { white-space: normal; line-height: 1.2; }
 
       /* ---- Bigger player avatars on mobile (were 26px from the JS width attr,
          too small to recognise faces). 40px across Standings / All Matches /
