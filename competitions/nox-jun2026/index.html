@@ -243,17 +243,26 @@
     .group-card__table th:last-child,
     .group-card__table td:last-child  { padding-right: 18px; }
 
-    /* Right-align the MP/W/L/GD values (and their column headers, so they line
-       up above the numbers) in their cells. */
-    .group-card__table th:not(:first-child),
-    .group-card__table td:not(:first-child) { text-align: right; }
+    /* MP/W/L/GD: headers centered. MP/W/L values centered too; only GD values are
+       right-aligned (it's the wider 2-digit ± column). */
+    .group-card__table th:not(:first-child) { text-align: center; }
+    .group-card__table td:not(:first-child) { text-align: center; }
+    .group-card__table td:last-child:not(:first-child) { text-align: right; }
 
     .group-card__table th:not(:first-child) { width: 52px; }   /* MP/W/L/GD — single digits + a -10 GD */
+    /* GD column ~20% wider — it can hold a 2-digit (±) value like -18. Higher
+       specificity (:last-child:not(:first-child)) so it wins per tier. */
+    .group-card__table th:last-child:not(:first-child),
+    .group-card__table td:last-child:not(:first-child) { width: 62px; }
     @media (min-width: 1024px) {
       .group-card__table th:not(:first-child) { width: 50px; } /* tightened from 66 → more room for names */
+      .group-card__table th:last-child:not(:first-child),
+      .group-card__table td:last-child:not(:first-child) { width: 60px; }
     }
     @media (min-width: 1024px) and (min-height: 1000px) {
       .group-card__table th:not(:first-child) { width: 52px; } /* 1080p TV: tightened from 75 → names get the space */
+      .group-card__table th:last-child:not(:first-child),
+      .group-card__table td:last-child:not(:first-child) { width: 62px; }
     }
     @media (max-width: 767px) {
       /* Phones: the MP/W/L/GD columns were 57px each (~228px total), squeezing
@@ -263,6 +272,9 @@
       .group-card__table td:not(:first-child) {
         width: 32px; min-width: 32px; padding-left: 2px; padding-right: 2px;
       }
+      /* GD ~20% wider here too (2-digit ± value). */
+      .group-card__table th:last-child:not(:first-child),
+      .group-card__table td:last-child:not(:first-child) { width: 38px; min-width: 38px; }
       /* Let the team-name column use all the freed space (engine caps it at
          180px on mobile); it still ellipsises rather than overflowing. */
       .group-card__table td:first-child { max-width: none; }
@@ -387,11 +399,353 @@
         padding: 24px;
       }
     }
+
+    /* ============================================================
+       DARK "BROADCAST" THEME (whole dashboard) — Premier-Padel-inspired.
+       The engine's .theme-dark (class added to .dashboard) handles the page
+       bg, sidebar, footer, view titles and bracket cards (winner → gold).
+       Below fills the gaps it doesn't cover (header, nav, standings table,
+       match cards, court headers) and adds depth, connectors + a winner check.
+       ============================================================ */
+
+    /* ---- Chrome the engine theme-dark misses ---- */
+    .theme-dark .content-area,
+    .theme-dark .view { background: var(--dark-bg, #0A1612); }
+    /* #R2-1 Loading state: the engine's .loading text is a DARK GREEN
+       (rgb 58,92,54) — on the near-black dark bg it was effectively invisible.
+       Re-colour to muted light text so "Loading tournament data..." reads while
+       data is being fetched. */
+    .theme-dark .loading {
+      color: var(--dark-text-muted, #9CA3AF) !important;
+      text-align: center;
+    }
+    /* #R2-2 Dark scrollbars: the default light/system scrollbar (visible on the
+       vertically-scrolling All Matches view and the horizontally-scrolling
+       mobile bracket) breaks the broadcast look. Subtle dark track + muted thumb
+       that brightens slightly on hover. WebKit (Chrome/Safari/projector kiosks)
+       + Firefox (scrollbar-color). iOS uses auto-hiding overlay bars, unaffected. */
+    .theme-dark .view,
+    .theme-dark .bracket,
+    .theme-dark .content-area {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.18) transparent;
+    }
+    .theme-dark .view::-webkit-scrollbar,
+    .theme-dark .bracket::-webkit-scrollbar,
+    .theme-dark .content-area::-webkit-scrollbar {
+      width: 10px; height: 10px;
+    }
+    .theme-dark .view::-webkit-scrollbar-track,
+    .theme-dark .bracket::-webkit-scrollbar-track,
+    .theme-dark .content-area::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.25);
+    }
+    .theme-dark .view::-webkit-scrollbar-thumb,
+    .theme-dark .bracket::-webkit-scrollbar-thumb,
+    .theme-dark .content-area::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.16);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    .theme-dark .view::-webkit-scrollbar-thumb:hover,
+    .theme-dark .bracket::-webkit-scrollbar-thumb:hover,
+    .theme-dark .content-area::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.30);
+      background-clip: padding-box;
+    }
+
+    /* #1 Background depth: a VERY subtle Premier-style vignette + diagonal sheen
+       so the body isn't dead-flat. A faint off-centre radial lifts the top, a
+       barely-there diagonal linear adds a sheen, and a soft dark vignette at the
+       edges focuses attention to the centre. Fixed attachment so it doesn't
+       scroll with content. Kept low-opacity (<6%) to stay broadcast-subtle. */
+    .theme-dark .content-area {
+      background-image:
+        radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.045), rgba(255,255,255,0) 55%),
+        linear-gradient(125deg, rgba(255,255,255,0.022) 0%, rgba(255,255,255,0) 42%),
+        radial-gradient(140% 120% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.35) 100%),
+        linear-gradient(180deg, var(--dark-bg, #0A1612), var(--dark-bg, #0A1612));
+      background-attachment: fixed;
+    }
+    /* Header/footer keep the nox BROWN (brand identity), separated from the dark
+       body by a gold/yellow accent line (chosen to tie in with the gold theme
+       accents). data.js sets header_bg inline → !important needed. */
+    .theme-dark .header {
+      background: #794943 !important;
+      border-bottom: 3px solid var(--dark-accent, #FFB703) !important;
+    }
+    .theme-dark .footer {
+      background: #794943 !important;
+      border-top: 3px solid var(--dark-accent, #FFB703) !important;
+    }
+    .theme-dark .header__title h1 { color: #fff; }
+    .theme-dark .header__title p  { color: rgba(255,255,255,0.82); }
+    .theme-dark .footer__powered-text,
+    .theme-dark .footer__timestamp { color: rgba(255,255,255,0.9) !important; }
+
+    /* Home page: black/near-black body instead of the brown splash panel. */
+    .theme-dark #view-home .home-page { background: #0A1612 !important; }
+
+    /* Avatar placeholders (no-photo fallback): the engine's white circle is too
+       harsh on dark — use a muted dark-green chip with a light initial. */
+    .theme-dark .avatar--fallback {
+      background: #28382F !important;
+      color: var(--dark-text, #E8F0EC) !important;
+      border-color: rgba(255,255,255,0.16) !important;
+    }
+    /* Bracket avatar placeholders: a defined WHITE ring so the chips read clearly
+       on dark (per feedback). White (not gold) keeps gold reserved for the key
+       accents so the bracket doesn't get busy. Dimmed slot-placeholders below get
+       a fainter ring so they still recede. */
+    .theme-dark .bracket-match .avatar--fallback,
+    .theme-dark .team-stacked .avatar--fallback {
+      border: 1.5px solid rgba(255,255,255,0.7) !important;
+    }
+    /* Near-black nav bar (Premier look); active tab gets a gold accent. */
+    .theme-dark .view-bar { background: #06100C; }
+    .theme-dark .view-bar__tab { color: var(--dark-text-muted, #9CA3AF); }
+    .theme-dark .view-bar__tab.active { color: var(--dark-accent, #FFB703); }
+    /* #7 Nav polish: a centred gold underline indicator under the ACTIVE tab
+       (Premier-style), drawn with ::after so it never shifts layout. Inactive
+       tabs brighten gently on hover for clear affordance. The engine's small
+       dot-row stays as a secondary cue. */
+    .theme-dark .view-bar__tab { position: relative; transition: color .15s ease; }
+    .theme-dark .view-bar__tab::after {
+      content: ''; position: absolute; left: 50%; bottom: 4px;
+      width: 0; height: 2px; border-radius: 2px;
+      background: var(--dark-accent, #FFB703);
+      transform: translateX(-50%);
+      transition: width .18s ease;
+    }
+    .theme-dark .view-bar__tab.active::after { width: 38px; }
+    @media (hover: hover) {
+      .theme-dark .view-bar__tab:not(.active):hover { color: var(--dark-text, #E8F0EC); }
+      .theme-dark .view-bar__tab:not(.active):hover::after { width: 22px; background: rgba(255,183,3,0.45); }
+    }
+
+    /* #3 Scoreboard figures: tabular (fixed-width) numerals + tighter tracking
+       on every NUMBER in the dashboard — standings MP/W/L/GD, match-card scores
+       and times, bracket scores. Digits now occupy a constant width so columns
+       line up cleanly and a changing score doesn't shift its neighbours. */
+    .theme-dark .group-card__table td:not(:first-child),
+    .theme-dark .group-card__table th:not(:first-child),
+    .theme-dark .match-card__scores,
+    .theme-dark .match-card__time,
+    .theme-dark .bracket-match__score,
+    .theme-dark .bracket-match__set,
+    .theme-dark .bracket-match__datetime,
+    .theme-dark .footer__timestamp {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    /* ---- Standings table → dark cards (engine only darkens .standings-card,
+       nox uses .group-card__table). Keep the green group-header bar as the
+       brand accent. ---- */
+    .theme-dark .group-card__table {
+      background: var(--dark-surface, #122620);
+      border: 1px solid var(--dark-border, #2A3F35);
+      overflow: hidden;
+    }
+    /* #R2-1b The .group-card WRAPPER is still WHITE (engine light default) with a
+       4px radius vs the table's 10px — so a 1px white frame + four white corner
+       specks peeked out behind the dark table on the projector. Re-skin the
+       wrapper to the dark surface and match its radius so it disappears. */
+    .theme-dark .group-card {
+      background: var(--dark-surface, #122620);
+      border-radius: 10px;
+    }
+    .theme-dark .group-card__table td { color: var(--dark-text, #E8F0EC); border-color: rgba(255,255,255,0.06); }
+    /* #2 Row separation: a slightly stronger hairline under each standings row so
+       teams are easy to track across the MP/W/L/GD columns (the 6%-white default
+       nearly vanished on the dark surface). Last row in each group drops it so it
+       doesn't double the card's own bottom edge. */
+    .theme-dark .group-card__table tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.085); }
+    .theme-dark .group-card__table tbody tr:last-child td { border-bottom: none; }
+    .theme-dark .group-card__table .team-name,
+    .theme-dark .group-card__table td:first-child { color: var(--dark-text, #E8F0EC); }
+    .theme-dark .group-card__table thead th { background: var(--green, #085D3C); color: #fff; }
+
+    /* ---- Match cards → dark ---- */
+    .theme-dark .match-card { background: var(--dark-surface, #122620); border: 1px solid var(--dark-border, #2A3F35); color: var(--dark-text, #E8F0EC); }
+    .theme-dark .match-card__team-name { color: var(--dark-text, #E8F0EC); }
+    .theme-dark .match-card__round, .theme-dark .match-card__division { color: var(--dark-text-muted, #9CA3AF); }
+    /* Match time as a readable filled pill (mirrors the "On Court" chip style)
+       in nox brand BROWN — distinct from the green On-Court pill and the gold
+       score accent. Gold text alone was hard to read. */
+    .theme-dark .match-card__time {
+      display: inline-block;
+      background: #794943;
+      color: #fff !important;
+      font-weight: 700;
+      padding: 2px 12px;
+      border-radius: 999px;
+      line-height: 1.35;
+    }
+    .theme-dark .court-column__header { color: var(--dark-accent, #FFB703); border-bottom-color: var(--dark-accent, #FFB703); }
+
+    /* The projector rule gives the bracket time-chip a WHITE bg (so the row
+       divider doesn't show through it) — that was for the light theme and reads
+       as a harsh white pill on dark. Re-skin it to a dark chip with muted text +
+       a hairline border so it sits quietly in the broadcast palette. */
+    /* Bracket match time → EXACTLY the All Matches time pill: same brown bg, white
+       text, --fs-meta size (was rendering tiny at 11px), 2px 12px padding, full
+       pill radius. z-index lifts the opaque pill above the team-row divider line
+       so the line no longer shows behind it. */
+    .theme-dark .bracket-match__datetime {
+      background: #794943 !important;
+      color: #fff !important;
+      font-size: var(--fs-meta, 18px) !important;
+      font-weight: 700 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      padding: 2px 12px !important;
+      z-index: 2;
+    }
+
+    /* ---- Toggle pills on dark ---- */
+    .theme-dark .nox-silver-toggle .nox-pill { color: var(--dark-text, #E8F0EC); border-color: var(--dark-border, #2A3F35); }
+    .theme-dark .nox-silver-toggle .nox-pill.active { background: var(--dark-accent, #FFB703); color: #06231a; border-color: var(--dark-accent, #FFB703); }
+    .theme-dark #view-gold-bracket .bracket-section__label { background: var(--dark-accent, #FFB703); color: #06231a; border-color: var(--dark-accent, #FFB703); }
+
+    /* ---- #3 Card depth: subtle top-light gradient + shadow on every card ---- */
+    .theme-dark .bracket-match,
+    .theme-dark .match-card,
+    .theme-dark .group-card__table {
+      border-radius: 10px;
+      background-image: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 60%);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ---- #2 Connector lines: visible bracket tree on dark ---- */
+    /* horizontal segment out the right of each match (all but the final round) */
+    .theme-dark .bracket__round:not(:last-child) .bracket-match::after {
+      content: ''; position: absolute; right: -12px; top: 50%;
+      width: 12px; height: 2px; background: rgba(255,255,255,0.18); opacity: 1;
+    }
+    /* horizontal segment into the left of each match (all but the first round) */
+    .theme-dark .bracket__round:not(:first-child) .bracket-match::before {
+      content: ''; position: absolute; left: -12px; top: 50%;
+      width: 12px; height: 2px; background: rgba(255,255,255,0.18);
+    }
+
+    /* #6 Placeholder labels (TBD / "Winner QF1" / "Seed A1") muted so real
+       team names read as the brightest text. Tagged by the inline script above.
+       Italic + lower weight further signals "not yet decided". The matching
+       single-letter avatar chips dim to sit quietly behind the text. */
+    .theme-dark .bracket-match__team-name.nox-placeholder {
+      color: var(--dark-text-muted, #9CA3AF) !important;
+      font-style: italic; font-weight: 400; opacity: 0.85;
+    }
+    .theme-dark .avatar--fallback.nox-placeholder-avatar {
+      background: #1c2a23 !important;
+      color: var(--dark-text-muted, #9CA3AF) !important;
+      border-color: rgba(255,255,255,0.3) !important;  /* fainter ring → recedes vs real teams */
+      opacity: 0.8;
+    }
+
+    /* ---- #4 Winner check badge (green ✓, like Premier) ----
+       Reserve a check column on the RIGHT of EVERY match team row (40px) so the
+       two scores stay aligned and the score is never covered; the ✓ only renders
+       on the winner row, sitting in that reserved column to the right of the score.
+       (Higher specificity than the bracket-padding rule so the reserve actually
+       applies — a plain --winner padding was being overridden to 12px.) */
+    .theme-dark .bracket-match__team { position: relative; }
+    .theme-dark .bracket-single .bracket-match__team { padding-right: 40px !important; }
+    .theme-dark .bracket-match__team--winner::after {
+      content: '✓';
+      position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #2ec27e; color: #06231a;
+      font: 700 13px/20px var(--font, sans-serif); text-align: center;
+    }
+
+    /* #R2-3 "ON COURT" / next-up match: the engine tags the current match per
+       court with .match-card--next + an "On Court" badge, but on dark it looked
+       identical to every other upcoming card. Give it a green left-edge accent +
+       a soft green glow so viewers instantly spot the match being played now
+       (green = active; gold is already the score/time accent, kept distinct). */
+    .theme-dark .match-card--next {
+      border-color: rgba(46,194,126,0.55) !important;
+      box-shadow: inset 3px 0 0 0 #2ec27e,
+                  0 0 0 1px rgba(46,194,126,0.20),
+                  0 8px 22px rgba(46,194,126,0.10),
+                  0 6px 18px rgba(0,0,0,0.45) !important;
+    }
+    /* The "On Court" badge → a filled green pill so it reads as a status chip,
+       not stray green text. */
+    .theme-dark .match-card__on-court {
+      display: inline-block;
+      background: #2ec27e;
+      color: #06231a !important;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      line-height: 1.3;
+    }
+    /* #R2-3b LIVE match (blind-but-safe — no live match in current data, so this
+       is styled from the engine class only and NOT visually confirmed): a
+       stronger green ring + a gentle pulse so an in-progress match stands out
+       even more than the next-up card. */
+    .theme-dark .match-card--live {
+      border-color: #2ec27e !important;
+      box-shadow: 0 0 0 2px rgba(46,194,126,0.45),
+                  0 8px 26px rgba(46,194,126,0.22),
+                  0 6px 18px rgba(0,0,0,0.45) !important;
+      animation: noxLivePulse 2s ease-in-out infinite;
+    }
+    .theme-dark .live-badge,
+    .theme-dark .match-card__live {
+      display: inline-block; background: #e5484d; color: #fff !important;
+      font-weight: 700; letter-spacing: 0.5px; padding: 2px 10px;
+      border-radius: 999px; line-height: 1.3;
+    }
+    @keyframes noxLivePulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(46,194,126,0.45), 0 8px 26px rgba(46,194,126,0.18), 0 6px 18px rgba(0,0,0,0.45); }
+      50%      { box-shadow: 0 0 0 2px rgba(46,194,126,0.75), 0 8px 30px rgba(46,194,126,0.34), 0 6px 18px rgba(0,0,0,0.45); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .theme-dark .match-card--live { animation: none; }
+    }
+
+    /* ============================================================
+       TIER 4 — gold accents, champion glow-up, subtle motion.
+       ============================================================ */
+    /* #11 Champion (Final Standings): the 1st-place card gets a gold glow; the
+       2nd-place card a subtle silver tint. */
+    .theme-dark .bracket-match--gold {
+      border: 1.5px solid var(--dark-accent, #FFB703) !important;
+      background-image: linear-gradient(180deg, rgba(255,183,3,0.16), rgba(255,183,3,0.03)) !important;
+      box-shadow: 0 0 0 1px rgba(255,183,3,0.25), 0 8px 22px rgba(255,183,3,0.12), 0 6px 18px rgba(0,0,0,0.45) !important;
+    }
+    .theme-dark .bracket-match--gold .team-stacked__place,
+    .theme-dark .bracket-match--gold .bracket-match__team-name { color: var(--dark-accent, #FFB703) !important; }
+    .theme-dark .bracket-match--silver {
+      border: 1px solid rgba(200,200,210,0.45) !important;
+      background-image: linear-gradient(180deg, rgba(200,200,210,0.10), rgba(200,200,210,0)) !important;
+    }
+
+    /* #12 Subtle motion: hover lift on cards (laptop viewing), and a fade-in when
+       toggling Knockout/Consolation (the script adds .nox-animate on click). */
+    .theme-dark .bracket-match,
+    .theme-dark .match-card { transition: transform .18s ease, box-shadow .18s ease; }
+    .theme-dark .bracket-match:hover,
+    .theme-dark .match-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    @keyframes noxFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    #view-silver-bracket.nox-animate:not(.nox-show-consolation) .bracket-single:not(.bracket-consolation--inline),
+    #view-silver-bracket.nox-animate.nox-show-consolation .bracket-consolation--inline {
+      animation: noxFadeIn .28s ease;
+    }
   </style>
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
 <body>
-  <div class="dashboard">
+  <div class="dashboard theme-dark">
     <header class="header">
       <a href="#" class="header__left header__home-link" id="home-link">
         <img src="/assets/monogram-white-on-green.png" alt="Event Logo" class="header__lps-logo">
@@ -436,6 +790,41 @@
        class on the (persistent) view element, so it survives bracket.js's poll
        re-renders; the bar itself is re-injected by a MutationObserver. Click is
        handled by delegation on document so it never needs re-binding. -->
+  <script>
+  /* #6 Mute true PLACEHOLDER labels so real names pop.
+     The bracket engine renders empty slots as plain .bracket-match__team-name
+     spans with text like "TBD", "Winner QF1", "Winner SF2", "Winner Cons SF1",
+     "Seed A1". Real-but-pending teams (group still running) instead carry the
+     --provisional modifier + a gold "*", and must stay BRIGHT. CSS can't match
+     text, so tag the placeholders with a class and style it muted (var
+     --dark-text-muted). Runs on load + on every bracket re-render. */
+  (function () {
+    var RE = /^(TBD|Winner\b|Loser\b|Seed\b)/i;
+    function mark(root) {
+      var spans = (root || document).querySelectorAll(
+        '.bracket-match__team-name:not(.bracket-match__team-name--provisional)');
+      [].forEach.call(spans, function (s) {
+        var isPlaceholder = RE.test(s.textContent.trim());
+        s.classList.toggle('nox-placeholder', isPlaceholder);
+        // Also dim the two single-letter avatar "fallback" chips of a placeholder
+        // row (e.g. "W"+"Q") so the whole slot recedes together.
+        var row = s.closest ? s.closest('.bracket-match__team') : null;
+        if (row) {
+          [].forEach.call(row.querySelectorAll('.avatar--fallback'), function (a) {
+            a.classList.toggle('nox-placeholder-avatar', isPlaceholder);
+          });
+        }
+      });
+    }
+    function start() {
+      mark(document);
+      var content = document.getElementById('main-content') || document.body;
+      new MutationObserver(function () { mark(document); }).observe(content, { childList: true, subtree: true });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  })();
+  </script>
   <script>
   (function () {
     var VIEW_ID = 'view-silver-bracket';
@@ -490,6 +879,9 @@
       view.querySelectorAll('.nox-silver-toggle .nox-pill').forEach(function (p) {
         p.classList.toggle('active', p.getAttribute('data-nox-tab') === tab);
       });
+      // brief fade-in of the newly shown bracket (Tier 4 motion)
+      view.classList.add('nox-animate');
+      setTimeout(function () { view.classList.remove('nox-animate'); }, 350);
     });
 
     // Keep the bar alive across bracket.js re-renders of the silver view.
