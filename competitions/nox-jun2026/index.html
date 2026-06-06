@@ -440,8 +440,8 @@
     /* Dark-theme accent = SILVER (was gold/yellow). Overriding --dark-accent
        re-colours everything that uses it (round titles, nav active tab, court
        headers, KNOCKOUT pill, winner text, champion, etc.). The few hardcoded
-       rgba(194,200,208,…) accents are swapped to silver below. */
-    .theme-dark { --dark-accent: #C2C8D0; }
+       rgba(220,226,234,…) accents are swapped to silver below. */
+    .theme-dark { --dark-accent: #DCE2EA; }
 
     /* ---- Chrome the engine theme-dark misses ---- */
     .theme-dark .content-area,
@@ -556,7 +556,7 @@
     .theme-dark .view-bar__tab.active::after { width: 38px; }
     @media (hover: hover) {
       .theme-dark .view-bar__tab:not(.active):hover { color: var(--dark-text, #E8F0EC); }
-      .theme-dark .view-bar__tab:not(.active):hover::after { width: 22px; background: rgba(194,200,208,0.45); }
+      .theme-dark .view-bar__tab:not(.active):hover::after { width: 22px; background: rgba(220,226,234,0.45); }
     }
 
     /* #3 Scoreboard figures: tabular (fixed-width) numerals + tighter tracking
@@ -785,8 +785,8 @@
        2nd-place card a subtle silver tint. */
     .theme-dark .bracket-match--gold {
       border: 1.5px solid var(--dark-accent, #FFB703) !important;
-      background-image: linear-gradient(180deg, rgba(194,200,208,0.16), rgba(194,200,208,0.03)) !important;
-      box-shadow: 0 0 0 1px rgba(194,200,208,0.25), 0 8px 22px rgba(194,200,208,0.12), 0 6px 18px rgba(0,0,0,0.45) !important;
+      background-image: linear-gradient(180deg, rgba(220,226,234,0.16), rgba(220,226,234,0.03)) !important;
+      box-shadow: 0 0 0 1px rgba(220,226,234,0.25), 0 8px 22px rgba(220,226,234,0.12), 0 6px 18px rgba(0,0,0,0.45) !important;
     }
     .theme-dark .bracket-match--gold .team-stacked__place,
     .theme-dark .bracket-match--gold .bracket-match__team-name { color: var(--dark-accent, #FFB703) !important; }
@@ -813,10 +813,11 @@
   <script>window.__SHEET_ID = '1CgZLF17nKh9FhqNGci2WFlJnFZGHPDo5DwtkR1ICAb8';</script>
 </head>
 <body>
-  <div class="dashboard" id="nox-dash">
-    <!-- Apply saved theme BEFORE paint (default = light, team preference) so there's
-         no flash. The toggle button + persistence are wired in the script below. -->
-    <script>try{if((localStorage.getItem('noxTheme')||'light')==='dark')document.getElementById('nox-dash').classList.add('theme-dark');}catch(e){}</script>
+  <div class="dashboard theme-dark" id="nox-dash">
+    <!-- Default = DARK (static class above, also the no-JS fallback). Apply the
+         saved preference BEFORE paint so there's no flash: only drop to light if
+         the user explicitly chose it. Toggle + persistence wired in the script below. -->
+    <script>try{if(localStorage.getItem('noxTheme')==='light')document.getElementById('nox-dash').classList.remove('theme-dark');}catch(e){}</script>
     <header class="header">
       <a href="#" class="header__left header__home-link" id="home-link">
         <img src="/assets/monogram-white-on-green.png" alt="Event Logo" class="header__lps-logo">
