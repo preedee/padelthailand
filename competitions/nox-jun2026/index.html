@@ -685,6 +685,16 @@
       border-radius: 999px;
       line-height: 1.3;
     }
+    /* Mobile: keep the "On Court" pill compact and on ONE line (it was wrapping
+       to two lines and looked oversized). */
+    @media (max-width: 768px) {
+      .theme-dark .match-card__on-court {
+        white-space: nowrap;
+        font-size: 11px;
+        padding: 2px 8px;
+        letter-spacing: 0.3px;
+      }
+    }
     /* #R2-3b LIVE match (blind-but-safe — no live match in current data, so this
        is styled from the engine class only and NOT visually confirmed): a
        stronger green ring + a gentle pulse so an in-progress match stands out
@@ -816,10 +826,23 @@
         }
       });
     }
+    /* Standings GD column: center the values when they're all single-character
+       (e.g. all "0" before any matches are played) so the column matches the
+       centered MP/W/L; right-align once a 2-digit/± value appears so the digits
+       line up. Per group card. */
+    function alignGD(root) {
+      var tables = (root || document).querySelectorAll('.standings-divisions--combined .group-card__table');
+      [].forEach.call(tables, function (t) {
+        var gds = [].slice.call(t.querySelectorAll('tbody td:last-child'));
+        if (!gds.length) return;
+        var allShort = gds.every(function (td) { return td.textContent.trim().length <= 1; });
+        gds.forEach(function (td) { td.style.textAlign = allShort ? 'center' : 'right'; });
+      });
+    }
     function start() {
-      mark(document);
+      mark(document); alignGD(document);
       var content = document.getElementById('main-content') || document.body;
-      new MutationObserver(function () { mark(document); }).observe(content, { childList: true, subtree: true });
+      new MutationObserver(function () { mark(document); alignGD(document); }).observe(content, { childList: true, subtree: true });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
