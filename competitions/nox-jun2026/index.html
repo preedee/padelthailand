@@ -367,16 +367,18 @@
       .bracket-match__team { font-size: 16px; }
       .bracket-match__team-name { word-break: normal; overflow-wrap: normal; font-size: 16px; line-height: 1.3; }
 
-      /* ---- All Matches: keep the engine's per-court horizontal-scroll layout,
-         but WIDEN each court column so a card has room for full team names. The
-         engine mobile default (--court-min:240px) crammed ~1.7 courts on screen
-         and squeezed names to "Lara & …". Now ~one court per phone screen (with
-         a peek of the next) — swipe court-to-court, names fit. --court-min feeds
-         the engine's repeat(N, minmax(var(--court-min),1fr)) grid. */
+      /* ---- All Matches: match the BRACKET card scale for consistency (user
+         preference). Bracket cards on mobile are ~300px wide with 16px names /
+         15px scores and fit every name — so the All Matches per-court column is
+         set to the same 300px and the same fonts. ~one court per phone screen
+         (peek of the next), horizontal court-swipe kept; names still fit. */
       #view-matches .matches-grid,
-      #view-matches .matches-grid__header-row {
-        --court-min: min(89vw, 340px);
-      }
+      #view-matches .matches-grid__header-row { --court-min: 310px; }
+      #view-matches .match-card__team-name,
+      #view-matches .match-card__team--winner .match-card__team-name,
+      #view-matches .match-card__team--loser .match-card__team-name { font-size: 16px; }
+      #view-matches .match-card__set-score { font-size: 15px; }
+      #view-matches .match-card__scores { gap: 4px; }   /* match bracket's tighter score gap */
 
       /* ---- Bigger player avatars on mobile (were 26px from the JS width attr,
          too small to recognise faces). 40px across Standings / All Matches /
