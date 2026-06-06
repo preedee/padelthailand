@@ -839,10 +839,18 @@
         gds.forEach(function (td) { td.style.textAlign = allShort ? 'center' : 'right'; });
       });
     }
+    /* The engine renders the badge as "On<br>Court" (a hard line break), so CSS
+       white-space:nowrap can't keep it on one line. Swap the <br> for a space. */
+    function fixOnCourt(root) {
+      var pills = (root || document).querySelectorAll('.match-card__on-court');
+      [].forEach.call(pills, function (o) {
+        [].forEach.call(o.querySelectorAll('br'), function (br) { br.replaceWith(' '); });
+      });
+    }
     function start() {
-      mark(document); alignGD(document);
+      mark(document); alignGD(document); fixOnCourt(document);
       var content = document.getElementById('main-content') || document.body;
-      new MutationObserver(function () { mark(document); alignGD(document); }).observe(content, { childList: true, subtree: true });
+      new MutationObserver(function () { mark(document); alignGD(document); fixOnCourt(document); }).observe(content, { childList: true, subtree: true });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
