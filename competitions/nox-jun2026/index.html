@@ -367,10 +367,16 @@
       .bracket-match__team { font-size: 16px; }
       .bracket-match__team-name { word-break: normal; overflow-wrap: normal; font-size: 16px; line-height: 1.3; }
 
-      /* ---- All Matches: keep the engine's original per-court layout (the
-         "old layout" — court headers + readable cards). With 3 courts they
-         can't fit a phone without overlapping, so the cards stay full-size and
-         the courts scroll horizontally (engine ≤768 default). No override here. */
+      /* ---- All Matches: keep the engine's per-court horizontal-scroll layout,
+         but WIDEN each court column so a card has room for full team names. The
+         engine mobile default (--court-min:240px) crammed ~1.7 courts on screen
+         and squeezed names to "Lara & …". Now ~one court per phone screen (with
+         a peek of the next) — swipe court-to-court, names fit. --court-min feeds
+         the engine's repeat(N, minmax(var(--court-min),1fr)) grid. */
+      #view-matches .matches-grid,
+      #view-matches .matches-grid__header-row {
+        --court-min: min(89vw, 340px);
+      }
 
       /* ---- Bigger player avatars on mobile (were 26px from the JS width attr,
          too small to recognise faces). 40px across Standings / All Matches /
