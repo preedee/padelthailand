@@ -357,10 +357,26 @@ const Matches = (() => {
       // the grid, so it's clear the matchup can still change.
       const prov = !!match.provisionalSeed;
       const inlineTeam = (code, name) => {
-        const avatars = Data.getTeamAvatarFlagByCode
-          ? Data.getTeamAvatarFlagByCode(code, name, 30)
-          : Data.getTeamAvatarsHTML(name, 30);
+        const clean = (name || '').replace(/⁠/g, '').trim();
         const nm = name || 'TBD';
+        let avatars;
+        if (clean && / & | and /.test(clean)) {
+          // Real two-player team ("A & B") → resolved avatars + flags by code.
+          avatars = Data.getTeamAvatarFlagByCode
+            ? Data.getTeamAvatarFlagByCode(code, clean, 30)
+            : Data.getTeamAvatarsHTML(clean, 30);
+        } else {
+          // Placeholder / flow label ("Winner SF1", "Seed 1", "TBD") → TWO initial
+          // circles split across the label's words (mirrors the knockout/bracket
+          // views), so the card always shows a pair of avatar slots — not the lone
+          // circle getTeamAvatarsHTML would render for a single-word label.
+          const sz = 30;
+          const words = (clean || nm).split(/\s+/).filter(Boolean);
+          const i1 = (words[0] || '?').charAt(0).toUpperCase();
+          const i2 = (words[1] ? words[1].charAt(0) : (words[0] || '').charAt(1) || '?').toUpperCase();
+          const circle = t => `<span class="avatar avatar--fallback" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz * 0.45)}px">${t}</span>`;
+          avatars = circle(i1) + circle(i2);
+        }
         const nameHTML = prov
           ? `<span class="match-card__team-name match-card__team-name--provisional">${nm}<span class="match-card__prov-star">*</span></span>`
           : `<span class="match-card__team-name">${nm}</span>`;
