@@ -105,6 +105,18 @@
        pushing its round labels ~10px below the knockout's. */
     #view-silver-bracket .bracket-consolation--inline { border-top: none; padding-top: 0; }
 
+    /* 3rd-Place match stacks directly UNDER the Final (with a "3rd Place" sub-label)
+       instead of floating at the bottom of the combined column. Unscoped width
+       (applies on mobile too); targets any knockout column that has a bronze match. */
+    #view-gold-bracket .bracket-single:not(.bracket-consolation--inline) .bracket__round:has(.bracket-match--bronze):not(:has(.team-stacked__place)) .bracket__matches,
+    #view-silver-bracket .bracket-single:not(.bracket-consolation--inline) .bracket__round:has(.bracket-match--bronze):not(:has(.team-stacked__place)) .bracket__matches {
+      justify-content: center; gap: 10px;
+    }
+    .nox-3rd-label {
+      text-align: center; font: 700 var(--fs-small, 14px)/1.2 var(--font, inherit);
+      letter-spacing: 1px; text-transform: uppercase; opacity: .75; margin: 8px 0 2px;
+    }
+
     /* Flag-badge outline — BLACK ring (overrides the engine's white) so light
        flags (e.g. Japan) stay distinct. UNSCOPED on purpose: it must apply at
        every width. The badge SIZE override lives in the >=1024px block (it is
@@ -1052,6 +1064,43 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
     else wire();
+  })();
+  </script>
+
+  <script>
+  (function () {
+    // 3rd-Place placement: the engine renders it at the BOTTOM of the combined
+    // "Final / 3rd Place" column (floating, disconnected). Instead, retitle the
+    // column "Final" and place a "3rd Place" sub-label directly above the bronze
+    // match so Final + 3rd-Place read as a tidy stacked pair (the CSS centers the
+    // pair). Re-applied on every bracket re-render via a MutationObserver.
+    function applyThird() {
+      // Match the 3rd-place MATCH column only — exclude the Final Standings column,
+      // whose bronze-medal row (🥉 3rd) also carries .bracket-match--bronze.
+      document.querySelectorAll('.bracket-single:not(.bracket-consolation--inline) .bracket__round:has(.bracket-match--bronze):not(:has(.team-stacked__place))').forEach(function (col) {
+        var bronze = col.querySelector('.bracket-match--bronze');
+        if (!bronze) return;
+        var title = col.querySelector('.bracket__round-title');
+        if (title && title.textContent !== 'Final') title.textContent = 'Final';
+        // Enforce exactly one label, immediately before the bronze match (drop any
+        // strays a mid-render mutation may have left behind).
+        col.querySelectorAll('.nox-3rd-label').forEach(function (e) { if (e.nextElementSibling !== bronze) e.remove(); });
+        var prev = bronze.previousElementSibling;
+        if (!prev || !prev.classList || !prev.classList.contains('nox-3rd-label')) {
+          var l = document.createElement('div');
+          l.className = 'nox-3rd-label';
+          l.textContent = '3rd Place';
+          bronze.parentNode.insertBefore(l, bronze);
+        }
+      });
+    }
+    function start() {
+      applyThird();
+      var content = document.getElementById('main-content') || document.body;
+      new MutationObserver(applyThird).observe(content, { childList: true, subtree: true });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
   })();
   </script>
 </body>
