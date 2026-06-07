@@ -978,18 +978,27 @@
     function ensureBar() {
       var view = document.getElementById(VIEW_ID);
       if (!view) return;
-      var consolation = view.querySelector('.bracket-consolation--inline');
-      if (!view.querySelector('.bracket-single') || !consolation) return; // not rendered yet
-      labelConsolation(view);
-      if (view.querySelector('.nox-silver-toggle')) return;        // bar already present
-      var showCons = view.classList.contains('nox-show-consolation');
-      var bar = document.createElement('div');
-      bar.className = 'nox-silver-toggle';
-      bar.setAttribute('role', 'tablist');
+      if (!view.querySelector('.bracket-single')) return;          // not rendered yet
+      // Consolation may be absent (e.g. its matches have no Time yet, so they're
+      // filtered out by isValidMatch). Still show the bar with a single "Knockout"
+      // pill so Silver stays consistent with Gold; add the Consolation pill only
+      // when a consolation bracket actually exists.
+      var hasCons = !!view.querySelector('.bracket-consolation--inline');
+      if (hasCons) labelConsolation(view);
+      var bar = view.querySelector('.nox-silver-toggle');
+      var hasConsPill = !!(bar && bar.querySelector('[data-nox-tab="consolation"]'));
+      if (bar && hasConsPill === hasCons) return;                  // bar already correct
+      if (!hasCons) view.classList.remove('nox-show-consolation');  // can't show a gone bracket
+      var showCons = hasCons && view.classList.contains('nox-show-consolation');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.className = 'nox-silver-toggle';
+        bar.setAttribute('role', 'tablist');
+        view.insertBefore(bar, view.firstChild);
+      }
       bar.innerHTML =
         '<button class="nox-pill' + (showCons ? '' : ' active') + '" data-nox-tab="knockout" role="tab">Knockout</button>' +
-        '<button class="nox-pill' + (showCons ? ' active' : '') + '" data-nox-tab="consolation" role="tab">Consolation</button>';
-      view.insertBefore(bar, view.firstChild);
+        (hasCons ? '<button class="nox-pill' + (showCons ? ' active' : '') + '" data-nox-tab="consolation" role="tab">Consolation</button>' : '');
     }
 
     // Click handling via delegation — survives every re-render.
