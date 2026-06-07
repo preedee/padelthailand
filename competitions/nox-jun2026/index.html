@@ -271,6 +271,16 @@
        specificity (:last-child:not(:first-child)) so it wins per tier. */
     .group-card__table th:last-child:not(:first-child),
     .group-card__table td:last-child:not(:first-child) { width: 62px; }
+    /* A 3-char GD like "-10"/"-18" renders ~40px wide at the projector font (~23px)
+       — wider than the old ~34px content box, so it overflowed ~6px past the
+       single-digit values and looked un-right-aligned. Trim the GD column's side
+       padding to widen the content box, and use tabular figures so every digit
+       shares one advance width and the right edges line up exactly. */
+    .group-card__table th:last-child:not(:first-child),
+    .group-card__table td:last-child:not(:first-child) {
+      padding-left: 6px; padding-right: 10px;
+      font-variant-numeric: tabular-nums;
+    }
     @media (min-width: 1024px) {
       .group-card__table th:not(:first-child) { width: 50px; } /* tightened from 66 → more room for names */
       .group-card__table th:last-child:not(:first-child),
