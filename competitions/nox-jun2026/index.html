@@ -601,6 +601,21 @@
     .theme-dark .group-card__table .team-name,
     .theme-dark .group-card__table td:first-child { color: var(--dark-text, #E8F0EC); }
     .theme-dark .group-card__table thead th { background: var(--green, #085D3C); color: #fff; }
+    /* Qualifying teams (engine tags rows .qualifier from qualification_rules:
+       Gold top-4/group, Silver top-8 overall) get the SAME light highlight as a
+       match winner — a soft yellow tint + a left accent bar. */
+    .theme-dark .group-card__table tbody tr.qualifier td { background: rgba(255,183,3,0.12); }
+    .theme-dark .group-card__table tbody tr.qualifier td:first-child { box-shadow: inset 3px 0 0 0 var(--dark-accent, #FFB703); }
+    /* Light theme: same NOX-gold qualifier highlight, bumped so it reads on the white table */
+    #nox-dash:not(.theme-dark) .group-card__table tbody tr.qualifier td { background: rgba(255,183,3,0.18); }
+    #nox-dash:not(.theme-dark) .group-card__table tbody tr.qualifier td:first-child { box-shadow: inset 3px 0 0 0 #FFB703; }
+    /* Light theme: gold winner highlight on All Matches cards (mirrors the dark-theme rule) */
+    #nox-dash:not(.theme-dark) .match-card__team { padding-left: 8px; border-radius: 6px; }
+    #nox-dash:not(.theme-dark) .match-card__team--winner {
+      background: rgba(255,183,3,0.18);
+      box-shadow: inset 3px 0 0 0 #FFB703;
+    }
+    #nox-dash:not(.theme-dark) .match-card__team--loser { opacity: 0.55; }
 
     /* ---- Match cards → dark ---- */
     .theme-dark .match-card { background: var(--dark-surface, #122620); border: 1px solid var(--dark-border, #2A3F35); color: var(--dark-text, #E8F0EC); }
