@@ -128,7 +128,7 @@
     .bracket-match .avatar-flag__badge,
     .match-card .team-with-avatars .avatar-flag__badge,
     .standings-divisions--combined .avatar-flag__badge {
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 0 0 1px var(--nox-flag-outline, rgba(0, 0, 0, 0.7)), 0 1px 2px rgba(0, 0, 0, 0.35);
     }
 
     /* Brackets + All Matches: same viewport-height scaling as Standings.
@@ -174,15 +174,15 @@
       .match-card .team-with-avatars .avatar,
       .team-stacked .avatar,
       .bracket-match .avatar {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important; min-height: 50px !important;
+        width: var(--nox-avatar-desktop, 50px) !important;
+        height: var(--nox-avatar-desktop, 50px) !important;
+        min-width: var(--nox-avatar-desktop, 50px) !important; min-height: var(--nox-avatar-desktop, 50px) !important;
       }
       .match-card .team-with-avatars .avatar--fallback,
       .team-stacked .avatar--fallback,
       .bracket-match .avatar--fallback {
-        width: 50px !important;
-        height: 50px !important;
+        width: var(--nox-avatar-desktop, 50px) !important;
+        height: var(--nox-avatar-desktop, 50px) !important;
         font-size: 24px !important;
       }
       /* Comfortable bracket spacing (each bracket shows alone now): round title
@@ -338,10 +338,10 @@
          Fits cleanly inside the ~65px row without growing it. */
       .standings-divisions--combined .team-with-avatars .avatar,
       .standings-divisions--combined .team-with-avatars .avatar--fallback {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important;
-        min-height: 50px !important;
+        width: var(--nox-avatar-desktop, 50px) !important;
+        height: var(--nox-avatar-desktop, 50px) !important;
+        min-width: var(--nox-avatar-desktop, 50px) !important;
+        min-height: var(--nox-avatar-desktop, 50px) !important;
       }
       .standings-divisions--combined .team-with-avatars .avatar--fallback {
         font-size: 24px !important;
@@ -398,7 +398,7 @@
          set to the same 300px and the same fonts. ~one court per phone screen
          (peek of the next), horizontal court-swipe kept; names still fit. */
       #view-matches .matches-grid,
-      #view-matches .matches-grid__header-row { --court-min: 310px; }
+      #view-matches .matches-grid__header-row { --court-min: var(--nox-court-min, 310px); }
       #view-matches .match-card__team-name,
       #view-matches .match-card__team--winner .match-card__team-name,
       #view-matches .match-card__team--loser .match-card__team-name { font-size: 16px; }
@@ -420,8 +420,8 @@
       .bracket-match .avatar--fallback,
       .match-card .team-with-avatars .avatar,
       .match-card .team-with-avatars .avatar--fallback {
-        width: 40px !important; height: 40px !important;
-        min-width: 40px !important; min-height: 40px !important;
+        width: var(--nox-avatar-mobile, 40px) !important; height: var(--nox-avatar-mobile, 40px) !important;
+        min-width: var(--nox-avatar-mobile, 40px) !important; min-height: var(--nox-avatar-mobile, 40px) !important;
       }
       .team-with-avatars .avatar--fallback,
       .bracket-match .avatar--fallback,
@@ -1152,6 +1152,14 @@
       // 5) QR size override (px). Empty → the responsive clamp stays.
       var qr = String(cfg('qr_size', '')).trim();
       if (qr) { if (/^\d+$/.test(qr)) qr += 'px'; root.style.setProperty('--nox-qr-size', qr); }
+
+      // 6) Visual scale — sizes in px (bare number → px); empty keeps the fallback.
+      function px(v) { v = String(v).trim(); return v && /^\d+(\.\d+)?$/.test(v) ? v + 'px' : v; }
+      var ad = px(cfg('avatar_size_desktop', '')); if (ad) root.style.setProperty('--nox-avatar-desktop', ad);
+      var am = px(cfg('avatar_size_mobile', '')); if (am) root.style.setProperty('--nox-avatar-mobile', am);
+      var cm = px(cfg('court_min_mobile', '')); if (cm) root.style.setProperty('--nox-court-min', cm);
+      var fo = String(cfg('flag_outline_color', '')).trim(); if (fo) root.style.setProperty('--nox-flag-outline', fo);
+      // font_size_small needs no JS here — the engine's applyConfig maps it to --fs-small.
       return true;
     }
     var n = 0, iv = setInterval(function () { if (apply() || ++n > 120) clearInterval(iv); }, 100);
