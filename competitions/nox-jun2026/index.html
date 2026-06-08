@@ -967,6 +967,7 @@
   <script>
   (function () {
     var VIEW_ID = 'view-silver-bracket';
+    var defaultApplied = false;   // config silver_default_bracket applied once
 
     // Give the consolation columns the same round-title labels as the knockout,
     // in the same column positions, so toggling doesn't move them and the
@@ -1000,6 +1001,15 @@
       // when a consolation bracket actually exists.
       var hasCons = !!view.querySelector('.bracket-consolation--inline');
       if (hasCons) labelConsolation(view);
+      // Apply the configured default ONCE, when a consolation bracket exists and
+      // Config has loaded (Config key silver_default_bracket = knockout|consolation).
+      if (hasCons && !defaultApplied && typeof Data !== 'undefined' && Data.configLoaded) {
+        defaultApplied = true;
+        try {
+          if (String(Data.getConfig('silver_default_bracket', 'knockout')).trim().toLowerCase() === 'consolation')
+            view.classList.add('nox-show-consolation');
+        } catch (e) {}
+      }
       var bar = view.querySelector('.nox-silver-toggle');
       var hasConsPill = !!(bar && bar.querySelector('[data-nox-tab="consolation"]'));
       if (bar && hasConsPill === hasCons) return;                  // bar already correct
@@ -1132,16 +1142,8 @@
         var tb = document.getElementById('nox-theme-toggle'); if (tb) tb.style.display = 'none';
       }
 
-      // 3) Silver default bracket (knockout|consolation).
-      if (lc(cfg('silver_default_bracket', 'knockout')) === 'consolation') {
-        var sv = document.getElementById('view-silver-bracket');
-        if (sv) {
-          sv.classList.add('nox-show-consolation');
-          sv.querySelectorAll('.nox-silver-toggle .nox-pill').forEach(function (p) {
-            p.classList.toggle('active', p.getAttribute('data-nox-tab') === 'consolation');
-          });
-        }
-      }
+      // 3) Silver default bracket is handled in the silver-toggle script's
+      //    ensureBar() (it owns the nox-show-consolation class lifecycle).
 
       // 4) "Last updated" timestamp — shown only when explicitly enabled.
       var ts = document.querySelector('.footer__timestamp');
