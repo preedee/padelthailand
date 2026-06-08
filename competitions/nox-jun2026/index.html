@@ -33,12 +33,15 @@
     .footer { height: clamp(56px, 8vh, 84px); } /* grown to fit the doubled QR */
     .footer__powered-text, .footer__timestamp { font-size: clamp(12px, 1.7vh, 22px); }
     .footer__qr-label { font-size: clamp(10px, 1.3vh, 16px); }
-    /* Doubled QR (shared CSS = 36px); scales with viewport height, caps at 72px. */
-    .footer__qr img { width: clamp(48px, 6.8vh, 72px); height: clamp(48px, 6.8vh, 72px); }
+    /* Doubled QR (shared CSS = 36px); scales with viewport height, caps at 72px.
+       Config `qr_size` (px) overrides via --nox-qr-size; empty keeps the clamp. */
+    .footer__qr img { width: var(--nox-qr-size, clamp(48px, 6.8vh, 72px)); height: var(--nox-qr-size, clamp(48px, 6.8vh, 72px)); }
 
     /* Light/dark theme toggle — lives in the FOOTER (brand brown in both themes),
        so a translucent white circular button reads well either way. */
-    .footer__timestamp { display: none !important; }   /* "Last updated" removed */
+    /* "Last updated" hidden by default; Config `show_last_updated=TRUE` reveals it
+       (the apply-config script sets inline display). No !important so it can. */
+    .footer__timestamp { display: none; }
     .nox-theme-toggle {
       flex: 0 0 auto;
       width: 32px; height: 32px; border-radius: 50%;
@@ -1101,6 +1104,55 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
+  })();
+  </script>
+
+  <script>
+  /* Apply config-driven NOX settings once the Config tab has loaded, so these
+     stay organizer-tunable in the sheet instead of hardcoded here:
+       default_theme (light|dark) · show_theme_toggle (TRUE|FALSE) ·
+       silver_default_bracket (knockout|consolation) ·
+       show_last_updated (TRUE|FALSE) · qr_size (px; empty = responsive clamp). */
+  (function () {
+    var done = false;
+    function cfg(k, d) { try { return Data.getConfig(k, d) || d; } catch (e) { return d; } }
+    function lc(v) { return String(v).trim().toLowerCase(); }
+    function apply() {
+      if (done) return true;
+      if (typeof Data === 'undefined' || !Data.configLoaded) return false;
+      done = true;
+      var root = document.documentElement, dash = document.getElementById('nox-dash');
+
+      // 1) Default theme — only when the viewer hasn't picked one themselves.
+      var saved = null; try { saved = localStorage.getItem('noxTheme'); } catch (e) {}
+      if (!saved && dash) dash.classList.toggle('theme-dark', lc(cfg('default_theme', 'dark')) !== 'light');
+
+      // 2) Theme toggle button visibility.
+      if (lc(cfg('show_theme_toggle', 'true')) === 'false') {
+        var tb = document.getElementById('nox-theme-toggle'); if (tb) tb.style.display = 'none';
+      }
+
+      // 3) Silver default bracket (knockout|consolation).
+      if (lc(cfg('silver_default_bracket', 'knockout')) === 'consolation') {
+        var sv = document.getElementById('view-silver-bracket');
+        if (sv) {
+          sv.classList.add('nox-show-consolation');
+          sv.querySelectorAll('.nox-silver-toggle .nox-pill').forEach(function (p) {
+            p.classList.toggle('active', p.getAttribute('data-nox-tab') === 'consolation');
+          });
+        }
+      }
+
+      // 4) "Last updated" timestamp — shown only when explicitly enabled.
+      var ts = document.querySelector('.footer__timestamp');
+      if (ts && lc(cfg('show_last_updated', 'false')) === 'true') ts.style.display = 'inline';
+
+      // 5) QR size override (px). Empty → the responsive clamp stays.
+      var qr = String(cfg('qr_size', '')).trim();
+      if (qr) { if (/^\d+$/.test(qr)) qr += 'px'; root.style.setProperty('--nox-qr-size', qr); }
+      return true;
+    }
+    var n = 0, iv = setInterval(function () { if (apply() || ++n > 120) clearInterval(iv); }, 100);
   })();
   </script>
 </body>
