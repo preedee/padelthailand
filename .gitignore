@@ -2,3 +2,7 @@
 .env
 node_modules/
 .claude/
+
+# Claude Code / agent session state — never publish
+.playwright-cli/
+MEMORY/

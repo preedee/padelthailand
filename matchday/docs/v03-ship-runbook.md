@@ -14,7 +14,7 @@ Before starting, confirm:
 - [ ] You have admin access to the Supabase dashboard at https://supabase.com/dashboard/project/hqcwmjninvunoexccrbz
 - [ ] OrbStack is installed (or you can run Docker Desktop — Supabase CLI needs a container runtime for `supabase start`)
 - [ ] You can run `gh` CLI with write access to `preedee/matchday-backend` and `preedee/matchday-web`
-- [ ] You're at `~/Desktop/Cowork/matchday-web/` for the local E2E walkthrough
+- [ ] You're at `~/Desktop/Cowork/matchday/web/` for the local E2E walkthrough
 
 ---
 
@@ -48,7 +48,7 @@ The B10 self-elevation guard prevents users from setting their own `roles`. You 
 1. Open OrbStack (or Docker Desktop). Confirm `docker info` runs.
 2. Start local Supabase stack:
    ```bash
-   cd ~/Desktop/Cowork/matchday-backend
+   cd ~/Desktop/Cowork/matchday/backend
    supabase start
    ```
    Takes ~2 min on first run; pulls images. Subsequent starts ~10 sec.
@@ -65,7 +65,7 @@ The B10 self-elevation guard prevents users from setting their own `roles`. You 
 These are gated by CI but worth one local confirmation before E2E:
 
 ```bash
-cd ~/Desktop/Cowork/matchday-backend
+cd ~/Desktop/Cowork/matchday/backend
 SUPABASE_URL=http://127.0.0.1:54321 \
   SUPABASE_ANON_KEY="<paste-anon>" \
   SUPABASE_SERVICE_ROLE_KEY="<paste-service-role>" \
@@ -86,7 +86,7 @@ Open two browsers (or two profiles in one browser) so you can act as two users w
 ### 4a · Set up matchday-web pointing at remote prod
 
 ```bash
-cd ~/Desktop/Cowork/matchday-web
+cd ~/Desktop/Cowork/matchday/web
 # .env.local should already point at the remote project. Confirm:
 grep NEXT_PUBLIC_SUPABASE .env.local
 # Expected:
