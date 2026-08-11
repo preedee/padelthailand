@@ -15,7 +15,7 @@ Same as v0.3 runbook. v0.4 reuses everything:
 - [ ] Admin role bootstrap on Pap user already done (or run Step 1 from v03 runbook if still pending — same SQL)
 - [ ] OrbStack running locally (or Docker Desktop)
 - [ ] `gh` CLI with write access to `preedee/matchday-backend` and `preedee/matchday-web`
-- [ ] `~/Desktop/Cowork/matchday/web/` with `.env.local` pointing at remote ref `hqcwmjninvunoexccrbz`
+- [ ] `~/Cowork/openrally/matchday/web/` with `.env.local` pointing at remote ref `hqcwmjninvunoexccrbz`
 - [ ] `SUPABASE_ACCESS_TOKEN` + `SUPABASE_DB_PASSWORD` GitHub secrets set on `preedee/matchday-backend` (already set during v0.3)
 
 **No new external accounts needed for v0.4.** Phase A's Edge Functions are deployed; Resend integration is the same as v0.3 (still optional — dev-fallback console-logs when `RESEND_API_KEY` unset).
@@ -53,7 +53,7 @@ v0.4's auto-close cron (B33) runs `auto-close-tournaments` Edge Function every 5
 Run the v0.4 RLS regression tests locally before E2E:
 
 ```bash
-cd ~/Desktop/Cowork/matchday/backend
+cd ~/Cowork/openrally/matchday/backend
 supabase start  # ~10sec if previously started
 SUPABASE_URL=http://127.0.0.1:54321 \
   SUPABASE_ANON_KEY="<paste from supabase status>" \
@@ -68,7 +68,7 @@ Expected: all 8 scenarios pass (two-row mirror + accept/decline + capacity+waitl
 ## Step 3 · matchday-web local dev pointed at remote prod
 
 ```bash
-cd ~/Desktop/Cowork/matchday/web
+cd ~/Cowork/openrally/matchday/web
 bun dev
 ```
 

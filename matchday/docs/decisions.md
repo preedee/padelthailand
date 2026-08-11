@@ -162,7 +162,7 @@ Living log of decisions made during roadmap planning. Most recent first.
 ## 2026-04-25 — v0.1.0 Foundation shipped
 
 - **Status flipped** `Planned` → `Shipped` for v0.1.0 in `version-roadmap.md`. All 5 Done-when criteria met (Realtime POC <500ms p95, magic-link + RLS, TH+EN locales, both CIs green, design tokens visible).
-- **Repo strategy override** — shipped on **split repos** (`matchday-web/` + `matchday-backend/`) instead of the single-repo plan in build-prompt §17 #2. Rationale: TPS muscle memory + permission/secret isolation + independent deploy cadence. Logged in `~/Desktop/Cowork/matchday/hub/DECISIONS.md`.
+- **Repo strategy override** — shipped on **split repos** (`matchday-web/` + `matchday-backend/`) instead of the single-repo plan in build-prompt §17 #2. Rationale: TPS muscle memory + permission/secret isolation + independent deploy cadence. Logged in `~/Cowork/openrally/matchday/hub/DECISIONS.md`.
 - **Type-sharing approach (b)** — `matchday-web` pulls `types/` artifact from `matchday-backend` via `gh` CLI at build time. Not GitHub Packages.
 - **Remote Supabase project** linked: ref `hqcwmjninvunoexccrbz`, region Singapore, free tier.
 
