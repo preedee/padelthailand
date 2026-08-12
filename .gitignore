@@ -1,8 +1,8 @@
+
+.claude/
 .DS_Store
 .env
-node_modules/
-.claude/
-
-# Claude Code / agent session state — never publish
 .playwright-cli/
+# Claude Code / agent session state — never publish
 MEMORY/
+node_modules/

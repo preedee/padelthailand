@@ -43,8 +43,36 @@ poster whole instead of cropping it to a grid cell.
 The fallback matters: a login wall answers `200` with HTML, so the code checks the response's
 content type rather than its status before trusting the bytes.
 
-At full size the poster set is ~15 MB for 109 images. That is fine for the repo and for the
-page, which lazy-loads only the tiles in view.
+### Optimising for the wall
+
+`fetch-posters.ts` runs `optimize-posters.py` automatically after any new download. Instagram's
+originals are **progressive** JPEGs at 1080px, but the wall never draws a tile wider than about
+380px, so those files are roughly 4× oversized and slow to decode — ten progressive 1080px
+decodes at once is enough to stall a renderer.
+
+The step rewrites each poster as a **baseline** JPEG capped at 760px wide (2× the widest tile) and
+refreshes its dimensions in the manifest. Aspect ratio is untouched, so nothing is cropped — only
+pixel dimensions come down, 15.2 MB → 10.2 MB across 109 posters. The full-resolution image is one
+tap away on Instagram, which is where the tile links.
+
+It needs Pillow (`python3 -m pip install --user Pillow`). Without it the download still succeeds
+and the posters are simply left at original size, with a warning. Run it standalone any time:
+
+```bash
+python3 scripts/optimize-posters.py --width 760 --quality 80
+```
+
+### Poster shapes
+
+The posters are not one size, which is why the wall uses a fixed 4:5 cell and contains each image
+rather than cropping it:
+
+| Shape | Count |
+|---|---|
+| 4:5 portrait | 67 (61%) |
+| 1:1 square | 34 (31%) |
+| 9:16 tall | 7 (6%) |
+| landscape | 1 |
 
 ## Share a post from your phone
 

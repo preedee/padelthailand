@@ -7,7 +7,6 @@
 :root {
   --wall-gap: 8px;
   --wall-col: 230px;
-  --wall-row: 6px;          /* masonry row unit — spans are computed in JS */
   --transition: 0.2s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -22,7 +21,6 @@
   --text-muted: #888;
   --header-bg: rgba(15, 15, 15, 0.88);
   --focus-color: #6b9fff;
-  --scrim: rgba(0, 0, 0, 0.72);
 }
 
 [data-theme="light"] {
@@ -35,7 +33,6 @@
   --text-muted: #777;
   --header-bg: rgba(245, 245, 245, 0.88);
   --focus-color: #2563eb;
-  --scrim: rgba(0, 0, 0, 0.66);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -117,8 +114,8 @@ a { color: inherit; text-decoration: none; }
 [data-theme="light"] .theme-icon-sun { display: none; }
 
 /* ---- Masthead ---- */
-/* The month is the only large text on the page: the year sits behind it as an
-   outline, which gives the page its signature without adding words. */
+/* One compact line. The year is outlined rather than filled so the month reads first,
+   and the whole block stays out of the posters' way. */
 
 .masthead {
   position: relative;
@@ -186,117 +183,66 @@ a { color: inherit; text-decoration: none; }
 .wall {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--wall-col), 1fr));
-  grid-auto-rows: var(--wall-row);
   gap: var(--wall-gap);
   padding: 0 clamp(8px, 1.4vw, 16px) clamp(28px, 5vw, 56px);
 }
 
+/* Every cell is the same 4:5 — Instagram's portrait format and 61% of these posters.
+   Posters are contained rather than cropped, so nothing is ever cut off; a square or
+   9:16 poster mattes against a wash of its organizer's colour instead.
+
+   An earlier version filled the letterbox with a blurred blow-up of the poster, the way
+   Instagram does. Chrome composited that filtered layer over the sharp image no matter
+   what the z-index said, and forcing layer promotion fixed it only intermittently. A
+   flat matte has no such failure mode and costs one image element instead of two. */
 .tile {
   position: relative;
   display: block;
   overflow: hidden;
   border-radius: 4px;
-  background: var(--bg-tertiary);
-  /* Set by JS from the poster's real dimensions before paint. */
-  grid-row: span 30;
-}
-
-.tile--wide { grid-column: span 2; }
-
-@media (max-width: 560px) {
-  .tile--wide { grid-column: span 1; }
+  aspect-ratio: 4 / 5;
+  background:
+    linear-gradient(165deg, color-mix(in srgb, var(--org, transparent) 26%, transparent), transparent 75%),
+    var(--bg-tertiary);
 }
 
 .tile-img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform var(--transition-smooth), filter var(--transition-smooth);
+  object-fit: contain;
+  transition: transform var(--transition-smooth);
 }
 
 .tile:hover .tile-img,
-.tile:focus-visible .tile-img {
-  transform: scale(1.035);
-  filter: brightness(0.55);
-}
+.tile:focus-visible .tile-img { transform: scale(1.03); }
 
-/* The date rides on top of the poster, always visible — it is the one fact you
-   scan a wall of posters for, so it never hides behind a hover. */
+/* The day, and nothing else — the masthead supplies the month and the poster supplies
+   the name. Set large, a step below the masthead, so the wall reads as a calendar. */
 .tile-date {
   position: absolute;
+  z-index: 3;
+  transform: translateZ(0);
   inset: 0 0 auto 0;
-  padding: 9px 11px 22px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent);
+  padding: 6px 12px 26px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), transparent);
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: clamp(1.05rem, 1.9vw, 1.7rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
 
-.tile-meta {
-  position: absolute;
-  inset: auto 0 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 14px 12px 12px;
-  background: linear-gradient(to top, var(--scrim), transparent);
-  color: #fff;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
-}
-
-.tile:hover .tile-meta,
-.tile:focus-visible .tile-meta { opacity: 1; transform: none; }
-
-.tile-name {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-.tile-org {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.tile-accent {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 3px;
-}
-
-/* Fallback tile — no Instagram poster yet, so the organizer's brand image carries it.
-   Those logos are full-bleed squares, so they fill the tile exactly like a poster. */
+/* Fallback tile — no Instagram poster yet, so the organizer's brand image carries it,
+   contained in the same 4:5 cell against a wash of the organizer's colour. */
 
 .tile--fallback {
   background:
-    linear-gradient(160deg, color-mix(in srgb, var(--org) 30%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--org) 34%, transparent), transparent 72%),
     var(--bg-secondary);
-}
-
-/* A logo says who, not which tournament — so this caption never hides. */
-.tile-meta--static {
-  opacity: 1;
-  transform: none;
-  background: linear-gradient(to top, var(--scrim) 55%, transparent);
-  padding-top: 34px;
-}
-
-.tile--fallback:hover .tile-img,
-.tile--fallback:focus-visible .tile-img { filter: brightness(0.75); }
-
-/* Touch devices have no hover, so the caption is always legible there. */
-@media (hover: none) {
-  .tile-meta { opacity: 1; transform: none; }
 }
 
 /* ---- Empty state ---- */

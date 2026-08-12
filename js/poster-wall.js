@@ -122,7 +122,6 @@ function parseSheet(csv) {
       shortcode: shortcodeOf(row['Tournament Instagram URL']),
       orgInstagram: row['Organizer Instagram'] || '',
       logoUrl: toDirectImageUrl(row['Organizer Logo']),
-      featured: (row['Featured'] || '').toLowerCase() === 'true',
     };
   }).filter(Boolean);
 }
@@ -152,6 +151,7 @@ function eventsIn({ year, month }) {
     .sort((a, b) => a.start - b.start || a.name.localeCompare(b.name));
 }
 
+/** Full date range, for the accessible name and the native tooltip. */
 function formatDates(e) {
   if (e.tbc) return `TBC ${MONTHS[e.start.getMonth()].toUpperCase()}`;
   const sameDay = e.start.getTime() === e.end.getTime();
@@ -163,34 +163,42 @@ function formatDates(e) {
     : `${startStr} – ${e.end.getDate()} ${MONTHS[e.end.getMonth()].toUpperCase()}`;
 }
 
-// ---- Render ---------------------------------------------------------------
+/**
+ * Day number(s) only — the masthead already says which month.
+ * A tournament straddling a month boundary is clipped to the month on screen, so
+ * 27 Feb – 1 Mar reads "27" in February and "1" in March rather than "27–1".
+ */
+function formatDays(e, { year, month }) {
+  if (e.tbc) return 'TBC';
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const from = (e.start < first ? first : e.start).getDate();
+  const to = (e.end > last ? last : e.end).getDate();
+  return from === to ? `${from}` : `${from}–${to}`;
+}
 
-const FALLBACK_ASPECT = 1;               // organizer logos are square brand images
+// ---- Render ---------------------------------------------------------------
 
 function tileHTML(e) {
   const poster = e.shortcode ? posters[e.shortcode] : null;
-  const dates = formatDates(e);
-  const wide = e.featured ? ' tile--wide' : '';
-  const datePlate = `<span class="tile-date">${esc(dates)}</span>`;
-  const meta = `
-      <span class="tile-name">${esc(e.name)}</span>
-      <span class="tile-org">${esc([e.organizer, e.city].filter(Boolean).join(' · '))}</span>`;
+  // The poster carries the name, so on screen the tile shows only the day. The full
+  // description lives in the tooltip and the accessible name.
+  const label = [e.name, formatDates(e), [e.organizer, e.city].filter(Boolean).join(' · ')]
+    .filter(Boolean).join(' · ');
+  const datePlate = `<span class="tile-date">${esc(formatDays(e, cursor))}</span>`;
 
   if (poster) {
-    const aspect = poster.w && poster.h ? poster.h / poster.w : 1;
-    return `<a class="tile${wide}" href="${esc(e.instagramUrl)}" target="_blank" rel="noopener"
-        data-aspect="${aspect}" aria-label="${esc(`${e.name}, ${dates} — view on Instagram`)}">
+    return `<a class="tile" href="${esc(e.instagramUrl)}" target="_blank" rel="noopener"
+        title="${esc(label)}" aria-label="${esc(`${label} — view on Instagram`)}"
+        style="--org:${esc(e.color)}">
       <img class="tile-img" src="${esc(poster.file)}" alt="${esc(e.name)} poster"
            width="${poster.w}" height="${poster.h}" loading="lazy" decoding="async">
       ${datePlate}
-      <span class="tile-meta">${meta}</span>
-      <span class="tile-accent" style="background:${esc(e.color)}"></span>
     </a>`;
   }
 
-  // No poster yet. Organizer logos in this sheet are full-bleed square brand images, not
-  // transparent marks, so they fill the tile like a poster would. The caption stays visible
-  // because a logo alone does not say which tournament this is.
+  // No poster yet. Organizer logos in this sheet are full-bleed square brand images, so they
+  // sit in the same 4:5 cell against the organizer's colour.
   const link = e.instagramUrl || e.orgInstagram;
   const tag = link ? 'a' : 'div';
   const attrs = link ? ` href="${esc(link)}" target="_blank" rel="noopener"` : '';
@@ -199,35 +207,11 @@ function tileHTML(e) {
            decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`
     : '';
 
-  return `<${tag} class="tile tile--fallback${wide}"${attrs} data-aspect="${FALLBACK_ASPECT}"
-      style="--org:${esc(e.color)}"${link ? ` aria-label="${esc(`${e.name}, ${dates} — view on Instagram`)}"` : ''}>
+  return `<${tag} class="tile tile--fallback"${attrs} title="${esc(label)}"
+      style="--org:${esc(e.color)}"${link ? ` aria-label="${esc(`${label} — view on Instagram`)}"` : ''}>
     ${mark}
     ${datePlate}
-    <span class="tile-meta tile-meta--static">${meta}</span>
-    <span class="tile-accent" style="background:${esc(e.color)}"></span>
   </${tag}>`;
-}
-
-/** Coalesce the bursts of layout requests that image loads produce into one pass per frame. */
-let layoutQueued = false;
-function scheduleLayout() {
-  if (layoutQueued) return;
-  layoutQueued = true;
-  requestAnimationFrame(() => { layoutQueued = false; layout(); });
-}
-
-/** Masonry: convert each tile's true aspect ratio into a grid row span. */
-function layout() {
-  const wall = document.getElementById('wall');
-  const styles = getComputedStyle(wall);
-  const row = parseFloat(styles.getPropertyValue('grid-auto-rows')) || 8;
-  const gap = parseFloat(styles.getPropertyValue('row-gap')) || 14;
-
-  wall.querySelectorAll('.tile').forEach(tile => {
-    const aspect = parseFloat(tile.dataset.aspect) || 1;
-    const height = tile.getBoundingClientRect().width * aspect;
-    tile.style.gridRow = `span ${Math.max(1, Math.round((height + gap) / (row + gap)))}`;
-  });
 }
 
 function render() {
@@ -244,12 +228,6 @@ function render() {
   wall.innerHTML = list.length
     ? list.map(tileHTML).join('')
     : `<p class="wall-empty">${esc(t('empty'))}</p>`;
-
-  layout();
-  // Cached images report width 0 until decoded; re-measure once each settles.
-  wall.querySelectorAll('img').forEach(img => {
-    if (!img.complete) img.addEventListener('load', scheduleLayout, { once: true });
-  });
 }
 
 function goTo(next, { push = true } = {}) {
@@ -300,11 +278,6 @@ function wireChrome() {
     goTo(fromUrl || thisMonth(), { push: false });
   });
 
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(scheduleLayout, 120);
-  });
 }
 
 function thisMonth() {

@@ -244,6 +244,23 @@ async function main() {
   }
 
   console.log(`\n✓ ${ok}/${todo.length} new posters · ${Object.keys(manifest).length} in manifest`);
+
+  if (ok > 0) await optimize();
+}
+
+/**
+ * Instagram's originals are progressive 1080px JPEGs — far larger than any tile draws, and
+ * slow enough to decode that a month's worth paints blank for a beat. The Python step
+ * rewrites them as baseline JPEGs at display width and refreshes their manifest dimensions.
+ */
+async function optimize() {
+  const script = join(ROOT, 'scripts', 'optimize-posters.py');
+  const proc = Bun.spawn(['python3', script], { stdout: 'inherit', stderr: 'pipe' });
+  const code = await proc.exited;
+  if (code !== 0) {
+    console.warn('\n⚠ optimize-posters.py failed — posters kept at original size');
+    console.warn(await new Response(proc.stderr).text());
+  }
 }
 
 if (import.meta.main) await main();
