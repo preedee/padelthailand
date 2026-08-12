@@ -3,27 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Padel Thailand - Tournament Calendar</title>
-  <meta name="description" content="The complete calendar of padel tournaments in Thailand. Find upcoming events from Thai Padel Series, Bangkok Padel Tour, Thailand Padel Association and more.">
+  <title>Padel Thailand — Tournament Posters</title>
+  <meta name="description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram. Tap a poster to open the post.">
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Padel Thailand - Tournament Calendar">
-  <meta property="og:description" content="The complete calendar of padel tournaments in Thailand. Find upcoming events from Thai Padel Series, Bangkok Padel Tour, Thailand Padel Association and more.">
+  <meta property="og:title" content="Padel Thailand — Tournament Posters">
+  <meta property="og:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
   <meta property="og:image" content="img/padel_thailand_logo_light.png">
   <meta property="og:url" content="https://padelthailand.com">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Padel Thailand - Tournament Calendar">
-  <meta name="twitter:description" content="The complete calendar of padel tournaments in Thailand.">
+  <meta name="twitter:title" content="Padel Thailand — Tournament Posters">
+  <meta name="twitter:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
   <meta name="twitter:image" content="img/padel_thailand_logo_light.png">
+  <link rel="canonical" href="https://padelthailand.com/">
+  <link rel="icon" type="image/png" href="img/padel_thailand_logo_light.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="img/padel_thailand_logo_light.png">
-  <link rel="stylesheet" href="css/styles.css">
-  <!-- Leaflet.js Map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Theme must be stamped before the stylesheet paints, or the page flashes. -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('pt-theme');
+        document.documentElement.setAttribute('data-theme', saved || 'dark');
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/poster-wall.css?v=1">
+
   <!-- Google Analytics (GA4) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HYHPE5BTL7"></script>
   <script>
@@ -34,215 +42,48 @@
   </script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">
-        <img src="img/padel_thailand_logo_dark.png" alt="Padel Thailand" class="logo-img logo-dark">
-        <img src="img/padel_thailand_logo_light.png" alt="Padel Thailand" class="logo-img logo-light">
-      </div>
-      <nav class="nav">
-        <a href="#calendar" class="nav-link active" data-i18n="nav_calendar">Calendar</a>
+  <a class="skip-link" href="#wall">Skip to posters</a>
 
-        <!-- Language Toggle -->
-        <button class="lang-toggle" id="lang-toggle" title="Switch language">
-          <span class="lang-label" id="lang-label">EN</span>
-        </button>
+  <header class="wall-header">
+    <a class="wall-logo" href="./" aria-label="Padel Thailand">
+      <img src="img/padel_thailand_logo_dark.png" alt="Padel Thailand" class="logo-dark">
+      <img src="img/padel_thailand_logo_light.png" alt="Padel Thailand" class="logo-light">
+    </a>
 
-        <!-- Theme Toggle -->
-        <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
-          <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-      </nav>
-    </div>
+    <nav class="wall-nav">
+      <a class="wall-btn" id="calendar-link" href="calendar.html">Calendar</a>
+
+      <button class="wall-btn wall-btn--icon" id="lang-toggle" title="Switch language" aria-label="Switch language">
+        <span class="lang-label" id="lang-label">EN</span>
+      </button>
+
+      <button class="wall-btn wall-btn--icon" id="theme-toggle" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">
+        <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </nav>
   </header>
 
-  <!-- Main Content -->
-  <main class="main">
-    <!-- Controls Bar -->
-    <section class="controls">
-      <div class="controls-inner">
-        <!-- Row 1: Search + View Controls -->
-        <div class="controls-row">
-          <!-- Search -->
-          <div class="search-wrap" id="search-wrap">
-            <input type="text" id="search-input" class="search-input" placeholder="Search tournaments..." aria-label="Search tournaments">
-            <button class="search-clear" id="search-clear" type="button" title="Clear search" aria-label="Clear search">&times;</button>
-          </div>
-
-          <!-- Summary Bar (inline) -->
-          <div class="summary-bar" id="summary-bar" aria-live="polite" aria-atomic="true"></div>
-
-          <!-- Right controls -->
-          <div class="controls-right">
-            <!-- Hide Past Toggle -->
-            <button class="hide-past-btn" id="hide-past-btn" title="Hide past events"></button>
-
-            <!-- Filter Toggle -->
-            <button class="filter-toggle-btn" id="filter-toggle-btn" title="Filters" aria-expanded="false" aria-controls="filter-panel">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              <span data-i18n="filters_btn">Filters</span>
-              <span class="filter-badge hidden" id="filter-badge"></span>
-              <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-
-            <!-- View Toggle -->
-            <div class="view-toggle">
-              <button class="view-btn active" data-view="calendar" title="Calendar view">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </button>
-              <button class="view-btn" data-view="week" title="Week view">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="4" x2="10" y2="22"/></svg>
-              </button>
-              <button class="view-btn" data-view="year" title="Year view">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              </button>
-              <button class="view-btn" data-view="list" title="List view">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              </button>
-              <button class="view-btn" data-view="map" title="Map view">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Collapsible Filter Panel -->
-        <div class="filter-panel collapsed" id="filter-panel">
-          <div class="filter-rows">
-            <div class="filter-row">
-              <span class="filter-row-label" data-i18n="filter_type">Type</span>
-              <div class="filters" id="type-filters">
-                <button class="filter-btn active" data-type="all" data-i18n="filter_all">All</button>
-              </div>
-            </div>
-            <div class="filter-row">
-              <span class="filter-row-label" data-i18n="filter_organizer">Organizer</span>
-              <div class="filters" id="filters">
-                <button class="filter-btn active" data-organizer="all" data-i18n="filter_all">All</button>
-              </div>
-            </div>
-            <div class="filter-row">
-              <span class="filter-row-label" data-i18n="filter_location">Location</span>
-              <div class="filters" id="location-filters">
-                <button class="filter-btn active" data-location="all" data-i18n="filter_all">All</button>
-              </div>
-            </div>
-            <div class="filter-row">
-              <span class="filter-row-label" data-i18n="filter_category">Category</span>
-              <div class="filters" id="category-filters">
-                <button class="filter-btn active" data-category="all" data-i18n="filter_all">All</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Calendar View -->
-    <section class="calendar-section" id="calendar-view">
-      <div class="calendar-nav">
-        <button class="cal-nav-btn" id="prev-month" title="Previous month (Left arrow)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 class="cal-month-title" id="month-title"></h2>
-        <button class="cal-nav-btn" id="next-month" title="Next month (Right arrow)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button class="today-btn" id="today-btn" data-i18n="today_btn">Today</button>
-      </div>
-      <div class="calendar-grid">
-        <div class="cal-header" id="cal-header">
-          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-        </div>
-        <div class="cal-body" id="cal-body" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <!-- Week View -->
-    <section class="week-section hidden" id="week-view">
-      <div class="week-nav">
-        <button class="cal-nav-btn" id="prev-week" title="Previous week">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 class="cal-month-title" id="week-title"></h2>
-        <button class="cal-nav-btn" id="next-week" title="Next week">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button class="today-btn" id="week-today-btn" data-i18n="today_btn">Today</button>
-      </div>
-      <div class="week-grid">
-        <div class="week-header" id="week-header"></div>
-        <div class="week-body" id="week-body"></div>
-      </div>
-    </section>
-
-    <!-- Year View -->
-    <section class="year-section hidden" id="year-view">
-      <div class="year-nav">
-        <button class="cal-nav-btn" id="prev-year">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 class="cal-month-title" id="year-title"></h2>
-        <button class="cal-nav-btn" id="next-year">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-      <div class="year-grid" id="year-grid"></div>
-      <div class="cal-legend" id="year-legend"></div>
-    </section>
-
-    <!-- List View -->
-    <section class="list-section hidden" id="list-view">
-      <div class="list-container" id="list-container" aria-live="polite"></div>
-    </section>
-
-    <!-- Map View -->
-    <section class="map-section hidden" id="map-view">
-      <div class="map-container" id="map-container"></div>
-    </section>
-
-    <!-- TBC Section -->
-    <section class="tbc-section" id="tbc-section">
-      <h3 class="tbc-title" data-i18n="tbc_title">Dates To Be Confirmed</h3>
-      <div class="tbc-container" id="tbc-container"></div>
-    </section>
-
-    <!-- Organizer Profiles -->
-    <section class="org-profiles-section hidden" id="organizer-profiles">
-      <h3 class="org-profiles-title" id="org-profiles-title">Organizers</h3>
-      <div class="org-profiles-grid" id="org-profiles-grid"></div>
-    </section>
-
-    <!-- Tournament Detail Modal -->
-    <div class="modal-overlay hidden" id="modal-overlay" role="dialog" aria-modal="true" aria-label="Tournament details">
-      <div class="modal" id="modal">
-        <button class="modal-close" id="modal-close" aria-label="Close modal">&times;</button>
-        <div class="modal-content" id="modal-content"></div>
-      </div>
+  <main>
+    <div class="masthead">
+      <button class="masthead-nav" id="prev-month" aria-label="Previous month">&lsaquo;</button>
+      <h1 class="masthead-title">
+        <span class="masthead-year" id="month-year" aria-hidden="true"></span>
+        <span class="masthead-month" id="month-name"></span>
+      </h1>
+      <button class="masthead-nav" id="next-month" aria-label="Next month">&rsaquo;</button>
     </div>
+    <p class="masthead-count" id="month-count" aria-live="polite"></p>
 
-    <!-- Tooltip -->
-    <div class="tooltip" id="tooltip"></div>
-
-    <!-- Toast notification -->
-    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+    <div class="wall" id="wall"></div>
   </main>
 
-  <!-- Back to top -->
-  <button id="back-to-top" class="back-to-top" title="Back to top" aria-label="Back to top">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-  </button>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>&copy; 2026 PadelThailand.com</p>
+  <footer class="wall-footer">
+    <a href="calendar.html">Calendar</a>
+    <a href="calendar.html#map">Clubs</a>
+    <a href="https://www.instagram.com/padelthailand/" target="_blank" rel="noopener">Instagram</a>
   </footer>
 
-  <script async src="//www.instagram.com/embed.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/poster-wall.js?v=1"></script>
 </body>
 </html>

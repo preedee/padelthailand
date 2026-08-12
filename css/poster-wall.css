@@ -1,0 +1,341 @@
+/* ============================================
+   PadelThailand.com — Poster Wall
+   Editorial month grid of Instagram tournament posters.
+   Tokens mirror css/styles.css so the theme choice carries between the two pages.
+   ============================================ */
+
+:root {
+  --wall-gap: 14px;
+  --wall-col: 250px;
+  --wall-row: 8px;          /* masonry row unit — spans are computed in JS */
+  --transition: 0.2s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #242424;
+  --border: #333;
+  --text-primary: #f0f0f0;
+  --text-secondary: #aaa;
+  --text-muted: #888;
+  --header-bg: rgba(15, 15, 15, 0.88);
+  --focus-color: #6b9fff;
+  --scrim: rgba(0, 0, 0, 0.72);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eaeaea;
+  --border: #ddd;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555;
+  --text-muted: #777;
+  --header-bg: rgba(245, 245, 245, 0.88);
+  --focus-color: #2563eb;
+  --scrim: rgba(0, 0, 0, 0.66);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition-smooth), color var(--transition-smooth);
+}
+
+a { color: inherit; text-decoration: none; }
+
+:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  z-index: 100;
+}
+.skip-link:focus { left: 12px; }
+
+/* ---- Header ---- */
+
+.wall-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 48px);
+  background: var(--header-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.wall-logo img { display: block; height: 26px; width: auto; }
+/* Same pairing as css/styles.css:148 — the "dark" asset is the one for the dark theme. */
+[data-theme="dark"] .logo-light,
+[data-theme="light"] .logo-dark { display: none; }
+
+.wall-nav { display: flex; align-items: center; gap: 6px; }
+
+.wall-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+.wall-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.wall-btn--icon { width: 34px; padding: 0; justify-content: center; }
+.wall-btn svg { width: 16px; height: 16px; }
+
+[data-theme="dark"] .theme-icon-moon,
+[data-theme="light"] .theme-icon-sun { display: none; }
+
+/* ---- Masthead ---- */
+/* The month is the only large text on the page: the year sits behind it as an
+   outline, which gives the page its signature without adding words. */
+
+.masthead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 40px);
+  padding: clamp(28px, 7vw, 76px) clamp(16px, 4vw, 48px) clamp(8px, 2vw, 20px);
+}
+
+.masthead-title {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-width: 0;
+}
+
+.masthead-year {
+  font-size: clamp(4.5rem, 19vw, 15rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--border);
+  user-select: none;
+  grid-area: 1 / 1;
+}
+
+.masthead-month {
+  grid-area: 1 / 1;
+  font-size: clamp(2.2rem, 10.5vw, 8.5rem);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.masthead-nav {
+  flex: none;
+  width: clamp(40px, 8vw, 64px);
+  height: clamp(40px, 8vw, 64px);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--transition), transform var(--transition);
+}
+.masthead-nav:hover { color: var(--text-primary); transform: scale(1.15); }
+
+.masthead-count {
+  margin: 0 auto clamp(24px, 5vw, 52px);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Wall ---- */
+
+.wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--wall-col), 1fr));
+  grid-auto-rows: var(--wall-row);
+  gap: var(--wall-gap);
+  padding: 0 clamp(12px, 4vw, 48px) clamp(48px, 10vw, 120px);
+}
+
+.tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  /* Set by JS from the poster's real dimensions before paint. */
+  grid-row: span 30;
+}
+
+.tile--wide { grid-column: span 2; }
+
+@media (max-width: 560px) {
+  .tile--wide { grid-column: span 1; }
+}
+
+.tile-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-smooth), filter var(--transition-smooth);
+}
+
+.tile:hover .tile-img,
+.tile:focus-visible .tile-img {
+  transform: scale(1.035);
+  filter: brightness(0.55);
+}
+
+.tile-meta {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 14px 13px;
+  background: linear-gradient(to top, var(--scrim), transparent);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+}
+
+.tile:hover .tile-meta,
+.tile:focus-visible .tile-meta { opacity: 1; transform: none; }
+
+.tile-dates {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.tile-org {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.tile-accent {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+}
+
+/* Fallback tile — no Instagram poster yet, so the organizer's brand image carries it.
+   Those logos are full-bleed squares, so they fill the tile exactly like a poster. */
+
+.tile--fallback {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--org) 30%, transparent), transparent 70%),
+    var(--bg-secondary);
+}
+
+/* A logo says who, not which tournament — so this caption never hides. */
+.tile-meta--static {
+  opacity: 1;
+  transform: none;
+  background: linear-gradient(to top, var(--scrim) 55%, transparent);
+  padding-top: 34px;
+}
+
+.tile--fallback:hover .tile-img,
+.tile--fallback:focus-visible .tile-img { filter: brightness(0.75); }
+
+/* Touch devices have no hover, so the caption is always legible there. */
+@media (hover: none) {
+  .tile-meta { opacity: 1; transform: none; }
+}
+
+/* ---- Empty state ---- */
+
+.wall-empty {
+  grid-column: 1 / -1;
+  padding: clamp(40px, 12vw, 120px) 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.wall-loading {
+  grid-column: 1 / -1;
+  padding: 80px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ---- Footer ---- */
+
+.wall-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 22px;
+  padding: 28px 24px 56px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.wall-footer a:hover { color: var(--text-primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
