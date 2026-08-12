@@ -5,9 +5,9 @@
    ============================================ */
 
 :root {
-  --wall-gap: 14px;
-  --wall-col: 250px;
-  --wall-row: 8px;          /* masonry row unit — spans are computed in JS */
+  --wall-gap: 8px;
+  --wall-col: 230px;
+  --wall-row: 6px;          /* masonry row unit — spans are computed in JS */
   --transition: 0.2s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -77,14 +77,14 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px clamp(16px, 4vw, 48px);
+  padding: 7px clamp(10px, 2vw, 20px);
   background: var(--header-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
 
-.wall-logo img { display: block; height: 26px; width: auto; }
+.wall-logo img { display: block; height: 20px; width: auto; }
 /* Same pairing as css/styles.css:148 — the "dark" asset is the one for the dark theme. */
 [data-theme="dark"] .logo-light,
 [data-theme="light"] .logo-dark { display: none; }
@@ -95,8 +95,8 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 11px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
@@ -110,8 +110,8 @@ a { color: inherit; text-decoration: none; }
   transition: color var(--transition), border-color var(--transition);
 }
 .wall-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
-.wall-btn--icon { width: 34px; padding: 0; justify-content: center; }
-.wall-btn svg { width: 16px; height: 16px; }
+.wall-btn--icon { width: 28px; padding: 0; justify-content: center; }
+.wall-btn svg { width: 14px; height: 14px; }
 
 [data-theme="dark"] .theme-icon-moon,
 [data-theme="light"] .theme-icon-sun { display: none; }
@@ -123,60 +123,57 @@ a { color: inherit; text-decoration: none; }
 .masthead {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: clamp(8px, 3vw, 40px);
-  padding: clamp(28px, 7vw, 76px) clamp(16px, 4vw, 48px) clamp(8px, 2vw, 20px);
+  gap: clamp(10px, 2vw, 22px);
+  padding: clamp(14px, 2.4vw, 26px) clamp(10px, 2vw, 20px) 4px;
 }
 
 .masthead-title {
-  position: relative;
-  display: grid;
-  place-items: center;
-  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
   min-width: 0;
 }
 
-.masthead-year {
-  font-size: clamp(4.5rem, 19vw, 15rem);
-  font-weight: 800;
-  line-height: 0.8;
-  letter-spacing: -0.03em;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--border);
-  user-select: none;
-  grid-area: 1 / 1;
-}
-
 .masthead-month {
-  grid-area: 1 / 1;
-  font-size: clamp(2.2rem, 10.5vw, 8.5rem);
+  font-size: clamp(1.5rem, 3.4vw, 2.6rem);
   font-weight: 800;
-  line-height: 0.85;
-  letter-spacing: -0.045em;
+  line-height: 1;
+  letter-spacing: -0.035em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+.masthead-year {
+  font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-muted);
+  user-select: none;
+}
+
 .masthead-nav {
   flex: none;
-  width: clamp(40px, 8vw, 64px);
-  height: clamp(40px, 8vw, 64px);
+  width: 34px;
+  height: 34px;
   border: none;
   border-radius: 50%;
   background: transparent;
   color: var(--text-muted);
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: 1.7rem;
   line-height: 1;
   cursor: pointer;
   transition: color var(--transition), transform var(--transition);
 }
-.masthead-nav:hover { color: var(--text-primary); transform: scale(1.15); }
+.masthead-nav:hover { color: var(--text-primary); transform: scale(1.18); }
 
 .masthead-count {
-  margin: 0 auto clamp(24px, 5vw, 52px);
+  margin: 0 auto 12px;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -191,7 +188,7 @@ a { color: inherit; text-decoration: none; }
   grid-template-columns: repeat(auto-fill, minmax(var(--wall-col), 1fr));
   grid-auto-rows: var(--wall-row);
   gap: var(--wall-gap);
-  padding: 0 clamp(12px, 4vw, 48px) clamp(48px, 10vw, 120px);
+  padding: 0 clamp(8px, 1.4vw, 16px) clamp(28px, 5vw, 56px);
 }
 
 .tile {
@@ -224,13 +221,30 @@ a { color: inherit; text-decoration: none; }
   filter: brightness(0.55);
 }
 
+/* The date rides on top of the poster, always visible — it is the one fact you
+   scan a wall of posters for, so it never hides behind a hover. */
+.tile-date {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding: 9px 11px 22px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
 .tile-meta {
   position: absolute;
   inset: auto 0 0 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 14px 14px 13px;
+  padding: 14px 12px 12px;
   background: linear-gradient(to top, var(--scrim), transparent);
   color: #fff;
   opacity: 0;
@@ -240,14 +254,6 @@ a { color: inherit; text-decoration: none; }
 
 .tile:hover .tile-meta,
 .tile:focus-visible .tile-meta { opacity: 1; transform: none; }
-
-.tile-dates {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
 
 .tile-name {
   font-size: 14px;

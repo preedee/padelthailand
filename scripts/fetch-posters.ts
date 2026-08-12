@@ -119,23 +119,48 @@ export function jpegSize(buf: Uint8Array): { w: number; h: number } | null {
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+/**
+ * The full-size original, at the post's real aspect ratio.
+ *
+ * `og:image` is a centre-cropped 640px square — the crop is signed into the URL
+ * (`stp=c216.0.648.648a_…`) and cannot be rewritten away. `/media/?size=l` serves the
+ * uncropped original instead, typically 1080×1350 for a standard 4:5 Instagram post.
+ */
+async function fetchFullSize(shortcode: string): Promise<Uint8Array | null> {
+  const res = await fetch(`https://www.instagram.com/p/${shortcode}/media/?size=l`, {
+    headers: { 'user-agent': CRAWLER_UA },
+    redirect: 'follow',
+  });
+  if (!res.ok) return null;
+  // A login wall answers 200 with HTML, so the content type is what actually decides.
+  if (!(res.headers.get('content-type') || '').startsWith('image/')) return null;
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  return bytes.length > 1024 ? bytes : null;
+}
+
+/** Cropped square fallback for posts the media endpoint will not serve. */
+async function fetchOgImage(shortcode: string): Promise<Uint8Array | null> {
+  const page = await fetch(`https://www.instagram.com/p/${shortcode}/`, {
+    headers: { 'user-agent': CRAWLER_UA, 'accept-language': 'en-US,en;q=0.9' },
+    redirect: 'follow',
+  });
+  if (!page.ok) throw new Error(`post page ${page.status}`);
+
+  const src = ogImageFrom(await page.text());
+  if (!src) throw new Error('no og:image (private, deleted, or login-walled)');
+
+  const img = await fetch(src, { headers: { 'user-agent': CRAWLER_UA } });
+  if (!img.ok) throw new Error(`image ${img.status}`);
+
+  const bytes = new Uint8Array(await img.arrayBuffer());
+  return bytes.length > 1024 ? bytes : null;
+}
+
 async function fetchPoster(shortcode: string): Promise<{ w: number; h: number } | null> {
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {
-      const page = await fetch(`https://www.instagram.com/p/${shortcode}/`, {
-        headers: { 'user-agent': CRAWLER_UA, 'accept-language': 'en-US,en;q=0.9' },
-        redirect: 'follow',
-      });
-      if (!page.ok) throw new Error(`post page ${page.status}`);
-
-      const src = ogImageFrom(await page.text());
-      if (!src) throw new Error('no og:image (private, deleted, or login-walled)');
-
-      const img = await fetch(src, { headers: { 'user-agent': CRAWLER_UA } });
-      if (!img.ok) throw new Error(`image ${img.status}`);
-
-      const bytes = new Uint8Array(await img.arrayBuffer());
-      if (bytes.length < 1024) throw new Error(`image too small (${bytes.length}B)`);
+      const bytes = (await fetchFullSize(shortcode)) ?? (await fetchOgImage(shortcode));
+      if (!bytes) throw new Error('no image available');
 
       await writeFile(join(POSTER_DIR, `${shortcode}.jpg`), bytes);
       return jpegSize(bytes) ?? { w: 0, h: 0 };

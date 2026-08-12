@@ -171,8 +171,8 @@ function tileHTML(e) {
   const poster = e.shortcode ? posters[e.shortcode] : null;
   const dates = formatDates(e);
   const wide = e.featured ? ' tile--wide' : '';
+  const datePlate = `<span class="tile-date">${esc(dates)}</span>`;
   const meta = `
-      <span class="tile-dates">${esc(dates)}</span>
       <span class="tile-name">${esc(e.name)}</span>
       <span class="tile-org">${esc([e.organizer, e.city].filter(Boolean).join(' · '))}</span>`;
 
@@ -182,6 +182,7 @@ function tileHTML(e) {
         data-aspect="${aspect}" aria-label="${esc(`${e.name}, ${dates} — view on Instagram`)}">
       <img class="tile-img" src="${esc(poster.file)}" alt="${esc(e.name)} poster"
            width="${poster.w}" height="${poster.h}" loading="lazy" decoding="async">
+      ${datePlate}
       <span class="tile-meta">${meta}</span>
       <span class="tile-accent" style="background:${esc(e.color)}"></span>
     </a>`;
@@ -201,6 +202,7 @@ function tileHTML(e) {
   return `<${tag} class="tile tile--fallback${wide}"${attrs} data-aspect="${FALLBACK_ASPECT}"
       style="--org:${esc(e.color)}"${link ? ` aria-label="${esc(`${e.name}, ${dates} — view on Instagram`)}"` : ''}>
     ${mark}
+    ${datePlate}
     <span class="tile-meta tile-meta--static">${meta}</span>
     <span class="tile-accent" style="background:${esc(e.color)}"></span>
   </${tag}>`;

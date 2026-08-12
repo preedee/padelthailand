@@ -26,16 +26,25 @@ It reads two sources and merges them:
 A post that returns no `og:image` (private, deleted, or login-walled) is logged and skipped;
 its tournament falls back to the organizer-logo tile on the wall.
 
-### Known limitation: og:image is a square centre-crop
+### Why `/media/?size=l` and not `og:image`
 
-Instagram serves `og:image` at ~640px, and for a non-square post it is **centre-cropped to a
-square** — the crop is baked into the signed URL as `stp=c216.0.648.648a_…`. Editing that
-parameter to request the full frame returns `403`, because the signature covers it. So a wide
-poster can lose its left and right edges (verified 2026-08-13).
+Two endpoints can serve a post's image, and only one of them serves the whole thing:
 
-In practice most posters are square already — of the 109 downloaded, 87 are 640×640 and 7 are
-9:16 portrait, which `og:image` preserves. Getting uncropped, full-resolution originals means
-the paid Apify route below, which returns `displayUrl` at native aspect.
+| Endpoint | Result |
+|---|---|
+| `og:image` from the post page | ~640px, **centre-cropped to a square**. The crop is baked into the signed URL (`stp=c216.0.648.648a_…`) and rewriting that parameter returns `403`, because the signature covers it. A 4:5 poster loses its top and bottom. |
+| `/p/<code>/media/?size=l` | The **uncropped original**, typically 1080×1350 for a standard 4:5 post. |
+
+So the script asks for `/media/?size=l` first and only falls back to `og:image` when that
+endpoint refuses. Of the 109 posters, 42 come back 1080×1350, 26 are 1080×1080 squares, and the
+rest sit between — real Instagram sizes at native aspect, which is what lets the wall show each
+poster whole instead of cropping it to a grid cell.
+
+The fallback matters: a login wall answers `200` with HTML, so the code checks the response's
+content type rather than its status before trusting the bytes.
+
+At full size the poster set is ~15 MB for 109 images. That is fine for the repo and for the
+page, which lazy-loads only the tiles in view.
 
 ## Share a post from your phone
 
