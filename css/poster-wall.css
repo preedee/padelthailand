@@ -218,15 +218,20 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   z-index: 3;
   inset: 0 0 auto 0;
-  padding: 6px 12px 26px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), transparent);
+  padding: 7px 12px 30px;
+  /* Holds near-full strength across the glyph band before fading, so the numeral stays
+     legible on posters that are white at the top. */
+  background: linear-gradient(to bottom,
+    rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.66) 45%, transparent 100%);
   color: #fff;
-  font-size: clamp(1.05rem, 1.9vw, 1.7rem);
+  /* Scaled from the tile width set by layout(), so the numeral keeps the same
+     proportion whether the tile is 150px or 380px wide. */
+  font-size: clamp(15px, calc(var(--tile-w, 250px) * 0.085), 30px);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
   pointer-events: none;
 }
 
@@ -276,6 +281,16 @@ a { color: inherit; text-decoration: none; }
   text-transform: uppercase;
 }
 .wall-footer a:hover { color: var(--text-primary); }
+
+/* Touch ergonomics. On a finger the month arrows are the primary control of the page,
+   so they get the full 44px; the secondary header chrome gets 40px, which clears WCAG
+   2.5.8 comfortably while keeping the header strip thin. */
+@media (pointer: coarse) {
+  .masthead-nav { width: 44px; height: 44px; }
+  .wall-btn { height: 40px; }
+  .wall-btn--icon { width: 40px; }
+  .wall-nav { gap: 8px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

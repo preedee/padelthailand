@@ -225,7 +225,17 @@ function tileHTML(e) {
 // ---- Masonry ---------------------------------------------------------------
 
 const COL_TARGET = 250;                  // preferred column width before fitting
-const COL_MIN = 170;                     // never squeeze narrower than this
+const NARROW = 560;                      // below this, phones get a fixed two columns
+
+/**
+ * Phones get two columns rather than one. A single full-width column turns a busy month
+ * into several thousand pixels of scrolling and never shows more than one poster at a
+ * time, which defeats the point of a wall.
+ */
+function columnCount(width, gap, tileCount) {
+  if (width < NARROW) return Math.min(2, tileCount);
+  return Math.max(1, Math.min(tileCount, Math.floor((width + gap) / (COL_TARGET + gap))));
+}
 
 /**
  * Pinterest packing: each tile keeps its artwork's own proportions, and every tile goes
@@ -245,8 +255,8 @@ function layout() {
   const padLeft = parseFloat(cs.paddingLeft) || 0;
   const width = wall.clientWidth - padLeft - (parseFloat(cs.paddingRight) || 0);
 
-  const cols = Math.max(1, Math.min(tiles.length, Math.floor((width + gap) / (COL_TARGET + gap))));
-  const colWidth = Math.max(COL_MIN, (width - gap * (cols - 1)) / cols);
+  const cols = columnCount(width, gap, tiles.length);
+  const colWidth = (width - gap * (cols - 1)) / cols;
   const heights = new Array(cols).fill(0);
 
   for (const tile of tiles) {
@@ -254,6 +264,9 @@ function layout() {
     const height = Math.round(colWidth * (parseFloat(tile.dataset.ratio) || FALLBACK_RATIO));
     tile.style.width = `${colWidth}px`;
     tile.style.height = `${height}px`;
+    // The day numeral is sized from the tile, not the viewport — sizing it by viewport
+    // made it smallest on phones, where the tiles are largest.
+    tile.style.setProperty('--tile-w', `${colWidth}px`);
     tile.style.transform =
       `translate(${padLeft + shortest * (colWidth + gap)}px, ${heights[shortest]}px)`;
     heights[shortest] += height + gap;
