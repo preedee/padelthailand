@@ -76,7 +76,8 @@ its own artwork's proportions, so nothing is cropped or letterboxed:
 
 ## Share a post from your phone
 
-One tap in the Instagram app puts a post in the queue. Two pieces:
+One tap in the Instagram app, and the tournament ends up on the site — you do not touch the
+spreadsheet. Two pieces of one-time setup, then two commands whenever you want to publish.
 
 ### 1. Deploy the capture endpoint (once)
 
@@ -99,10 +100,57 @@ Shortcuts app → **+** → name it `Add to Padel Thailand`:
 3. **Show Notification** with the result so you get confirmation on-device
 
 Then in Instagram: post → **⋯ / paper-plane → Share to… → Add to Padel Thailand**. The URL lands
-on the `Inbox` tab, and the next `fetch-posters.ts` run downloads the poster.
+on the `Inbox` tab. Sharing the same post twice is a no-op — the endpoint de-dupes by shortcode.
 
-Shares from your own account are trusted, so they publish without review. Sharing the same post
-twice is a no-op — the endpoint de-dupes by shortcode.
+### 3. Publish (two commands on the Mac)
+
+```bash
+bun scripts/fetch-posters.ts        # download + optimise the new posters
+bun scripts/ingest-inbox.ts         # DRY RUN — shows what it would write
+bun scripts/ingest-inbox.ts --apply # write the tournaments to the sheet
+git add posters data && git commit -m "posters: refresh" && git push
+```
+
+`ingest-inbox.ts` needs the same endpoint and secret, in `scripts/.ingest-config.json`
+(gitignored) or as `PADEL_INBOX_ENDPOINT` / `PADEL_INBOX_SECRET`:
+
+```json
+{ "endpoint": "https://script.google.com/macros/s/…/exec", "secret": "…" }
+```
+
+Useful flags: `--limit N`, and `--url <post>` to ingest a single post without the Inbox tab.
+
+### What ingest does with each shared post
+
+1. Reads the post page for the account handle, publication date and caption.
+2. **Reads the poster artwork with Claude** to get the name, dates, city and venue.
+3. Resolves the organizer from the handle, reusing that organizer's existing logo, colour,
+   website and Instagram from a tournament you already have — so the tile looks right.
+4. Then either:
+   - **links** the post to a tournament you already have (same organizer, overlapping dates,
+     no poster yet), or
+   - **appends a new tournament row**.
+5. Writes the outcome back to the `Inbox` tab's Status column, so nothing is processed twice.
+
+Why it reads the image rather than the caption: the dates are printed on the artwork. Of seven
+organizers sampled, only two put dates in the caption, and Bangkok Padel Tour's caption gives
+the *registration* date (9 Dec) for a tournament played on **20 Dec**. Tested against 8 posters
+with known answers, reading the artwork got 8/8 dates right — including that one.
+
+Two things make it reliable rather than lucky:
+
+- The post's publication date is passed in as a constraint. A poster branded "BPT SEASON 2026"
+  showing "20 DECEMBER" is resolved to Dec **2025** because the post went up on 3 Dec 2025.
+  Without that constraint the model reads the branding year and gets it wrong.
+- The prompt refuses registration deadlines and "early bird" dates outright.
+
+Anything it cannot read confidently is still written, but with **`Hide` set to `yes`**, so it
+stays off the site until you look at it. Posts whose name or dates come back empty are left in
+the Inbox and reported as "needs you".
+
+The tournament names come from the artwork, so they read like the poster ("Bangkok Padel Tour
+Vol. 1 - Asoke Grand Slam") rather than your house style ("BPT Kross Asoke Open"). Rename in
+the sheet whenever you like — the name is not shown on the tile, only in the tooltip.
 
 ## Discovery by account (not enabled)
 

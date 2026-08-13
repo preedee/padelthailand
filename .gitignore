@@ -10,3 +10,6 @@ MEMORY/
 node_modules/
 package.json
 bun.lock
+
+# Holds the Apps Script endpoint + shared secret
+scripts/.ingest-config.json
