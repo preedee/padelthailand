@@ -1,8 +1,12 @@
-
-.claude/
 .DS_Store
 .env
-.playwright-cli/
+
 # Claude Code / agent session state — never publish
+.claude/
+.playwright-cli/
 MEMORY/
+
+# Tooling artifacts — this site has no build step
 node_modules/
+package.json
+bun.lock
