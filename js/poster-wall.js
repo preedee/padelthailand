@@ -179,6 +179,14 @@ function formatDays(e, { year, month }) {
 
 // ---- Render ---------------------------------------------------------------
 
+const FALLBACK_RATIO = 1;                // organizer logos are square brand images
+
+/** Height ÷ width of the tile, so each one matches its own artwork. */
+function ratioOf(e) {
+  const poster = e.shortcode ? posters[e.shortcode] : null;
+  return poster && poster.w && poster.h ? poster.h / poster.w : FALLBACK_RATIO;
+}
+
 function tileHTML(e) {
   const poster = e.shortcode ? posters[e.shortcode] : null;
   // The poster carries the name, so on screen the tile shows only the day. The full
@@ -190,15 +198,14 @@ function tileHTML(e) {
   if (poster) {
     return `<a class="tile" href="${esc(e.instagramUrl)}" target="_blank" rel="noopener"
         title="${esc(label)}" aria-label="${esc(`${label} — view on Instagram`)}"
-        style="--org:${esc(e.color)}">
+        data-ratio="${ratioOf(e)}" style="--org:${esc(e.color)}">
       <img class="tile-img" src="${esc(poster.file)}" alt="${esc(e.name)} poster"
            width="${poster.w}" height="${poster.h}" loading="lazy" decoding="async">
       ${datePlate}
     </a>`;
   }
 
-  // No poster yet. Organizer logos in this sheet are full-bleed square brand images, so they
-  // sit in the same 4:5 cell against the organizer's colour.
+  // No poster yet — the organizer's square brand image stands in.
   const link = e.instagramUrl || e.orgInstagram;
   const tag = link ? 'a' : 'div';
   const attrs = link ? ` href="${esc(link)}" target="_blank" rel="noopener"` : '';
@@ -208,10 +215,51 @@ function tileHTML(e) {
     : '';
 
   return `<${tag} class="tile tile--fallback"${attrs} title="${esc(label)}"
+      data-ratio="${FALLBACK_RATIO}"
       style="--org:${esc(e.color)}"${link ? ` aria-label="${esc(`${label} — view on Instagram`)}"` : ''}>
     ${mark}
     ${datePlate}
   </${tag}>`;
+}
+
+// ---- Masonry ---------------------------------------------------------------
+
+const COL_TARGET = 250;                  // preferred column width before fitting
+const COL_MIN = 170;                     // never squeeze narrower than this
+
+/**
+ * Pinterest packing: each tile keeps its artwork's own proportions, and every tile goes
+ * into whichever column is currently shortest. CSS grid cannot do this — it places items
+ * row by row, so one tall tile leaves a staircase hole under it. Since a tile's box then
+ * matches its image exactly, `object-fit: cover` crops nothing.
+ */
+function layout() {
+  const wall = document.getElementById('wall');
+  const tiles = [...wall.querySelectorAll('.tile')];
+  if (!tiles.length) { wall.style.height = ''; return; }
+
+  const cs = getComputedStyle(wall);
+  // `gap` does not compute on a non-grid box, and absolutely positioned children sit
+  // against the padding box, so the horizontal inset has to be applied by hand.
+  const gap = parseFloat(cs.getPropertyValue('--wall-gap')) || 8;
+  const padLeft = parseFloat(cs.paddingLeft) || 0;
+  const width = wall.clientWidth - padLeft - (parseFloat(cs.paddingRight) || 0);
+
+  const cols = Math.max(1, Math.min(tiles.length, Math.floor((width + gap) / (COL_TARGET + gap))));
+  const colWidth = Math.max(COL_MIN, (width - gap * (cols - 1)) / cols);
+  const heights = new Array(cols).fill(0);
+
+  for (const tile of tiles) {
+    const shortest = heights.indexOf(Math.min(...heights));
+    const height = Math.round(colWidth * (parseFloat(tile.dataset.ratio) || FALLBACK_RATIO));
+    tile.style.width = `${colWidth}px`;
+    tile.style.height = `${height}px`;
+    tile.style.transform =
+      `translate(${padLeft + shortest * (colWidth + gap)}px, ${heights[shortest]}px)`;
+    heights[shortest] += height + gap;
+  }
+
+  wall.style.height = `${Math.max(...heights) - gap}px`;
 }
 
 function render() {
@@ -228,6 +276,8 @@ function render() {
   wall.innerHTML = list.length
     ? list.map(tileHTML).join('')
     : `<p class="wall-empty">${esc(t('empty'))}</p>`;
+
+  layout();
 }
 
 function goTo(next, { push = true } = {}) {
@@ -271,6 +321,13 @@ function wireChrome() {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === 'ArrowLeft') goTo(shiftMonth(cursor, -1));
     if (e.key === 'ArrowRight') goTo(shiftMonth(cursor, 1));
+  });
+
+  // Column count and width both depend on the viewport, so the pack has to be redone.
+  let resizeFrame = 0;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(layout);
   });
 
   window.addEventListener('popstate', () => {

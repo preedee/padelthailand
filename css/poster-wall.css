@@ -6,7 +6,6 @@
 
 :root {
   --wall-gap: 8px;
-  --wall-col: 230px;
   --transition: 0.2s ease;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -180,27 +179,23 @@ a { color: inherit; text-decoration: none; }
 
 /* ---- Wall ---- */
 
+/* Pinterest packing. Tiles are positioned by JS (see layout() in poster-wall.js), which
+   is why this is a plain positioned box rather than a grid: CSS grid places items row by
+   row, so a tall tile leaves a staircase hole beneath it. `gap` is read by that code. */
 .wall {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--wall-col), 1fr));
+  position: relative;
   gap: var(--wall-gap);
   padding: 0 clamp(8px, 1.4vw, 16px) clamp(28px, 5vw, 56px);
 }
 
-/* Every cell is the same 4:5 — Instagram's portrait format and 61% of these posters.
-   Posters are contained rather than cropped, so nothing is ever cut off; a square or
-   9:16 poster mattes against a wash of its organizer's colour instead.
-
-   An earlier version filled the letterbox with a blurred blow-up of the poster, the way
-   Instagram does. Chrome composited that filtered layer over the sharp image no matter
-   what the z-index said, and forcing layer promotion fixed it only intermittently. A
-   flat matte has no such failure mode and costs one image element instead of two. */
+/* Each tile takes its artwork's own proportions, so cover crops nothing. */
 .tile {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   overflow: hidden;
   border-radius: 4px;
-  aspect-ratio: 4 / 5;
   background:
     linear-gradient(165deg, color-mix(in srgb, var(--org, transparent) 26%, transparent), transparent 75%),
     var(--bg-tertiary);
@@ -210,19 +205,18 @@ a { color: inherit; text-decoration: none; }
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform var(--transition-smooth);
 }
 
 .tile:hover .tile-img,
-.tile:focus-visible .tile-img { transform: scale(1.03); }
+.tile:focus-visible .tile-img { transform: scale(1.04); }
 
 /* The day, and nothing else — the masthead supplies the month and the poster supplies
    the name. Set large, a step below the masthead, so the wall reads as a calendar. */
 .tile-date {
   position: absolute;
   z-index: 3;
-  transform: translateZ(0);
   inset: 0 0 auto 0;
   padding: 6px 12px 26px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), transparent);
@@ -236,8 +230,8 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
 }
 
-/* Fallback tile — no Instagram poster yet, so the organizer's brand image carries it,
-   contained in the same 4:5 cell against a wash of the organizer's colour. */
+/* Fallback tile — no Instagram poster yet, so the organizer's square brand image
+   carries it, over a wash of the organizer's colour. */
 
 .tile--fallback {
   background:
@@ -248,7 +242,6 @@ a { color: inherit; text-decoration: none; }
 /* ---- Empty state ---- */
 
 .wall-empty {
-  grid-column: 1 / -1;
   padding: clamp(40px, 12vw, 120px) 0;
   text-align: center;
   color: var(--text-muted);
@@ -259,7 +252,6 @@ a { color: inherit; text-decoration: none; }
 }
 
 .wall-loading {
-  grid-column: 1 / -1;
   padding: 80px 0;
   text-align: center;
   color: var(--text-muted);

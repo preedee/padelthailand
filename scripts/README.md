@@ -64,8 +64,8 @@ python3 scripts/optimize-posters.py --width 760 --quality 80
 
 ### Poster shapes
 
-The posters are not one size, which is why the wall uses a fixed 4:5 cell and contains each image
-rather than cropping it:
+The posters are not one size, which is why the wall packs them Pinterest-style — each tile takes
+its own artwork's proportions, so nothing is cropped or letterboxed:
 
 | Shape | Count |
 |---|---|
