@@ -55,7 +55,13 @@
       const t0 = Date.now();
       let res;
       try {
-        res = await fetch(`${_url}/rest/v1/`, { method: 'HEAD', headers: { apikey: _key } });
+        // QA m-11 — HEAD on /rest/v1/ root 401s (no table specified), which
+        // polluted the console on every page load. Use a real table (drafts)
+        // with limit=0 + Bearer auth — same Date header, no 401 noise.
+        res = await fetch(`${_url}/rest/v1/drafts?select=id&limit=0`, {
+          method: 'HEAD',
+          headers: { apikey: _key, Authorization: `Bearer ${_key}` },
+        });
       } catch (_) { return; }
       const t1 = Date.now();
       const serverDate = res.headers.get('date');
@@ -153,12 +159,23 @@
   function broadcastPendingPick(draftId, payload) { return _sendWithReady(draftId, 'pending', payload); }
   function broadcastClearPending(draftId)         { return _sendWithReady(draftId, 'clear', {}); }
 
+  // Suppress the next undo overlay on the projector — fired by the
+  // commissioner's rapid-undo (U key) so the projector skips its red
+  // PICK #N UNDONE reveal during rehearsal. The visible UNDO button does
+  // NOT broadcast this, so the audience-facing overlay still plays for
+  // legitimate undos during the live draft. Broadcast-only, no write —
+  // identical to v1, nothing routes through the Worker.
+  function broadcastSilentUndo(draftId, pickNumber) {
+    return _sendWithReady(draftId, 'silent_undo', { pickNumber });
+  }
+
   function subscribeToPendingPick(draftId, handlers) {
-    const { onPending, onClear } = handlers || {};
+    const { onPending, onClear, onSilentUndo } = handlers || {};
     return client()
       .channel(`pending_pick:${draftId}`)
-      .on('broadcast', { event: 'pending' }, ({ payload }) => { if (onPending) onPending(payload); })
-      .on('broadcast', { event: 'clear'   }, ()             => { if (onClear)   onClear(); })
+      .on('broadcast', { event: 'pending' },     ({ payload }) => { if (onPending)    onPending(payload); })
+      .on('broadcast', { event: 'clear'   },     ()            => { if (onClear)      onClear(); })
+      .on('broadcast', { event: 'silent_undo' }, ({ payload }) => { if (onSilentUndo) onSilentUndo(payload || {}); })
       .subscribe();
   }
 
@@ -344,7 +361,8 @@
     init, client, serverNow,
     fetchDraft, fetchPicks, fetchPicksWithUndone,
     subscribeToDraft, subscribeToPicks,
-    broadcastPendingPick, broadcastClearPending, subscribeToPendingPick, prewarmBroadcastChannel,
+    broadcastPendingPick, broadcastClearPending, broadcastSilentUndo,
+    subscribeToPendingPick, prewarmBroadcastChannel,
     insertPick, commitPick, undoPick, updateDraft,
     startDraft, advancePick, setPaused, pauseForUndo, completeDraft, resetDraft,
     // v2 marker for sanity
