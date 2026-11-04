@@ -822,25 +822,11 @@
    "lp": "left"
   },
   {
-   "name": "Wat Phra Singh",
-   "kind": "temple",
-   "x": 766,
-   "y": 363,
-   "lp": "left"
-  },
-  {
    "name": "Wat Chedi Luang",
    "kind": "temple",
    "x": 809,
    "y": 372,
    "lp": "below"
-  },
-  {
-   "name": "Warorot Market",
-   "kind": "market",
-   "x": 917,
-   "y": 348,
-   "lp": "above"
   },
   {
    "name": "Night Bazaar",
@@ -857,25 +843,11 @@
    "lp": "right"
   },
   {
-   "name": "Wat Umong",
-   "kind": "temple",
-   "x": 539,
-   "y": 403,
-   "lp": "left"
-  },
-  {
    "name": "Central Festival",
    "kind": "shop",
    "x": 1057,
    "y": 214,
    "lp": "right"
-  },
-  {
-   "name": "Huay Kaew Waterfall",
-   "kind": "nature",
-   "x": 467,
-   "y": 182,
-   "lp": "left"
   },
   {
    "name": "Maya Lifestyle Mall",
@@ -885,38 +857,10 @@
    "lp": "right"
   },
   {
-   "name": "Wat Sri Suphan",
-   "kind": "temple",
-   "x": 781,
-   "y": 439,
-   "lp": "right"
-  },
-  {
-   "name": "Wiang Kum Kam",
-   "kind": "temple",
-   "x": 903,
-   "y": 653,
-   "lp": "left"
-  },
-  {
-   "name": "Wat Phra That Doi Kham",
-   "kind": "temple",
-   "x": 265,
-   "y": 584,
-   "lp": "right"
-  },
-  {
    "name": "Chiang Mai Night Safari",
    "kind": "nature",
    "x": 274,
    "y": 741,
-   "lp": "right"
-  },
-  {
-   "name": "Wat Ton Kwen",
-   "kind": "temple",
-   "x": 323,
-   "y": 873,
    "lp": "right"
   }
  ]
