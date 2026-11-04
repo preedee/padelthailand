@@ -95,11 +95,11 @@ function parseDate(s: string): { date?: string; month?: string } {
   return {};
 }
 const REGION_RULES: [RegExp, string][] = [
-  [/samui|phangan|pha-ngan|koh tao|ko tao/i, "Samui, Phangan, & Tao"], [/phuket/i, "Phuket"], [/krabi|lanta/i, "Krabi"],
+  [/samui|phangan|pha-ngan|koh tao|ko tao/i, "Samui & Phangan"], [/phuket/i, "Phuket"], [/krabi|lanta/i, "Krabi"],
   [/pattaya|chonburi|bangsaen|bang saen|rayong/i, "Pattaya"], [/hua hin|cha-?am|prachuap/i, "Hua Hin"], [/chiang mai/i, "Chiang Mai"],
   [/koh chang|ko chang/i, "Koh Chang"], [/bangkok|nonthaburi|pathum|samut prakan|krung thep/i, "Bangkok"],
 ];
-const REGIONS = ["Bangkok", "Samui, Phangan, & Tao", "Phuket", "Pattaya", "Hua Hin", "Chiang Mai", "Krabi", "Koh Chang"];
+const REGIONS = ["Bangkok", "Samui & Phangan", "Phuket", "Pattaya", "Hua Hin", "Chiang Mai", "Krabi", "Koh Chang"];
 const regionOf = (city: string) => REGIONS.find((r) => r.toLowerCase() === city.trim().toLowerCase()) ?? REGION_RULES.find(([re]) => re.test(city))?.[1] ?? "";
 const PLACEHOLDER = /^(tb[cd]|location tb[cd]|city tb[cd]|n\/?a|-|\?+|venue tb[cd])$/i;
 const slugify = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -125,7 +125,7 @@ for (const [keys, col] of [[["pty", "bs", "chang"], network.colors.e], [["cm"], 
 for (const s of network.regions.bkk.slugs) if (!lineColor.has(s)) lineColor.set(s, "#4A5058"); // Bangkok clubs off the rail network
 const manualAlias: Record<string, string> = existsSync(ROOT + "data/listing-club-aliases.json") ? JSON.parse(await readFile(ROOT + "data/listing-club-aliases.json", "utf8")) : {};
 // regions for listings that only know their club
-const REGION_OF_KEY: Record<string, string> = { bkk: "Bangkok", gulf: "Samui, Phangan, & Tao", phk: "Phuket", pty: "Pattaya", bs: "Pattaya", cm: "Chiang Mai", hh: "Hua Hin", kbi: "Krabi", chang: "Koh Chang" };
+const REGION_OF_KEY: Record<string, string> = { bkk: "Bangkok", gulf: "Samui & Phangan", phk: "Phuket", pty: "Pattaya", bs: "Pattaya", cm: "Chiang Mai", hh: "Hua Hin", kbi: "Krabi", chang: "Koh Chang" };
 const clubRegion = new Map<string, string>();
 for (const [k, v] of Object.entries(network.regions)) for (const s of v.slugs) clubRegion.set(s, REGION_OF_KEY[k] ?? "");
 

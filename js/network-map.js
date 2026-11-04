@@ -318,7 +318,7 @@
       if (fresh) enter(from, state.view);
 
       // tabs
-      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['hh', 'Hua Hin', REG.hh.slugs.length], ['pty', 'Pattaya', REG.pty.slugs.length + REG.bs.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
+      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['hh', 'Hua Hin', REG.hh.slugs.length], ['pty', 'Pattaya', REG.pty.slugs.length + REG.bs.slugs.length], ['gulf', 'Samui & Phangan', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
       tabsEl.innerHTML = tabs.map(function (t) { return '<button type="button" class="chip sq" data-view="' + t[0] + '" aria-pressed="' + (state.view === t[0]) + '">' + esc(t[1]) + ' <span class="count">' + t[2] + '</span></button>'; }).join('');
 
       // panel

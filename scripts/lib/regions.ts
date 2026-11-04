@@ -10,7 +10,7 @@ const R = net.regions;
 
 export const REGION_ORDER: [string, string, string[], string][] = [
   ["Bangkok", "กรุงเทพฯ", R.bkk.slugs, INK],
-  ["Samui, Phangan, & Tao", "สมุย · พะงัน · เต่า", R.gulf.slugs, C.g],
+  ["Samui & Phangan", "สมุย · พะงัน", R.gulf.slugs, C.g],
   ["Phuket", "ภูเก็ต", R.phk.slugs, C.s],
   ["Pattaya & Bangsaen", "พัทยา · บางแสน", [...R.pty.slugs, ...R.bs.slugs], C.e],
   ["Chiang Mai", "เชียงใหม่", R.cm.slugs, C.n],
@@ -21,7 +21,7 @@ export const REGION_ORDER: [string, string, string[], string][] = [
 
 // Published URLs must not change when a display name is edited, so each hub's slug is written down, not derived.
 const HUB_SLUG: Record<string, string> = {
-  "Bangkok": "bangkok", "Samui, Phangan, & Tao": "samui-phangan-and-tao", "Phuket": "phuket", "Pattaya & Bangsaen": "pattaya-and-bangsaen",
+  "Bangkok": "bangkok", "Samui & Phangan": "samui-phangan-and-tao", "Phuket": "phuket", "Pattaya & Bangsaen": "pattaya-and-bangsaen",
   "Chiang Mai": "chiang-mai", "Hua Hin": "hua-hin", "Krabi & Lanta": "krabi-and-lanta", "Koh Chang": "koh-chang",
 };
 /** the region name tournaments and events use for each display region (listings use "Pattaya" and "Krabi" where the hubs say "Pattaya & Bangsaen" and "Krabi & Lanta") */
