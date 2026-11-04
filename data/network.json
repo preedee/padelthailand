@@ -450,7 +450,9 @@
      "across": true,
      "x": 285,
      "y": 735,
-     "lp": "left"
+     "lp": "left",
+     "name": "Khlong San",
+     "th": "คลองสาน"
     }
    ],
    "seq": null
@@ -513,36 +515,39 @@
  "off": [
   {
    "id": "rsc",
-   "name": "Padel @RSC",
+   "name": "Taling Chan",
    "sub": "Thonburi Side",
    "x": 150,
    "y": 600,
    "slugs": [
     "padel-rsc"
    ],
-   "lp": "right"
+   "lp": "right",
+   "th": "ตลิ่งชัน"
   },
   {
    "id": "pista",
-   "name": "Pista Samakom",
+   "name": "Pak Kret",
    "sub": "Nonthaburi",
    "x": 95,
    "y": 250,
    "slugs": [
     "pista-samakom-racquet-and-social-club"
    ],
-   "lp": "below"
+   "lp": "below",
+   "th": "ปากเกร็ด"
   },
   {
    "id": "padthai",
-   "name": "Pad Thai Padel",
+   "name": "Khlong Toei",
    "sub": "Khlong Toei",
    "x": 820,
    "y": 610,
    "slugs": [
     "pad-thai-padel"
    ],
-   "lp": "right"
+   "lp": "right",
+   "th": "คลองเตย"
   }
  ],
  "ring": [

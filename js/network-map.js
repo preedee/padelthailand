@@ -74,9 +74,9 @@
       } else if (view === 'bkk') {
         net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.across ? null : c.km, c.across ? c.km : null]; }), seq: b.seq, d: 1.5 });
           // a club across the river from its station gets its own dot on the far bank; clicking it opens the station
-          b.clubs.forEach(function (c) { if (c.across) stops.push({ id: b.id, slug: c.slug, kind: 'club', name: nm(c.slug), sub: 'Across the River', x: c.x, y: c.y, lp: c.lp, color: b.color, d: 1.3, clubs: [[c.slug, null]], satellite: true }); }); });
+          b.clubs.forEach(function (c) { if (c.across) stops.push({ id: b.id, slug: c.slug, kind: 'club', name: c.name || nm(c.slug), sub: 'Across the River', x: c.x, y: c.y, lp: c.lp, color: b.color, d: 1.3, clubs: [[c.slug, null]], satellite: true }); }); });
         net.ticks.forEach(function (t) { stops.push({ id: t.id, kind: 'tick', name: t.name, sub: '', x: t.x, y: t.y, lp: t.lp, d: 1.0 }); });
-        net.off.forEach(function (o) { var st = clubStop(o.slugs[0], o.sub, o.x, o.y, o.lp, 'Off the Rail Network', '#4A5058', null); st.off = true; stops.push(st); });
+        net.off.forEach(function (o) { var st = clubStop(o.slugs[0], '1 Club', o.x, o.y, o.lp, 'Off the Rail Network', '#4A5058', null); st.name = o.name; st.th = o.th; st.off = true; stops.push(st); });
       } else if (EXTRA[view]) {
         (net[EXTRA[view].clubs] || []).forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, EXTRA[view].name, EXTRA[view].col, view)); });
       } else if (view === 'gulf') {
@@ -223,7 +223,7 @@
       var ph = photoOf(s.clubs), names = (s.clubs || []).map(function (p) { return nm(p[0]); });
       var body;
       if (s.kind === 'hub') body = '<b>' + esc(s.name) + '</b><span>' + esc(s.sub) + '</span>';
-      else if (s.clubs.length === 1) { var k = (C[s.clubs[0][0]] || {}).courts || {}; body = '<b>' + esc(names[0]) + '</b><span>' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + (s.kind === 'club' || s.kind === 'off' ? ' · ' + esc(s.sub) : ' · ' + esc(s.name)) + '</span>'; }
+      else if (s.clubs.length === 1) { var k = (C[s.clubs[0][0]] || {}).courts || {}; body = '<b>' + esc(names[0]) + '</b><span>' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + (s.off ? ' · ' + esc(s.name) : s.kind === 'club' ? ' · ' + esc(s.sub) : ' · ' + esc(s.name)) + '</span>'; }
       else body = '<b>' + esc(s.name) + '</b><span>' + esc(names.slice(0, 4).join(', ')) + (names.length > 4 ? ' +' + (names.length - 4) : '') + '</span>';
       var circ = (s.kind === 'club') && ph;
       if (circ && !stopEl.querySelector('.avatar')) stopEl.insertAdjacentHTML('beforeend', avatarFor(s));
@@ -326,7 +326,7 @@
         if (filtered) stat += ' · ' + v.length + ' Match';
       } else if (sel.kind === 'club') {
         var peers = stops.filter(function (s) { return s.seq === sel.seq; }); idx = peers.indexOf(sel); nav = peers;
-        eyebrow = sel.off ? 'Off the Rail Network' : EXTRA[sel.seq] ? EXTRA[sel.seq].name : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.sub;
+        eyebrow = sel.off ? 'Off the Rail Network' : EXTRA[sel.seq] ? EXTRA[sel.seq].name : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.off ? sel.th : sel.sub;
         if (sel.off) { peers = []; nav = null; note = '<div class="note-box">Not Within Walking Distance of BTS/MRT. Drive, Taxi or Grab.</div>'; }
         cards = clubCard(sel.id, null, true);
         if (C[sel.id] && C[sel.id].openingSoon) stat = 'Opening Soon';
