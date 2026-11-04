@@ -111,6 +111,15 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 /* map: a background per view (Thailand is tinted by region inside its SVG) */
 .map-box[data-bg="gulf"], .map-box[data-bg="phk"] { background-color: #DDEBEE; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 20 Q15 8 30 20 T60 20 T90 20 T120 20' fill='none' stroke='%23C3D9DE' stroke-width='1.5'/%3E%3C/svg%3E"); background-size: 120px 40px; }
 .map-box[data-bg="gulf"] .lbl, .map-box[data-bg="phk"] .lbl { text-shadow: 0 0 .25cqw #DDEBEE, 0 0 .25cqw #DDEBEE, 0 0 .25cqw #DDEBEE; }
+/* Chiang Mai: topo */
+.map-box[data-bg="cm"] { background-color: #E9EFE3; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='260'%3E%3Cg fill='none' stroke='%23CAD7BE' stroke-width='1.4'%3E%3Cpath d='M-10 60 C60 20 120 100 200 60 S340 20 410 70'/%3E%3Cpath d='M-10 85 C60 45 120 125 200 85 S340 45 410 95'/%3E%3Cpath d='M-10 110 C60 70 120 150 200 110 S340 70 410 120'/%3E%3Cpath d='M-10 190 C70 150 130 230 210 190 S330 150 410 200'/%3E%3Cpath d='M-10 215 C70 175 130 255 210 215 S330 175 410 225'/%3E%3C/g%3E%3C/svg%3E"); background-size: 400px 260px; }
+.map-box[data-bg="cm"] .lbl { text-shadow: 0 0 .25cqw #E9EFE3, 0 0 .25cqw #E9EFE3, 0 0 .25cqw #E9EFE3; }
+.map-box .cm-tag { position: absolute; font-size: max(10px, .95cqw); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #7A6F57; pointer-events: none; }
+.map-box .poi { position: absolute; width: 0; height: 0; z-index: 1; pointer-events: none; --pc: #7A6F57; }
+.map-box .poi.temple { --pc: #B8860B; } .map-box .poi.market { --pc: #C0592B; } .map-box .poi.nature { --pc: #4F8A3C; } .map-box .poi.transport { --pc: #3F6FA3; } .map-box .poi.shop { --pc: #A0527C; }
+.map-box .poi i { position: absolute; left: -.5cqw; top: -.5cqw; width: 1cqw; height: 1cqw; background: #fff; border: .22cqw solid var(--pc); transform: rotate(45deg); box-sizing: border-box; }
+.map-box .poi .lbl { font-size: max(10px, 1cqw); font-weight: 600; color: var(--pc); }
+.map-box .cm-tag.river { color: #4F8AA3; transform: rotate(80deg); transform-origin: 0 0; } .map-box .cm-tag.hill { color: #6F8A5A; }
 .map-box[data-bg="bkk"] { background-color: #1F1D36; background-image: radial-gradient(#37345A 1px, transparent 1px); }
 .map-box[data-bg="bkk"] .lbl { text-shadow: 0 0 .25cqw #1F1D36, 0 0 .25cqw #1F1D36, 0 0 .25cqw #1F1D36; }
 .map-box[data-bg="bkk"] .lbl .nm { color: #fff; } .map-box[data-bg="bkk"] .lbl .th, .map-box[data-bg="bkk"] .lbl .nm.tick, .map-box[data-bg="bkk"] .cap { color: #B5B3CC; }

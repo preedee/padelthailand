@@ -141,7 +141,7 @@
    "name": "Chiang Mai",
    "th": "เชียงใหม่",
    "color": "#B23A2E",
-   "view": null,
+   "view": "cm",
    "x": 520,
    "y": 90,
    "lp": "left",
@@ -766,6 +766,108 @@
    "area": "Koh Lanta",
    "x": 1140,
    "y": 720,
+   "lp": "right"
+  }
+ ],
+ "cm": [
+  {
+   "slug": "ama-padel-pilates-recovery",
+   "area": "Chang Phueak · North",
+   "x": 562,
+   "y": 147,
+   "lp": "left"
+  },
+  {
+   "slug": "padel-cnx",
+   "area": "Chang Phueak",
+   "x": 783,
+   "y": 192,
+   "lp": "right"
+  },
+  {
+   "slug": "lanna-padel-padel",
+   "area": "Tha Sala · East",
+   "x": 1078,
+   "y": 398,
+   "lp": "right"
+  },
+  {
+   "slug": "padel-club-chiang-mai",
+   "area": "Saraphi · South",
+   "x": 921,
+   "y": 859,
+   "lp": "right"
+  }
+ ],
+ "cmPois": [
+  {
+   "name": "Doi Suthep Temple",
+   "kind": "temple",
+   "x": 295,
+   "y": 234,
+   "lp": "right"
+  },
+  {
+   "name": "Chiang Mai Zoo",
+   "kind": "nature",
+   "x": 503,
+   "y": 198,
+   "lp": "right"
+  },
+  {
+   "name": "Nimman",
+   "kind": "shop",
+   "x": 624,
+   "y": 306,
+   "lp": "left"
+  },
+  {
+   "name": "Wat Phra Singh",
+   "kind": "temple",
+   "x": 766,
+   "y": 363,
+   "lp": "left"
+  },
+  {
+   "name": "Wat Chedi Luang",
+   "kind": "temple",
+   "x": 809,
+   "y": 372,
+   "lp": "below"
+  },
+  {
+   "name": "Warorot Market",
+   "kind": "market",
+   "x": 917,
+   "y": 348,
+   "lp": "above"
+  },
+  {
+   "name": "Night Bazaar",
+   "kind": "market",
+   "x": 916,
+   "y": 393,
+   "lp": "right"
+  },
+  {
+   "name": "Chiang Mai Airport",
+   "kind": "transport",
+   "x": 636,
+   "y": 530,
+   "lp": "right"
+  },
+  {
+   "name": "Wat Umong",
+   "kind": "temple",
+   "x": 539,
+   "y": 403,
+   "lp": "left"
+  },
+  {
+   "name": "Central Festival",
+   "kind": "shop",
+   "x": 1057,
+   "y": 214,
    "lp": "right"
   }
  ]

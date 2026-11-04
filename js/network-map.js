@@ -35,7 +35,7 @@
     var nm = function (s) { return SHORT[s] || (C[s] && C[s].name) || s; };
     var courtsOf = function (s) { return (C[s] && C[s].courts && C[s].courts.total) || 0; };
     var REG = net.regions;
-    var DEF = { th: 'h-bkk', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
+    var DEF = { th: 'h-bkk', cm: 'padel-cnx', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
     var TAGS = {
       th: [['Northern Line', '45.6%', '24%', COL.n], ['Eastern Line', '62.5%', '45.5%', COL.e], ['Southern Line', '40.6%', '61%', COL.s], ['Gulf Ferry', '45%', '73.5%', COL.g]],
       bkk: [['MRT Purple → Nonthaburi', '1%', '1.2%', COL.pur], ['MRT Blue', '2%', '33%', COL.blue], ['Airport Rail Link → Suvarnabhumi', '62.5%', '5%', COL.arl], ['BTS Silom', '13%', '66%', COL.sil], ['BTS Sukhumvit', '85%', '58%', COL.suk]]
@@ -58,6 +58,7 @@
     net.off.forEach(function (o) { o.slugs.forEach(function (s) { placeOf[s] = { view: 'bkk', id: o.id }; }); });
     net.ring.concat(net.pha).forEach(function (g) { placeOf[g.slug] = { view: 'gulf', id: g.slug }; });
     net.phk.concat(net.kbi).forEach(function (g) { placeOf[g.slug] = { view: 'phk', id: g.slug }; });
+    (net.cm || []).forEach(function (g) { placeOf[g.slug] = { view: 'cm', id: g.slug }; });
     Object.keys(REG).forEach(function (k) { if (!REG[k].view) REG[k].slugs.forEach(function (s) { placeOf[s] = { view: 'th', id: 'h-' + k }; }); });
 
     // ---- stops for the current view ----
@@ -72,6 +73,8 @@
         net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.km]; }), seq: b.seq, d: 1.5 }); });
         net.ticks.forEach(function (t) { stops.push({ id: t.id, kind: 'tick', name: t.name, sub: '', x: t.x, y: t.y, lp: t.lp, d: 1.0 }); });
         net.off.forEach(function (o) { var st = clubStop(o.slugs[0], o.sub, o.x, o.y, o.lp, 'Off the Rail Network', '#4A5058', null); st.off = true; stops.push(st); });
+      } else if (view === 'cm') {
+        (net.cm || []).forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, 'Chiang Mai', COL.n, 'cm')); });
       } else if (view === 'gulf') {
         net.ring.forEach(function (g) { var a = g.angle * Math.PI / 180; stops.push(clubStop(g.slug, g.area, 620 + 250 * Math.sin(a), 660 - 250 * Math.cos(a), g.lp, 'Samui Loop', COL.g, 'sam')); });
         net.pha.forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, 'Phangan & Tao', COL.pha, 'pha')); });
@@ -112,6 +115,8 @@
       bkk: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M840 460 V120 L800 80 H340 L260 160 V540 H760 Z" stroke="#1E4F9C" stroke-width="12"/>' +
         '<path d="M340 80 H100" stroke="#6F2C91" stroke-width="12"/><path d="M560 240 H840 L960 120 H1250" stroke="#A6192E" stroke-width="12"/>' +
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
+      cm: '<path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#9CC3D3" stroke-width="26" stroke-linecap="round" opacity=".75"/><path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#C9E2EC" stroke-width="12" stroke-linecap="round"/>' +
+        '<rect x="741" y="304" width="119" height="112" rx="8" fill="#F6F1E6" stroke="#B9AF98" stroke-width="5" stroke-dasharray="2 0"/>',
       gulf: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="620" cy="660" r="250" stroke="#0E7C86" stroke-width="14"/>' +
         '<path d="M620 410 V300" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M340 240 L240 140 H200" stroke="#2F6DB5" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/>' +
         '<path d="M620 300 L560 240 H340" stroke="#2F6DB5" stroke-width="12"/><path d="M620 300 H760 L840 220 V160" stroke="#2F6DB5" stroke-width="12"/></g>',
@@ -122,6 +127,10 @@
       var h = '';
       (TAGS[view] || []).forEach(function (t) { h += '<span class="tagline" style="left:' + t[1] + ';top:' + t[2] + ';background:' + t[3] + ';color:' + fg(t[3]) + '">' + esc(t[0]) + '</span>'; });
       if (view === 'th') h += '<span class="cap">Schematic · Circle Size = Number of Clubs · Tap a Region</span>';
+      if (view === 'cm') {
+        h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:58%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
+        (net.cmPois || []).forEach(function (o) { h += '<div class="poi ' + esc(o.kind) + '" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
+      }
       if (view === 'gulf') {
         var n = net.ring.length;
         h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
@@ -261,7 +270,7 @@
       if (fresh) enter(from, state.view);
 
       // tabs
-      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
+      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
       tabsEl.innerHTML = tabs.map(function (t) { return '<button type="button" class="chip sq" data-view="' + t[0] + '" aria-pressed="' + (state.view === t[0]) + '">' + esc(t[1]) + ' <span class="count">' + t[2] + '</span></button>'; }).join('');
 
       // panel
@@ -276,7 +285,7 @@
         if (filtered) stat += ' · ' + v.length + ' Match';
       } else if (sel.kind === 'club') {
         var peers = stops.filter(function (s) { return s.seq === sel.seq; }); idx = peers.indexOf(sel); nav = peers;
-        eyebrow = sel.off ? 'Off the Rail Network' : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.sub;
+        eyebrow = sel.off ? 'Off the Rail Network' : sel.seq === 'cm' ? 'Chiang Mai' : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.sub;
         if (sel.off) { peers = []; nav = null; note = '<div class="note-box">Not Within Walking Distance of BTS/MRT. Drive, Taxi or Grab.</div>'; }
         cards = clubCard(sel.id, null, true);
         if (C[sel.id] && C[sel.id].openingSoon) stat = 'Opening Soon';
