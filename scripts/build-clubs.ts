@@ -293,6 +293,10 @@ const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
   }
   return toClub(r, slugs[r.place_id], city, (photosBy.get(r.place_id) ?? []).slice(0, 5), aliases[r.place_id] ?? []);
 });
+// hand-entered clubs the registry lacks (Playtomic venues Google has not listed); a registry club at the same spot or slug wins
+const manualClubs = await read<Club[]>("data/club-manual.json", []);
+for (const m of manualClubs)
+  if (!clubs.some((c) => c.slug === m.slug || (Math.abs(c.lat - m.lat) < 0.0008 && Math.abs(c.lng - m.lng) < 0.0008))) clubs.push(m);
 const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => a.localeCompare(b)));
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

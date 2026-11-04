@@ -267,7 +267,7 @@ function clubPage(c: Club): string {
         ${ph.slice(1, 5).map((p, i) => `<button class="th" type="button" data-i="${i + 1}" aria-label="Show photo ${i + 2} of ${ph.length}"><img loading="lazy" src="${esc(p.url)}" alt="">${i === 3 && ph.length > 5 ? `<span class="more">+${ph.length - 5} More</span>` : ""}</button>`).join("")}</div>`
     : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos are shown only with a credit line.</span></div></div>`;
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
-  const aboutLine = `${c.name} is a padel club in ${c.city}, Thailand` + (c.courts.total ? ` with ${c.courts.total} ${c.courts.total === 1 ? "court" : "courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type}`).join(", ")})` : ""}` : "") + "." + (c.rating ? ` Rated ${c.rating} from ${c.ratingCount} Google ratings.` : "") + (w.walkKm != null ? ` About ${wMin} minutes on foot from the nearest station (straight-line estimate).` : "");
+  const aboutLine = `${c.name} is a padel club in ${c.city}, Thailand` + (c.courts.total ? ` with ${c.courts.total} ${c.courts.total === 1 ? "court" : "courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as opening soon." : "") + (c.rating ? ` Rated ${c.rating} from ${c.ratingCount} Google ratings.` : "") + (w.walkKm != null ? ` About ${wMin} minutes on foot from the nearest station (straight-line estimate).` : "");
   const priceBlock = `<div><div class="price-from">Price</div><div class="price-line" style="font-size:20px">${c.priceNote ? esc(c.priceNote) : "Not Listed Yet"}</div>
       <div class="price-note">${c.booking ? `Check current rates on ${esc(platformName(c))}.` : "Contact the club for rates."}</div></div>`;
   const bookBtn = c.booking ? `<a class="btn solid block" href="${esc(c.booking.url)}" target="_blank" rel="noopener">${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid block" href="tel:${esc(c.tel)}">Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : `<span class="fine">No online booking listed. Use the contact details below.</span>`);
@@ -297,7 +297,7 @@ function clubPage(c: Club): string {
     <div class="gal-col">${gal}
       <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="${SITE_IG}" rel="noopener">+ Add a Photo of This Club</a></div></div>
     <aside class="aside" aria-label="Booking and contact">
-      <section class="card" aria-labelledby="book-h"><div class="row1"><h3 id="book-h">Book a Court</h3><span class="open-now" data-open hidden></span></div>
+      <section class="card" aria-labelledby="book-h"><div class="row1"><h3 id="book-h">Book a Court</h3>${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div>
         <div class="courts"><span>${esc(courtSummary(c))}</span></div>${priceBlock}${bookBtn}
         <a class="btn block" href="${esc(dirUrl)}" target="_blank" rel="noopener">Directions</a></section>
       ${addr}

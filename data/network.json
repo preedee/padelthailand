@@ -65,7 +65,8 @@
     "sterling-sport-and-wellness-sukhumvit-24",
     "sunshine-padel-club",
     "the-padel-co-bangkok",
-    "top-padel-bangkok"
+    "top-padel-bangkok",
+    "vita-padel-ekkamai"
    ]
   },
   "gulf": {
@@ -263,7 +264,7 @@
    "id": "thong",
    "name": "Thong Lo",
    "th": "ทองหล่อ",
-   "x": 1000,
+   "x": 990,
    "y": 380,
    "lp": "up",
    "line": "BTS Sukhumvit",
@@ -277,10 +278,27 @@
    "seq": "suk"
   },
   {
+   "id": "ekkamai",
+   "name": "Ekkamai",
+   "th": "เอกมัย",
+   "x": 1050,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "vita-padel-ekkamai",
+     "km": 0.5
+    }
+   ],
+   "seq": "suk"
+  },
+  {
    "id": "phra",
    "name": "Phra Khanong",
    "th": "พระโขนง",
-   "x": 1090,
+   "x": 1110,
    "y": 380,
    "lp": "up",
    "line": "BTS Sukhumvit",
