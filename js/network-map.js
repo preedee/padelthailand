@@ -83,9 +83,27 @@
     }
     function clubStop(slug, area, x, y, lp, bar, color, seq) { return { id: slug, kind: 'club', name: nm(slug), sub: area, x: x, y: y, lp: lp, bar: bar, color: color, seq: seq, d: 1.3, clubs: [[slug, null]] }; }
 
+    // ---- regional backdrops for the Thailand overview: topo up north, sand around the Gulf coast, dusk for Bangkok, sea for the rest ----
+    var PAT = {
+      topo: ['200', '130', '<g fill="none" stroke="#CAD7BE" stroke-width="2"><path d="M-10 30 C40 6 80 54 130 30 S190 6 210 34"/><path d="M-10 52 C40 28 80 76 130 52 S190 28 210 56"/><path d="M-10 100 C40 76 80 124 130 100 S190 76 210 104"/></g>', '#E9EFE3'],
+      sand: ['36', '36', '<circle cx="18" cy="18" r="1.8" fill="#D8CDB6"/>', '#F3ECDD'],
+      sea: ['190', '64', '<path d="M0 32 Q24 12 48 32 T96 32 T144 32 T192 32" fill="none" stroke="#C3D9DE" stroke-width="2.4"/>', '#DDEBEE'],
+      dusk: ['36', '36', '<circle cx="18" cy="18" r="1.8" fill="#B9B6D2"/>', '#DDDBEB']
+    };
+    var ZONES = [['sea', 800, 860, 330], ['sea', 330, 820, 300], ['sea', 500, 820, 280], ['sea', 1260, 640, 300], ['topo', 520, 90, 340], ['sand', 620, 580, 230], ['sand', 880, 470, 220], ['sand', 970, 560, 230], ['dusk', 700, 420, 250]];
+    function zoneBackdrop() {
+      var defs = '<radialGradient id="zf"><stop offset="0.55" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>', body = '';
+      Object.keys(PAT).forEach(function (k) { var p = PAT[k]; defs += '<pattern id="zp-' + k + '" width="' + p[0] + '" height="' + p[1] + '" patternUnits="userSpaceOnUse">' + p[2] + '</pattern>'; });
+      ZONES.forEach(function (z, i) {
+        defs += '<mask id="zm' + i + '"><circle cx="' + z[1] + '" cy="' + z[2] + '" r="' + z[3] + '" fill="url(#zf)"/></mask>';
+        body += '<g mask="url(#zm' + i + ')"><rect width="1600" height="1000" fill="' + PAT[z[0]][3] + '"/><rect width="1600" height="1000" fill="url(#zp-' + z[0] + ')"/></g>';
+      });
+      return '<defs>' + defs + '</defs>' + body;
+    }
+
     // ---- SVG backdrops (hand-placed, from the design canvas) ----
     var BG = {
-      th: '<g fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+      th: zoneBackdrop() + '<g fill="none" stroke-linecap="round" stroke-linejoin="round">' +
         '<path d="M700 420 V180 L610 90 H520" stroke="#B23A2E" stroke-width="18"/><path d="M700 420 V180 L610 90 H520" stroke="#fff" stroke-width="5"/>' +
         '<path d="M970 560 L1050 640 H1260" stroke="#E08A2E" stroke-width="12" stroke-dasharray="16 14" stroke-linecap="butt"/>' +
         '<path d="M700 420 L750 470 H880 L970 560" stroke="#E08A2E" stroke-width="18"/><path d="M700 420 L750 470 H880 L970 560" stroke="#fff" stroke-width="5"/>' +
@@ -211,7 +229,7 @@
         ? '<span aria-hidden="true" class="stn" style="left:-' + hit + 'cqw;top:-' + hit + 'cqw;width:' + (2 * hit) + 'cqw;height:' + (2 * hit) + 'cqw;cursor:default"><span style="' + dot + '"></span></span>'
         : '<button type="button" class="stn' + (dim ? ' dim' : '') + '" data-id="' + esc(s.id) + '" aria-label="' + esc(s.name + (s.sub ? ', ' + s.sub : '')) + '" aria-pressed="' + (on ? 'true' : 'false') + '" style="left:-' + hit + 'cqw;top:-' + hit + 'cqw;width:' + (2 * hit) + 'cqw;height:' + (2 * hit) + 'cqw"><span style="' + dot + '">' + (s.kind === 'hub' ? s.count : '') + '</span></button>';
       var av = '';
-      if (on && (s.kind === 'club') && photoOf(s.clubs)) { var o = AV[s.lp] || [1.1, 1.1]; av = '<span class="avatar" aria-hidden="true" style="left:' + o[0] + 'cqw;top:' + o[1] + 'cqw;background-image:url(\'' + esc(photoOf(s.clubs)) + '\')"></span>'; }
+      if (on && (s.kind === 'club') && photoOf(s.clubs)) { var o = AV[s.lp] || [1.1, 1.1]; if (s.seq === 'sam') { var vx = 620 - s.x, vy = 660 - s.y, vl = Math.sqrt(vx * vx + vy * vy) || 1; o = [vx / vl * 4.6 - 2.7, vy / vl * 4.6 - 2.7]; } av = '<span class="avatar" aria-hidden="true" style="left:' + o[0] + 'cqw;top:' + o[1] + 'cqw;background-image:url(\'' + esc(photoOf(s.clubs)) + '\')"></span>'; }
       return '<div class="stop' + (on ? ' on' : '') + '" style="left:' + (s.x / 16) + '%;top:' + (s.y / 10) + '%">' + inner +
         '<span class="lbl" style="' + lab(s.lp, r) + '"><span class="' + nameCls + '"' + (s.kind === 'tick' ? '' : ' data-id="' + esc(s.id) + '"') + '>' + esc(s.name) + '</span>' + (s.sub ? '<span class="th">' + esc(s.sub) + '</span>' : '') + '</span>' + av + '</div>';
     }
@@ -237,6 +255,7 @@
       var clickable = stops.filter(function (s) { return s.kind !== 'tick'; });
       var sel = clickable.filter(function (s) { return s.id === state.sel; })[0] || clickable.filter(function (s) { return s.id === DEF[state.view]; })[0] || clickable[0];
       state.sel = sel.id;
+      box.dataset.bg = state.view;
       layer.innerHTML = '<svg class="bg" aria-hidden="true" viewBox="0 0 1600 1000" preserveAspectRatio="none">' + BG[state.view] + '</svg>' + extras(state.view) + stops.map(function (s) { return stopHtml(s, sel); }).join('');
       if (shownView !== state.view) { shownView = state.view; setTrains(state.view); fresh = true; }
       if (fresh) enter(from, state.view);
