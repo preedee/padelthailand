@@ -134,12 +134,6 @@ const courtTypes = (c: Club): CT[] => {
 };
 const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court Type Not Listed" : t.type}">${ICON[t.type]}<span>${t.n ?? c.courts.total ?? ""}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
 const courtsWord = (c: Club) => (c.courts.total ? `${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}` : "Courts Not Listed");
-const courtSummary = (c: Club) => {
-  const ts = courtTypes(c).filter((t) => t.type !== "unknown");
-  if (!c.courts.total) return "Court Count Not Listed";
-  if (ts.length === 1 && ts[0].n === c.courts.total) return `${c.courts.total} ${ts[0].type[0].toUpperCase() + ts[0].type.slice(1)} ${c.courts.total === 1 ? "Court" : "Courts"}`;
-  return `${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}` + (ts.length ? ` · ${ts.map((t) => `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}`).join(", ")}` : "");
-};
 const platformName = (c: Club) => c.booking?.label.replace(/^Book (on |via )?(the )?/, "") ?? "";
 const bookText = (c: Club) => c.booking?.label.replace(/^Book (on|via) the /, "Book on ") ?? "";
 
@@ -281,7 +275,7 @@ function clubPage(c: Club): string {
   const wMin = w.walkKm != null ? walkMin(w.walkKm) : null;
   const station = w.kind === "rail" ? net.bkk.find((s) => s.clubs.some((k) => k.slug === c.slug))! : null;
   const facts: string[] = [`<strong>${esc(w.area)}</strong>`];
-  if (w.kind === "rail" && wMin != null) facts.push(`<span class="ct">${ICON.walk}~${wMin} Min Walk From ${esc(stationLabel(station!.name))} (Est.)</span>`);
+  if (w.kind === "rail" && wMin != null) facts.push(`<span class="ct">${ICON.walk}~${wMin} Min Walk From ${esc(stationLabel(station!.name))}</span>`);
   else if (w.offNetwork) facts.push(`<span class="ct">${ICON.car}Off the Rail Network · Drive or Taxi</span>`);
   facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : (c.courts.total ?? "")}</span>`));
   const stopTxt = w.stop ? `${w.kind === "rail" ? "Station" : "Stop"} ${String(w.stop.n).padStart(2, "0")} of ${String(w.stop.of).padStart(2, "0")}` : w.offNetwork ? "Off Network" : "";
@@ -294,9 +288,8 @@ function clubPage(c: Club): string {
     : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos Are Shown Only With a Credit Line.</span></div></div>`;
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
   const aboutLine = `${c.name} Is a Padel Club in ${c.city}, Thailand` + (c.courts.total ? ` With ${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type[0].toUpperCase() + x.type.slice(1)}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as Opening Soon." : "") + (c.rating ? ` Rated ${c.rating} From ${c.ratingCount} Google Ratings.` : "") + (w.walkKm != null ? ` About ${wMin} Minutes on Foot From the Nearest Station (Straight-Line Estimate).` : "");
-  const priceBlock = `<div><div class="price-from">Price</div><div class="price-line" style="font-size:20px">${c.priceNote ? esc(c.priceNote) : "Not Listed Yet"}</div>
-      <div class="price-note">${c.booking ? `Check Current Rates on ${esc(platformName(c))}.` : "Contact the Club for Rates."}</div></div>`;
-  const bookBtn = c.booking ? `<a class="btn solid block" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "club_page" })}>${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid block" href="tel:${esc(c.tel)}"${trk("contact_click", { club_slug: c.slug, method: "phone", place: "booking_card" })}>Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : `<span class="fine">No Online Booking Listed. Use the Contact Details Below.</span>`);
+  // the Book button sits at the right of the header (phones use the sticky bar at the bottom instead)
+  const headBook = c.booking ? `<a class="btn solid book-cta" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "club_page" })}>${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid book-cta" href="tel:${esc(c.tel)}"${trk("contact_click", { club_slug: c.slug, method: "phone", place: "club_header" })}>Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : "");
   const dirUrl = c.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`;
   const TH = /[\u0E00-\u0E7F]/;
   const thaiAddr = addrOk(c) && TH.test(c.address);
@@ -304,7 +297,8 @@ function clubPage(c: Club): string {
   const addr = `<section class="card" aria-labelledby="addr-h"><h3 id="addr-h">${w.kind === "rail" || w.offNetwork || w.region === "Bangkok" ? "Address" : "Getting Here"}</h3>
     ${w.kind === "loop" || w.kind === "line" ? `<p class="fine" style="margin:0">${w.region.startsWith("Samui") || w.region.startsWith("Phuket") || w.line.startsWith("Phangan") ? "No Rail Here. Taxi, Grab or Scooter." : "Drive, Taxi or Grab."}</p>` : ""}
     <p style="margin:0" id="addr-text">${addrOk(c) ? esc(c.address) : "Street Address Not Listed Yet. Use Directions."}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">${hasTh ? `<button class="btn solid" style="flex:1 1 auto" type="button" data-driver data-track="show_to_driver" data-t-club_slug="${esc(c.slug)}">${ICON.car}Show to Driver</button>` : `<a class="btn solid" style="flex:1 1 auto" href="${esc(dirUrl)}" target="_blank" rel="noopener"${trk("directions_click", { club_slug: c.slug, place: "address_card" })}>Open in Maps</a>`}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${hasTh ? `<button class="btn solid" style="flex:1 1 auto" type="button" data-driver data-track="show_to_driver" data-t-club_slug="${esc(c.slug)}">${ICON.car}Show to Driver</button>` : ""}
+    <a class="btn${hasTh ? "" : " solid"}" style="flex:1 1 auto" href="${esc(dirUrl)}" target="_blank" rel="noopener"${trk("directions_click", { club_slug: c.slug, place: "address_card" })}>Directions</a>
     ${addrOk(c) ? `<button class="btn" type="button" data-copy="${esc(c.address)}">Copy</button>` : ""}</div></section>
     ${hasTh ? `<div class="driver" id="driver" role="dialog" aria-modal="true" aria-label="Address for driver" hidden><div class="eyebrow" style="color:#fff">Show to Driver</div><div class="big" lang="th">${c.nameTh ? esc(c.nameTh) + "<br>" : ""}${thaiAddr ? esc(c.address) : ""}</div><div class="eng">${esc(c.name)}<br>${esc(c.address)}</div><div class="acts"><button class="btn" type="button" data-copy="${esc(thaiAddr ? c.address : c.nameTh)}">Copy</button><button class="btn" type="button" data-driver-close>Close</button></div></div>` : ""}`;
   const contacts = [
@@ -316,18 +310,15 @@ function clubPage(c: Club): string {
   const barPrice = c.booking ? `<a class="btn solid" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "sticky_bar" })}>${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid" href="tel:${esc(c.tel)}">Call</a>` : "");
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <a href="${hubOk ? hubPath(w.region) : `/clubs/#${encodeURIComponent(w.region)}`}">${esc(w.region)}</a> / <span aria-current="page"><strong>${esc(shortName(c))}</strong></span></nav>
-  <section class="sign" aria-label="Station sign"><div class="band" style="background:${w.color};color:${fg(w.color)}"><span class="d">${esc(w.line)}</span><span class="mono">${esc(stopTxt)}</span></div>
-    <div class="main"><div class="top">${logoSlot(c, 72)}<h1>${esc(c.name)}</h1></div>
-    <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : ""}</div></div></section>
+  <section class="sign" aria-label="Club header">
+    <div class="main"><div class="top">${logoSlot(c, 72)}<h1>${esc(c.name)}</h1>${headBook}</div>
+    <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div></div></section>
   <div class="club-grid">
     <div class="gal-col">${gal}
       <div class="gal-note"><span>${ph.length ? "Photos Are Credited to Their Source." : "Club-Supplied Photos With a Credit Line Replace This Placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
-    <aside class="aside" aria-label="Booking and contact">
-      <section class="card" aria-labelledby="book-h"><div class="row1"><h3 id="book-h">Book a Court</h3>${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div>
-        <div class="courts"><span>${esc(courtSummary(c))}</span></div>${priceBlock}${bookBtn}
-        <a class="btn block" href="${esc(dirUrl)}" target="_blank" rel="noopener"${trk("directions_click", { club_slug: c.slug, place: "booking_card" })}>Directions</a></section>
-      ${addr}
+    <aside class="aside" aria-label="Contact and address">
       ${contacts.length ? `<section class="card" aria-label="Contact"><ul class="contact">${contacts.join("")}</ul></section>` : ""}
+      ${addr}
       <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/#correction">Report a Correction</a> · <a href="/submit/#correction">Own This Club? Claim It</a></p>
     </aside>
     <div class="rest">
@@ -376,11 +367,11 @@ function homePage(): string {
 <section class="wrap" id="map" aria-labelledby="map-h"><div class="map-head"><h2 id="map-h">Network Map</h2><div class="tabs" id="tabs" role="group" aria-label="Map view"></div></div>
   <div class="map-layout"><div class="map-box" id="map-box" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
   <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, Not to Scale. Walk Times Are Straight-Line Estimates From the Nearest Station. Prefer a List? <a href="#index">See All Clubs by Region</a>.</span></div></section>
-<section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions. Every Booking Button Goes to Where the Club Actually Takes Bookings.</p>
+<section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=19"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=20"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }

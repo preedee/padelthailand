@@ -38,7 +38,7 @@ const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-stat
 const tournamentsPage = () => shell({
   title: "Tournaments | Padel Thailand", path: "/tournaments/", active: "tournaments", head: HEAD, bodyAttrs: 'data-listing="tournaments"',
   description: "Every padel tournament in Thailand: upcoming draws and past results, with posters. Filter by date, region, gender and club, then register.",
-  scripts: `<script src="/js/listings.js?v=1"></script>`,
+  scripts: `<script src="/js/listings.js?v=2"></script>`,
   ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Padel Tournaments in Thailand", url: `${SITE}/tournaments/`, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: `${SITE}/` } },
     ...(sportsEvents.length ? [{ "@context": "https://schema.org", "@type": "ItemList", name: "Upcoming padel tournaments in Thailand", itemListElement: sportsEvents.map((item, i) => ({ "@type": "ListItem", position: i + 1, item })) }] : []),
     breadcrumbLd([["Padel Thailand", "/"], ["Tournaments", "/tournaments/"]])],
@@ -57,7 +57,7 @@ const eventsPage = () => shell({
   noindex: eventCount === 0, // an empty events page is thin content; the nightly build flips this as soon as the first event exists
   ld: [breadcrumbLd([["Padel Thailand", "/"], ["Events", "/events/"]])],
   description: "Weekly Americanos, clinics, socials and league nights at padel clubs across Thailand.",
-  scripts: `<script src="/js/listings.js?v=1"></script>`,
+  scripts: `<script src="/js/listings.js?v=2"></script>`,
   body: `<main class="wrap">
   <div class="listing-head"><div><span class="badge-ink">Events</span><span class="counts" id="e-count"></span>
     <h1>Play Something Tonight</h1><p>Weekly Americanos, Clinics, Socials and Beginner Sessions at Every Club in Thailand. Turn Up Solo — Get Matched In.</p></div>
@@ -74,20 +74,20 @@ const aboutPage = () => shell({
   body: `<main class="wrap"><div class="page-head"><span class="badge-ink">About</span><h1 style="margin-top:14px">How This Site Works</h1></div>
   <div class="prose" style="max-width:70ch;margin-top:12px">
   <h2 style="font-size:28px;margin:28px 0 8px">Every Club Is Listed the Same Way</h2>
-  <p>The Map, the Clubs Page and the Filters Treat Every Club Equally. Each Booking Button Goes to Where the Club Actually Takes Bookings.</p>
-  <p><strong>The Padel Society (TPS) Runs the Booking for Its Own Clubs.</strong> When Live Booking Arrives on This Site, TPS Clubs Get an In-Page Booking Button and a Live Availability Board. They Get No Extra Ranking, Size or Placement.</p>
+  <p>The map, the Clubs page and the filters treat every club equally. Each booking button goes to where the club actually takes bookings.</p>
+  <p><strong>The Padel Society (TPS) runs the booking for its own clubs.</strong> When live booking arrives on this site, TPS clubs get an in-page booking button and a live availability board. They get no extra ranking, size or placement.</p>
   <h2 style="font-size:28px;margin:28px 0 8px">Where the Listings Come From</h2>
-  <p>Clubs Come From a Registry That Is Refreshed Weekly From Public Sources, Then Checked by Hand. Tournaments and Events Come From Organisers, Clubs and Our Own Research. Anything Sent Through the <a href="/submit/">Submission Forms</a> Is Reviewed by a Person Before It Goes Live.</p>
+  <p>Clubs come from a registry that is refreshed weekly from public sources, then checked by hand. Tournaments and events come from organisers, clubs and our own research. Anything sent through the <a href="/submit/">submission forms</a> is reviewed by a person before it goes live.</p>
   <h2 style="font-size:28px;margin:28px 0 8px">Photos and Posters</h2>
-  <p>Photos Are Shown With a Credit Line. If a Photo Is Yours and You Want It Changed or Removed, <a href="/submit/#correction">Tell Us</a>. Posters Are Shared With Permission.</p>
+  <p>Photos are shown with a credit line. If a photo is yours and you want it changed or removed, <a href="/submit/#correction">tell us</a>. Posters are shared with permission.</p>
   <h2 style="font-size:28px;margin:28px 0 8px">Walk Times and Prices</h2>
-  <p>Walk Times Are Straight-Line Estimates From the Nearest BTS or MRT Station, Not Measured Routes. Prices Are Shown Only When a Club Has Told Us; Otherwise We Say So.</p>
+  <p>Walk times are straight-line estimates from the nearest BTS or MRT station, not measured routes. Prices are shown only when a club has told us; otherwise we say so.</p>
   <h2 id="privacy" style="font-size:28px;margin:28px 0 8px">Privacy and Analytics</h2>
-  <p>We Use Google Analytics With Anonymous Settings to See Which Pages and Buttons Help Players: Page Views, Clicks on Booking and Directions Links, and Which Filters Get Used. We Do Not Collect Names or Emails Through Analytics, and Google Signals and Ad Personalisation Are Turned Off.</p>
-  ${CONSENT_REQUIRED ? "<p>Analytics Cookies Stay Off Until You Press Accept. Before You Choose, Google May Still Receive Anonymous Page Views Without Cookies. You Can Change Your Choice Any Time With Cookie Settings in the Footer.</p>" : ""}
-  <p>Names and Emails Sent Through the Submission Forms Are Used Only to Check the Submission and Are Deleted 12 Months After It Is Reviewed.</p>
+  <p>We use Google Analytics with anonymous settings to see which pages and buttons help players: page views, clicks on booking and directions links, and which filters get used. We do not collect names or emails through analytics, and Google signals and ad personalisation are turned off.</p>
+  ${CONSENT_REQUIRED ? "<p>Analytics cookies stay off until you press Accept. Before you choose, Google may still receive anonymous page views without cookies. You can change your choice any time with Cookie Settings in the footer.</p>" : ""}
+  <p>Names and emails sent through the submission forms are used only to check the submission and are deleted 12 months after it is reviewed.</p>
   <h2 style="font-size:28px;margin:28px 0 8px">Spot a Mistake?</h2>
-  <p><a href="/submit/#correction">Report a Correction</a>, or Message <a href="${SITE_IG}" rel="noopener">@padelthailand</a> on Instagram.</p></div></main>`,
+  <p><a href="/submit/#correction">Report a correction</a>, or message <a href="${SITE_IG}" rel="noopener">@padelthailand</a> on Instagram.</p></div></main>`,
 });
 
 const notFoundPage = () => shell({
