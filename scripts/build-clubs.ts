@@ -16,9 +16,9 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
-const SUPABASE_URL = "https://bnxmlaulhvfhxvstphwh.supabase.co";
-// The anon key is public by design (the registry's preview site ships it too); the view grants anon SELECT only.
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJueG1sYXVsaHZmaHh2c3RwaHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzgyMzQsImV4cCI6MjA4OTQ1NDIzNH0.HrrkN3NGMi6_qNgEPkDfvcIN8FUBClsAr3T_NYiSbTs";
+const SUPABASE_URL = "https://zmnchzfvbflexrlciadn.supabase.co";
+// The publishable key is public by design (the registry's preview site ships it too); the view grants anon SELECT only.
+const ANON_KEY = "sb_publishable_KKLfjbhBJ_qF420UNtM2JQ_2YM-v6ld";
 const PHOTO_BASE = `${SUPABASE_URL}/storage/v1/object/public/club-photos/`;
 const SITE = "https://padelthailand.com";
 const ROOT = new URL("..", import.meta.url).pathname;

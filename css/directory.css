@@ -287,7 +287,10 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .strip .g .clubs.one { border-top: 0; padding-top: 4px; }
 .strip .c { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; text-align: center; width: 110px; min-height: 44px; font-size: 13px; line-height: 1.2; }
 .strip .c .logo-slot { width: 48px; height: 48px; font-size: 18px; }
-.strip .c .logo-slot.has-logo { border: 1.5px solid var(--line, #D5D8D6); background: #fff; padding: 3px; }
+.logo-slot.has-logo { border: 1.5px solid var(--line, #D5D8D6); background: #fff; padding: 4px; }
+.logo-slot.has-logo.on-dark { background: var(--ink); border-color: var(--ink); }
+.strip .c .logo-slot.has-logo { padding: 3px; }
+.logo-slot img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .strip .c .logo-slot img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .strip .c.here .logo-slot { border: 2.5px solid var(--ink); }
 .strip .c.here { font-weight: 700; }
