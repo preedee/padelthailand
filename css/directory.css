@@ -118,7 +118,7 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .map-box .poi { position: absolute; width: 0; height: 0; z-index: 1; pointer-events: none; --pc: #7A6F57; }
 .map-box .poi.temple { --pc: #B8860B; } .map-box .poi.market { --pc: #C0592B; } .map-box .poi.nature { --pc: #4F8A3C; } .map-box .poi.transport { --pc: #3F6FA3; } .map-box .poi.shop { --pc: #A0527C; }
 .map-box .poi i { position: absolute; left: -.5cqw; top: -.5cqw; width: 1cqw; height: 1cqw; background: #fff; border: .22cqw solid var(--pc); transform: rotate(45deg); box-sizing: border-box; }
-.map-box .poi .lbl { font-size: max(10px, 1cqw); font-weight: 600; color: var(--pc); }
+.map-box .poi .lbl { font-size: max(10px, 1cqw); font-weight: 500; color: #5E646B; }
 .map-box .cm-tag.river { color: #4F8AA3; transform: rotate(80deg); transform-origin: 0 0; } .map-box .cm-tag.hill { color: #6F8A5A; }
 .map-box[data-bg="bkk"] { background-color: #1F1D36; background-image: radial-gradient(#37345A 1px, transparent 1px); }
 .map-box[data-bg="bkk"] .lbl { text-shadow: 0 0 .25cqw #1F1D36, 0 0 .25cqw #1F1D36, 0 0 .25cqw #1F1D36; }
