@@ -1083,6 +1083,20 @@
     "y": 458,
     "lp": "left"
    }
+  ],
+  "gulf": [
+   {
+    "name": "Don Sak Pier",
+    "x": 80,
+    "y": 640,
+    "lp": "above"
+   },
+   {
+    "name": "Lipa Noi Pier",
+    "x": 372,
+    "y": 598,
+    "lp": "below"
+   }
   ]
  }
 }

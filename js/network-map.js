@@ -69,7 +69,7 @@
       if (view === 'th') {
         Object.keys(REG).forEach(function (k) {
           var h = REG[k], n = h.slugs.length, ct = h.slugs.reduce(function (a, s) { return a + courtsOf(s); }, 0);
-          stops.push({ id: 'h-' + k, kind: 'hub', name: h.name, sub: plural(n, 'Club') + ' · ' + ct + ' Courts', x: h.x, y: h.y, lp: h.lp, color: h.color, d: 1.8 + 0.55 * Math.sqrt(n), count: n, courts: ct, hub: h, clubs: h.slugs.map(function (s) { return [s, null]; }) });
+          stops.push({ id: 'h-' + k, kind: 'hub', name: h.name, sub: plural(n, 'Club') + ' · ' + plural(ct, 'Court'), x: h.x, y: h.y, lp: h.lp, color: h.color, d: 1.8 + 0.55 * Math.sqrt(n), count: n, courts: ct, hub: h, clubs: h.slugs.map(function (s) { return [s, null]; }) });
         });
       } else if (view === 'bkk') {
         net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.across ? null : c.km, c.across ? c.km : null]; }), seq: b.seq, d: 1.5 });
@@ -113,6 +113,8 @@
     var GULF_LAND = SAND_DEFS +
       '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M620 380 C720 372 840 430 880 520 C920 610 905 720 850 800 C800 880 700 935 610 940 C500 945 390 890 350 800 C305 700 330 560 410 480 C470 420 540 385 620 380 Z"/>' +
       '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M340 235 C330 190 400 160 470 170 C520 120 640 115 700 140 C760 100 850 110 890 150 C910 210 880 270 800 300 C740 345 660 350 600 330 C520 320 450 300 400 290 C350 285 345 260 340 235 Z"/>' +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M-10 380 C50 420 105 470 108 560 C110 640 70 720 90 800 C100 860 60 910 -10 940 Z"/>' +
+      '<path d="M96 640 C200 640 300 618 372 598" fill="none" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12"/>' +
       '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M150 140 C150 100 210 85 245 110 C265 140 240 180 200 185 C165 185 150 165 150 140 Z"/>';
     var PHK_LAND = SAND_DEFS +
       '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M520 140 C640 100 800 110 880 170 C950 230 945 330 925 430 C905 560 955 680 940 780 C925 880 860 960 760 975 C650 990 520 975 450 930 C380 880 395 760 385 650 C375 520 395 420 390 320 C385 230 430 170 520 140 Z"/>' +
@@ -150,7 +152,7 @@
         h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
       }
       if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
-      if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
+      if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="tagline" style="left:7%;top:52%;background:#0E7C86;color:#fff">Car Ferry to/from Don Sak</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
       if (view === 'phk') h += '<span class="cm-tag sea" style="left:9%;top:48%">Andaman Sea</span>';
       if (view === 'hh') h += '<span class="cm-tag sea" style="left:80%;top:30%">Gulf of Thailand</span><span class="cm-tag rail" style="left:51.5%;top:54%">Southern Railway</span><span class="cap">Schematic · Positions Are Approximate</span>';
       ((EXTRA[view] ? net[EXTRA[view].pois] : (net.pois || {})[view]) || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
@@ -159,7 +161,7 @@
         var n = net.ring.length;
         h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
           '<div style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
-          '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak. Boats Run Samui → Phangan → Tao, and There Is a Direct Ferry From Samui to Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
+          '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak to Lipa Noi Pier. Boats Run Samui → Phangan → Tao, and There Is a Direct Ferry From Samui to Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
       }
       if (view === 'phk') {
         h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
@@ -320,7 +322,7 @@
       var filtered = anyFilter();
       if (sel.kind === 'hub') {
         var h = sel.hub; eyebrow = 'Region'; title = h.name; sub = h.th; barText = 'Region';
-        stat = plural(sel.count, 'Club') + ' · ' + sel.courts + ' Courts';
+        stat = plural(sel.count, 'Club') + ' · ' + plural(sel.courts, 'Court');
         if (h.view) open = '<button type="button" class="btn solid block" data-open-view="' + h.view + '">Open the ' + esc(h.name) + ' Map</button>';
         var v = visible(sel.clubs); cards = v.map(function (p) { return clubCard(p[0], null, false); }).join('');
         if (filtered) stat += ' · ' + v.length + ' Match';

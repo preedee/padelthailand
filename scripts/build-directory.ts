@@ -173,10 +173,10 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   const rail = list.filter((c) => where.get(c.slug)!.walkKm != null);
   const noRail = !rail.length && !list.some((c) => where.get(c.slug)!.kind === "rail" || where.get(c.slug)!.offNetwork);
   const areas = [...new Set(list.map((c) => where.get(c.slug)!.area))];
-  const intro = `${n} Padel Clubs and ${courts} Courts in ${name}. ${indoorN} ${indoorN === 1 ? "Club Has" : "Clubs Have"} Indoor Courts and ${bookable.length} List Online Booking.` + (rail.length ? ` ${rail.length} ${rail.length === 1 ? "Club Is" : "Clubs Are"} Within Walking Distance of a BTS or MRT Station.` : "") + (soonN ? ` ${soonN} ${soonN === 1 ? "Club Is" : "Clubs Are"} Opening Soon.` : "");
+  const intro = `${n} Padel Clubs and ${courts} ${courts === 1 ? "Court" : "Courts"} in ${name}. ${indoorN} ${indoorN === 1 ? "Club Has" : "Clubs Have"} Indoor Courts and ${bookable.length} List Online Booking.` + (rail.length ? ` ${rail.length} ${rail.length === 1 ? "Club Is" : "Clubs Are"} Within Walking Distance of a BTS or MRT Station.` : "") + (soonN ? ` ${soonN} ${soonN === 1 ? "Club Is" : "Clubs Are"} Opening Soon.` : "");
   const ups = tournamentsAll.filter((x) => x.region === listingRegion(name) && tourEnd(x) >= TODAY_BKK).sort((a, b) => (a.startDate ?? a.monthOnly ?? "").localeCompare(b.startDate ?? b.monthOnly ?? "")).slice(0, 4);
   const faq: [string, string][] = [
-    [`How Many Padel Clubs Are in ${name}?`, `${n} Clubs With ${courts} Courts Are Listed on Padel Thailand, and ${indoorN} of Them Have Indoor Courts.`],
+    [`How Many Padel Clubs Are in ${name}?`, `${n} Clubs With ${courts} ${courts === 1 ? "Court" : "Courts"} Are Listed on Padel Thailand, and ${indoorN} of Them Have Indoor Courts.`],
     [`Can I Book a Padel Court Online in ${name}?`, bookable.length ? `${bookable.length} of ${n} Clubs List an Online Booking Link: ${platforms}. The Rest Take Bookings by Phone, Message or Walk-In.` : `None of the ${n} Clubs Lists an Online Booking Link Yet. Use the Phone or Instagram Link on Each Club Page.`],
     ...(rail.length ? [[`Which Padel Clubs in ${name} Are Near the BTS or MRT?`, `${rail.map((c) => `${shortName(c)} (${where.get(c.slug)!.line}${where.get(c.slug)!.walkKm != null ? `, About ${walkMin(where.get(c.slug)!.walkKm!)} Min on Foot` : ""})`).join("; ")}. Walk Times Are Straight-Line Estimates.`] as [string, string]] : []),
     ...(noRail ? [[`How Do I Get to Padel Courts in ${name}?`, `There Is No Rail Here. Clubs Are Reached by Taxi, Grab or Scooter, and Each Club Page Has Directions.`] as [string, string]] : []),
@@ -199,7 +199,7 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   <p class="fine">${others.map((r) => `<a href="${hubPath(r[0])}">${esc(r[0])} (${r[2].length})</a>`).join(" · ")}</p>
 </main>`;
   const desc = `${n} padel clubs and ${courts} courts in ${name}, Thailand: indoor and outdoor courts, booking links, hours and directions.`;
-  return shell({ title: `Padel in ${name}: ${n} Clubs and ${courts} Courts | Padel Thailand`, description: desc, path, active: "clubs", body,
+  return shell({ title: `Padel in ${name}: ${n} Clubs and ${courts} ${courts === 1 ? "Court" : "Courts"} | Padel Thailand`, description: desc, path, active: "clubs", body,
     ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: `Padel Courts in ${name}`, url: SITE + path, description: desc, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: SITE + "/" } },
       { "@context": "https://schema.org", "@type": "ItemList", name: `Padel clubs in ${name}`, itemListElement: list.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) },
       { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
@@ -377,7 +377,7 @@ function homePage(): string {
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=15"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=17"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
