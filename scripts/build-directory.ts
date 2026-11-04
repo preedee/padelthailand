@@ -233,14 +233,17 @@ ${sorted.map(clubCard).join("\n")}
 // ---------- club page ----------
 const addrOk = (c: Club) => c.address && c.address.trim().length > 4;
 // club logos for the Line strip: slug -> image path (e.g. "/img/logos/vita-padel-ekkamai.png"); clubs without one show their initials
-const logos = await readJson<Record<string, string>>(ROOT, "data/club-logos.json", {});
+type Logo = { src: string; dark?: boolean };
+const logos = await readJson<Record<string, Logo>>(ROOT, "data/club-logos.json", {});
+/** the logo slot: the club's logo when we have one, its initials otherwise; light-on-transparent logos sit on a dark tile */
+const logoSlot = (k: Club, size: number) => { const l = logos[k.slug]; return `<span class="logo-slot${l ? ` has-logo${l.dark ? " on-dark" : ""}` : ""}" aria-hidden="true">${l ? `<img src="${esc(l.src)}" alt="" loading="lazy" width="${size}" height="${size}">` : esc(initials(k))}</span>`; };
 function lineStrip(c: Club, w: Where): string {
   if (!w.peers.length) return "";
   const groups = w.peers.map((g) => {
     const here = g.slugs.includes(c.slug);
     const cl = g.slugs.map((s) => bySlug.get(s)!).filter(Boolean);
     return `<div class="g${here ? " here" : ""}"><span class="area">${esc(g.area)}</span><span class="rail"><i></i></span>
-      <div class="clubs${cl.length === 1 ? " one" : ""}">${cl.map((k) => `<a class="c${k.slug === c.slug ? " here" : ""}" href="/clubs/${esc(k.slug)}/"${k.slug === c.slug ? ' aria-current="page"' : ""}><span class="logo-slot${logos[k.slug] ? " has-logo" : ""}">${logos[k.slug] ? `<img src="${esc(logos[k.slug])}" alt="" loading="lazy" width="48" height="48">` : esc(initials(k))}</span><span>${esc(shortName(k))}</span></a>`).join("")}</div></div>`;
+      <div class="clubs${cl.length === 1 ? " one" : ""}">${cl.map((k) => `<a class="c${k.slug === c.slug ? " here" : ""}" href="/clubs/${esc(k.slug)}/"${k.slug === c.slug ? ' aria-current="page"' : ""}>${logoSlot(k, 48)}<span>${esc(shortName(k))}</span></a>`).join("")}</div></div>`;
   }).join("");
   const sub = w.kind === "rail" ? "Stations With Clubs in Walking Distance" : w.kind === "loop" ? `${w.stop?.of} Clubs Along the Line` : `${w.peers[0].slugs.length} ${w.peers[0].slugs.length === 1 ? "Club" : "Clubs"} in This Region`;
   return `<section style="margin-top:36px" aria-labelledby="strip-h"><h2 id="strip-h" style="font-size:30px;margin:0 0 6px">On the ${esc(w.line)}</h2><p class="fine" style="margin:0 0 14px">${esc(sub)}</p>
@@ -314,7 +317,7 @@ function clubPage(c: Club): string {
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <a href="${hubOk ? hubPath(w.region) : `/clubs/#${encodeURIComponent(w.region)}`}">${esc(w.region)}</a> / <span aria-current="page"><strong>${esc(shortName(c))}</strong></span></nav>
   <section class="sign" aria-label="Station sign"><div class="band" style="background:${w.color};color:${fg(w.color)}"><span class="d">${esc(w.line)}</span><span class="mono">${esc(stopTxt)}</span></div>
-    <div class="main"><div class="top"><span class="logo-slot" aria-hidden="true">${esc(initials(c))}</span><h1>${esc(c.name)}</h1></div>
+    <div class="main"><div class="top">${logoSlot(c, 72)}<h1>${esc(c.name)}</h1></div>
     <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : ""}</div></div></section>
   <div class="club-grid">
     <div class="gal-col">${gal}
