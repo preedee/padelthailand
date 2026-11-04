@@ -1,0 +1,10 @@
+{
+  "_note": "Shared level bands (handoff decision 7). Clubs use Playtomic levels, letter grades or their own names; listings use these five. The Playtomic ranges are a proposal, confirm before relying on them.",
+  "bands": [
+    { "id": "beginner", "label": "Beginner", "playtomic": "0 to 1.5" },
+    { "id": "improver", "label": "Improver", "playtomic": "1.5 to 3" },
+    { "id": "intermediate", "label": "Intermediate", "playtomic": "3 to 4.5" },
+    { "id": "advanced", "label": "Advanced", "playtomic": "4.5 to 7" },
+    { "id": "open", "label": "Open", "playtomic": "Any level" }
+  ]
+}

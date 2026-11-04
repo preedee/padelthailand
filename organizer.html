@@ -20,14 +20,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/img/padel_thailand_logo_light.png">
   <link rel="stylesheet" href="/css/styles.css">
-  <!-- Google Analytics (GA4) -->
+  <!-- Google Analytics (GA4) with Consent Mode v2: same snippet as scripts/lib/chrome.ts. Analytics cookies stay off until a visitor accepts. -->
+  <script>window.PT_ANALYTICS={consent:"required"};window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+  var c='denied';try{if(localStorage.getItem('pt-consent')==='granted')c='granted';}catch(e){}
+  gtag('consent','default',{analytics_storage:c,ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+  gtag('js',new Date());gtag('config','G-HYHPE5BTL7',{allow_google_signals:false,allow_ad_personalization_signals:false});</script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HYHPE5BTL7"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-HYHPE5BTL7');
-  </script>
+  <script src="/js/analytics.js?v=1" defer></script>
+  <link rel="canonical" href="https://padelthailand.com/organizer.html">
 </head>
 <body>
   <!-- Page marker for app.js detection -->

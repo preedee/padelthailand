@@ -7,7 +7,8 @@ const SHEET_ID = '1uEk015Jv8tNGFYlQ7f5Q_DuO4FZbL8ls3cmZLPwsjsk';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 const LEAGUES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Leagues`;
 const DAILY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Daily%20Events`;
-const CLUBS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Clubs`;
+// Clubs come from the club registry, exported weekly by scripts/build-clubs.ts (the Sheet's Clubs tab is no longer read).
+const CLUBS_URL = 'data/clubs.json';
 
 // ---- i18n ----
 const i18n = {
@@ -73,6 +74,15 @@ const i18n = {
     map_directions: 'Directions',
     map_website: 'Website',
     map_no_clubs: 'No padel clubs found.',
+    map_court: 'court',
+    map_indoor: 'indoor',
+    map_outdoor: 'outdoor',
+    map_covered: 'covered',
+    map_today: 'Today',
+    map_usually: 'usually',
+    map_club_page: 'Club Page',
+    map_opening_soon: 'Opening Soon',
+    map_photo: 'Photo',
     empty_week: 'No tournaments this week',
   },
   th: {
@@ -137,6 +147,15 @@ const i18n = {
     map_directions: 'เส้นทาง',
     map_website: 'เว็บไซต์',
     map_no_clubs: 'ไม่พบสนามแพเดิล',
+    map_court: 'สนาม',
+    map_indoor: 'ในร่ม',
+    map_outdoor: 'กลางแจ้ง',
+    map_covered: 'มีหลังคา',
+    map_today: 'วันนี้',
+    map_usually: 'ปกติ',
+    map_club_page: 'หน้าสนาม',
+    map_opening_soon: 'เปิดเร็วๆ นี้',
+    map_photo: 'ภาพ',
     empty_week: 'ไม่มีทัวร์นาเมนต์สัปดาห์นี้',
   }
 };
@@ -179,15 +198,11 @@ let mapInstance = null;
 let mapMarkerCluster = null;
 let mapTileLayer = null;
 
+// CARTO's free basemaps now answer every tile with an "API key required" watermark, so both themes use OpenStreetMap's
+// standard tiles; dark mode darkens the tile pane with a CSS filter (css/clubs.css) because OSM publishes no dark style.
 const MAP_TILES = {
-  light: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-  },
-  dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-  }
+  light: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' },
+  dark:  { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }
 };
 
 // ---- Init ----
@@ -208,12 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchTournaments() {
   showLoading();
   try {
-    // Fetch tournaments, leagues, daily events, and clubs tabs in parallel
+    // Fetch tournaments, leagues and daily events (Sheet tabs) and the club registry export in parallel
     const [respTournaments, respLeagues, respDaily, respClubs] = await Promise.all([
       fetch(SHEET_URL),
       fetch(LEAGUES_URL),
       fetch(DAILY_URL),
-      fetch(CLUBS_URL)
+      fetch(CLUBS_URL).catch(() => null)
     ]);
     if (!respTournaments.ok) throw new Error('Failed to fetch tournaments');
 
@@ -240,10 +255,9 @@ async function fetchTournaments() {
       dailyData.forEach((d, i) => { d.id = tournamentData.length + leagueData.length + i; });
     }
 
-    // Clubs tab: parse club data for map
-    if (respClubs.ok) {
-      const csvClubs = await respClubs.text();
-      clubs = parseClubs(csvClubs);
+    // Clubs: the registry export. A failure here must not take the calendar down.
+    if (respClubs && respClubs.ok) {
+      try { clubs = parseClubsJson(await respClubs.json()); } catch (e) { console.error('Clubs data unreadable:', e); }
     }
 
     tournaments = [...tournamentData, ...leagueData, ...dailyData];
@@ -537,41 +551,14 @@ function mapDailyHeaders(csv) {
   return lines.join('\n');
 }
 
-function parseClubs(csv) {
-  const lines = csv.split('\n').filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = parseCSVLine(lines[0]);
-  return lines.slice(1).map((line, idx) => {
-    const cols = parseCSVLine(line);
-    const obj = {};
-    headers.forEach((h, i) => {
-      obj[h.trim()] = (cols[i] || '').trim();
-    });
-    if (!(obj['Club Name'] || '').trim()) return null;
-    const lat = parseFloat(obj['Latitude']);
-    const lng = parseFloat(obj['Longitude']);
-    if (isNaN(lat) || isNaN(lng)) return null;
-    return {
-      id: idx,
-      name: obj['Club Name'] || '',
-      nameTh: obj['Club Name (TH)'] || '',
-      city: obj['City'] || '',
-      province: obj['Province'] || '',
-      lat,
-      lng,
-      courts: parseInt(obj['Courts'], 10) || 0,
-      surface: obj['Surface'] || '',
-      website: obj['Website'] || '',
-      instagram: obj['Instagram'] || '',
-      phone: obj['Phone'] || '',
-      googleMapsUrl: obj['Google Maps URL'] || '',
-      imageUrl: toDirectImageUrl(obj['Image URL'] || ''),
-      description: obj['Description'] || '',
-      descriptionTh: obj['Description (TH)'] || '',
-      indoorOutdoor: obj['Indoor/Outdoor'] || '',
-      hours: obj['Hours'] || '',
-    };
-  }).filter(Boolean);
+// Keep identical to key() in scripts/suggest-club-aliases.ts. Tournament sheets spell club names loosely ("Padel Asia" for "Padel Asia - Bangkok"); compare on letters and digits only.
+// data/club-aliases.json lists the spellings a person confirmed for each club.
+function clubKey(str) { return String(str || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, ''); }
+
+function parseClubsJson(data) {
+  return (data.clubs || [])
+    .filter(c => isFinite(c.lat) && isFinite(c.lng))
+    .map(c => Object.assign({}, c, { matchKeys: new Set([c.name].concat(c.aliases || []).map(clubKey)) }));
 }
 
 function parseCSV(csv) {
@@ -2966,10 +2953,15 @@ function createClubIcon() {
   });
 }
 
+// The location buttons come from tournament cities, where Samui is spelled both "Samui" and "Koh Samui".
+const CITY_GROUP = { 'Samui': 'Koh Samui' };
+const cityGroup = city => CITY_GROUP[city] || city;
+
 function getFilteredClubs() {
   let result = clubs;
   if (activeLocationFilters.size > 0) {
-    result = result.filter(c => activeLocationFilters.has(c.city));
+    const wanted = new Set([...activeLocationFilters].map(cityGroup));
+    result = result.filter(c => wanted.has(cityGroup(c.city)));
   }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -2987,7 +2979,7 @@ function getClubUpcomingEvents(club) {
     .filter(t =>
       !t.hidden &&
       t.club &&
-      t.club.toLowerCase() === club.name.toLowerCase() &&
+      club.matchKeys.has(t._clubKey = t._clubKey || clubKey(t.club)) &&
       t.startDate &&
       stripTime(t.startDate) >= today
     )
@@ -2998,6 +2990,64 @@ function formatShortDate(d) {
   if (!d) return '';
   const months = t('months_short');
   return d.getDate() + ' ' + months[d.getMonth()];
+}
+
+const BKK_WEEKDAY = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'Asia/Bangkok' });
+const httpUrl = u => (/^https?:\/\//i.test(u || '') ? u : '');
+
+function clubCourtsText(club) {
+  const c = club.courts || {};
+  if (!c.total) return '';
+  const parts = [c.total + ' ' + (c.total === 1 ? t('map_court') : t('map_courts'))];
+  if (c.indoor) parts.push(c.indoor + ' ' + t('map_indoor'));
+  if (c.outdoor) parts.push(c.outdoor + ' ' + t('map_outdoor'));
+  if (c.covered) parts.push(c.covered + ' ' + t('map_covered'));
+  return parts.join(' \u00b7 ');
+}
+
+// Today's opening hours in Bangkok. Google's week-specific line (holiday exceptions) covers seven days from the
+// club's last refresh, so it is only trusted while that is recent; otherwise the regular schedule stands alone.
+function clubTodayHours(club) {
+  const today = BKK_WEEKDAY.format(new Date());
+  const find = list => { const line = (list || []).find(l => l.indexOf(today + ':') === 0); return line ? line.slice(today.length + 1).trim() : ''; };
+  const usual = find(club.hours);
+  const fresh = Date.now() - Date.parse(club.updated) < 7 * 86400000;
+  const week = fresh ? find(club.weekHours) : '';
+  if (!week) return usual;
+  return !usual || week === usual ? week : week + ' (' + t('map_usually') + ' ' + usual + ')';
+}
+
+function clubPopupHtml(club, clubName, eventsHtml) {
+  // esc() leaves double quotes alone, which is fine for text but lets a quote end an attribute: attribute values use attr().
+  const attr = v => esc(v).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const photo = club.photos && club.photos[0];
+  const credit = photo && photo.author
+    ? '<figcaption class="map-popup-credit">' + t('map_photo') + ': ' +
+      (httpUrl(photo.authorUrl) ? '<a href="' + attr(photo.authorUrl) + '" target="_blank" rel="noopener">' + esc(photo.author) + '</a>' : esc(photo.author)) + '</figcaption>'
+    : '';
+  const photoHtml = photo ? '<figure class="map-popup-photo"><img class="map-popup-img" loading="lazy" src="' + attr(photo.url) + '" alt="' + attr(clubName) + '">' + credit + '</figure>' : '';
+  const courts = clubCourtsText(club), hours = clubTodayHours(club);
+  const book = club.booking && httpUrl(club.booking.url)
+    ? '<a href="' + attr(club.booking.url) + '" target="_blank" rel="noopener" class="map-popup-btn map-popup-btn-primary">' + esc(club.booking.label) + '</a>' : '';
+  const dir = httpUrl(club.directionsUrl), ig = httpUrl(club.instagramUrl), tel = club.tel;
+  return '<div class="map-popup">' + photoHtml +
+    '<h3 class="map-popup-title">' + esc(clubName) + '</h3>' +
+    (club.openingSoon ? '<p class="map-popup-soon">' + t('map_opening_soon') + '</p>' : '') +
+    '<div class="map-popup-meta">' +
+      (club.city ? '<span><span aria-hidden="true">&#128205;</span> ' + esc(club.city) + (club.province && club.province !== club.city ? ', ' + esc(club.province) : '') + '</span>' : '') +
+      (courts ? '<span><span aria-hidden="true">&#127934;</span> ' + esc(courts) + '</span>' : '') +
+      (club.courts && club.courts.surface ? '<span>' + esc(club.courts.surface) + '</span>' : '') +
+    '</div>' +
+    (hours ? '<p class="map-popup-hours"><span aria-hidden="true">&#128340;</span> ' + t('map_today') + ': ' + esc(hours) + '</p>' : '') +
+    eventsHtml +
+    '<div class="map-popup-actions">' + book +
+      '<a href="clubs/' + encodeURIComponent(club.slug) + '/" class="map-popup-btn">' + t('map_club_page') + '</a>' +
+      (dir ? '<a href="' + attr(dir) + '" target="_blank" rel="noopener" class="map-popup-btn"><span aria-hidden="true">&#128204;</span> ' + t('map_directions') + '</a>' : '') +
+      (httpUrl(club.website) ? '<a href="' + attr(club.website) + '" target="_blank" rel="noopener" class="map-popup-btn"><span aria-hidden="true">' + SVG_GLOBE + '</span> ' + t('map_website') + '</a>' : '') +
+      (ig ? '<a href="' + attr(ig) + '" target="_blank" rel="noopener" class="map-popup-btn" aria-label="Instagram"><span aria-hidden="true">' + SVG_INSTAGRAM + '</span></a>' : '') +
+      (tel ? '<a href="tel:' + attr(tel) + '" class="map-popup-btn"><span aria-hidden="true">&#128222;</span> ' + esc(club.phoneLocal || club.phone) + '</a>' : '') +
+    '</div>' +
+  '</div>';
 }
 
 function renderMapMarkers() {
@@ -3030,7 +3080,6 @@ function renderMapMarkers() {
     });
 
     const clubName = currentLang === 'th' && club.nameTh ? club.nameTh : club.name;
-    const clubDesc = currentLang === 'th' && club.descriptionTh ? club.descriptionTh : club.description;
     const upcomingEvents = getClubUpcomingEvents(club);
 
     const eventsHtml = upcomingEvents.length > 0
@@ -3047,29 +3096,10 @@ function renderMapMarkers() {
         '</div>'
       : '';
 
-    const popupContent =
-      '<div class="map-popup">' +
-        (club.imageUrl ? '<img class="map-popup-img" src="' + esc(club.imageUrl) + '" alt="' + esc(clubName) + '" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : '') +
-        '<h3 class="map-popup-title">' + esc(clubName) + '</h3>' +
-        '<div class="map-popup-meta">' +
-          (club.city ? '<span>&#128205; ' + esc(club.city) + (club.province ? ', ' + esc(club.province) : '') + '</span>' : '') +
-          (club.courts ? '<span>&#127934; ' + club.courts + ' ' + t('map_courts') + '</span>' : '') +
-          (club.surface ? '<span>' + esc(club.surface) + '</span>' : '') +
-          (club.indoorOutdoor ? '<span>' + esc(club.indoorOutdoor) + '</span>' : '') +
-          (club.hours ? '<span>&#128340; ' + esc(club.hours) + '</span>' : '') +
-        '</div>' +
-        (clubDesc ? '<p class="map-popup-desc">' + esc(clubDesc) + '</p>' : '') +
-        eventsHtml +
-        '<div class="map-popup-actions">' +
-          (club.googleMapsUrl ? '<a href="' + esc(club.googleMapsUrl) + '" target="_blank" rel="noopener" class="map-popup-btn">&#128204; ' + t('map_directions') + '</a>' : '') +
-          (club.website ? '<a href="' + esc(club.website) + '" target="_blank" rel="noopener" class="map-popup-btn">' + SVG_GLOBE + ' ' + t('map_website') + '</a>' : '') +
-          (club.instagram ? '<a href="' + esc(club.instagram) + '" target="_blank" rel="noopener" class="map-popup-btn">' + SVG_INSTAGRAM + '</a>' : '') +
-          (club.phone ? '<a href="tel:' + esc(club.phone) + '" class="map-popup-btn">&#128222; ' + esc(club.phone) + '</a>' : '') +
-        '</div>' +
-      '</div>';
+    const popupContent = clubPopupHtml(club, clubName, eventsHtml);
 
     marker.bindPopup(popupContent, {
-      maxWidth: 300,
+      maxWidth: 320,
       minWidth: 240,
       className: 'map-custom-popup',
     });

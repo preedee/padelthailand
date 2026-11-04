@@ -1,0 +1,4 @@
+{
+  "_note": "Public site config, read by the browser. submitEndpoint is the deployed Apps Script web-app URL (…/exec) for the submission forms. Leave empty until it is deployed: the forms then show a disabled state with an Instagram fallback. Never put the Apps Script shared secret here.",
+  "submitEndpoint": ""
+}

@@ -1,0 +1,71 @@
+/* Club pages, the club directory and the richer map popup. Generated pages come from scripts/build-clubs.ts.
+   Type floor is 14px; body copy is 16px. Colours come from the site tokens in styles.css, so both themes follow. */
+/* "Opening Soon" colour, contrast-checked against each theme's card background; dark is the default if pt-theme holds anything else */
+:root { --soon: #ff7a59; }
+[data-theme="dark"] { --soon: #ff7a59; }
+[data-theme="light"] { --soon: #c2410c; }
+.club-body { font-size: 16px; }
+.club-main { max-width: 960px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-10); }
+.club-main a { color: var(--focus-color); }
+.club-crumbs { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--space-4); }
+.club-crumbs a { color: var(--text-secondary); }
+.club h1 { font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.club-th { font-size: 18px; color: var(--text-secondary); margin-top: var(--space-1); }
+.club-meta { color: var(--text-secondary); font-size: 16px; margin: var(--space-2) 0 var(--space-4); }
+.club-muted { color: var(--text-secondary); font-size: 14px; }
+.club-soon { display: inline-block; font-size: 14px; font-weight: 600; padding: 2px 12px; border: 1px solid var(--soon); color: var(--soon); border-radius: 999px; margin-bottom: var(--space-4); }
+.club figure { margin: 0; }
+.club-hero { margin-bottom: var(--space-4); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-secondary); border: 1px solid var(--border); }
+.club-hero img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.club figcaption { font-size: 14px; color: var(--text-secondary); padding: 6px 12px; }
+.club figcaption a { color: var(--text-secondary); }
+.club-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-6); }
+.club-main a.club-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-4); font-size: 14px; font-weight: 600; text-decoration: none; color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); transition: background var(--transition); }
+.club-main a.club-btn:hover { background: var(--bg-hover); }
+.club-main a.club-btn-primary { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+.club-main a.club-btn-primary:hover { background: var(--text-primary); opacity: 0.88; }
+.club-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+.club-grid section, .club-city { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
+.club h2 { font-size: 18px; margin-bottom: var(--space-3); letter-spacing: -0.01em; }
+.club-grid p { margin-bottom: var(--space-2); }
+.club-big { font-size: 20px; font-weight: 700; }
+.club-hours { list-style: none; }
+.club-hours li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 6px var(--space-2); border-radius: var(--radius-sm); font-size: 16px; }
+.club-hours li.is-today { background: var(--bg-tertiary); font-weight: 700; }
+.club-pills { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.club-pills li { font-size: 14px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-secondary); }
+.club-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-6); }
+.club-gallery figure { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.club-gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.club-body .footer { font-size: 14px; }
+.club-note { font-size: 14px; color: var(--text-secondary); }
+.club-note a, .club figcaption a, .map-popup-credit a { text-decoration: underline; text-underline-offset: 2px; }
+.club-city { margin-bottom: var(--space-4); }
+.club-list { list-style: none; }
+.club-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.club-list li:first-child { border-top: 0; }
+.club-list a { font-weight: 600; }
+.club-main a, .club-main button, .map-popup a { touch-action: manipulation; }
+.club-crumbs a { display: inline-block; padding: 10px 2px; }
+.club-body .footer { padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px)); }
+.map-custom-popup .leaflet-popup-content { max-width: calc(100vw - 72px); }
+@media (max-width: 520px) { .map-popup-actions { gap: var(--space-2); } }
+@media (max-width: 520px) { .club h1 { font-size: 26px; } .club-main { padding-left: var(--space-4); padding-right: var(--space-4); } .club-hours li { font-size: 15px; } }
+
+/* map popup: rich club card, 14px floor */
+.map-custom-popup .map-popup { font-size: 14px; }
+.map-popup .map-popup-title { font-size: 16px; }
+.map-popup .map-popup-meta, .map-popup .map-popup-btn, .map-popup .map-popup-event, .map-popup .map-popup-event-name,
+.map-popup .map-popup-event-date, .map-popup .map-popup-more, .map-popup .map-popup-events strong { font-size: 14px; }
+.map-popup-photo { margin: 0 0 var(--space-2); }
+.map-popup-photo .map-popup-img { margin-bottom: 0; }
+.map-popup-credit { display: block; font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+.map-popup-credit a { color: var(--text-secondary); }
+.map-popup-hours { font-size: 14px; color: var(--text-secondary); margin: 0 0 var(--space-2); }
+.map-popup-soon { font-size: 14px; font-weight: 600; color: var(--soon); margin: 0 0 var(--space-1); }
+.map-popup-actions .map-popup-btn { min-height: 44px; padding: 8px 12px; }
+.map-popup-actions .map-popup-btn-primary { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+.map-popup-actions .map-popup-btn-primary:hover { background: var(--text-primary); color: var(--bg-primary); opacity: 0.88; }
+
+/* dark map: OSM has no dark style, so invert the tile pane only (pins and popups live in other panes) */
+[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.92) saturate(0.7); }

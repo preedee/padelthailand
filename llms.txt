@@ -1,0 +1,31 @@
+# Padel Thailand
+
+> Padel Thailand (padelthailand.com) is an independent directory of padel clubs in Thailand: 66 clubs and 220 courts in 8 regions, with court types, hours, booking links and directions, plus tournaments and events.
+
+## Regions
+- [Padel in Bangkok](https://padelthailand.com/regions/bangkok/): 20 clubs, 64 courts
+- [Padel in Samui, Phangan, & Tao](https://padelthailand.com/regions/samui-phangan-and-tao/): 18 clubs, 49 courts
+- [Padel in Phuket](https://padelthailand.com/regions/phuket/): 13 clubs, 55 courts
+- [Padel in Pattaya & Bangsaen](https://padelthailand.com/regions/pattaya-and-bangsaen/): 5 clubs, 16 courts
+- [Padel in Chiang Mai](https://padelthailand.com/regions/chiang-mai/): 4 clubs, 16 courts
+- [Padel in Hua Hin](https://padelthailand.com/regions/hua-hin/): 3 clubs, 14 courts
+- [Padel in Krabi & Lanta](https://padelthailand.com/regions/krabi-and-lanta/): 2 clubs, 5 courts
+- Padel in Koh Chang: 1 club, 1 court (see the clubs page)
+
+## Main pages
+- [Network map](https://padelthailand.com/): every club on a transit-style map, including Bangkok BTS and MRT stations
+- [All clubs](https://padelthailand.com/clubs/): photos, court counts and where each club takes bookings
+- [Tournaments](https://padelthailand.com/tournaments/): 9 upcoming and the archive of past tournaments, with posters
+- [Events](https://padelthailand.com/events/): weekly social play, once clubs and organisers list it
+- [About](https://padelthailand.com/about/): where the data comes from and how clubs are treated equally
+
+## Data notes
+- Each club page lists courts by type (indoor, covered, outdoor), opening hours, address, and the platform where the club takes bookings.
+- Walk times to BTS or MRT stations are straight-line estimates, not measured routes.
+- Prices are shown only when a club has told us; otherwise the page says so.
+- Photos carry a credit line. Club details come from a registry refreshed weekly and checked by hand.
+- The Padel Society (TPS) runs the booking for its own clubs; every club is listed the same way.
+
+## Contact
+- Instagram: https://www.instagram.com/padelthailand/
+- Report a correction or add a club: https://padelthailand.com/submit/

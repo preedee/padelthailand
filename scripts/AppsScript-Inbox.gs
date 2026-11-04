@@ -36,6 +36,8 @@ const COLUMNS = [
 function doPost(e) {
   try {
     var p = (e && e.parameter) || {};
+    // Public: the /submit/ forms (AppsScript-Submissions.gs). Writes only pending rows to the Submissions tabs.
+    if (p.action === 'submit') return json(handleSubmission(p));
     if (p.secret !== SHARED_SECRET) return json({ ok: false, error: 'bad secret' });
 
     switch (p.action || 'share') {
