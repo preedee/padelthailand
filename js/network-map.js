@@ -91,7 +91,7 @@
         '<path d="M700 420 L750 470 H880 L970 560" stroke="#E08A2E" stroke-width="18"/><path d="M700 420 L750 470 H880 L970 560" stroke="#fff" stroke-width="5"/>' +
         '<path d="M620 700 L780 860 H800" stroke="#0E7C86" stroke-width="12" stroke-dasharray="16 14" stroke-linecap="butt"/>' +
         '<path d="M700 420 L620 500 V700 L500 820 H330" stroke="#C2367A" stroke-width="18"/><path d="M700 420 L620 500 V700 L500 820 H330" stroke="#fff" stroke-width="5"/></g>',
-      bkk: '<rect x="40" y="815" width="400" height="160" rx="10" fill="#F7F8F6" stroke="#8E959C" stroke-width="2" stroke-dasharray="4 8"/>' +
+      bkk: '<rect x="40" y="775" width="400" height="200" rx="10" fill="#F7F8F6" stroke="#8E959C" stroke-width="2" stroke-dasharray="4 8"/>' +
         '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M840 460 V120 L800 80 H340 L260 160 V540 H760 Z" stroke="#1E4F9C" stroke-width="12"/>' +
         '<path d="M340 80 H100" stroke="#6F2C91" stroke-width="12"/><path d="M560 240 H840 L960 120 H1250" stroke="#A6192E" stroke-width="12"/>' +
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
@@ -105,7 +105,7 @@
       var h = '';
       (TAGS[view] || []).forEach(function (t) { h += '<span class="tagline" style="left:' + t[1] + ';top:' + t[2] + ';background:' + t[3] + ';color:' + fg(t[3]) + '">' + esc(t[0]) + '</span>'; });
       if (view === 'th') h += '<span class="cap">Schematic · Circle Size = Number of Clubs · Tap a Region</span>';
-      if (view === 'bkk') h += '<span class="cap" style="left:3.8%;top:82.6%;bottom:auto;font-weight:600;letter-spacing:.08em;color:#3D434A">Off the Rail Network · Drive</span>';
+      if (view === 'bkk') h += '<span class="cap" style="left:3.8%;top:78.4%;bottom:auto;font-weight:600;letter-spacing:.08em;color:#3D434A">Off the Rail Network · Drive</span>';
       if (view === 'gulf') {
         var n = net.ring.length;
         h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +

@@ -261,23 +261,6 @@
    "seq": "suk"
   },
   {
-   "id": "thong",
-   "name": "Thong Lo",
-   "th": "ทองหล่อ",
-   "x": 990,
-   "y": 380,
-   "lp": "up",
-   "line": "BTS Sukhumvit",
-   "color": "#6CBE45",
-   "clubs": [
-    {
-     "slug": "pad-thai-padel",
-     "km": 0.9
-    }
-   ],
-   "seq": "suk"
-  },
-  {
    "id": "ekkamai",
    "name": "Ekkamai",
    "th": "เอกมัย",
@@ -514,6 +497,13 @@
    "x": 340,
    "y": 80,
    "lp": "above"
+  },
+  {
+   "id": "thong",
+   "name": "Thong Lo",
+   "x": 990,
+   "y": 380,
+   "lp": "up"
   }
  ],
  "off": [
@@ -522,7 +512,7 @@
    "name": "RSC Ratchaphruek",
    "sub": "Thonburi Side",
    "x": 90,
-   "y": 880,
+   "y": 830,
    "slugs": [
     "padel-rsc"
    ]
@@ -532,9 +522,19 @@
    "name": "Pista Samakom",
    "sub": "Nonthaburi",
    "x": 90,
-   "y": 935,
+   "y": 885,
    "slugs": [
     "pista-samakom-racquet-and-social-club"
+   ]
+  },
+  {
+   "id": "padthai",
+   "name": "Rama IV Road",
+   "sub": "Khlong Toei",
+   "x": 90,
+   "y": 940,
+   "slugs": [
+    "pad-thai-padel"
    ]
   }
  ],
