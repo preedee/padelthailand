@@ -19,6 +19,8 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const SITE = "https://padelthailand.com";
 const CHECK = process.argv.includes("--check");
 const SITE_IG = "https://www.instagram.com/padelthailand/";
+// the site's own handle sometimes appears as a club's Instagram in the registry; it is not club data (handoff decision 10)
+const ownIg = (u: string) => /instagram\.com\/padelthailand\/?$/i.test(u);
 
 // ---------- types ----------
 type Photo = { url: string; author: string | null; authorUrl: string | null };
@@ -281,7 +283,7 @@ function clubPage(c: Club): string {
     ${hasTh ? `<div class="driver" id="driver" role="dialog" aria-modal="true" aria-label="Address for driver" hidden><div class="eyebrow" style="color:#fff">Show to Driver</div><div class="big" lang="th">${c.nameTh ? esc(c.nameTh) + "<br>" : ""}${thaiAddr ? esc(c.address) : ""}</div><div class="eng">${esc(c.name)}<br>${esc(c.address)}</div><div class="acts"><button class="btn" type="button" data-copy="${esc(thaiAddr ? c.address : c.nameTh)}">Copy</button><button class="btn" type="button" data-driver-close>Close</button></div></div>` : ""}`;
   const contacts = [
     c.phone ? `<li>${ICON.phone}<span><small>Phone</small><a href="tel:${esc(c.tel)}">${esc(c.phoneLocal || c.phone)}</a></span></li>` : "",
-    c.instagramUrl ? `<li>${ICON.ig}<span><small>Instagram</small><a href="${esc(c.instagramUrl)}" target="_blank" rel="noopener">@${esc(c.instagramUrl.replace(/\/$/, "").split("/").pop())}</a></span></li>` : "",
+    c.instagramUrl && !ownIg(c.instagramUrl) ? `<li>${ICON.ig}<span><small>Instagram</small><a href="${esc(c.instagramUrl)}" target="_blank" rel="noopener">@${esc(c.instagramUrl.replace(/\/$/, "").split("/").pop())}</a></span></li>` : "",
     c.website ? `<li>${ICON.web}<span><small>Website</small><a href="${esc(c.website)}" target="_blank" rel="noopener">${esc(c.website.replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/$/, ""))}</a></span></li>` : "",
   ].filter(Boolean);
   const hours = c.hours.length ? `<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim())}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours not listed.</p>`;
