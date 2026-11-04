@@ -11,6 +11,10 @@
   "src": "/img/logos/bangkok-padel.webp",
   "dark": false
  },
+ "bangsaen-padel": {
+  "src": "/img/logos/bangsaen-padel.webp",
+  "dark": false
+ },
  "bantai-padel": {
   "src": "/img/logos/bantai-padel.webp",
   "dark": false
@@ -87,6 +91,10 @@
   "src": "/img/logos/pad-thai-padel.webp",
   "dark": false
  },
+ "padel-and-co": {
+  "src": "/img/logos/padel-and-co.webp",
+  "dark": false
+ },
  "padel-asia-bangkok": {
   "src": "/img/logos/padel-asia-bangkok.webp",
   "dark": false
@@ -161,6 +169,10 @@
  },
  "pattaya-padel-club": {
   "src": "/img/logos/pattaya-padel-club.webp",
+  "dark": false
+ },
+ "phangan-padel-club": {
+  "src": "/img/logos/phangan-padel-club.webp",
   "dark": false
  },
  "pickleball-and-padel-decathlon-bangyai": {
