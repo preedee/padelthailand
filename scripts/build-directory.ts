@@ -13,12 +13,12 @@
  * Run after: bun scripts/build-clubs.ts --no-pages
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { dirname } from "node:path";
+import { SITE, esc, jsonLd, svg, shell } from "./lib/chrome.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const SITE = "https://padelthailand.com";
 const CHECK = process.argv.includes("--check");
-const SITE_IG = "https://www.instagram.com/padelthailand/";
 // the site's own handle sometimes appears as a club's Instagram in the registry; it is not club data (handoff decision 10)
 const ownIg = (u: string) => /instagram\.com\/padelthailand\/?$/i.test(u);
 
@@ -43,10 +43,15 @@ const clubs: Club[] = JSON.parse(await readFile(ROOT + "data/clubs-full.json", "
 const net: Net = JSON.parse(await readFile(ROOT + "data/network.json", "utf8"));
 const bySlug = new Map(clubs.map((c) => [c.slug, c]));
 
+// tournaments per club, for the teaser on each club page (data/tournaments.json comes from scripts/build-listings.ts)
+type TourLite = { title: string; organizer: string; clubSlug: string | null; startDate: string | null; endDate: string | null; monthOnly: string | null; regUrl: string | null; instagramUrl: string | null };
+const tournamentsAll: TourLite[] = existsSync(ROOT + "data/tournaments.json") ? JSON.parse(await readFile(ROOT + "data/tournaments.json", "utf8")).tournaments : [];
+const TODAY_BKK = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
+const endOf = (t: TourLite) => t.endDate ?? t.startDate ?? (t.monthOnly ? t.monthOnly + "-31" : "");
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 // ---------- escaping ----------
-const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const stationLabel = (n: string) => n.replace(" · Sukhumvit", "");
-const jsonLd = (o: unknown) => JSON.stringify(o).replace(/</g, "\\u003c");
 
 // ---------- colours ----------
 const INK = "#2D2A4A";
@@ -111,7 +116,6 @@ const shortName = (c: Club) => net.shortNames[c.slug] ?? c.name;
 const initials = (c: Club) => shortName(c).replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "P";
 
 // ---------- icons (Tabler, MIT, outline) ----------
-const svg = (inner: string, s = 18, sw = 1.8) => `<svg aria-hidden="true" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 const ICON = {
   indoor: svg('<path d="M3 21v-13l9 -4l9 4v13"/><path d="M13 13h4v8h-10v-6h6"/><path d="M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3"/>'),
   covered: svg('<path d="M3 3l18 18"/><path d="M16 12a4 4 0 0 0 -4 -4m-2.834 1.177a4 4 0 0 0 5.66 5.66"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>'),
@@ -148,55 +152,6 @@ const courtSummary = (c: Club) => {
 const platformName = (c: Club) => c.booking?.label.replace(/^Book (on |via )?(the )?/, "") ?? "";
 const bookText = (c: Club) => c.booking?.label.replace(/^Book (on|via) the /, "Book on ") ?? "";
 
-// ---------- chrome ----------
-const LOGO = (w: number, h: number, bg = "#FFFFFF") => `<svg aria-hidden="true" width="${w}" height="${h}" viewBox="0 0 132 64"><rect x="0" y="17" width="100" height="5" fill="#A51931"/><rect x="0" y="27" width="100" height="10" fill="#2D2A4A"/><rect x="0" y="42" width="100" height="5" fill="#A51931"/><circle cx="100" cy="32" r="23" fill="${bg}" stroke="#2D2A4A" stroke-width="10"/></svg>`;
-const GA = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-HYHPE5BTL7"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-HYHPE5BTL7');</script>`;
-const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">`;
-const NAV: [string, string, string][] = [["map", "/", "Network Map"], ["clubs", "/clubs/", "Clubs"], ["tournaments", "/tournaments/", "Tournaments"], ["events", "/events/", "Events"]];
-const header = (active: string) => `<header class="site-head"><div class="wrap">
-  <a class="brand" href="/" aria-label="padelthailand home">${LOGO(62, 30)}<span class="word"><b>padel</b><i>thailand</i></span></a>
-  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">${svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 22, 2)}</button>
-  <nav class="nav" id="site-nav" aria-label="Main">${NAV.map(([k, h, l]) => `<a href="${h}"${k === active ? ' aria-current="page"' : ""}>${l}</a>`).join("")}<a class="cta" href="/clubs/#book">Book a Court</a></nav>
-</div></header>`;
-const footer = () => `<footer class="site-foot"><div class="wrap">
-  <div><span class="brand" style="min-height:0">${LOGO(46, 22, "#F3F4F2")}<span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
-  <p>Run a club that is not on the map? Message us on Instagram and we will add your stop.</p></div>
-  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="${SITE_IG}" rel="noopener">Submit a Club</a><a href="${SITE_IG}" rel="noopener">Report a Correction</a><a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
-</div></footer>`;
-
-function shell(o: { title: string; description: string; path: string; active: string; body: string; image?: string; ld?: unknown; bodyClass?: string; scripts?: string; head?: string }): string {
-  const url = `${SITE}${o.path}`;
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>${esc(o.title)}</title>
-  <meta name="description" content="${esc(o.description)}">
-  <link rel="canonical" href="${esc(url)}">
-  <meta name="theme-color" content="#2D2A4A">
-  <meta property="og:type" content="website"><meta property="og:title" content="${esc(o.title)}"><meta property="og:description" content="${esc(o.description)}"><meta property="og:url" content="${esc(url)}">
-  <meta property="og:image" content="${esc(o.image ?? `${SITE}/img/padel_thailand_logo_light.png`)}"><meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/png" href="/img/padel_thailand_logo_light.png">
-  ${FONTS}
-  <link rel="stylesheet" href="/css/directory.css?v=1">
-  ${o.head ?? ""}
-  ${o.ld ? `<script type="application/ld+json">${jsonLd(o.ld)}</script>` : ""}
-  ${GA}
-</head>
-<body class="dir${o.bodyClass ? " " + o.bodyClass : ""}">
-${header(o.active)}
-${o.body}
-${footer()}
-<script src="/js/directory.js?v=1"></script>
-${o.scripts ?? ""}
-</body>
-</html>
-`;
-}
-
 // ---------- shared card pieces ----------
 function clubCard(c: Club): string {
   const w = where.get(c.slug)!;
@@ -218,7 +173,7 @@ function clubsPage(): string {
   const body = `<main class="wrap">
   <div class="page-head"><span class="badge-ink">Clubs</span><h1 style="margin-top:14px">Every Stop on the Network</h1>
   <p>${clubs.length} clubs in Thailand. Browse by photo or as a list, then pick a line. Every booking button goes to where the club actually takes bookings.</p>
-  <p><a href="${SITE_IG}" rel="noopener" style="font-size:14px">Missing a club? Add it →</a></p></div>
+  <p><a href="/submit/#club" style="font-size:14px">Missing a club? Add it →</a></p></div>
   <div class="filters" role="group" aria-label="Filter by region">
     <button class="chip sq" type="button" data-filter="all" aria-pressed="true">All Regions <span class="count">${clubs.length}</span></button>${regionBtns}
     <button class="chip sq" type="button" data-filter="__book" aria-pressed="false" id="book">Book Online <span class="count">${clubs.filter((c) => c.booking).length}</span></button>
@@ -247,6 +202,24 @@ function lineStrip(c: Club, w: Where): string {
   const sub = w.kind === "rail" ? "Stations With Clubs in Walking Distance" : w.kind === "loop" ? `${w.stop?.of} Clubs Along the Line` : `${w.peers[0].slugs.length} ${w.peers[0].slugs.length === 1 ? "Club" : "Clubs"} in This Region`;
   return `<section style="margin-top:36px" aria-labelledby="strip-h"><h2 id="strip-h" style="font-size:30px;margin:0 0 6px">On the ${esc(w.line)}</h2><p class="fine" style="margin:0 0 14px">${esc(sub)}</p>
   <div class="strip-wrap"><div class="strip" style="--lc:${w.color}">${groups}</div></div></section>`;
+}
+
+
+function tourBlock(c: Club): string {
+  const mine = tournamentsAll.filter((x) => x.clubSlug === c.slug);
+  // as fresh as the nightly listings build; /tournaments/ decides upcoming vs past in the browser, per visit
+  const upAll = mine.filter((x) => endOf(x) >= TODAY_BKK);
+  const ups = upAll.sort((a, b) => (a.startDate ?? a.monthOnly ?? "").localeCompare(b.startDate ?? b.monthOnly ?? "")).slice(0, 3);
+  const row = (x: TourLite) => {
+    const d = x.startDate ? `<span class="tdate"><small>${MON[+x.startDate.slice(5, 7) - 1]}</small><b>${+x.startDate.slice(8)}</b></span>` : `<span class="tdate"><small>${x.monthOnly ? MON[+x.monthOnly.slice(5) - 1] : ""}</small><b>TBC</b></span>`;
+    const link = x.regUrl ?? x.instagramUrl;
+    return `<li>${d}<span class="tt"><strong>${esc(x.title)}</strong><small>${esc(x.organizer)}</small></span>${link ? `<a class="btn${x.regUrl ? " solid" : ""}" href="${esc(link)}" target="_blank" rel="noopener">${x.regUrl ? "Register" : "View Details"}</a>` : ""}</li>`;
+  };
+  const past = mine.length - upAll.length;
+  const foot = mine.length
+    ? `<div class="tour-note"><span>${ups.length ? "" : "No upcoming tournaments listed here. "}${past} past ${past === 1 ? "tournament" : "tournaments"} on record.</span><a class="btn" href="/tournaments/?club=${esc(c.slug)}${ups.length ? "" : "&tab=past"}">See All Tournaments at This Club ${ICON.arrow}</a></div>`
+    : `<div class="tour-note"><span>No tournaments listed at this club yet.</span><a class="btn" href="/submit/#tournament">Host a Tournament Here</a></div>`;
+  return (ups.length ? `<ul class="tour-list">${ups.map(row).join("")}</ul>` : "") + foot;
 }
 
 function clubPage(c: Club): string {
@@ -295,19 +268,19 @@ function clubPage(c: Club): string {
     <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : ""}</div></div></section>
   <div class="club-grid">
     <div class="gal-col">${gal}
-      <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="${SITE_IG}" rel="noopener">+ Add a Photo of This Club</a></div></div>
+      <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
     <aside class="aside" aria-label="Booking and contact">
       <section class="card" aria-labelledby="book-h"><div class="row1"><h3 id="book-h">Book a Court</h3>${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div>
         <div class="courts"><span>${esc(courtSummary(c))}</span></div>${priceBlock}${bookBtn}
         <a class="btn block" href="${esc(dirUrl)}" target="_blank" rel="noopener">Directions</a></section>
       ${addr}
       ${contacts.length ? `<section class="card" aria-label="Contact"><ul class="contact">${contacts.join("")}</ul></section>` : ""}
-      <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="${SITE_IG}" rel="noopener">Report a Correction</a> · <a href="${SITE_IG}" rel="noopener">Own This Club? Claim It</a></p>
+      <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/#correction">Report a Correction</a> · <a href="/submit/#correction">Own This Club? Claim It</a></p>
     </aside>
     <div class="rest">
       <h2>About the Club</h2><p class="about">${esc(aboutLine)}</p>
       ${c.amenities.length ? `<h2>Amenities</h2><ul class="pills">${c.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}
-      <h2>Tournaments</h2><div class="tour-note"><span>Every tournament in Thailand, as posters.</span><a class="btn" href="/tournaments/">See All Tournaments ${ICON.arrow}</a></div>
+      <h2>Tournaments</h2>${tourBlock(c)}
       <h2>Opening Hours</h2>${hours}
     </div>
   </div>
@@ -350,14 +323,8 @@ function homePage(): string {
     ld: { "@context": "https://schema.org", "@type": "WebSite", name: "Padel Thailand", url: SITE + "/" } });
 }
 
-// ---------- events stub (Phase 1b) ----------
-const eventsPage = () => shell({ title: "Events | Padel Thailand", description: "Recurring social padel in Thailand is coming to Padel Thailand.", path: "/events/", active: "events",
-  body: `<main class="wrap"><div class="page-head"><span class="badge-ink">Events</span><h1 style="margin-top:14px">Social Play, Coming Soon</h1>
-  <div class="soon-box"><p style="margin:0 0 14px">Americanos, Mexicanos, clinics and league nights will be listed here. Until then, find a club and ask what runs this week.</p>
-  <a class="btn solid" href="/clubs/">Browse Clubs</a> <a class="btn" href="/tournaments/">See Tournaments</a></div></div></main>` });
-
 // ---------- write ----------
-const pages: [string, string][] = [["index.html", homePage()], ["clubs/index.html", clubsPage()], ["events/index.html", eventsPage()], ...clubs.map((c) => [`clubs/${c.slug}/index.html`, clubPage(c)] as [string, string])];
+const pages: [string, string][] = [["index.html", homePage()], ["clubs/index.html", clubsPage()], ...clubs.map((c) => [`clubs/${c.slug}/index.html`, clubPage(c)] as [string, string])];
 if (CHECK) { console.log(`check: ${pages.length} pages, ${clubs.length} clubs placed, 0 missing`); process.exit(0); }
 await Promise.all(pages.map(async ([p, html]) => { await mkdir(dirname(ROOT + p), { recursive: true }); await writeFile(ROOT + p, html); }));
-console.log(`built ${pages.length} pages (home, clubs, events stub, ${clubs.length} club pages)`);
+console.log(`built ${pages.length} pages (home, clubs, ${clubs.length} club pages)`);

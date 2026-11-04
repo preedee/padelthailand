@@ -1,0 +1,73 @@
+/* /submit/ form styles. Builds on css/directory.css tokens (--ink, --red, --surface, --fill, fonts). */
+.sub-page .page-head { padding-bottom: 20px; }
+/* gap over an ink background draws single dividers however the buttons wrap */
+.sub-seg { display: flex; flex-wrap: wrap; gap: 1.5px; max-width: 760px; background: var(--ink); }
+.sub-seg button { flex: 1 1 auto; font-size: 15px; }
+
+.sub-form { max-width: 760px; margin-top: 20px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; box-shadow: var(--shadow-sign); padding: 28px; }
+.sub-form[hidden] { display: none; }
+.sub-form h2 { font-size: clamp(26px, 3.4vw, 36px); }
+.sub-form .lede { margin: 8px 0 20px; color: var(--text-2); }
+.sub-form .fields { display: flex; flex-direction: column; gap: 20px; }
+.sub-form .fields[hidden], .sub-form [hidden] { display: none; }
+
+.closed { margin: 0 0 20px; padding: 14px 16px; border: 1.5px dashed var(--ink); border-radius: 4px; background: var(--ground); font-weight: 500; }
+.closed a { font-weight: 600; display: inline-flex; align-items: center; min-height: 44px; }
+noscript .closed { display: block; max-width: 760px; margin-top: 20px; }
+
+.fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.fld > label, .fld > legend { font-weight: 600; font-size: 16px; padding: 0; }
+.fld .opt { font-weight: 400; color: var(--text-3); font-size: 14px; }
+.hint { margin: 0; font-size: 14px; color: var(--text-2); }
+.hint.pdpa { margin-top: 2px; }
+
+.sub-form input:not([type=checkbox]):not([type=radio]):not([type=file]), .sub-form select, .sub-form textarea {
+  width: 100%; min-height: 48px; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 4px;
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.4;
+}
+.sub-form textarea { min-height: 120px; resize: vertical; }
+.sub-form select { appearance: none; padding-right: 40px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232D2A4A' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; }
+.sub-form input[type=file] { width: 100%; min-height: 48px; padding: 8px; border: 1.5px dashed var(--ink); border-radius: 4px; background: var(--ground); font: inherit; font-size: 16px; color: var(--ink); cursor: pointer; }
+.sub-form input[type=file]::file-selector-button { min-height: 36px; margin-right: 12px; padding: 0 14px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; }
+
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice { min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--ink); border-radius: 22px; background: var(--surface); font-size: 15px; font-weight: 500; cursor: pointer; }
+.choice input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); flex: none; }
+.choice:has(input:checked) { background: var(--ground); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.choice:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
+.choice.tick { border-radius: 4px; align-items: flex-start; padding: 12px 14px; line-height: 1.4; }
+.choice.tick input { margin-top: 1px; }
+
+.err { margin: 0; color: var(--red); font-size: 14px; font-weight: 600; display: flex; gap: 6px; }
+.err::before { content: "!"; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.sub-form [aria-invalid="true"]:not(fieldset) { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+fieldset[aria-invalid="true"] .choice { border-color: var(--red); }
+.form-err { margin: 0; padding: 12px 14px; border: 1.5px solid var(--red); border-radius: 4px; color: var(--red); font-weight: 600; background: #fff; }
+
+.contact { padding-top: 20px; border-top: 1px solid var(--fill); }
+.contact > legend { float: left; width: 100%; margin-bottom: 6px; font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.row2[hidden] { display: none; }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.actions .btn { min-height: 48px; padding: 0 24px; font-size: 16px; }
+
+.sent { padding: 8px 0 4px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.sent p { margin: 0; font-size: 17px; max-width: 56ch; }
+.sent .sent-h { font-family: var(--font-display); font-weight: 850; font-size: 28px; }
+.sent:focus { outline: none; }
+
+/* honeypot: off-screen, not display:none, so naive bots still fill it */
+.hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+@media (max-width: 760px) {
+  .sub-form { padding: 20px 16px; box-shadow: 4px 4px 0 var(--ink); }
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+  .sub-seg button { flex: 1 1 30%; }
+  .actions .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sub-page *, .sub-page *::before, .sub-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,5 @@
+{
+  "_note": "Club names as typed in the tournaments sheet -> club slug, for names that normalisation cannot match. Unmatched names are printed by scripts/build-listings.ts. Only add a mapping you are sure of.",
+  "RSC": "padel-rsc",
+  "Oxygen Padel Phangan": "padel-tennis-oxygen-village"
+}

@@ -308,3 +308,13 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 @media (prefers-reduced-motion: reduce) { .panel, .region summary svg { transition: none; } }
 
 .pcard .ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* club page: upcoming tournaments teaser */
+.tour-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.tour-list li { display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; }
+.tdate { flex: none; min-width: 52px; padding: 4px 6px; text-align: center; background: var(--ink); color: #fff; border-radius: 4px; line-height: 1; }
+.tdate small { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.tdate b { font-family: var(--font-display); font-weight: 850; font-size: 22px; }
+.tour-list .tt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.tour-list .tt small { color: var(--text-3); font-size: 13px; }
+.tour-list .btn { flex: none; font-size: 14px; }

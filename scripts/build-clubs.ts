@@ -301,7 +301,7 @@ const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => 
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[["/", null], ["/tournaments/", null], ["/calendar.html", null], ["/clubs/", null], ...clubs.map((c) => [`/clubs/${c.slug}/`, c.updated] as const)]
+${[["/", null], ["/tournaments/", null], ["/events/", null], ["/about/", null], ["/submit/", null], ["/calendar.html", null], ["/clubs/", null], ...clubs.map((c) => [`/clubs/${c.slug}/`, c.updated] as const)]
   .map(([p, d]) => `  <url><loc>${SITE}${p}</loc>${d ? `<lastmod>${d}</lastmod>` : ""}</url>`).join("\n")}
 </urlset>
 `;

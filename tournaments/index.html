@@ -1,91 +1,43 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <base href="/">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Padel Thailand — Tournament Posters</title>
-  <meta name="description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram. Tap a poster to open the post.">
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Padel Thailand — Tournament Posters">
-  <meta property="og:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
-  <meta property="og:image" content="img/padel_thailand_logo_light.png">
-  <meta property="og:url" content="https://padelthailand.com/tournaments/">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Padel Thailand — Tournament Posters">
-  <meta name="twitter:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
-  <meta name="twitter:image" content="img/padel_thailand_logo_light.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tournaments | Padel Thailand</title>
+  <meta name="description" content="Every padel tournament in Thailand: upcoming draws and past results, with posters. Filter by date, region, gender and club, then register.">
   <link rel="canonical" href="https://padelthailand.com/tournaments/">
-  <link rel="icon" type="image/png" href="img/padel_thailand_logo_light.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Theme must be stamped before the stylesheet paints, or the page flashes. -->
-  <script>
-    (function () {
-      try {
-        var saved = localStorage.getItem('pt-theme');
-        document.documentElement.setAttribute('data-theme', saved || 'dark');
-      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
-    })();
-  </script>
-  <link rel="stylesheet" href="css/poster-wall.css?v=8">
-
-  <!-- Google Analytics (GA4) -->
+  <meta name="theme-color" content="#2D2A4A">
+  <meta property="og:type" content="website"><meta property="og:title" content="Tournaments | Padel Thailand"><meta property="og:description" content="Every padel tournament in Thailand: upcoming draws and past results, with posters. Filter by date, region, gender and club, then register."><meta property="og:url" content="https://padelthailand.com/tournaments/">
+  <meta property="og:image" content="https://padelthailand.com/img/padel_thailand_logo_light.png"><meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="/img/padel_thailand_logo_light.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/css/directory.css?v=1">
+  <link rel="stylesheet" href="/css/listings.css?v=1">
+  
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HYHPE5BTL7"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-HYHPE5BTL7');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-HYHPE5BTL7');</script>
 </head>
-<body>
-  <a class="skip-link" href="#wall">Skip to posters</a>
-
-  <header class="wall-header">
-    <a class="wall-logo" href="./" aria-label="Padel Thailand">
-      <img src="img/padel_thailand_logo_dark.png" alt="Padel Thailand" class="logo-dark">
-      <img src="img/padel_thailand_logo_light.png" alt="Padel Thailand" class="logo-light">
-    </a>
-
-    <nav class="wall-nav">
-      <a class="wall-btn" id="calendar-link" href="calendar.html">Calendar</a>
-
-      <button class="wall-btn wall-btn--icon" id="lang-toggle" title="Switch language" aria-label="Switch language">
-        <span class="lang-label" id="lang-label">EN</span>
-      </button>
-
-      <button class="wall-btn wall-btn--icon" id="theme-toggle" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">
-        <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-    </nav>
-  </header>
-
-  <main>
-    <div class="masthead">
-      <button class="masthead-nav" id="prev-month" aria-label="Previous month">&lsaquo;</button>
-      <h1 class="masthead-title">
-        <span class="masthead-month" id="month-name"></span>
-        <span class="masthead-year" id="month-year"></span>
-      </h1>
-      <button class="masthead-nav" id="next-month" aria-label="Next month">&rsaquo;</button>
-    </div>
-    <p class="masthead-count" id="month-count" aria-live="polite"></p>
-
-    <div class="wall" id="wall"></div>
-  </main>
-
-  <footer class="wall-footer">
-    <a href="calendar.html">Calendar</a>
-    <a href="calendar.html#map">Clubs</a>
-    <a href="clubs/">Club Directory</a>
-    <a href="https://www.instagram.com/padelthailand/" target="_blank" rel="noopener">Instagram</a>
-  </footer>
-
-  <script src="js/poster-wall.js?v=8"></script>
+<body class="dir" data-listing="tournaments">
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="/" aria-label="padelthailand home"><svg aria-hidden="true" width="62" height="30" viewBox="0 0 132 64"><rect x="0" y="17" width="100" height="5" fill="#A51931"/><rect x="0" y="27" width="100" height="10" fill="#2D2A4A"/><rect x="0" y="42" width="100" height="5" fill="#A51931"/><circle cx="100" cy="32" r="23" fill="#FFFFFF" stroke="#2D2A4A" stroke-width="10"/></svg><span class="word"><b>padel</b><i>thailand</i></span></a>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/">Network Map</a><a href="/clubs/">Clubs</a><a href="/tournaments/" aria-current="page">Tournaments</a><a href="/events/">Events</a><a class="cta" href="/clubs/#book">Book a Court</a></nav>
+</div></header>
+<main class="wrap">
+  <div class="listing-head"><div><span class="badge-ink">Tournaments</span><span class="counts" id="t-count"></span>
+    <h1>Every Draw in Thailand</h1><p>Every Padel Tournament in Thailand, From Every Club and Organiser — Filter by Date, Region and Club, Then Register.</p></div>
+    <div class="cta-box"><a class="btn solid" href="/submit/#tournament">Submit a Tournament — It’s Free</a><p class="fine">Organisers: List It Once With Your Poster. A Person Checks Every Listing Before It Goes Live.</p></div></div>
+  <div id="listing-root"><noscript><div class="empty-state"><h2>Turn On JavaScript</h2><p>The tournaments list needs JavaScript. You can also find us on <a href="https://www.instagram.com/padelthailand/" rel="noopener">Instagram</a>.</p></div></noscript></div>
+  <p class="listing-note">Listings From Clubs, Organisers and Our Own Research · Posters Shared With Permission</p>
+</main>
+<section class="cta-band" aria-labelledby="run-t"><div class="wrap"><div><h2 id="run-t">Running a Tournament?</h2><p>List It Free With Your Poster in Two Minutes. It Appears Here Once a Person Has Checked It.</p></div><a class="btn" href="/submit/#tournament">Submit a Tournament</a></div></section>
+<footer class="site-foot"><div class="wrap">
+  <div><span class="brand" style="min-height:0"><svg aria-hidden="true" width="46" height="22" viewBox="0 0 132 64"><rect x="0" y="17" width="100" height="5" fill="#A51931"/><rect x="0" y="27" width="100" height="10" fill="#2D2A4A"/><rect x="0" y="42" width="100" height="5" fill="#A51931"/><circle cx="100" cy="32" r="23" fill="#F3F4F2" stroke="#2D2A4A" stroke-width="10"/></svg><span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
+  <p>Run a club that is not on the map? Use Submit a Club below and we will add your stop.</p></div>
+  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#tournament">Submit a Tournament</a><a href="/submit/#event">Submit an Event</a><a href="/submit/#club">Submit a Club</a><a href="/submit/#correction">Report a Correction</a><a href="/about/">About</a><a href="https://www.instagram.com/padelthailand/" rel="noopener">@padelthailand</a></nav>
+</div></footer>
+<script src="/js/directory.js?v=1"></script>
+<script src="/js/listings.js?v=1"></script>
 </body>
 </html>
