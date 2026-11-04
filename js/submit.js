@@ -35,7 +35,7 @@
     var l = el.labels && el.labels[0];
     var group = el.closest("fieldset.group");
     var src = group ? group.querySelector("legend") : l;
-    if (!src) return "This field";
+    if (!src) return "This Field";
     var c = src.cloneNode(true);
     c.querySelectorAll(".opt").forEach(function (o) { o.remove(); });
     return c.textContent.trim();
@@ -68,9 +68,9 @@
   function fileProblem(file) {
     var ext = (file.name.split(".").pop() || "").toLowerCase();
     var okExt = TYPES[file.type] && TYPES[file.type].indexOf(ext) >= 0;
-    if (!okExt) return "This file is not a JPG, PNG or WebP image. Please choose one of those.";
-    if (file.size > MAX_BYTES) return "This file is " + mb(file.size) + ". The limit is 5 MB. Please choose a smaller image.";
-    if (file.size === 0) return "This file is empty. Please choose another image.";
+    if (!okExt) return "This File Is Not a JPG, PNG or WebP Image. Please Choose One of Those.";
+    if (file.size > MAX_BYTES) return "This File Is " + mb(file.size) + ". The Limit Is 5 MB. Please Choose a Smaller Image.";
+    if (file.size === 0) return "This File Is Empty. Please Choose Another Image.";
     return "";
   }
 
@@ -81,29 +81,29 @@
     var label = labelText(el);
     if (el.type === "file") {
       var f = el.files && el.files[0];
-      if (!f) return el.required ? "Please choose an image to upload." : "";
+      if (!f) return el.required ? "Please Choose an Image to Upload." : "";
       return fileProblem(f);
     }
     if (el.type === "checkbox" && !el.closest("fieldset.group")) {
-      if (el.required && !el.checked) return el.name === "licenceConfirmed" ? "Please confirm you have the right to share this photo." : "Please tick this box to continue.";
+      if (el.required && !el.checked) return el.name === "licenceConfirmed" ? "Please Confirm You Have the Right to Share This Photo." : "Please Tick This Box to Continue.";
       return "";
     }
     if (el.type === "radio" || el.type === "checkbox") {
       var group = el.closest("fieldset.group");
-      if (group.hasAttribute("data-required") && !group.querySelector("input:checked")) return "Please choose one: " + label + ".";
+      if (group.hasAttribute("data-required") && !group.querySelector("input:checked")) return "Please Choose One: " + label + ".";
       return "";
     }
     if (!v) return el.required ? label + " is required." : "";
     var max = +el.getAttribute("maxlength");
     if (max && v.length > max) return label + " is too long. Keep it under " + max + " characters.";
     switch (el.dataset.kind) {
-      case "email": return v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "That email address does not look right. Check it and try again.";
-      case "url": return isHttps(v) ? "" : "Use a full web address starting with https://";
+      case "email": return v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "That Email Address Does Not Look Right. Check It and Try Again.";
+      case "url": return isHttps(v) ? "" : "Use a Full Web Address Starting With https://";
       case "igurl": return /(^|\.)instagram\.com$/.test(isHttps(v)) ? "" : "Use an Instagram link starting with https://www.instagram.com/";
-      case "date": return isDate(v) ? "" : "Use a real date.";
-      case "time": return /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? "" : "Use a 24-hour time like 19:30.";
-      case "int": return /^\d+$/.test(v) && +v >= +el.dataset.min && +v <= +el.dataset.max ? "" : "Use a whole number from " + el.dataset.min + " to " + el.dataset.max + ".";
-      case "phone": return /^[+0-9 ()\-]{6,30}$/.test(v) ? "" : "Use only digits, spaces, + and -.";
+      case "date": return isDate(v) ? "" : "Use a Real Date.";
+      case "time": return /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? "" : "Use a 24-Hour Time Like 19:30.";
+      case "int": return /^\d+$/.test(v) && +v >= +el.dataset.min && +v <= +el.dataset.max ? "" : "Use a Whole Number From " + el.dataset.min + " to " + el.dataset.max + ".";
+      case "phone": return /^[+0-9 ()\-]{6,30}$/.test(v) ? "" : "Use Only Digits, Spaces, + and -.";
       case "instagram": return /^@?[A-Za-z0-9._]{1,30}$/.test(v) || /(^|\.)instagram\.com$/.test(isHttps(v)) ? "" : "Use an @handle or an https://instagram.com link.";
     }
     return "";
@@ -126,7 +126,7 @@
       if (msg) bad.push(el);
     });
     // cross-field rules
-    var pairs = [["startDate", "endDate", "The end date is before the start date."], ["startTime", "endTime", "The end time is before the start time."]];
+    var pairs = [["startDate", "endDate", "The End Date Is Before the Start Date."], ["startTime", "endTime", "The End Time Is Before the Start Time."]];
     pairs.forEach(function (p) {
       var a = form.querySelector('[name="' + p[0] + '"]'), b = form.querySelector('[name="' + p[1] + '"]');
       if (!a || !b || !a.value || !b.value || bad.indexOf(a) >= 0 || bad.indexOf(b) >= 0) return;
@@ -239,7 +239,7 @@
       formErr.hidden = true;
       var bad = validate(form);
       if (bad.length) {
-        formErr.textContent = bad.length === 1 ? "Please fix the field marked below." : "Please fix the " + bad.length + " fields marked below.";
+        formErr.textContent = bad.length === 1 ? "Please Fix the Field Marked Below." : "Please Fix the " + bad.length + " Fields Marked Below.";
         formErr.hidden = false;
         bad[0].focus();
         return;
@@ -265,7 +265,7 @@
         sending = false;
         btn.disabled = false;
         btn.textContent = label;
-        formErr.textContent = "We could not send this. Check your connection and try again.";
+        formErr.textContent = "We Could Not Send This. Check Your Connection and Try Again.";
         formErr.hidden = false;
       });
     });

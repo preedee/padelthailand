@@ -46,7 +46,7 @@
   }
 
   fetch('/data/' + page + '.json').then(function (r) { return r.json(); }).then(start).catch(function () {
-    root.innerHTML = '<div class="empty-state"><h2>Listings Could Not Load</h2><p>Please refresh the page. If it keeps happening, tell us on Instagram.</p></div>';
+    root.innerHTML = '<div class="empty-state"><h2>Listings Could Not Load</h2><p>Please Refresh the Page. If It Keeps Happening, Tell Us on Instagram.</p></div>';
   });
 
   function start(data) {
@@ -62,7 +62,7 @@
     if (!opts.length) return '';
     return '<fieldset class="fgroup"><legend>' + esc(label) + '</legend><div class="fchips">' + opts.map(function (o) {
       var off = avail && avail.indexOf(o) < 0;
-      return '<button type="button" class="chip" data-g="' + key + '" data-v="' + esc(o) + '" aria-pressed="' + (sel.indexOf(o) > -1 ? 'true' : 'false') + '"' + (off ? ' disabled title="Nothing listed right now"' : '') + '>' + esc(GENDER_LABEL[o] && key === 'gender' ? GENDER_LABEL[o] : o) + '</button>';
+      return '<button type="button" class="chip" data-g="' + key + '" data-v="' + esc(o) + '" aria-pressed="' + (sel.indexOf(o) > -1 ? 'true' : 'false') + '"' + (off ? ' disabled title="Nothing Listed Right Now"' : '') + '>' + esc(GENDER_LABEL[o] && key === 'gender' ? GENDER_LABEL[o] : o) + '</button>';
     }).join('') + '</div></fieldset>';
   }
   function toggleIn(arr, v) { var i = arr.indexOf(v); if (i > -1) arr.splice(i, 1); else arr.push(v); }
@@ -132,7 +132,7 @@
     function dateText(t) {
       if (t.startDate) { var e = t.endDate && t.endDate !== t.startDate ? t.endDate : null;
         return e ? dayLong(t.startDate) + ' – ' + dayLong(e) + ' ' + e.slice(0, 4) : dayLong(t.startDate) + ' ' + t.startDate.slice(0, 4); }
-      return t.monthOnly ? monthLabel(t.monthOnly) + ' (date to be confirmed)' : 'Date to be confirmed';
+      return t.monthOnly ? monthLabel(t.monthOnly) + ' (Date to Be Confirmed)' : 'Date to Be Confirmed';
     }
     /** every card gets an action: registration, then the Instagram post, then the club page, then the organiser */
     function actions(t) {
@@ -171,7 +171,7 @@
     function results(list) {
       var html = '';
       if (!list.length) {
-        return '<div class="empty-state"><h2>No Tournaments Match</h2><p>' + (st.tab === 'up' ? 'Nothing upcoming fits those filters. Try clearing one, or look at past results.' : 'Nothing in the archive fits those filters.') + '</p><button class="btn" type="button" data-clear>Clear Filters</button></div>';
+        return '<div class="empty-state"><h2>No Tournaments Match</h2><p>' + (st.tab === 'up' ? 'Nothing Upcoming Fits Those Filters. Try Clearing One, or Look at Past Results.' : 'Nothing in the Archive Fits Those Filters.') + '</p><button class="btn" type="button" data-clear>Clear Filters</button></div>';
       }
       if (st.tab === 'up') {
         var buckets = [['This Week', 'Through ' + dayText(weekEnd), []], ['This Month', monthLabel(thisM), []], ['Next Month', monthLabel(nextM), []], ['Later', '', []]];
@@ -259,7 +259,7 @@
     if (el && all.length) el.textContent = occ.filter(function (o) { return o.i < 7; }).length + ' This Week Across ' + Object.keys(clubSet).length + ' Clubs';
 
     if (!all.length) {
-      root.innerHTML = '<div class="empty-state"><h2>No Events Listed Yet</h2><p>Weekly Americanos, clinics, socials and league nights will show up here as clubs and organisers add them. Run one? List it free, and it repeats every week until you stop it.</p><div class="empty-acts"><a class="btn solid" href="/submit/#event">Submit an Event</a><a class="btn" href="/clubs/">Browse Clubs</a></div></div>';
+      root.innerHTML = '<div class="empty-state"><h2>No Events Listed Yet</h2><p>Weekly Americanos, Clinics, Socials and League Nights Will Show Up Here as Clubs and Organisers Add Them. Run One? List It Free, and It Repeats Every Week Until You Stop It.</p><div class="empty-acts"><a class="btn solid" href="/submit/#event">Submit an Event</a><a class="btn" href="/clubs/">Browse Clubs</a></div></div>';
       return;
     }
     var st = { when: '', type: [], region: [], level: [], gender: [], showNext: false, sort: 'soon' };
@@ -320,9 +320,9 @@
       list.forEach(function (o) { buckets[o.i === 0 ? 0 : o.i === 1 ? 1 : o.i < 7 ? 2 : 3][2].push(o); });
       var html = '', nextHas = buckets[3][2].length;
       buckets.forEach(function (b, i) { if (b[2].length && (i < 3 || st.showNext)) html += grp(b[0], b[1], b[2]); });
-      if (!html) html = '<div class="empty-state"><h2>No Events Match</h2><p>Nothing in the next two weeks fits those filters.</p><button class="btn" type="button" data-clear>Clear Filters</button></div>';
+      if (!html) html = '<div class="empty-state"><h2>No Events Match</h2><p>Nothing in the Next Two Weeks Fits Those Filters.</p><button class="btn" type="button" data-clear>Clear Filters</button></div>';
       if (nextHas && !st.showNext) html += '<div class="more-row"><button class="btn" type="button" data-next>Show Next Week</button></div>';
-      if (hiddenStale) html += '<p class="pick-note">' + hiddenStale + (hiddenStale === 1 ? ' weekly event is' : ' weekly events are') + ' hidden because its organiser has not confirmed it in over ' + STALE_DAYS + ' days.</p>';
+      if (hiddenStale) html += '<p class="pick-note">' + hiddenStale + (hiddenStale === 1 ? ' Weekly Event Is' : ' Weekly Events Are') + ' Hidden Because Its Organiser Has Not Confirmed It in Over ' + STALE_DAYS + ' Days.</p>';
       return html;
     }
     root.innerHTML = shell('<label class="sort">Sort <select id="fsort"><option value="soon">Soonest First</option><option value="price">Lowest Price</option><option value="spots">Most Spots</option></select></label>', '');

@@ -21,7 +21,7 @@ const header = (active: string) => `<header class="site-head"><div class="wrap">
 </div></header>`;
 const footer = () => `<footer class="site-foot"><div class="wrap">
   <div><span class="brand" style="min-height:0">${LOGO(46, 22, "#F3F4F2")}<span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
-  <p>Run a club that is not on the map? Use Submit a Club below and we will add your stop.</p></div>
+  <p>Run a Club That Is Not on the Map? Use Submit a Club Below and We Will Add Your Stop.</p></div>
   <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#tournament">Submit a Tournament</a><a href="/submit/#event">Submit an Event</a><a href="/submit/#club">Submit a Club</a><a href="/submit/#correction">Report a Correction</a><a href="/about/">About</a><a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
 </div></footer>`;
 

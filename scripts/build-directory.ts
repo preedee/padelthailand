@@ -141,7 +141,7 @@ const courtTypes = (c: Club): CT[] => {
   if (!out.length) out.push({ type: "unknown", n: null });
   return out;
 };
-const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court type not listed" : t.type}">${ICON[t.type]}<span>${t.n ?? "Type Not Listed"}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
+const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court Type Not Listed" : t.type}">${ICON[t.type]}<span>${t.n ?? "Type Not Listed"}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
 const courtsWord = (c: Club) => (c.courts.total ? `${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}` : "Courts Not Listed");
 const courtSummary = (c: Club) => {
   const ts = courtTypes(c).filter((t) => t.type !== "unknown");
@@ -172,8 +172,8 @@ function clubsPage(): string {
   const regionBtns = REGION_ORDER.map(([name, , slugs, color]) => `<button class="chip sq" type="button" data-filter="${esc(name)}" aria-pressed="false"><span class="dot-line" style="background:${color}"></span>${esc(name)} <span class="count">${slugs.length}</span></button>`).join("");
   const body = `<main class="wrap">
   <div class="page-head"><span class="badge-ink">Clubs</span><h1 style="margin-top:14px">Every Stop on the Network</h1>
-  <p>${clubs.length} clubs in Thailand. Browse by photo or as a list, then pick a line. Every booking button goes to where the club actually takes bookings.</p>
-  <p><a href="/submit/#club" style="font-size:14px">Missing a club? Add it →</a></p></div>
+  <p>${clubs.length} Clubs in Thailand. Browse by Photo or as a List, Then Pick a Line. Every Booking Button Goes to Where the Club Actually Takes Bookings.</p>
+  <p><a href="/submit/#club" style="font-size:14px">Missing a Club? Add It →</a></p></div>
   <div class="filters" role="group" aria-label="Filter by region">
     <button class="chip sq" type="button" data-filter="all" aria-pressed="true">All Regions <span class="count">${clubs.length}</span></button>${regionBtns}
     <button class="chip sq" type="button" data-filter="__book" aria-pressed="false" id="book">Book Online <span class="count">${clubs.filter((c) => c.booking).length}</span></button>
@@ -183,7 +183,7 @@ function clubsPage(): string {
   <div class="grid" id="club-grid">
 ${sorted.map(clubCard).join("\n")}
   </div>
-  <p class="empty" id="no-match" hidden>No clubs match that filter.</p>
+  <p class="empty" id="no-match" hidden>No Clubs Match That Filter.</p>
 </main>`;
   return shell({ title: "Clubs | Padel Thailand", description: `All ${clubs.length} padel clubs in Thailand with courts, photos and where to book. Bangkok, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/clubs/", active: "clubs", body,
     ld: { "@context": "https://schema.org", "@type": "ItemList", name: "Padel clubs in Thailand", itemListElement: sorted.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) } });
@@ -217,8 +217,8 @@ function tourBlock(c: Club): string {
   };
   const past = mine.length - upAll.length;
   const foot = mine.length
-    ? `<div class="tour-note"><span>${ups.length ? "" : "No upcoming tournaments listed here. "}${past} past ${past === 1 ? "tournament" : "tournaments"} on record.</span><a class="btn" href="/tournaments/?club=${esc(c.slug)}${ups.length ? "" : "&tab=past"}">See All Tournaments at This Club ${ICON.arrow}</a></div>`
-    : `<div class="tour-note"><span>No tournaments listed at this club yet.</span><a class="btn" href="/submit/#tournament">Host a Tournament Here</a></div>`;
+    ? `<div class="tour-note"><span>${ups.length ? "" : "No Upcoming Tournaments Listed Here. "}${past} Past ${past === 1 ? "Tournament" : "Tournaments"} on Record.</span><a class="btn" href="/tournaments/?club=${esc(c.slug)}${ups.length ? "" : "&tab=past"}">See All Tournaments at This Club ${ICON.arrow}</a></div>`
+    : `<div class="tour-note"><span>No Tournaments Listed at This Club Yet.</span><a class="btn" href="/submit/#tournament">Host a Tournament Here</a></div>`;
   return (ups.length ? `<ul class="tour-list">${ups.map(row).join("")}</ul>` : "") + foot;
 }
 
@@ -238,19 +238,19 @@ function clubPage(c: Club): string {
           ${ph.length > 1 ? `<button class="arrow p" type="button" aria-label="Previous photo" data-prev>${ICON.left}</button><button class="arrow n" type="button" aria-label="Next photo" data-next>${ICON.right}</button>` : ""}
           <div class="cr" data-credit>${ph[0].author ? `Photo: ${esc(ph[0].author)} · Google Maps` : ""}</div></div>
         ${ph.slice(1, 5).map((p, i) => `<button class="th" type="button" data-i="${i + 1}" aria-label="Show photo ${i + 2} of ${ph.length}"><img loading="lazy" src="${esc(p.url)}" alt="">${i === 3 && ph.length > 5 ? `<span class="more">+${ph.length - 5} More</span>` : ""}</button>`).join("")}</div>`
-    : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos are shown only with a credit line.</span></div></div>`;
+    : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos Are Shown Only With a Credit Line.</span></div></div>`;
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
-  const aboutLine = `${c.name} is a padel club in ${c.city}, Thailand` + (c.courts.total ? ` with ${c.courts.total} ${c.courts.total === 1 ? "court" : "courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as opening soon." : "") + (c.rating ? ` Rated ${c.rating} from ${c.ratingCount} Google ratings.` : "") + (w.walkKm != null ? ` About ${wMin} minutes on foot from the nearest station (straight-line estimate).` : "");
+  const aboutLine = `${c.name} Is a Padel Club in ${c.city}, Thailand` + (c.courts.total ? ` With ${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type[0].toUpperCase() + x.type.slice(1)}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as Opening Soon." : "") + (c.rating ? ` Rated ${c.rating} From ${c.ratingCount} Google Ratings.` : "") + (w.walkKm != null ? ` About ${wMin} Minutes on Foot From the Nearest Station (Straight-Line Estimate).` : "");
   const priceBlock = `<div><div class="price-from">Price</div><div class="price-line" style="font-size:20px">${c.priceNote ? esc(c.priceNote) : "Not Listed Yet"}</div>
-      <div class="price-note">${c.booking ? `Check current rates on ${esc(platformName(c))}.` : "Contact the club for rates."}</div></div>`;
-  const bookBtn = c.booking ? `<a class="btn solid block" href="${esc(c.booking.url)}" target="_blank" rel="noopener">${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid block" href="tel:${esc(c.tel)}">Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : `<span class="fine">No online booking listed. Use the contact details below.</span>`);
+      <div class="price-note">${c.booking ? `Check Current Rates on ${esc(platformName(c))}.` : "Contact the Club for Rates."}</div></div>`;
+  const bookBtn = c.booking ? `<a class="btn solid block" href="${esc(c.booking.url)}" target="_blank" rel="noopener">${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid block" href="tel:${esc(c.tel)}">Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : `<span class="fine">No Online Booking Listed. Use the Contact Details Below.</span>`);
   const dirUrl = c.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`;
   const TH = /[\u0E00-\u0E7F]/;
   const thaiAddr = addrOk(c) && TH.test(c.address);
   const hasTh = !!c.nameTh || thaiAddr;
   const addr = `<section class="card" aria-labelledby="addr-h"><h3 id="addr-h">${w.kind === "rail" || w.offNetwork || w.region === "Bangkok" ? "Address" : "Getting Here"}</h3>
-    ${w.kind === "loop" || w.kind === "line" ? `<p class="fine" style="margin:0">${w.region.startsWith("Samui") || w.region.startsWith("Phuket") || w.line.startsWith("Phangan") ? "No rail here. Taxi, Grab or scooter." : "Drive, taxi or Grab."}</p>` : ""}
-    <p style="margin:0" id="addr-text">${addrOk(c) ? esc(c.address) : "Street address not listed yet. Use Directions."}</p>
+    ${w.kind === "loop" || w.kind === "line" ? `<p class="fine" style="margin:0">${w.region.startsWith("Samui") || w.region.startsWith("Phuket") || w.line.startsWith("Phangan") ? "No Rail Here. Taxi, Grab or Scooter." : "Drive, Taxi or Grab."}</p>` : ""}
+    <p style="margin:0" id="addr-text">${addrOk(c) ? esc(c.address) : "Street Address Not Listed Yet. Use Directions."}</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap">${hasTh ? `<button class="btn solid" style="flex:1 1 auto" type="button" data-driver>${ICON.car}Show to Driver</button>` : `<a class="btn solid" style="flex:1 1 auto" href="${esc(dirUrl)}" target="_blank" rel="noopener">Open in Maps</a>`}
     ${addrOk(c) ? `<button class="btn" type="button" data-copy="${esc(c.address)}">Copy</button>` : ""}</div></section>
     ${hasTh ? `<div class="driver" id="driver" role="dialog" aria-modal="true" aria-label="Address for driver" hidden><div class="eyebrow" style="color:#fff">Show to Driver</div><div class="big" lang="th">${c.nameTh ? esc(c.nameTh) + "<br>" : ""}${thaiAddr ? esc(c.address) : ""}</div><div class="eng">${esc(c.name)}<br>${esc(c.address)}</div><div class="acts"><button class="btn" type="button" data-copy="${esc(thaiAddr ? c.address : c.nameTh)}">Copy</button><button class="btn" type="button" data-driver-close>Close</button></div></div>` : ""}`;
@@ -259,7 +259,7 @@ function clubPage(c: Club): string {
     c.instagramUrl && !ownIg(c.instagramUrl) ? `<li>${ICON.ig}<span><small>Instagram</small><a href="${esc(c.instagramUrl)}" target="_blank" rel="noopener">@${esc(c.instagramUrl.replace(/\/$/, "").split("/").pop())}</a></span></li>` : "",
     c.website ? `<li>${ICON.web}<span><small>Website</small><a href="${esc(c.website)}" target="_blank" rel="noopener">${esc(c.website.replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/$/, ""))}</a></span></li>` : "",
   ].filter(Boolean);
-  const hours = c.hours.length ? `<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim())}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours not listed.</p>`;
+  const hours = c.hours.length ? `<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim())}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours Not Listed.</p>`;
   const barPrice = c.booking ? `<a class="btn solid" href="${esc(c.booking.url)}" target="_blank" rel="noopener">${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid" href="tel:${esc(c.tel)}">Call</a>` : "");
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <a href="/clubs/#${encodeURIComponent(w.region)}">${esc(w.region)}</a> / <span aria-current="page"><strong>${esc(shortName(c))}</strong></span></nav>
@@ -268,7 +268,7 @@ function clubPage(c: Club): string {
     <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : ""}</div></div></section>
   <div class="club-grid">
     <div class="gal-col">${gal}
-      <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
+      <div class="gal-note"><span>${ph.length ? "Photos Are Credited to Their Source." : "Club-Supplied Photos With a Credit Line Replace This Placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
     <aside class="aside" aria-label="Booking and contact">
       <section class="card" aria-labelledby="book-h"><div class="row1"><h3 id="book-h">Book a Court</h3>${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div>
         <div class="courts"><span>${esc(courtSummary(c))}</span></div>${priceBlock}${bookBtn}
@@ -314,8 +314,8 @@ function homePage(): string {
     <div class="chips" role="group" aria-label="Quick filters"><button class="chip" type="button" data-f="indoor" aria-pressed="false">Indoor</button><button class="chip" type="button" data-f="covered" aria-pressed="false">Covered</button><button class="chip" type="button" data-f="rail" aria-pressed="false">Near BTS/MRT</button><button class="chip" type="button" data-f="book" aria-pressed="false">Book Online</button></div></form></section>
 <section class="wrap" id="map" aria-labelledby="map-h"><div class="map-head"><h2 id="map-h">Network Map</h2><div class="tabs" id="tabs" role="group" aria-label="Map view"></div></div>
   <div class="map-layout"><div class="map-box" id="map-box" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
-  <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See all clubs by region</a>.</span></div></section>
-<section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} clubs · ${totalCourts} courts · ${REGION_ORDER.length} regions. Every booking button goes to where the club actually takes bookings.</p>
+  <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, Not to Scale. Walk Times Are Straight-Line Estimates From the Nearest Station. Prefer a List? <a href="#index">See All Clubs by Region</a>.</span></div></section>
+<section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions. Every Booking Button Goes to Where the Club Actually Takes Bookings.</p>
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,

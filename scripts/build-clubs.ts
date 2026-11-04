@@ -84,11 +84,11 @@ function cityOf(r: Row): string {
 
 const slugify = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-const BOOKING: Record<string, string> = { playtomic: "on Playtomic", matchi: "on Matchi", tps: "on The Padel Society", line: "via LINE", whatsapp: "via WhatsApp", facebook: "via Facebook", website: "on the club's website", kross: "via the Kross app" };
+const BOOKING: Record<string, string> = { playtomic: "on Playtomic", matchi: "on Matchi", tps: "on The Padel Society", line: "via LINE", whatsapp: "via WhatsApp", facebook: "via Facebook", website: "on the Club's Website", kross: "via the Kross App" };
 const bookLabel = (p: string) => "Book " + (BOOKING[p] ?? `on ${p}`);
 const AMENITIES: [string, string][] = [
-  ["free_parking", "Free parking"], ["paid_parking", "Paid parking"], ["restroom", "Restroom"], ["cards", "Cards accepted"], ["contactless", "Contactless payment"],
-  ["cash_only", "Cash only"], ["wheelchair_entrance", "Wheelchair-accessible entrance"], ["wheelchair_restroom", "Wheelchair-accessible restroom"], ["wheelchair_parking", "Wheelchair-accessible parking"],
+  ["free_parking", "Free Parking"], ["paid_parking", "Paid Parking"], ["restroom", "Restroom"], ["cards", "Cards Accepted"], ["contactless", "Contactless Payment"],
+  ["cash_only", "Cash Only"], ["wheelchair_entrance", "Wheelchair-Accessible Entrance"], ["wheelchair_restroom", "Wheelchair-Accessible Restroom"], ["wheelchair_parking", "Wheelchair-Accessible Parking"],
 ];
 
 type Courts = { total: number | null; indoor: number | null; outdoor: number | null; covered: number | null; surface?: string | null };
