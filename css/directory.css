@@ -370,3 +370,7 @@ body.cookie-open { padding-bottom: 130px; }
 .map-box .cm-tag.sea { color: #4F8AA3; font-style: italic; text-transform: none; letter-spacing: .04em; font-size: max(11px, 1.2cqw); }
 .map-box .cm-tag.rail { color: #6B7178; transform: rotate(82deg); transform-origin: 0 0; }
 .map-box[data-bg="bkk"] .poi .lbl { color: #B5B3CC; } .map-box[data-bg="bkk"] .poi .plane { stroke: #B5B3CC; }
+
+.map-box[data-bg="gulf"] .lbl, .map-box[data-bg="phk"] .lbl { text-shadow: 0 0 .25cqw rgba(255,255,255,.85), 0 0 .25cqw rgba(255,255,255,.85), 0 0 .25cqw rgba(255,255,255,.85); }
+.map-box[data-bg="bkk"] .poi i { background: #1F1D36; border-color: #8E8BAA; }
+.map-box[data-bg="bkk"] .cm-tag.river { color: #7FA6D6; transform-origin: 0 0; }

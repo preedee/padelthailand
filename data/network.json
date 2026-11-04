@@ -33,7 +33,7 @@
   "the-padel-co-bangkok": "the padel co.",
   "koh-s-33-stadium": "KOH’S 33 Stadium",
   "ama-padel-pilates-recovery": "AMA Padel",
-  "padel-phuket-blue-tree": "Padel Phuket @ Blue Tree",
+  "padel-phuket-blue-tree": "Padel @ Blue Tree",
   "kross-padel-indoor-bangkok": "Kross Padel Indoor",
   "kross-padel-sky-bangkok": "Kross Padel Sky"
  },
@@ -105,7 +105,7 @@
    "view": "phk",
    "x": 330,
    "y": 820,
-   "lp": "below",
+   "lp": "left",
    "slugs": [
     "padel-bay-indoor-club",
     "warehaus-club-padel-and-more",
@@ -522,8 +522,8 @@
    "id": "pista",
    "name": "Pista Samakom",
    "sub": "Nonthaburi",
-   "x": 110,
-   "y": 430,
+   "x": 95,
+   "y": 250,
    "slugs": [
     "pista-samakom-racquet-and-social-club"
    ],
@@ -594,7 +594,7 @@
    "slug": "lamai-padel-samui",
    "angle": 158,
    "area": "Lamai",
-   "lp": "down"
+   "lp": "right"
   },
   {
    "slug": "padel-paradise-lamai",
@@ -622,7 +622,7 @@
    "area": "Phangan · Thong Sala",
    "x": 620,
    "y": 300,
-   "lp": "sw"
+   "lp": "left"
   },
   {
    "slug": "rtf-padel-club",
@@ -954,8 +954,8 @@
    },
    {
     "name": "UTP",
-    "x": 1090,
-    "y": 590,
+    "x": 1120,
+    "y": 610,
     "lp": "right"
    },
    {
@@ -985,10 +985,10 @@
     "lp": "below"
    },
    {
-    "name": "Don Mueang Airport (DMK)",
-    "x": 1330,
-    "y": 330,
-    "lp": "below"
+    "name": "Don Mueang (DMK)",
+    "x": 950,
+    "y": 26,
+    "lp": "right"
    }
   ],
   "cm": [
@@ -1018,14 +1018,78 @@
   "phk": [
    {
     "name": "Phuket Airport (HKT)",
-    "x": 1000,
-    "y": 110,
+    "x": 980,
+    "y": 60,
     "lp": "right"
    },
    {
     "name": "Krabi Airport (KBV)",
     "x": 1280,
     "y": 330,
+    "lp": "right"
+   }
+  ]
+ },
+ "pois": {
+  "bkk": [
+   {
+    "name": "Chatuchak Market",
+    "x": 760,
+    "y": 40,
+    "lp": "left"
+   },
+   {
+    "name": "Jim Thompson House",
+    "x": 500,
+    "y": 345,
+    "lp": "left"
+   },
+   {
+    "name": "Siam Paragon · MBK",
+    "x": 520,
+    "y": 420,
+    "lp": "left"
+   },
+   {
+    "name": "Lumphini Park",
+    "x": 690,
+    "y": 585,
+    "lp": "above"
+   },
+   {
+    "name": "Chinatown",
+    "x": 390,
+    "y": 595,
+    "lp": "below"
+   },
+   {
+    "name": "Khao San Road",
+    "x": 300,
+    "y": 330,
+    "lp": "right"
+   },
+   {
+    "name": "Grand Palace",
+    "x": 272,
+    "y": 400,
+    "lp": "right"
+   },
+   {
+    "name": "Wat Pho",
+    "x": 280,
+    "y": 458,
+    "lp": "right"
+   },
+   {
+    "name": "Wat Arun",
+    "x": 170,
+    "y": 458,
+    "lp": "left"
+   },
+   {
+    "name": "Asiatique",
+    "x": 430,
+    "y": 815,
     "lp": "right"
    }
   ]

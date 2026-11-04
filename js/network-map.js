@@ -106,6 +106,16 @@
       return '<defs>' + defs + '</defs>' + body;
     }
 
+    // sand land on the sea backgrounds of the Samui and Phuket views
+    var SAND_DEFS = '<defs><pattern id="sd" width="36" height="36" patternUnits="userSpaceOnUse"><rect width="36" height="36" fill="#F3ECDD"/><circle cx="18" cy="18" r="1.8" fill="#D8CDB6"/></pattern></defs>';
+    var GULF_LAND = SAND_DEFS +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M620 380 C720 372 840 430 880 520 C920 610 905 720 850 800 C800 880 700 935 610 940 C500 945 390 890 350 800 C305 700 330 560 410 480 C470 420 540 385 620 380 Z"/>' +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M340 235 C330 190 400 160 470 170 C520 120 640 115 700 140 C760 100 850 110 890 150 C910 210 880 270 800 300 C740 345 660 350 600 330 C520 320 450 300 400 290 C350 285 345 260 340 235 Z"/>' +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M150 140 C150 100 210 85 245 110 C265 140 240 180 200 185 C165 185 150 165 150 140 Z"/>';
+    var PHK_LAND = SAND_DEFS +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M520 140 C640 100 800 110 880 170 C950 230 945 330 925 430 C905 560 955 680 940 780 C925 880 860 960 760 975 C650 990 520 975 450 930 C380 880 395 760 385 650 C375 520 395 420 390 320 C385 230 430 170 520 140 Z"/>' +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M1010 -10 C1000 110 1030 210 1045 290 C1055 350 1020 430 1040 500 C1055 560 1030 610 1060 640 L1610 640 L1610 -10 Z"/>' +
+      '<path fill="url(#sd)" stroke="#E0D2B0" stroke-width="6" stroke-linejoin="round" d="M1100 650 C1130 640 1175 670 1180 720 C1185 780 1150 830 1115 820 C1085 800 1085 700 1100 650 Z"/>';
     // ---- SVG backdrops (hand-placed, from the design canvas) ----
     var BG = {
       th: zoneBackdrop() + '<g fill="none" stroke-linecap="round" stroke-linejoin="round">' +
@@ -114,7 +124,8 @@
         '<path d="M700 420 L750 470 H880 L970 560" stroke="#E08A2E" stroke-width="18"/><path d="M700 420 L750 470 H880 L970 560" stroke="#fff" stroke-width="5"/>' +
         '<path d="M620 700 L780 860 H800" stroke="#0E7C86" stroke-width="12" stroke-dasharray="16 14" stroke-linecap="butt"/>' +
         '<path d="M700 420 L620 500 V700 L500 820 H330" stroke="#C2367A" stroke-width="18"/><path d="M700 420 L620 500 V700 L500 820 H330" stroke="#fff" stroke-width="5"/></g>',
-      bkk: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M840 460 V120 L800 80 H340 L260 160 V540 H760 Z" stroke="#1E4F9C" stroke-width="12"/>' +
+      bkk: '<path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#2A4C80" stroke-width="38" stroke-linecap="round"/><path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#3C66A6" stroke-width="20" stroke-linecap="round"/>' +
+        '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M840 460 V120 L800 80 H340 L260 160 V540 H760 Z" stroke="#1E4F9C" stroke-width="12"/>' +
         '<path d="M340 80 H100" stroke="#6F2C91" stroke-width="12"/><path d="M560 240 H840 L960 120 H1250" stroke="#A6192E" stroke-width="12"/>' +
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
       cm: '<path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#9CC3D3" stroke-width="26" stroke-linecap="round" opacity=".75"/><path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#C9E2EC" stroke-width="12" stroke-linecap="round"/>' +
@@ -123,10 +134,10 @@
         '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="#DDEBEE"/><path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="url(#hhw)"/>' +
         '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010" fill="none" stroke="#E4D6B6" stroke-width="12" stroke-linecap="round"/>' +
         '<path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#6B7178" stroke-width="6"/><path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 12"/>',
-      gulf: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="620" cy="660" r="250" stroke="#0E7C86" stroke-width="14"/>' +
+      gulf: GULF_LAND + '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="620" cy="660" r="250" stroke="#0E7C86" stroke-width="14"/>' +
         '<path d="M620 410 V300" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M340 240 L240 140 H200" stroke="#2F6DB5" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/>' +
         '<path d="M620 300 L560 240 H340" stroke="#2F6DB5" stroke-width="12"/><path d="M620 300 H760 L840 220 V160" stroke="#2F6DB5" stroke-width="12"/></g>',
-      phk: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="420" y="180" width="480" height="740" rx="70" stroke="#C2367A" stroke-width="14"/>' +
+      phk: PHK_LAND + '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="420" y="180" width="480" height="740" rx="70" stroke="#C2367A" stroke-width="14"/>' +
         '<path d="M900 300 H1060 L1140 380 V440" stroke="#E08A2E" stroke-width="12"/><path d="M1140 440 V720" stroke="#E08A2E" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/></g>'
     };
     function extras(view) {
@@ -136,8 +147,11 @@
       if (view === 'cm') {
         h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
       }
+      if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
+      if (view === 'gulf') h += '<span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
+      if (view === 'phk') h += '<span class="cm-tag sea" style="left:9%;top:48%">Andaman Sea</span>';
       if (view === 'hh') h += '<span class="cm-tag sea" style="left:80%;top:30%">Gulf of Thailand</span><span class="cm-tag rail" style="left:51.5%;top:54%">Southern Railway</span><span class="cap">Schematic · Positions Are Approximate</span>';
-      if (EXTRA[view]) (net[EXTRA[view].pois] || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
+      ((EXTRA[view] ? net[EXTRA[view].pois] : (net.pois || {})[view]) || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
       ((net.airports || {})[view] || []).forEach(function (o) { h += '<div class="poi airport" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><svg class="plane" aria-hidden="true" viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg><span class="lbl" style="' + lab(o.lp, 0.9) + '">' + esc(o.name) + '</span></div>'; });
       if (view === 'gulf') {
         var n = net.ring.length;
@@ -218,12 +232,23 @@
     }
     function hideTip() { if (!tip) return; tip.hidden = true; Array.prototype.forEach.call(box.querySelectorAll('.stop .avatar'), function (e) { e.remove(); }); Array.prototype.forEach.call(box.querySelectorAll('.stop.hov'), function (e) { e.classList.remove('hov'); }); }
 
+    // a label that would run off the map swaps to the opposite side of its dot
+    var FLIP = { up: 'down', down: 'up', left: 'right', right: 'left', above: 'below', below: 'above', nw: 'sw', sw: 'nw' };
+    function flipOffMap() {
+      var bx = box.getBoundingClientRect();
+      Array.prototype.forEach.call(layer.querySelectorAll('.stop'), function (el, i) {
+        var s = curStops[i], l = el.querySelector('.lbl'); if (!s || !l || !FLIP[s.lp]) return;
+        var r = l.getBoundingClientRect();
+        if (r.left < bx.left || r.right > bx.right || r.top < bx.top || r.bottom > bx.bottom) { l.style.cssText = lab(FLIP[s.lp], s.d / 2); }
+      });
+    }
+
     // ---- rendering ----
     function shadow(base, on) { var p = base ? [base] : []; if (on) p.push('0 0 0 .28cqw #fff', '0 0 0 .56cqw ' + INK); return p.length ? p.join(',') : 'none'; }
     function lab(lp, r) {
       return ({
-        up: 'left:' + (r * .5) + 'cqw;bottom:' + (r * .5) + 'cqw;transform-origin:0 100%;transform:rotate(-38deg);',
-        down: 'left:' + (r * .5) + 'cqw;top:' + (r * .5) + 'cqw;transform-origin:0 0;transform:rotate(38deg);',
+        up: 'left:' + (r * .85 + .1) + 'cqw;bottom:' + (r * .85 + .1) + 'cqw;transform-origin:0 100%;transform:rotate(-38deg);',
+        down: 'left:' + (r * .85 + .1) + 'cqw;top:' + (r * .85 + .1) + 'cqw;transform-origin:0 0;transform:rotate(38deg);',
         left: 'right:' + (r + .6) + 'cqw;top:0;transform:translateY(-50%);text-align:right;',
         right: 'left:' + (r + .6) + 'cqw;top:0;transform:translateY(-50%);',
         below: 'left:0;top:' + (r + .4) + 'cqw;transform:translateX(-50%);text-align:center;',
@@ -279,6 +304,7 @@
       state.sel = sel.id;
       box.dataset.bg = state.view;
       layer.innerHTML = '<svg class="bg" aria-hidden="true" viewBox="0 0 1600 1000" preserveAspectRatio="none">' + BG[state.view] + '</svg>' + extras(state.view) + stops.map(function (s) { return stopHtml(s, sel); }).join('');
+      flipOffMap();
       if (shownView !== state.view) { shownView = state.view; setTrains(state.view); fresh = true; }
       if (fresh) enter(from, state.view);
 
