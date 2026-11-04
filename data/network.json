@@ -35,7 +35,8 @@
   "ama-padel-pilates-recovery": "AMA Padel",
   "padel-phuket-blue-tree": "Padel @ Blue Tree",
   "kross-padel-indoor-bangkok": "Kross Padel Indoor",
-  "kross-padel-sky-bangkok": "Kross Padel Sky"
+  "kross-padel-sky-bangkok": "Kross Padel Sky",
+  "rsc-ratchaphruek-sports-club": "RSC Ratchaphruek"
  },
  "regions": {
   "bkk": {
@@ -57,7 +58,7 @@
     "moma-padel-club-sathorn",
     "no-drama-padel",
     "pad-thai-padel",
-    "padel-rsc",
+    "rsc-ratchaphruek-sports-club",
     "padel-asia-bangkok",
     "padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24",
     "pickleball-and-padel-decathlon-bangyai",
@@ -520,7 +521,7 @@
    "x": 150,
    "y": 600,
    "slugs": [
-    "padel-rsc"
+    "rsc-ratchaphruek-sports-club"
    ],
    "lp": "right",
    "th": "ตลิ่งชัน"
