@@ -33,7 +33,7 @@
   "the-padel-co-bangkok": "the padel co.",
   "koh-s-33-stadium": "KOH’S 33 Stadium",
   "ama-padel-pilates-recovery": "AMA Padel",
-  "padel-phuket-blue-tree": "Padel Phuket @ Blue Tree",
+  "padel-phuket-blue-tree": "Padel @ Blue Tree",
   "kross-padel-indoor-bangkok": "Kross Padel Indoor",
   "kross-padel-sky-bangkok": "Kross Padel Sky"
  },
@@ -105,7 +105,7 @@
    "view": "phk",
    "x": 330,
    "y": 820,
-   "lp": "below",
+   "lp": "left",
    "slugs": [
     "padel-bay-indoor-club",
     "warehaus-club-padel-and-more",
@@ -126,7 +126,7 @@
    "name": "Pattaya",
    "th": "พัทยา",
    "color": "#E08A2E",
-   "view": null,
+   "view": "pty",
    "x": 970,
    "y": 560,
    "lp": "right",
@@ -141,7 +141,7 @@
    "name": "Chiang Mai",
    "th": "เชียงใหม่",
    "color": "#B23A2E",
-   "view": null,
+   "view": "cm",
    "x": 520,
    "y": 90,
    "lp": "left",
@@ -156,7 +156,7 @@
    "name": "Hua Hin",
    "th": "หัวหิน",
    "color": "#C2367A",
-   "view": null,
+   "view": "hh",
    "x": 620,
    "y": 580,
    "lp": "left",
@@ -183,7 +183,7 @@
    "name": "Bangsaen",
    "th": "บางแสน",
    "color": "#E08A2E",
-   "view": null,
+   "view": "pty",
    "x": 880,
    "y": 470,
    "lp": "above",
@@ -446,7 +446,13 @@
    "clubs": [
     {
      "slug": "no-drama-padel",
-     "km": 0.7
+     "km": 0.7,
+     "across": true,
+     "x": 285,
+     "y": 735,
+     "lp": "left",
+     "name": "Khlong San",
+     "th": "คลองสาน"
     }
    ],
    "seq": null
@@ -509,36 +515,39 @@
  "off": [
   {
    "id": "rsc",
-   "name": "Padel @RSC",
+   "name": "Taling Chan",
    "sub": "Thonburi Side",
    "x": 150,
    "y": 600,
    "slugs": [
     "padel-rsc"
    ],
-   "lp": "right"
+   "lp": "right",
+   "th": "ตลิ่งชัน"
   },
   {
    "id": "pista",
-   "name": "Pista Samakom",
+   "name": "Pak Kret",
    "sub": "Nonthaburi",
-   "x": 110,
-   "y": 430,
+   "x": 95,
+   "y": 250,
    "slugs": [
     "pista-samakom-racquet-and-social-club"
    ],
-   "lp": "below"
+   "lp": "below",
+   "th": "ปากเกร็ด"
   },
   {
    "id": "padthai",
-   "name": "Pad Thai Padel",
+   "name": "Khlong Toei",
    "sub": "Khlong Toei",
    "x": 820,
    "y": 610,
    "slugs": [
     "pad-thai-padel"
    ],
-   "lp": "right"
+   "lp": "right",
+   "th": "คลองเตย"
   }
  ],
  "ring": [
@@ -594,7 +603,7 @@
    "slug": "lamai-padel-samui",
    "angle": 158,
    "area": "Lamai",
-   "lp": "down"
+   "lp": "right"
   },
   {
    "slug": "padel-paradise-lamai",
@@ -622,7 +631,7 @@
    "area": "Phangan · Thong Sala",
    "x": 620,
    "y": 300,
-   "lp": "sw"
+   "lp": "left"
   },
   {
    "slug": "rtf-padel-club",
@@ -657,7 +666,7 @@
    "area": "Koh Tao · by Ferry",
    "x": 200,
    "y": 140,
-   "lp": "below"
+   "lp": "above"
   }
  ],
  "phk": [
@@ -767,6 +776,416 @@
    "x": 1140,
    "y": 720,
    "lp": "right"
+  }
+ ],
+ "cm": [
+  {
+   "slug": "ama-padel-pilates-recovery",
+   "area": "Chang Phueak · North",
+   "x": 562,
+   "y": 147,
+   "lp": "left"
+  },
+  {
+   "slug": "padel-cnx",
+   "area": "Chang Phueak",
+   "x": 783,
+   "y": 192,
+   "lp": "right"
+  },
+  {
+   "slug": "lanna-padel-padel",
+   "area": "Tha Sala · East",
+   "x": 1078,
+   "y": 398,
+   "lp": "right"
+  },
+  {
+   "slug": "padel-club-chiang-mai",
+   "area": "Saraphi · South",
+   "x": 921,
+   "y": 859,
+   "lp": "right"
+  }
+ ],
+ "cmPois": [
+  {
+   "name": "Doi Suthep Temple",
+   "kind": "temple",
+   "x": 295,
+   "y": 234,
+   "lp": "right"
+  },
+  {
+   "name": "Chiang Mai Zoo",
+   "kind": "nature",
+   "x": 503,
+   "y": 198,
+   "lp": "right"
+  },
+  {
+   "name": "Nimman",
+   "kind": "shop",
+   "x": 624,
+   "y": 306,
+   "lp": "left"
+  },
+  {
+   "name": "Wat Chedi Luang",
+   "kind": "temple",
+   "x": 809,
+   "y": 372,
+   "lp": "below"
+  },
+  {
+   "name": "Night Bazaar",
+   "kind": "market",
+   "x": 916,
+   "y": 393,
+   "lp": "right"
+  },
+  {
+   "name": "Central Festival",
+   "kind": "shop",
+   "x": 1057,
+   "y": 214,
+   "lp": "right"
+  },
+  {
+   "name": "Maya Lifestyle Mall",
+   "kind": "shop",
+   "x": 655,
+   "y": 252,
+   "lp": "right"
+  },
+  {
+   "name": "Chiang Mai Night Safari",
+   "kind": "nature",
+   "x": 274,
+   "y": 741,
+   "lp": "right"
+  }
+ ],
+ "hh": [
+  {
+   "slug": "padel-sozial",
+   "area": "Hua Hin · Centre",
+   "x": 856,
+   "y": 392,
+   "lp": "left"
+  },
+  {
+   "slug": "padel-of-thailand",
+   "area": "Hua Hin · Centre",
+   "x": 854,
+   "y": 448,
+   "lp": "left"
+  },
+  {
+   "slug": "hua-hin-padel-center-thailandresort",
+   "area": "Hua Hin · South",
+   "x": 724,
+   "y": 663,
+   "lp": "left"
+  }
+ ],
+ "hhPois": [
+  {
+   "name": "Hua Hin Station",
+   "kind": "poi",
+   "x": 864,
+   "y": 293,
+   "lp": "left"
+  },
+  {
+   "name": "Night Market",
+   "kind": "poi",
+   "x": 864,
+   "y": 225,
+   "lp": "right"
+  },
+  {
+   "name": "Hua Hin Beach",
+   "kind": "poi",
+   "x": 954,
+   "y": 389,
+   "lp": "right"
+  },
+  {
+   "name": "Market Village",
+   "kind": "poi",
+   "x": 903,
+   "y": 360,
+   "lp": "right"
+  },
+  {
+   "name": "BluPort",
+   "kind": "poi",
+   "x": 930,
+   "y": 468,
+   "lp": "right"
+  },
+  {
+   "name": "Cicada Market",
+   "kind": "poi",
+   "x": 978,
+   "y": 612,
+   "lp": "right"
+  },
+  {
+   "name": "Khao Hin Lek Fai",
+   "kind": "poi",
+   "x": 997,
+   "y": 758,
+   "lp": "right"
+  },
+  {
+   "name": "Khao Takiab",
+   "kind": "poi",
+   "x": 1140,
+   "y": 800,
+   "lp": "right"
+  }
+ ],
+ "airports": {
+  "th": [
+   {
+    "name": "CNX",
+    "x": 590,
+    "y": 150,
+    "lp": "right"
+   },
+   {
+    "name": "BKK · DMK",
+    "x": 790,
+    "y": 350,
+    "lp": "right"
+   },
+   {
+    "name": "UTP",
+    "x": 1120,
+    "y": 610,
+    "lp": "right"
+   },
+   {
+    "name": "HKT",
+    "x": 250,
+    "y": 760,
+    "lp": "left"
+   },
+   {
+    "name": "KBV",
+    "x": 420,
+    "y": 745,
+    "lp": "right"
+   },
+   {
+    "name": "USM",
+    "x": 730,
+    "y": 800,
+    "lp": "left"
+   }
+  ],
+  "bkk": [
+   {
+    "name": "Suvarnabhumi Airport (BKK)",
+    "x": 1300,
+    "y": 120,
+    "lp": "below"
+   },
+   {
+    "name": "Don Mueang (DMK)",
+    "x": 950,
+    "y": 26,
+    "lp": "right"
+   }
+  ],
+  "cm": [
+   {
+    "name": "Chiang Mai Airport (CNX)",
+    "x": 636,
+    "y": 530,
+    "lp": "right"
+   }
+  ],
+  "hh": [
+   {
+    "name": "Hua Hin Airport (HHQ) · 10 km North ↑",
+    "x": 650,
+    "y": 50,
+    "lp": "right"
+   }
+  ],
+  "gulf": [
+   {
+    "name": "Samui Airport (USM)",
+    "x": 900,
+    "y": 330,
+    "lp": "right"
+   }
+  ],
+  "phk": [
+   {
+    "name": "Phuket Airport (HKT)",
+    "x": 980,
+    "y": 60,
+    "lp": "right"
+   },
+   {
+    "name": "Krabi Airport (KBV)",
+    "x": 1280,
+    "y": 330,
+    "lp": "right"
+   }
+  ],
+  "pty": [
+   {
+    "name": "U-Tapao Airport (UTP) · 27 km South ↓",
+    "x": 650,
+    "y": 975,
+    "lp": "right"
+   }
+  ]
+ },
+ "pois": {
+  "bkk": [
+   {
+    "name": "Chatuchak Market",
+    "x": 760,
+    "y": 40,
+    "lp": "left"
+   },
+   {
+    "name": "Siam Paragon · MBK",
+    "x": 520,
+    "y": 420,
+    "lp": "left"
+   },
+   {
+    "name": "Lumphini Park",
+    "x": 690,
+    "y": 585,
+    "lp": "above"
+   },
+   {
+    "name": "Chinatown",
+    "x": 390,
+    "y": 595,
+    "lp": "below"
+   },
+   {
+    "name": "Khao San Road",
+    "x": 300,
+    "y": 330,
+    "lp": "right"
+   },
+   {
+    "name": "Grand Palace",
+    "x": 272,
+    "y": 400,
+    "lp": "right"
+   },
+   {
+    "name": "Wat Arun",
+    "x": 170,
+    "y": 458,
+    "lp": "left"
+   }
+  ],
+  "gulf": [
+   {
+    "name": "Don Sak Pier",
+    "x": 80,
+    "y": 640,
+    "lp": "above"
+   },
+   {
+    "name": "Lipa Noi Pier",
+    "x": 372,
+    "y": 598,
+    "lp": "below"
+   }
+  ]
+ },
+ "pty": [
+  {
+   "slug": "prime-padel-pattaya",
+   "area": "North Pattaya",
+   "x": 702,
+   "y": 387,
+   "lp": "right"
+  },
+  {
+   "slug": "play-padel-pattaya",
+   "area": "South Pattaya",
+   "x": 367,
+   "y": 613,
+   "lp": "left"
+  },
+  {
+   "slug": "chilli-padel-club",
+   "area": "Na Jomtien",
+   "x": 588,
+   "y": 851,
+   "lp": "right"
+  },
+  {
+   "slug": "pattaya-padel-club",
+   "area": "East Pattaya",
+   "x": 1185,
+   "y": 566,
+   "lp": "left"
+  },
+  {
+   "slug": "bangsaen-padel",
+   "area": "Bangsaen",
+   "x": 803,
+   "y": 95,
+   "lp": "right"
+  }
+ ],
+ "ptyPois": [
+  {
+   "name": "Wong Amat Beach",
+   "kind": "poi",
+   "x": 531,
+   "y": 268,
+   "lp": "left"
+  },
+  {
+   "name": "Terminal 21",
+   "kind": "poi",
+   "x": 571,
+   "y": 367,
+   "lp": "right"
+  },
+  {
+   "name": "Pattaya Beach",
+   "kind": "poi",
+   "x": 542,
+   "y": 471,
+   "lp": "right"
+  },
+  {
+   "name": "Walking Street",
+   "kind": "poi",
+   "x": 455,
+   "y": 542,
+   "lp": "right"
+  },
+  {
+   "name": "Jomtien Beach",
+   "kind": "poi",
+   "x": 417,
+   "y": 715,
+   "lp": "right"
+  },
+  {
+   "name": "Bang Saen Beach",
+   "kind": "poi",
+   "x": 733,
+   "y": 125,
+   "lp": "left"
   }
  ]
 }
