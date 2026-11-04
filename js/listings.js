@@ -7,7 +7,7 @@
   if (!page || !root) return;
 
   var INK = '#2D2A4A';
-  var REGION_COLOR = { 'Bangkok': INK, 'Samui, Phangan, & Tao': '#0E7C86', 'Phuket': '#C2367A', 'Pattaya': '#E08A2E', 'Hua Hin': '#C2367A', 'Chiang Mai': '#B23A2E', 'Krabi': '#C2367A', 'Koh Chang': '#E08A2E' };
+  var REGION_COLOR = { 'Bangkok': INK, 'Samui & Phangan': '#0E7C86', 'Phuket': '#C2367A', 'Pattaya': '#E08A2E', 'Hua Hin': '#C2367A', 'Chiang Mai': '#B23A2E', 'Krabi': '#C2367A', 'Koh Chang': '#E08A2E' };
   var REGIONS = Object.keys(REGION_COLOR);
   var GENDER_LABEL = { Men: "Men's", Women: "Women's", Mixed: 'Mixed', Open: 'Open' };
   var LEVEL_ORDER = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Open'];
