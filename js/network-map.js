@@ -137,7 +137,7 @@
         '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010" fill="none" stroke="#E4D6B6" stroke-width="12" stroke-linecap="round"/>' +
         '<path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#6B7178" stroke-width="6"/><path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 12"/>',
       gulf: GULF_LAND + '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="620" cy="660" r="250" stroke="#0E7C86" stroke-width="14"/>' +
-        '<path d="M620 410 V300" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M340 240 L240 140 H200" stroke="#2F6DB5" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/>' +
+        '<path d="M620 410 V300" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M410 485 C300 410 228 310 205 190" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M340 240 L240 140 H200" stroke="#2F6DB5" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/>' +
         '<path d="M620 300 L560 240 H340" stroke="#2F6DB5" stroke-width="12"/><path d="M620 300 H760 L840 220 V160" stroke="#2F6DB5" stroke-width="12"/></g>',
       phk: PHK_LAND + '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="420" y="180" width="480" height="740" rx="70" stroke="#C2367A" stroke-width="14"/>' +
         '<path d="M900 300 H1060 L1140 380 V440" stroke="#E08A2E" stroke-width="12"/><path d="M1140 440 V720" stroke="#E08A2E" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/></g>'
@@ -150,7 +150,7 @@
         h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
       }
       if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
-      if (view === 'gulf') h += '<span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
+      if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
       if (view === 'phk') h += '<span class="cm-tag sea" style="left:9%;top:48%">Andaman Sea</span>';
       if (view === 'hh') h += '<span class="cm-tag sea" style="left:80%;top:30%">Gulf of Thailand</span><span class="cm-tag rail" style="left:51.5%;top:54%">Southern Railway</span><span class="cap">Schematic · Positions Are Approximate</span>';
       ((EXTRA[view] ? net[EXTRA[view].pois] : (net.pois || {})[view]) || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
@@ -159,13 +159,13 @@
         var n = net.ring.length;
         h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
           '<div style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
-          '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak. Boats Run Samui → Phangan → Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
+          '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak. Boats Run Samui → Phangan → Tao, and There Is a Direct Ferry From Samui to Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
       }
       if (view === 'phk') {
         h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
           '<span class="tagline" style="left:58.5%;top:25.5%;background:#E08A2E;color:#2D2A4A">Road to Krabi</span>' +
           '<span class="tagline" style="left:72.5%;top:56%;background:#fff;border:1px solid #E08A2E;color:#2D2A4A">Car Ferry to Lanta</span>' +
-          '<div class="note" style="left:70%;top:80%;width:28%"><b>Getting Here</b>Fly Into Phuket (HKT) or Krabi (KBV). Clubs Cluster in the North-West Around Bang Tao and in the South Around Chalong.</div>';
+          '<div class="note" style="left:2%;top:68%;width:22%"><b>Getting Here</b>Fly Into Phuket (HKT) or Krabi (KBV). Clubs Cluster in the North-West Around Bang Tao and in the South Around Chalong.</div>';
       }
       return h;
     }
