@@ -156,7 +156,7 @@
    "name": "Hua Hin",
    "th": "หัวหิน",
    "color": "#C2367A",
-   "view": null,
+   "view": "hh",
    "x": 620,
    "y": 580,
    "lp": "left",
@@ -836,13 +836,6 @@
    "lp": "right"
   },
   {
-   "name": "Chiang Mai Airport",
-   "kind": "transport",
-   "x": 636,
-   "y": 530,
-   "lp": "right"
-  },
-  {
    "name": "Central Festival",
    "kind": "shop",
    "x": 1057,
@@ -863,5 +856,178 @@
    "y": 741,
    "lp": "right"
   }
- ]
+ ],
+ "hh": [
+  {
+   "slug": "padel-sozial",
+   "area": "Hua Hin · Centre",
+   "x": 856,
+   "y": 392,
+   "lp": "left"
+  },
+  {
+   "slug": "padel-of-thailand",
+   "area": "Hua Hin · Centre",
+   "x": 854,
+   "y": 448,
+   "lp": "left"
+  },
+  {
+   "slug": "hua-hin-padel-center-thailandresort",
+   "area": "Hua Hin · South",
+   "x": 724,
+   "y": 663,
+   "lp": "left"
+  }
+ ],
+ "hhPois": [
+  {
+   "name": "Hua Hin Station",
+   "kind": "poi",
+   "x": 864,
+   "y": 293,
+   "lp": "left"
+  },
+  {
+   "name": "Night Market",
+   "kind": "poi",
+   "x": 864,
+   "y": 225,
+   "lp": "right"
+  },
+  {
+   "name": "Hua Hin Beach",
+   "kind": "poi",
+   "x": 954,
+   "y": 389,
+   "lp": "right"
+  },
+  {
+   "name": "Market Village",
+   "kind": "poi",
+   "x": 903,
+   "y": 360,
+   "lp": "right"
+  },
+  {
+   "name": "BluPort",
+   "kind": "poi",
+   "x": 930,
+   "y": 468,
+   "lp": "right"
+  },
+  {
+   "name": "Cicada Market",
+   "kind": "poi",
+   "x": 978,
+   "y": 612,
+   "lp": "right"
+  },
+  {
+   "name": "Khao Hin Lek Fai",
+   "kind": "poi",
+   "x": 997,
+   "y": 758,
+   "lp": "right"
+  },
+  {
+   "name": "Khao Takiab",
+   "kind": "poi",
+   "x": 1140,
+   "y": 800,
+   "lp": "right"
+  }
+ ],
+ "airports": {
+  "th": [
+   {
+    "name": "CNX",
+    "x": 590,
+    "y": 150,
+    "lp": "right"
+   },
+   {
+    "name": "BKK · DMK",
+    "x": 790,
+    "y": 350,
+    "lp": "right"
+   },
+   {
+    "name": "UTP",
+    "x": 1090,
+    "y": 590,
+    "lp": "right"
+   },
+   {
+    "name": "HKT",
+    "x": 250,
+    "y": 760,
+    "lp": "left"
+   },
+   {
+    "name": "KBV",
+    "x": 420,
+    "y": 745,
+    "lp": "right"
+   },
+   {
+    "name": "USM",
+    "x": 730,
+    "y": 800,
+    "lp": "left"
+   }
+  ],
+  "bkk": [
+   {
+    "name": "Suvarnabhumi Airport (BKK)",
+    "x": 1300,
+    "y": 120,
+    "lp": "below"
+   },
+   {
+    "name": "Don Mueang Airport (DMK)",
+    "x": 1330,
+    "y": 330,
+    "lp": "below"
+   }
+  ],
+  "cm": [
+   {
+    "name": "Chiang Mai Airport (CNX)",
+    "x": 636,
+    "y": 530,
+    "lp": "right"
+   }
+  ],
+  "hh": [
+   {
+    "name": "Hua Hin Airport (HHQ) · 10 km North ↑",
+    "x": 650,
+    "y": 50,
+    "lp": "right"
+   }
+  ],
+  "gulf": [
+   {
+    "name": "Samui Airport (USM)",
+    "x": 900,
+    "y": 330,
+    "lp": "right"
+   }
+  ],
+  "phk": [
+   {
+    "name": "Phuket Airport (HKT)",
+    "x": 1000,
+    "y": 110,
+    "lp": "right"
+   },
+   {
+    "name": "Krabi Airport (KBV)",
+    "x": 1280,
+    "y": 330,
+    "lp": "right"
+   }
+  ]
+ }
 }

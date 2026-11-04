@@ -35,7 +35,9 @@
     var nm = function (s) { return SHORT[s] || (C[s] && C[s].name) || s; };
     var courtsOf = function (s) { return (C[s] && C[s].courts && C[s].courts.total) || 0; };
     var REG = net.regions;
-    var DEF = { th: 'h-bkk', cm: 'padel-cnx', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
+    // single-region views with clubs placed from real coordinates: Chiang Mai and Hua Hin
+    var EXTRA = { cm: { clubs: 'cm', pois: 'cmPois', name: 'Chiang Mai', col: COL.n }, hh: { clubs: 'hh', pois: 'hhPois', name: 'Hua Hin', col: COL.s } };
+    var DEF = { th: 'h-bkk', cm: 'padel-cnx', hh: 'padel-sozial', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
     var TAGS = {
       th: [['Northern Line', '45.6%', '24%', COL.n], ['Eastern Line', '62.5%', '45.5%', COL.e], ['Southern Line', '40.6%', '61%', COL.s], ['Gulf Ferry', '45%', '73.5%', COL.g]],
       bkk: [['MRT Purple → Nonthaburi', '1%', '1.2%', COL.pur], ['MRT Blue', '2%', '33%', COL.blue], ['Airport Rail Link → Suvarnabhumi', '62.5%', '5%', COL.arl], ['BTS Silom', '13%', '66%', COL.sil], ['BTS Sukhumvit', '85%', '58%', COL.suk]]
@@ -58,7 +60,7 @@
     net.off.forEach(function (o) { o.slugs.forEach(function (s) { placeOf[s] = { view: 'bkk', id: o.id }; }); });
     net.ring.concat(net.pha).forEach(function (g) { placeOf[g.slug] = { view: 'gulf', id: g.slug }; });
     net.phk.concat(net.kbi).forEach(function (g) { placeOf[g.slug] = { view: 'phk', id: g.slug }; });
-    (net.cm || []).forEach(function (g) { placeOf[g.slug] = { view: 'cm', id: g.slug }; });
+    Object.keys(EXTRA).forEach(function (v) { (net[EXTRA[v].clubs] || []).forEach(function (g) { placeOf[g.slug] = { view: v, id: g.slug }; }); });
     Object.keys(REG).forEach(function (k) { if (!REG[k].view) REG[k].slugs.forEach(function (s) { placeOf[s] = { view: 'th', id: 'h-' + k }; }); });
 
     // ---- stops for the current view ----
@@ -73,8 +75,8 @@
         net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.km]; }), seq: b.seq, d: 1.5 }); });
         net.ticks.forEach(function (t) { stops.push({ id: t.id, kind: 'tick', name: t.name, sub: '', x: t.x, y: t.y, lp: t.lp, d: 1.0 }); });
         net.off.forEach(function (o) { var st = clubStop(o.slugs[0], o.sub, o.x, o.y, o.lp, 'Off the Rail Network', '#4A5058', null); st.off = true; stops.push(st); });
-      } else if (view === 'cm') {
-        (net.cm || []).forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, 'Chiang Mai', COL.n, 'cm')); });
+      } else if (EXTRA[view]) {
+        (net[EXTRA[view].clubs] || []).forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, EXTRA[view].name, EXTRA[view].col, view)); });
       } else if (view === 'gulf') {
         net.ring.forEach(function (g) { var a = g.angle * Math.PI / 180; stops.push(clubStop(g.slug, g.area, 620 + 250 * Math.sin(a), 660 - 250 * Math.cos(a), g.lp, 'Samui Loop', COL.g, 'sam')); });
         net.pha.forEach(function (g) { stops.push(clubStop(g.slug, g.area, g.x, g.y, g.lp, 'Phangan & Tao', COL.pha, 'pha')); });
@@ -117,6 +119,10 @@
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
       cm: '<path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#9CC3D3" stroke-width="26" stroke-linecap="round" opacity=".75"/><path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#C9E2EC" stroke-width="12" stroke-linecap="round"/>' +
         '<rect x="741" y="304" width="119" height="112" rx="8" fill="#F6F1E6" stroke="#B9AF98" stroke-width="5" stroke-dasharray="2 0"/>',
+      hh: '<defs><pattern id="hhw" width="190" height="64" patternUnits="userSpaceOnUse"><path d="M0 32 Q24 12 48 32 T96 32 T144 32 T192 32" fill="none" stroke="#C3D9DE" stroke-width="2.4"/></pattern></defs>' +
+        '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="#DDEBEE"/><path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="url(#hhw)"/>' +
+        '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010" fill="none" stroke="#E4D6B6" stroke-width="12" stroke-linecap="round"/>' +
+        '<path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#6B7178" stroke-width="6"/><path d="M808 -10 C848 100 868 220 872 293 S882 440 886 560 S913 700 938 810 S968 920 983 1010" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 12"/>',
       gulf: '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="620" cy="660" r="250" stroke="#0E7C86" stroke-width="14"/>' +
         '<path d="M620 410 V300" stroke="#0E7C86" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/><path d="M340 240 L240 140 H200" stroke="#2F6DB5" stroke-width="10" stroke-dasharray="14 12" stroke-linecap="butt"/>' +
         '<path d="M620 300 L560 240 H340" stroke="#2F6DB5" stroke-width="12"/><path d="M620 300 H760 L840 220 V160" stroke="#2F6DB5" stroke-width="12"/></g>',
@@ -129,8 +135,10 @@
       if (view === 'th') h += '<span class="cap">Schematic · Circle Size = Number of Clubs · Tap a Region</span>';
       if (view === 'cm') {
         h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
-        (net.cmPois || []).forEach(function (o) { h += '<div class="poi ' + esc(o.kind) + '" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
       }
+      if (view === 'hh') h += '<span class="cm-tag sea" style="left:80%;top:30%">Gulf of Thailand</span><span class="cm-tag rail" style="left:51.5%;top:54%">Southern Railway</span><span class="cap">Schematic · Positions Are Approximate</span>';
+      if (EXTRA[view]) (net[EXTRA[view].pois] || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
+      ((net.airports || {})[view] || []).forEach(function (o) { h += '<div class="poi airport" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><svg class="plane" aria-hidden="true" viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg><span class="lbl" style="' + lab(o.lp, 0.9) + '">' + esc(o.name) + '</span></div>'; });
       if (view === 'gulf') {
         var n = net.ring.length;
         h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
@@ -187,6 +195,11 @@
         st.animate([{ transform: 'scale(0)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 320, delay: 300 + Math.min(i, 24) * 28, easing: 'cubic-bezier(.3,1.5,.5,1)', fill: 'backwards' });
       });
     }
+    function avatarFor(s) {
+      var o = AV[s.lp] || [1.1, 1.1];
+      if (s.seq === 'sam') { var vx = 620 - s.x, vy = 660 - s.y, vl = Math.sqrt(vx * vx + vy * vy) || 1; o = [vx / vl * 4.6 - 2.7, vy / vl * 4.6 - 2.7]; }
+      return '<span class="avatar" aria-hidden="true" style="left:' + o[0] + 'cqw;top:' + o[1] + 'cqw;background-image:url(\'' + esc(photoOf(s.clubs)) + '\')"></span>';
+    }
     function showTip(el) {
       var id = el.dataset.id, s = curStops.filter(function (x) { return x.id === id; })[0], stopEl = el.closest('.stop');
       if (!s || !stopEl) return;
@@ -196,12 +209,14 @@
       if (s.kind === 'hub') body = '<b>' + esc(s.name) + '</b><span>' + esc(s.sub) + '</span>';
       else if (s.clubs.length === 1) { var k = (C[s.clubs[0][0]] || {}).courts || {}; body = '<b>' + esc(names[0]) + '</b><span>' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + (s.kind === 'club' || s.kind === 'off' ? ' · ' + esc(s.sub) : ' · ' + esc(s.name)) + '</span>'; }
       else body = '<b>' + esc(s.name) + '</b><span>' + esc(names.slice(0, 4).join(', ')) + (names.length > 4 ? ' +' + (names.length - 4) : '') + '</span>';
-      tip.innerHTML = (ph && s.kind !== 'hub' ? '<span class="tp" style="background-image:url(\'' + esc(ph) + '\')"></span>' : '') + body;
+      var circ = (s.kind === 'club') && ph;
+      if (circ && !stopEl.querySelector('.avatar')) stopEl.insertAdjacentHTML('beforeend', avatarFor(s));
+      tip.innerHTML = (ph && s.kind !== 'hub' && !circ ? '<span class="tp" style="background-image:url(\'' + esc(ph) + '\')"></span>' : '') + body;
       var x = parseFloat(stopEl.style.left), y = parseFloat(stopEl.style.top);
       tip.style.left = Math.min(88, Math.max(12, x)) + '%'; tip.style.top = y + '%'; tip.classList.toggle('below', y < 34);
       tip.hidden = false;
     }
-    function hideTip() { if (!tip) return; tip.hidden = true; Array.prototype.forEach.call(box.querySelectorAll('.stop.hov'), function (e) { e.classList.remove('hov'); }); }
+    function hideTip() { if (!tip) return; tip.hidden = true; Array.prototype.forEach.call(box.querySelectorAll('.stop .avatar'), function (e) { e.remove(); }); Array.prototype.forEach.call(box.querySelectorAll('.stop.hov'), function (e) { e.classList.remove('hov'); }); }
 
     // ---- rendering ----
     function shadow(base, on) { var p = base ? [base] : []; if (on) p.push('0 0 0 .28cqw #fff', '0 0 0 .56cqw ' + INK); return p.length ? p.join(',') : 'none'; }
@@ -237,10 +252,8 @@
       var inner = s.kind === 'tick'
         ? '<span aria-hidden="true" class="stn" style="left:-' + hit + 'cqw;top:-' + hit + 'cqw;width:' + (2 * hit) + 'cqw;height:' + (2 * hit) + 'cqw;cursor:default"><span style="' + dot + '"></span></span>'
         : '<button type="button" class="stn' + (dim ? ' dim' : '') + '" data-id="' + esc(s.id) + '" aria-label="' + esc(s.name + (s.sub ? ', ' + s.sub : '')) + '" aria-pressed="' + (on ? 'true' : 'false') + '" style="left:-' + hit + 'cqw;top:-' + hit + 'cqw;width:' + (2 * hit) + 'cqw;height:' + (2 * hit) + 'cqw"><span style="' + dot + '">' + (s.kind === 'hub' ? s.count : '') + '</span></button>';
-      var av = '';
-      if (on && (s.kind === 'club') && photoOf(s.clubs)) { var o = AV[s.lp] || [1.1, 1.1]; if (s.seq === 'sam') { var vx = 620 - s.x, vy = 660 - s.y, vl = Math.sqrt(vx * vx + vy * vy) || 1; o = [vx / vl * 4.6 - 2.7, vy / vl * 4.6 - 2.7]; } av = '<span class="avatar" aria-hidden="true" style="left:' + o[0] + 'cqw;top:' + o[1] + 'cqw;background-image:url(\'' + esc(photoOf(s.clubs)) + '\')"></span>'; }
       return '<div class="stop' + (on ? ' on' : '') + '" style="left:' + (s.x / 16) + '%;top:' + (s.y / 10) + '%">' + inner +
-        '<span class="lbl" style="' + lab(s.lp, r) + '"><span class="' + nameCls + '"' + (s.kind === 'tick' ? '' : ' data-id="' + esc(s.id) + '"') + '>' + esc(s.name) + '</span>' + (s.sub ? '<span class="th">' + esc(s.sub) + '</span>' : '') + '</span>' + av + '</div>';
+        '<span class="lbl" style="' + lab(s.lp, r) + '"><span class="' + nameCls + '"' + (s.kind === 'tick' ? '' : ' data-id="' + esc(s.id) + '"') + '>' + esc(s.name) + '</span>' + (s.sub ? '<span class="th">' + esc(s.sub) + '</span>' : '') + '</span></div>';
     }
 
     function clubCard(slug, km, showPhoto) {
@@ -270,7 +283,7 @@
       if (fresh) enter(from, state.view);
 
       // tabs
-      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
+      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['hh', 'Hua Hin', REG.hh.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
       tabsEl.innerHTML = tabs.map(function (t) { return '<button type="button" class="chip sq" data-view="' + t[0] + '" aria-pressed="' + (state.view === t[0]) + '">' + esc(t[1]) + ' <span class="count">' + t[2] + '</span></button>'; }).join('');
 
       // panel
@@ -285,7 +298,7 @@
         if (filtered) stat += ' · ' + v.length + ' Match';
       } else if (sel.kind === 'club') {
         var peers = stops.filter(function (s) { return s.seq === sel.seq; }); idx = peers.indexOf(sel); nav = peers;
-        eyebrow = sel.off ? 'Off the Rail Network' : sel.seq === 'cm' ? 'Chiang Mai' : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.sub;
+        eyebrow = sel.off ? 'Off the Rail Network' : EXTRA[sel.seq] ? EXTRA[sel.seq].name : 'Stop ' + String(idx + 1).padStart(2, '0') + ' of ' + String(peers.length).padStart(2, '0'); title = sel.name; sub = sel.sub;
         if (sel.off) { peers = []; nav = null; note = '<div class="note-box">Not Within Walking Distance of BTS/MRT. Drive, Taxi or Grab.</div>'; }
         cards = clubCard(sel.id, null, true);
         if (C[sel.id] && C[sel.id].openingSoon) stat = 'Opening Soon';
