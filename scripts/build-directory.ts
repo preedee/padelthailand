@@ -132,7 +132,7 @@ const courtTypes = (c: Club): CT[] => {
   if (!out.length) out.push({ type: "unknown", n: null });
   return out;
 };
-const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court Type Not Listed" : t.type}">${ICON[t.type]}<span>${t.n ?? "Type Not Listed"}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
+const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court Type Not Listed" : t.type}">${ICON[t.type]}<span>${t.n ?? c.courts.total ?? ""}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
 const courtsWord = (c: Club) => (c.courts.total ? `${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}` : "Courts Not Listed");
 const courtSummary = (c: Club) => {
   const ts = courtTypes(c).filter((t) => t.type !== "unknown");
@@ -232,13 +232,15 @@ ${sorted.map(clubCard).join("\n")}
 
 // ---------- club page ----------
 const addrOk = (c: Club) => c.address && c.address.trim().length > 4;
+// club logos for the Line strip: slug -> image path (e.g. "/img/logos/vita-padel-ekkamai.png"); clubs without one show their initials
+const logos = await readJson<Record<string, string>>(ROOT, "data/club-logos.json", {});
 function lineStrip(c: Club, w: Where): string {
   if (!w.peers.length) return "";
   const groups = w.peers.map((g) => {
     const here = g.slugs.includes(c.slug);
     const cl = g.slugs.map((s) => bySlug.get(s)!).filter(Boolean);
     return `<div class="g${here ? " here" : ""}"><span class="area">${esc(g.area)}</span><span class="rail"><i></i></span>
-      <div class="clubs${cl.length === 1 ? " one" : ""}">${cl.map((k) => `<a class="c${k.slug === c.slug ? " here" : ""}" href="/clubs/${esc(k.slug)}/"${k.slug === c.slug ? ' aria-current="page"' : ""}><span class="logo-slot">${esc(initials(k))}</span><span>${esc(shortName(k))}</span></a>`).join("")}</div></div>`;
+      <div class="clubs${cl.length === 1 ? " one" : ""}">${cl.map((k) => `<a class="c${k.slug === c.slug ? " here" : ""}" href="/clubs/${esc(k.slug)}/"${k.slug === c.slug ? ' aria-current="page"' : ""}><span class="logo-slot${logos[k.slug] ? " has-logo" : ""}">${logos[k.slug] ? `<img src="${esc(logos[k.slug])}" alt="" loading="lazy" width="48" height="48">` : esc(initials(k))}</span><span>${esc(shortName(k))}</span></a>`).join("")}</div></div>`;
   }).join("");
   const sub = w.kind === "rail" ? "Stations With Clubs in Walking Distance" : w.kind === "loop" ? `${w.stop?.of} Clubs Along the Line` : `${w.peers[0].slugs.length} ${w.peers[0].slugs.length === 1 ? "Club" : "Clubs"} in This Region`;
   return `<section style="margin-top:36px" aria-labelledby="strip-h"><h2 id="strip-h" style="font-size:30px;margin:0 0 6px">On the ${esc(w.line)}</h2><p class="fine" style="margin:0 0 14px">${esc(sub)}</p>
@@ -269,18 +271,6 @@ function hoursSpec(hours: string[]): object[] {
 /** analytics attributes read by js/analytics.js: data-track="event" plus data-t-<param> for each parameter */
 const trk = (event: string, params: Record<string, string>) => ` data-track="${event}"` + Object.entries(params).map(([k, v]) => ` data-t-${k}="${esc(v)}"`).join("");
 
-function tourBlock(c: Club): string {
-  const mine = tournamentsAll.filter((x) => x.clubSlug === c.slug);
-  // as fresh as the nightly listings build; /tournaments/ decides upcoming vs past in the browser, per visit
-  const upAll = mine.filter((x) => tourEnd(x) >= TODAY_BKK);
-  const ups = upAll.sort((a, b) => (a.startDate ?? a.monthOnly ?? "").localeCompare(b.startDate ?? b.monthOnly ?? "")).slice(0, 3);
-  const past = mine.length - upAll.length;
-  const foot = mine.length
-    ? `<div class="tour-note"><span>${ups.length ? "" : "No Upcoming Tournaments Listed Here. "}${past} Past ${past === 1 ? "Tournament" : "Tournaments"} on Record.</span><a class="btn" href="/tournaments/?club=${esc(c.slug)}${ups.length ? "" : "&tab=past"}">See All Tournaments at This Club ${ICON.arrow}</a></div>`
-    : `<div class="tour-note"><span>No Tournaments Listed at This Club Yet.</span><a class="btn" href="/submit/#tournament">Host a Tournament Here</a></div>`;
-  return (ups.length ? `<ul class="tour-list">${ups.map((x) => tourRow(x, "club_page")).join("")}</ul>` : "") + foot;
-}
-
 function clubPage(c: Club): string {
   const w = where.get(c.slug)!;
   const hubOk = isHub(w.region);
@@ -290,7 +280,7 @@ function clubPage(c: Club): string {
   const facts: string[] = [`<strong>${esc(w.area)}</strong>`];
   if (w.kind === "rail" && wMin != null) facts.push(`<span class="ct">${ICON.walk}~${wMin} Min Walk From ${esc(stationLabel(station!.name))} (Est.)</span>`);
   else if (w.offNetwork) facts.push(`<span class="ct">${ICON.car}Off the Rail Network · Drive or Taxi</span>`);
-  facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : "Court Type Not Listed"}</span>`));
+  facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : (c.courts.total ?? "")}</span>`));
   const stopTxt = w.stop ? `${w.kind === "rail" ? "Station" : "Stop"} ${String(w.stop.n).padStart(2, "0")} of ${String(w.stop.of).padStart(2, "0")}` : w.offNetwork ? "Off Network" : "";
   const gal = ph.length
     ? `<div class="gal" data-gal data-photos='${esc(JSON.stringify(ph.map((p) => ({ u: p.url, a: p.author }))))}' data-name="${esc(c.name)}">
@@ -338,9 +328,7 @@ function clubPage(c: Club): string {
       <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/#correction">Report a Correction</a> · <a href="/submit/#correction">Own This Club? Claim It</a></p>
     </aside>
     <div class="rest">
-      <h2>About the Club</h2><p class="about">${esc(aboutLine)}</p>
       ${c.amenities.length ? `<h2>Amenities</h2><ul class="pills">${c.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}
-      <h2>Tournaments</h2>${tourBlock(c)}
       <h2>Opening Hours</h2>${hours}
     </div>
   </div>
@@ -373,7 +361,7 @@ function homePage(): string {
   const index = REGION_ORDER.map(([name, th, slugs, color]) => {
     const list = slugs.map((s) => bySlug.get(s)!).filter(Boolean).sort((a, b) => shortName(a).localeCompare(shortName(b)));
     return `<details class="region" id="${esc(name)}"><summary style="background:${color};color:${fg(color)}"><span>${esc(name)}</span><span class="n">${list.length} ${list.length === 1 ? "Club" : "Clubs"}</span>${ICON.chev}</summary>
-    <ul>${list.map((c) => `<li><a href="/clubs/${esc(c.slug)}/"${trk("club_open", { club_slug: c.slug, place: "home_index" })}><span>${esc(shortName(c))}${c.openingSoon ? ' <span class="tag soon">Opening Soon</span>' : ""}</span><small>${esc(courtsWord(c))} ${ctHtml(c)}</small></a></li>`).join("")}</ul>${isHub(name) ? `<a class="hub-link" href="${hubPath(name)}">View All ${list.length} Clubs in ${esc(name)} →</a>` : ""}</details>`;
+    <ul>${list.map((c) => `<li><a href="/clubs/${esc(c.slug)}/"${trk("club_open", { club_slug: c.slug, place: "home_index" })}><span>${esc(shortName(c))}${c.openingSoon ? ' <span class="tag soon">Opening Soon</span>' : ""}</span><small>${ctHtml(c)}</small></a></li>`).join("")}</ul>${isHub(name) ? `<a class="hub-link" href="${hubPath(name)}">View All ${list.length} Clubs in ${esc(name)} →</a>` : ""}</details>`;
   }).join("\n");
   const body = `<main>
 <section class="wrap hero"><div class="lead"><div class="stats"><span class="badge-ink">Thailand Padel Network</span><span>${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions</span></div>

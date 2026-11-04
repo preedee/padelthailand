@@ -509,33 +509,36 @@
  "off": [
   {
    "id": "rsc",
-   "name": "RSC Ratchaphruek",
+   "name": "Padel @RSC",
    "sub": "Thonburi Side",
-   "x": 90,
-   "y": 830,
+   "x": 150,
+   "y": 600,
    "slugs": [
     "padel-rsc"
-   ]
+   ],
+   "lp": "right"
   },
   {
    "id": "pista",
    "name": "Pista Samakom",
    "sub": "Nonthaburi",
-   "x": 90,
-   "y": 885,
+   "x": 110,
+   "y": 430,
    "slugs": [
     "pista-samakom-racquet-and-social-club"
-   ]
+   ],
+   "lp": "below"
   },
   {
    "id": "padthai",
-   "name": "Rama IV Road",
+   "name": "Pad Thai Padel",
    "sub": "Khlong Toei",
-   "x": 90,
-   "y": 940,
+   "x": 820,
+   "y": 610,
    "slugs": [
     "pad-thai-padel"
-   ]
+   ],
+   "lp": "right"
   }
  ],
  "ring": [
