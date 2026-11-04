@@ -1146,13 +1146,6 @@
  ],
  "ptyPois": [
   {
-   "name": "Sanctuary of Truth",
-   "kind": "poi",
-   "x": 566,
-   "y": 189,
-   "lp": "right"
-  },
-  {
    "name": "Wong Amat Beach",
    "kind": "poi",
    "x": 531,
@@ -1193,13 +1186,6 @@
    "x": 733,
    "y": 125,
    "lp": "left"
-  },
-  {
-   "name": "Burapha University",
-   "kind": "poi",
-   "x": 842,
-   "y": 217,
-   "lp": "right"
   }
  ]
 }
