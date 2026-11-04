@@ -7,6 +7,10 @@
   "src": "/img/logos/baan-padel.webp",
   "dark": false
  },
+ "bangkok-padel": {
+  "src": "/img/logos/bangkok-padel.webp",
+  "dark": false
+ },
  "bantai-padel": {
   "src": "/img/logos/bantai-padel.webp",
   "dark": false
@@ -33,6 +37,18 @@
  },
  "koh-tao-athletic-club-sport-complex": {
   "src": "/img/logos/koh-tao-athletic-club-sport-complex.webp",
+  "dark": false
+ },
+ "kross-padel-asoke": {
+  "src": "/img/logos/kross-padel-asoke.webp",
+  "dark": false
+ },
+ "kross-padel-indoor-bangkok": {
+  "src": "/img/logos/kross-padel-indoor-bangkok.webp",
+  "dark": false
+ },
+ "kross-padel-on-nut": {
+  "src": "/img/logos/kross-padel-on-nut.webp",
   "dark": false
  },
  "kross-padel-sky-bangkok": {
@@ -121,6 +137,10 @@
  },
  "pattaya-padel-club": {
   "src": "/img/logos/pattaya-padel-club.webp",
+  "dark": false
+ },
+ "pista-samakom-racquet-and-social-club": {
+  "src": "/img/logos/pista-samakom-racquet-and-social-club.webp",
   "dark": false
  },
  "play-padel-pattaya": {
