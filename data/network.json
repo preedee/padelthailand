@@ -1043,12 +1043,6 @@
     "lp": "left"
    },
    {
-    "name": "Jim Thompson House",
-    "x": 500,
-    "y": 345,
-    "lp": "left"
-   },
-   {
     "name": "Siam Paragon · MBK",
     "x": 520,
     "y": 420,
@@ -1079,22 +1073,10 @@
     "lp": "right"
    },
    {
-    "name": "Wat Pho",
-    "x": 280,
-    "y": 458,
-    "lp": "right"
-   },
-   {
     "name": "Wat Arun",
     "x": 170,
     "y": 458,
     "lp": "left"
-   },
-   {
-    "name": "Asiatique",
-    "x": 430,
-    "y": 815,
-    "lp": "right"
    }
   ]
  }
