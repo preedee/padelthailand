@@ -36,8 +36,8 @@
     var courtsOf = function (s) { return (C[s] && C[s].courts && C[s].courts.total) || 0; };
     var REG = net.regions;
     // single-region views with clubs placed from real coordinates: Chiang Mai and Hua Hin
-    var EXTRA = { cm: { clubs: 'cm', pois: 'cmPois', name: 'Chiang Mai', col: COL.n }, hh: { clubs: 'hh', pois: 'hhPois', name: 'Hua Hin', col: COL.s } };
-    var DEF = { th: 'h-bkk', cm: 'padel-cnx', hh: 'padel-sozial', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
+    var EXTRA = { cm: { clubs: 'cm', pois: 'cmPois', name: 'Chiang Mai', col: COL.n }, hh: { clubs: 'hh', pois: 'hhPois', name: 'Hua Hin', col: COL.s }, pty: { clubs: 'pty', pois: 'ptyPois', name: 'Pattaya', col: COL.e } };
+    var DEF = { th: 'h-bkk', cm: 'padel-cnx', hh: 'padel-sozial', pty: 'prime-padel-pattaya', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
     var TAGS = {
       th: [['Northern Line', '45.6%', '24%', COL.n], ['Eastern Line', '62.5%', '45.5%', COL.e], ['Southern Line', '40.6%', '61%', COL.s], ['Gulf Ferry', '45%', '73.5%', COL.g]],
       bkk: [['MRT Purple → Nonthaburi', '1%', '1.2%', COL.pur], ['MRT Blue', '2%', '33%', COL.blue], ['Airport Rail Link → Suvarnabhumi', '62.5%', '5%', COL.arl], ['BTS Silom', '13%', '66%', COL.sil], ['BTS Sukhumvit', '85%', '58%', COL.suk]]
@@ -134,6 +134,10 @@
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
       cm: '<path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#9CC3D3" stroke-width="26" stroke-linecap="round" opacity=".75"/><path d="M1010 -10 C935 140 960 300 950 440 S960 700 1040 1010" fill="none" stroke="#C9E2EC" stroke-width="12" stroke-linecap="round"/>' +
         '<rect x="741" y="304" width="119" height="112" rx="8" fill="#F6F1E6" stroke="#B9AF98" stroke-width="5" stroke-dasharray="2 0"/>',
+      pty: '<defs><pattern id="ptw" width="190" height="64" patternUnits="userSpaceOnUse"><path d="M0 32 Q24 12 48 32 T96 32 T144 32 T192 32" fill="none" stroke="#C3D9DE" stroke-width="2.4"/></pattern></defs>' +
+        '<path d="M-10 -10 L690 -10 C690 60 640 120 590 175 C540 220 515 250 508 268 C490 340 470 420 455 471 C440 510 420 530 409 542 C380 575 340 610 322 647 C320 680 350 700 375 725 C410 790 450 860 496 927 C520 970 540 1000 572 1010 L-10 1010 Z" fill="#DDEBEE"/><path d="M-10 -10 L690 -10 C690 60 640 120 590 175 C540 220 515 250 508 268 C490 340 470 420 455 471 C440 510 420 530 409 542 C380 575 340 610 322 647 C320 680 350 700 375 725 C410 790 450 860 496 927 C520 970 540 1000 572 1010 L-10 1010 Z" fill="url(#ptw)"/>' +
+        '<path d="M690 -10 C690 60 640 120 590 175 C540 220 515 250 508 268 C490 340 470 420 455 471 C440 510 420 530 409 542 C380 575 340 610 322 647 C320 680 350 700 375 725 C410 790 450 860 496 927 C520 970 540 1000 572 1010" fill="none" stroke="#E4D6B6" stroke-width="12" stroke-linecap="round"/>' +
+        '<path d="M702 387 C720 330 770 260 803 95" fill="none" stroke="#8A9097" stroke-width="4" stroke-dasharray="4 9" stroke-linecap="round"/>',
       hh: '<defs><pattern id="hhw" width="190" height="64" patternUnits="userSpaceOnUse"><path d="M0 32 Q24 12 48 32 T96 32 T144 32 T192 32" fill="none" stroke="#C3D9DE" stroke-width="2.4"/></pattern></defs>' +
         '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="#DDEBEE"/><path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010 L1610 1010 L1610 -10 Z" fill="url(#hhw)"/>' +
         '<path d="M930 -10 C945 120 955 260 958 391 S985 560 1010 700 S1110 790 1150 812 S1175 905 1115 1010" fill="none" stroke="#E4D6B6" stroke-width="12" stroke-linecap="round"/>' +
@@ -154,6 +158,7 @@
       if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
       if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="tagline" style="left:7%;top:52%;background:#0E7C86;color:#fff">Car Ferry to/from Don Sak</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
       if (view === 'phk') h += '<span class="cm-tag sea" style="left:9%;top:48%">Andaman Sea</span>';
+      if (view === 'pty') h += '<span class="cm-tag sea" style="left:9%;top:38%">Gulf of Thailand</span><span class="cm-tag" style="left:49.5%;top:27%;color:#6B7178;text-transform:none;letter-spacing:.02em;font-weight:500">Bangsaen · about 38 km north (not to scale)</span><span class="cap">Schematic · Positions Are Approximate</span>';
       if (view === 'hh') h += '<span class="cm-tag sea" style="left:80%;top:30%">Gulf of Thailand</span><span class="cm-tag rail" style="left:51.5%;top:54%">Southern Railway</span><span class="cap">Schematic · Positions Are Approximate</span>';
       ((EXTRA[view] ? net[EXTRA[view].pois] : (net.pois || {})[view]) || []).forEach(function (o) { h += '<div class="poi" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><i></i><span class="lbl" style="' + lab(o.lp, 0.5) + '">' + esc(o.name) + '</span></div>'; });
       ((net.airports || {})[view] || []).forEach(function (o) { h += '<div class="poi airport" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><svg class="plane" aria-hidden="true" viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg><span class="lbl" style="' + lab(o.lp, 0.9) + '">' + esc(o.name) + '</span></div>'; });
@@ -313,7 +318,7 @@
       if (fresh) enter(from, state.view);
 
       // tabs
-      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['hh', 'Hua Hin', REG.hh.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
+      var tabs = [['th', 'Thailand', list.length], ['bkk', 'Bangkok', REG.bkk.slugs.length], ['cm', 'Chiang Mai', REG.cm.slugs.length], ['hh', 'Hua Hin', REG.hh.slugs.length], ['pty', 'Pattaya', REG.pty.slugs.length + REG.bs.slugs.length], ['gulf', 'Samui, Phangan, & Tao', REG.gulf.slugs.length], ['phk', 'Phuket & Krabi', REG.phk.slugs.length + REG.kbi.slugs.length]];
       tabsEl.innerHTML = tabs.map(function (t) { return '<button type="button" class="chip sq" data-view="' + t[0] + '" aria-pressed="' + (state.view === t[0]) + '">' + esc(t[1]) + ' <span class="count">' + t[2] + '</span></button>'; }).join('');
 
       // panel
@@ -323,7 +328,7 @@
       if (sel.kind === 'hub') {
         var h = sel.hub; eyebrow = 'Region'; title = h.name; sub = h.th; barText = 'Region';
         stat = plural(sel.count, 'Club') + ' · ' + plural(sel.courts, 'Court');
-        if (h.view) open = '<button type="button" class="btn solid block" data-open-view="' + h.view + '">Open the ' + esc(h.name) + ' Map</button>';
+        if (h.view) open = '<button type="button" class="btn solid block" data-open-view="' + h.view + '">Open the ' + esc(h.view === 'pty' ? 'Pattaya' : h.name) + ' Map</button>';
         var v = visible(sel.clubs); cards = v.map(function (p) { return clubCard(p[0], null, false); }).join('');
         if (filtered) stat += ' · ' + v.length + ' Match';
       } else if (sel.kind === 'club') {

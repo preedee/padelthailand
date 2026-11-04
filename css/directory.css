@@ -374,3 +374,7 @@ body.cookie-open { padding-bottom: 130px; }
 .map-box[data-bg="gulf"] .lbl, .map-box[data-bg="phk"] .lbl { text-shadow: 0 0 .25cqw rgba(255,255,255,.85), 0 0 .25cqw rgba(255,255,255,.85), 0 0 .25cqw rgba(255,255,255,.85); }
 .map-box[data-bg="bkk"] .poi i { background: #1F1D36; border-color: #8E8BAA; }
 .map-box[data-bg="bkk"] .cm-tag.river { color: #7FA6D6; transform-origin: 0 0; }
+
+/* Pattaya: sand */
+.map-box[data-bg="pty"] { background-color: #F3ECDD; background-image: radial-gradient(#D8CDB6 1px, transparent 1px); }
+.map-box[data-bg="pty"] .lbl { text-shadow: 0 0 .25cqw #F3ECDD, 0 0 .25cqw #F3ECDD, 0 0 .25cqw #F3ECDD; }

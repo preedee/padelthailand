@@ -126,7 +126,7 @@
    "name": "Pattaya",
    "th": "พัทยา",
    "color": "#E08A2E",
-   "view": null,
+   "view": "pty",
    "x": 970,
    "y": 560,
    "lp": "right",
@@ -183,7 +183,7 @@
    "name": "Bangsaen",
    "th": "บางแสน",
    "color": "#E08A2E",
-   "view": null,
+   "view": "pty",
    "x": 880,
    "y": 470,
    "lp": "above",
@@ -1037,6 +1037,14 @@
     "y": 330,
     "lp": "right"
    }
+  ],
+  "pty": [
+   {
+    "name": "U-Tapao Airport (UTP) · 27 km South ↓",
+    "x": 650,
+    "y": 975,
+    "lp": "right"
+   }
   ]
  },
  "pois": {
@@ -1098,5 +1106,100 @@
     "lp": "below"
    }
   ]
- }
+ },
+ "pty": [
+  {
+   "slug": "prime-padel-pattaya",
+   "area": "North Pattaya",
+   "x": 702,
+   "y": 387,
+   "lp": "right"
+  },
+  {
+   "slug": "play-padel-pattaya",
+   "area": "South Pattaya",
+   "x": 367,
+   "y": 613,
+   "lp": "left"
+  },
+  {
+   "slug": "chilli-padel-club",
+   "area": "Na Jomtien",
+   "x": 588,
+   "y": 851,
+   "lp": "right"
+  },
+  {
+   "slug": "pattaya-padel-club",
+   "area": "East Pattaya",
+   "x": 1185,
+   "y": 566,
+   "lp": "left"
+  },
+  {
+   "slug": "bangsaen-padel",
+   "area": "Bangsaen",
+   "x": 803,
+   "y": 95,
+   "lp": "right"
+  }
+ ],
+ "ptyPois": [
+  {
+   "name": "Sanctuary of Truth",
+   "kind": "poi",
+   "x": 566,
+   "y": 189,
+   "lp": "right"
+  },
+  {
+   "name": "Wong Amat Beach",
+   "kind": "poi",
+   "x": 531,
+   "y": 268,
+   "lp": "left"
+  },
+  {
+   "name": "Terminal 21",
+   "kind": "poi",
+   "x": 571,
+   "y": 367,
+   "lp": "right"
+  },
+  {
+   "name": "Pattaya Beach",
+   "kind": "poi",
+   "x": 542,
+   "y": 471,
+   "lp": "right"
+  },
+  {
+   "name": "Walking Street",
+   "kind": "poi",
+   "x": 455,
+   "y": 542,
+   "lp": "right"
+  },
+  {
+   "name": "Jomtien Beach",
+   "kind": "poi",
+   "x": 417,
+   "y": 715,
+   "lp": "right"
+  },
+  {
+   "name": "Bang Saen Beach",
+   "kind": "poi",
+   "x": 733,
+   "y": 125,
+   "lp": "left"
+  },
+  {
+   "name": "Burapha University",
+   "kind": "poi",
+   "x": 842,
+   "y": 217,
+   "lp": "right"
+  }
+ ]
 }
