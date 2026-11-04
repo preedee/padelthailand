@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padel Thailand — Tournament Posters</title>
+  <meta name="description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram. Tap a poster to open the post.">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Padel Thailand — Tournament Posters">
+  <meta property="og:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
+  <meta property="og:image" content="img/padel_thailand_logo_light.png">
+  <meta property="og:url" content="https://padelthailand.com/tournaments/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Padel Thailand — Tournament Posters">
+  <meta name="twitter:description" content="Every padel tournament in Thailand, month by month, as posters straight from Instagram.">
+  <meta name="twitter:image" content="img/padel_thailand_logo_light.png">
+  <link rel="canonical" href="https://padelthailand.com/tournaments/">
+  <link rel="icon" type="image/png" href="img/padel_thailand_logo_light.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Theme must be stamped before the stylesheet paints, or the page flashes. -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('pt-theme');
+        document.documentElement.setAttribute('data-theme', saved || 'dark');
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/poster-wall.css?v=8">
+
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HYHPE5BTL7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HYHPE5BTL7');
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#wall">Skip to posters</a>
+
+  <header class="wall-header">
+    <a class="wall-logo" href="./" aria-label="Padel Thailand">
+      <img src="img/padel_thailand_logo_dark.png" alt="Padel Thailand" class="logo-dark">
+      <img src="img/padel_thailand_logo_light.png" alt="Padel Thailand" class="logo-light">
+    </a>
+
+    <nav class="wall-nav">
+      <a class="wall-btn" id="calendar-link" href="calendar.html">Calendar</a>
+
+      <button class="wall-btn wall-btn--icon" id="lang-toggle" title="Switch language" aria-label="Switch language">
+        <span class="lang-label" id="lang-label">EN</span>
+      </button>
+
+      <button class="wall-btn wall-btn--icon" id="theme-toggle" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">
+        <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="masthead">
+      <button class="masthead-nav" id="prev-month" aria-label="Previous month">&lsaquo;</button>
+      <h1 class="masthead-title">
+        <span class="masthead-month" id="month-name"></span>
+        <span class="masthead-year" id="month-year"></span>
+      </h1>
+      <button class="masthead-nav" id="next-month" aria-label="Next month">&rsaquo;</button>
+    </div>
+    <p class="masthead-count" id="month-count" aria-live="polite"></p>
+
+    <div class="wall" id="wall"></div>
+  </main>
+
+  <footer class="wall-footer">
+    <a href="calendar.html">Calendar</a>
+    <a href="calendar.html#map">Clubs</a>
+    <a href="clubs/">Club Directory</a>
+    <a href="https://www.instagram.com/padelthailand/" target="_blank" rel="noopener">Instagram</a>
+  </footer>
+
+  <script src="js/poster-wall.js?v=8"></script>
+</body>
+</html>

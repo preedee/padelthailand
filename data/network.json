@@ -1,0 +1,751 @@
+{
+ "_note": "Hand-placed schematic data for the Network Map. Lifted from the Claude Design canvas (Main.dc.html, 2026-11-04). Walk distances are straight-line estimates in km. New clubs need a placement entry here (handoff: mapX/mapY step).",
+ "colors": {
+  "n": "#B23A2E",
+  "e": "#E08A2E",
+  "s": "#C2367A",
+  "g": "#0E7C86",
+  "suk": "#6CBE45",
+  "sil": "#00704A",
+  "blue": "#1E4F9C",
+  "arl": "#A6192E",
+  "pur": "#6F2C91",
+  "pha": "#2F6DB5"
+ },
+ "shortNames": {
+  "padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24": "Padel Tennis Bangkok (Banthat Thong)",
+  "sterling-sport-and-wellness-sukhumvit-24": "Sterling Sport & Wellness",
+  "lanna-padel-padel": "Lanna Padel",
+  "koh-tao-athletic-club-sport-complex": "Koh Tao Athletic Club",
+  "padel-phangan-suite-family-suite": "Padel Phangan Suite",
+  "padel-tennis-oxygen-village": "OXYGEN Village",
+  "the-padel-club-at-samui-karting": "Padel Club @ Samui Karting",
+  "ptp-phuket-padel-and-tennis-bang-tao": "PTP Phuket Bang Tao",
+  "warehaus-club-padel-and-more": "WAREHAUS.club",
+  "hua-hin-padel-center-thailandresort": "Hua Hin Padel Center",
+  "success-padel-and-pilates-samui": "Success Padel & Pilates",
+  "fifteenlove-tennis-and-padel-club": "FifteenLove",
+  "pat-tennis-and-padel-club": "PAT Tennis & Padel",
+  "pickleball-and-padel-decathlon-bangyai": "Decathlon Bang Yai",
+  "pista-samakom-racquet-and-social-club": "Pista Samakom",
+  "lamai-padel-samui": "Lamai Padel",
+  "padel-asia-bangkok": "Padel Asia",
+  "the-padel-co-bangkok": "the padel co.",
+  "koh-s-33-stadium": "KOH’S 33 Stadium",
+  "ama-padel-pilates-recovery": "AMA Padel",
+  "padel-phuket-blue-tree": "Padel Phuket @ Blue Tree",
+  "kross-padel-indoor-bangkok": "Kross Padel Indoor",
+  "kross-padel-sky-bangkok": "Kross Padel Sky"
+ },
+ "regions": {
+  "bkk": {
+   "name": "Bangkok",
+   "th": "กรุงเทพฯ และนนทบุรี",
+   "color": "#2D2A4A",
+   "view": "bkk",
+   "x": 700,
+   "y": 420,
+   "lp": "left",
+   "slugs": [
+    "baan-padel",
+    "bangkok-padel",
+    "bel-club-22",
+    "kross-padel-asoke",
+    "kross-padel-indoor-bangkok",
+    "kross-padel-on-nut",
+    "kross-padel-sky-bangkok",
+    "moma-padel-club-sathorn",
+    "no-drama-padel",
+    "pad-thai-padel",
+    "padel-rsc",
+    "padel-asia-bangkok",
+    "padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24",
+    "pickleball-and-padel-decathlon-bangyai",
+    "pista-samakom-racquet-and-social-club",
+    "sterling-sport-and-wellness-sukhumvit-24",
+    "sunshine-padel-club",
+    "the-padel-co-bangkok",
+    "top-padel-bangkok"
+   ]
+  },
+  "gulf": {
+   "name": "Samui, Phangan, & Tao",
+   "th": "สมุย · พะงัน · เต่า",
+   "color": "#0E7C86",
+   "view": "gulf",
+   "x": 800,
+   "y": 860,
+   "lp": "right",
+   "slugs": [
+    "bantai-padel",
+    "prime-padel-samui",
+    "the-padel-club-at-samui-karting",
+    "padel-samui",
+    "padel-tropical",
+    "success-padel-and-pilates-samui",
+    "coco-padel-club",
+    "koh-s-33-stadium",
+    "lamai-padel-samui",
+    "padel-paradise-lamai",
+    "purple-padel-samui",
+    "phangan-padel-club",
+    "padel-tennis-oxygen-village",
+    "padel-and-co",
+    "zen-padel-phangan",
+    "padel-phangan-suite-family-suite",
+    "koh-tao-athletic-club-sport-complex",
+    "rtf-padel-club"
+   ]
+  },
+  "phk": {
+   "name": "Phuket",
+   "th": "ภูเก็ต",
+   "color": "#C2367A",
+   "view": "phk",
+   "x": 330,
+   "y": 820,
+   "lp": "below",
+   "slugs": [
+    "padel-bay-indoor-club",
+    "warehaus-club-padel-and-more",
+    "destination-padel-club",
+    "padel-phuket-blue-tree",
+    "ptp-phuket-padel-and-tennis-bang-tao",
+    "padel-tennis-phuket",
+    "sigma-padel-club",
+    "xplore-padel-phuket",
+    "pat-tennis-and-padel-club",
+    "padel-phuket-chalong",
+    "fifteenlove-tennis-and-padel-club",
+    "rawai-padel",
+    "sensei-padel-phuket"
+   ]
+  },
+  "pty": {
+   "name": "Pattaya",
+   "th": "พัทยา",
+   "color": "#E08A2E",
+   "view": null,
+   "x": 970,
+   "y": 560,
+   "lp": "right",
+   "slugs": [
+    "chilli-padel-club",
+    "play-padel-pattaya",
+    "pattaya-padel-club",
+    "prime-padel-pattaya"
+   ]
+  },
+  "cm": {
+   "name": "Chiang Mai",
+   "th": "เชียงใหม่",
+   "color": "#B23A2E",
+   "view": null,
+   "x": 520,
+   "y": 90,
+   "lp": "left",
+   "slugs": [
+    "ama-padel-pilates-recovery",
+    "lanna-padel-padel",
+    "padel-cnx",
+    "padel-club-chiang-mai"
+   ]
+  },
+  "hh": {
+   "name": "Hua Hin",
+   "th": "หัวหิน",
+   "color": "#C2367A",
+   "view": null,
+   "x": 620,
+   "y": 580,
+   "lp": "left",
+   "slugs": [
+    "hua-hin-padel-center-thailandresort",
+    "padel-of-thailand",
+    "padel-sozial"
+   ]
+  },
+  "kbi": {
+   "name": "Krabi & Lanta",
+   "th": "กระบี่ · เกาะลันตา",
+   "color": "#C2367A",
+   "view": "phk",
+   "x": 500,
+   "y": 820,
+   "lp": "below",
+   "slugs": [
+    "sabai-padel-krabi",
+    "highlands-padel"
+   ]
+  },
+  "bs": {
+   "name": "Bangsaen",
+   "th": "บางแสน",
+   "color": "#E08A2E",
+   "view": null,
+   "x": 880,
+   "y": 470,
+   "lp": "above",
+   "slugs": [
+    "bangsaen-padel"
+   ]
+  },
+  "chang": {
+   "name": "Koh Chang",
+   "th": "เกาะช้าง",
+   "color": "#E08A2E",
+   "view": null,
+   "x": 1260,
+   "y": 640,
+   "lp": "below",
+   "slugs": [
+    "padel-lodge-koh-chang"
+   ]
+  }
+ },
+ "bkk": [
+  {
+   "id": "nana",
+   "name": "Nana",
+   "th": "นานา",
+   "x": 700,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "bangkok-padel",
+     "km": 0.3
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "asok",
+   "name": "Asok · Sukhumvit",
+   "th": "อโศก",
+   "x": 840,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit + MRT Blue",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "kross-padel-asoke",
+     "km": 0.3
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "phrom",
+   "name": "Phrom Phong",
+   "th": "พร้อมพงษ์",
+   "x": 920,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "sterling-sport-and-wellness-sukhumvit-24",
+     "km": 0.7
+    },
+    {
+     "slug": "kross-padel-sky-bangkok",
+     "km": 0.9
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "thong",
+   "name": "Thong Lo",
+   "th": "ทองหล่อ",
+   "x": 1000,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "pad-thai-padel",
+     "km": 0.9
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "phra",
+   "name": "Phra Khanong",
+   "th": "พระโขนง",
+   "x": 1090,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "baan-padel",
+     "km": 0.3
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "onnut",
+   "name": "On Nut",
+   "th": "อ่อนนุช",
+   "x": 1180,
+   "y": 380,
+   "lp": "up",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "kross-padel-on-nut",
+     "km": 0.4
+    },
+    {
+     "slug": "the-padel-co-bangkok",
+     "km": 0.7
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "bangna",
+   "name": "Bang Na",
+   "th": "บางนา",
+   "x": 1330,
+   "y": 700,
+   "lp": "right",
+   "line": "BTS Sukhumvit",
+   "color": "#6CBE45",
+   "clubs": [
+    {
+     "slug": "sunshine-padel-club",
+     "km": 0.9
+    }
+   ],
+   "seq": "suk"
+  },
+  {
+   "id": "ratchaprarop",
+   "name": "Ratchaprarop",
+   "th": "ราชปรารภ",
+   "x": 680,
+   "y": 240,
+   "lp": "below",
+   "line": "Airport Rail Link",
+   "color": "#A6192E",
+   "clubs": [
+    {
+     "slug": "top-padel-bangkok",
+     "km": 0.6
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "phet",
+   "name": "Phetchaburi",
+   "th": "เพชรบุรี · ARL มักกะสัน",
+   "x": 840,
+   "y": 240,
+   "lp": "nw",
+   "line": "MRT Blue + Airport Rail Link",
+   "color": "#1E4F9C",
+   "clubs": [
+    {
+     "slug": "bel-club-22",
+     "km": 1
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "huai",
+   "name": "Huai Khwang",
+   "th": "ห้วยขวาง",
+   "x": 840,
+   "y": 140,
+   "lp": "left",
+   "line": "MRT Blue",
+   "color": "#1E4F9C",
+   "clubs": [
+    {
+     "slug": "padel-asia-bangkok",
+     "km": 1.5
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "qsncc",
+   "name": "Queen Sirikit Centre",
+   "th": "ศูนย์สิริกิติ์",
+   "x": 840,
+   "y": 460,
+   "lp": "right",
+   "line": "MRT Blue",
+   "color": "#1E4F9C",
+   "clubs": [
+    {
+     "slug": "kross-padel-indoor-bangkok",
+     "km": 1.3
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "samyan",
+   "name": "Sam Yan",
+   "th": "สามย่าน",
+   "x": 520,
+   "y": 540,
+   "lp": "above",
+   "line": "MRT Blue",
+   "color": "#1E4F9C",
+   "clubs": [
+    {
+     "slug": "padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24",
+     "km": 1
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "chong",
+   "name": "Chong Nonsi",
+   "th": "ช่องนนทรี",
+   "x": 620,
+   "y": 640,
+   "lp": "right",
+   "line": "BTS Silom",
+   "color": "#00704A",
+   "clubs": [
+    {
+     "slug": "moma-padel-club-sathorn",
+     "km": 0.9
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "taksin",
+   "name": "Saphan Taksin",
+   "th": "สะพานตากสิน",
+   "x": 480,
+   "y": 700,
+   "lp": "below",
+   "line": "BTS Silom",
+   "color": "#00704A",
+   "clubs": [
+    {
+     "slug": "no-drama-padel",
+     "km": 0.7
+    }
+   ],
+   "seq": null
+  },
+  {
+   "id": "kbp",
+   "name": "Khlong Bang Phai",
+   "th": "คลองบางไผ่",
+   "x": 100,
+   "y": 80,
+   "lp": "below",
+   "line": "MRT Purple",
+   "color": "#6F2C91",
+   "clubs": [
+    {
+     "slug": "pickleball-and-padel-decathlon-bangyai",
+     "km": 1.4
+    }
+   ],
+   "seq": null
+  }
+ ],
+ "ticks": [
+  {
+   "id": "siam",
+   "name": "Siam",
+   "x": 560,
+   "y": 380,
+   "lp": "sw"
+  },
+  {
+   "id": "phaya",
+   "name": "Phaya Thai",
+   "x": 560,
+   "y": 240,
+   "lp": "left"
+  },
+  {
+   "id": "sala",
+   "name": "Sala Daeng · Silom",
+   "x": 620,
+   "y": 540,
+   "lp": "up"
+  },
+  {
+   "id": "taopoon",
+   "name": "Tao Poon",
+   "x": 340,
+   "y": 80,
+   "lp": "above"
+  }
+ ],
+ "off": [
+  {
+   "id": "rsc",
+   "name": "RSC Ratchaphruek",
+   "sub": "Thonburi Side",
+   "x": 90,
+   "y": 880,
+   "slugs": [
+    "padel-rsc"
+   ]
+  },
+  {
+   "id": "pista",
+   "name": "Pista Samakom",
+   "sub": "Nonthaburi",
+   "x": 90,
+   "y": 935,
+   "slugs": [
+    "pista-samakom-racquet-and-social-club"
+   ]
+  }
+ ],
+ "ring": [
+  {
+   "slug": "bantai-padel",
+   "angle": -50,
+   "area": "Maenam",
+   "lp": "left"
+  },
+  {
+   "slug": "prime-padel-samui",
+   "angle": -20,
+   "area": "Bophut",
+   "lp": "left"
+  },
+  {
+   "slug": "the-padel-club-at-samui-karting",
+   "angle": 12,
+   "area": "Bophut",
+   "lp": "right"
+  },
+  {
+   "slug": "padel-samui",
+   "angle": 40,
+   "area": "Choeng Mon",
+   "lp": "right"
+  },
+  {
+   "slug": "padel-tropical",
+   "angle": 68,
+   "area": "Chaweng",
+   "lp": "right"
+  },
+  {
+   "slug": "success-padel-and-pilates-samui",
+   "angle": 95,
+   "area": "Chaweng",
+   "lp": "right"
+  },
+  {
+   "slug": "coco-padel-club",
+   "angle": 120,
+   "area": "Lamai",
+   "lp": "right"
+  },
+  {
+   "slug": "koh-s-33-stadium",
+   "angle": 140,
+   "area": "Lamai",
+   "lp": "right"
+  },
+  {
+   "slug": "lamai-padel-samui",
+   "angle": 158,
+   "area": "Lamai",
+   "lp": "down"
+  },
+  {
+   "slug": "padel-paradise-lamai",
+   "angle": 178,
+   "area": "Lamai",
+   "lp": "below"
+  },
+  {
+   "slug": "purple-padel-samui",
+   "angle": 225,
+   "area": "South-West",
+   "lp": "left"
+  }
+ ],
+ "pha": [
+  {
+   "slug": "padel-phangan-suite-family-suite",
+   "area": "Phangan · Inland North",
+   "x": 840,
+   "y": 160,
+   "lp": "right"
+  },
+  {
+   "slug": "phangan-padel-club",
+   "area": "Phangan · Thong Sala",
+   "x": 620,
+   "y": 300,
+   "lp": "sw"
+  },
+  {
+   "slug": "rtf-padel-club",
+   "area": "Phangan · Thong Sala North",
+   "x": 700,
+   "y": 300,
+   "lp": "below"
+  },
+  {
+   "slug": "padel-tennis-oxygen-village",
+   "area": "Phangan · Wok Tum",
+   "x": 520,
+   "y": 240,
+   "lp": "up"
+  },
+  {
+   "slug": "padel-and-co",
+   "area": "Phangan · Hin Kong",
+   "x": 440,
+   "y": 240,
+   "lp": "up"
+  },
+  {
+   "slug": "zen-padel-phangan",
+   "area": "Phangan · Sri Thanu",
+   "x": 360,
+   "y": 240,
+   "lp": "up"
+  },
+  {
+   "slug": "koh-tao-athletic-club-sport-complex",
+   "area": "Koh Tao · by Ferry",
+   "x": 200,
+   "y": 140,
+   "lp": "below"
+  }
+ ],
+ "phk": [
+  {
+   "slug": "padel-bay-indoor-club",
+   "area": "Layan",
+   "x": 520,
+   "y": 180,
+   "lp": "up"
+  },
+  {
+   "slug": "warehaus-club-padel-and-more",
+   "area": "Cherngtalay",
+   "x": 620,
+   "y": 180,
+   "lp": "up"
+  },
+  {
+   "slug": "destination-padel-club",
+   "area": "Thalang",
+   "x": 720,
+   "y": 180,
+   "lp": "up"
+  },
+  {
+   "slug": "padel-phuket-blue-tree",
+   "area": "Cherngtalay",
+   "x": 820,
+   "y": 180,
+   "lp": "up"
+  },
+  {
+   "slug": "padel-tennis-phuket",
+   "area": "Kathu",
+   "x": 900,
+   "y": 500,
+   "lp": "right"
+  },
+  {
+   "slug": "sigma-padel-club",
+   "area": "Phuket Town",
+   "x": 900,
+   "y": 580,
+   "lp": "right"
+  },
+  {
+   "slug": "xplore-padel-phuket",
+   "area": "Chalong",
+   "x": 900,
+   "y": 660,
+   "lp": "right"
+  },
+  {
+   "slug": "pat-tennis-and-padel-club",
+   "area": "Chalong",
+   "x": 900,
+   "y": 740,
+   "lp": "right"
+  },
+  {
+   "slug": "padel-phuket-chalong",
+   "area": "Chalong",
+   "x": 900,
+   "y": 820,
+   "lp": "right"
+  },
+  {
+   "slug": "fifteenlove-tennis-and-padel-club",
+   "area": "Chalong",
+   "x": 720,
+   "y": 920,
+   "lp": "below"
+  },
+  {
+   "slug": "rawai-padel",
+   "area": "Rawai",
+   "x": 560,
+   "y": 920,
+   "lp": "below"
+  },
+  {
+   "slug": "sensei-padel-phuket",
+   "area": "West Coast",
+   "x": 420,
+   "y": 620,
+   "lp": "left"
+  },
+  {
+   "slug": "ptp-phuket-padel-and-tennis-bang-tao",
+   "area": "Bang Tao",
+   "x": 420,
+   "y": 330,
+   "lp": "left"
+  }
+ ],
+ "kbi": [
+  {
+   "slug": "sabai-padel-krabi",
+   "area": "Krabi",
+   "x": 1140,
+   "y": 440,
+   "lp": "right"
+  },
+  {
+   "slug": "highlands-padel",
+   "area": "Koh Lanta",
+   "x": 1140,
+   "y": 720,
+   "lp": "right"
+  }
+ ]
+}

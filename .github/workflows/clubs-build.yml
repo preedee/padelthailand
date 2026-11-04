@@ -28,14 +28,17 @@ jobs:
         with:
           bun-version: 1.3.12
 
-      - name: Build club data and pages
-        run: bun scripts/build-clubs.ts
+      - name: Build club data
+        run: bun scripts/build-clubs.ts --no-pages
+
+      - name: Build directory pages (home, clubs, club pages)
+        run: bun scripts/build-directory.ts
 
       - name: Commit if anything changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/clubs.json data/club-slugs.json clubs sitemap.xml robots.txt
+          git add data/clubs.json data/club-slugs.json data/clubs-full.json clubs index.html events sitemap.xml robots.txt
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "Club registry refresh $(date -u +%F)"
           git push

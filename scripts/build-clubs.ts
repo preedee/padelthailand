@@ -23,6 +23,8 @@ const PHOTO_BASE = `${SUPABASE_URL}/storage/v1/object/public/club-photos/`;
 const SITE = "https://padelthailand.com";
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
+// --no-pages: write only the data files; scripts/build-directory.ts renders the redesigned pages from data/clubs-full.json
+const NO_PAGES = process.argv.includes("--no-pages");
 
 type Amenities = Record<string, boolean>;
 type Row = {
@@ -271,11 +273,17 @@ for (const p of photoRows) photosBy.set(p.place_id, [...(photosBy.get(p.place_id
 
 const read = async <T>(f: string, fallback: T): Promise<T> => (existsSync(ROOT + f) ? JSON.parse(await readFile(ROOT + f, "utf8")) : fallback);
 // aliases: the names tournaments use for a club ("Padel Asia" for "Padel Asia - Bangkok"), confirmed by hand, keyed by place_id
-const [slugs, aliases] = await Promise.all([read<Record<string, string>>("data/club-slugs.json", {}), read<Record<string, string[]>>("data/club-aliases.json", {})]);
+const [slugs, aliases, fixes] = await Promise.all([
+  read<Record<string, string>>("data/club-slugs.json", {}), read<Record<string, string[]>>("data/club-aliases.json", {}),
+  read<{ city: Record<string, string>; province: Record<string, string>; merge: Record<string, string> }>("data/club-fixes.json", { city: {}, province: {}, merge: {} }),
+]);
+// fixes: hand corrections keyed by place_id. city/province override what the registry or the rules above say; merge folds a duplicate listing into the club it repeats (its name stays as an alias)
+for (const r of rows) { const into = fixes.merge[r.place_id]; if (into) aliases[into] = [...new Set([...(aliases[into] ?? []), r.name])]; }
 
 const taken = new Set(Object.values(slugs));
-const clubs: Club[] = rows.map((r) => {
-  const city = cityOf(r);
+const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
+  const r = { ...r0, province: fixes.province[r0.place_id] ?? r0.province };
+  const city = fixes.city[r.place_id] ?? cityOf(r);
   if (!slugs[r.place_id]) {
     const base = slugify(r.name) || "club";
     let s = base;
@@ -289,7 +297,7 @@ const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => 
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[["/", null], ["/calendar.html", null], ["/clubs/", null], ...clubs.map((c) => [`/clubs/${c.slug}/`, c.updated] as const)]
+${[["/", null], ["/tournaments/", null], ["/calendar.html", null], ["/clubs/", null], ...clubs.map((c) => [`/clubs/${c.slug}/`, c.updated] as const)]
   .map(([p, d]) => `  <url><loc>${SITE}${p}</loc>${d ? `<lastmod>${d}</lastmod>` : ""}</url>`).join("\n")}
 </urlset>
 `;
@@ -311,15 +319,19 @@ await mkdir(ROOT + "data", { recursive: true });
 await mkdir(ROOT + "clubs", { recursive: true });
 await writeFile(ROOT + "data/club-slugs.json", JSON.stringify(sortedSlugs, null, 1) + "\n");
 await writeFile(ROOT + "data/clubs.json", json);
-await Promise.all(clubs.map(async (c) => {
-  await mkdir(`${ROOT}clubs/${c.slug}`, { recursive: true });
-  await writeFile(`${ROOT}clubs/${c.slug}/index.html`, clubPage(c));
-}));
-await writeFile(ROOT + "clubs/index.html", directoryPage(clubs));
+// the full record (address, amenities, rating, every photo) for the page generator; one club per line keeps diffs readable
+await writeFile(ROOT + "data/clubs-full.json", `{"count":${clubs.length},"clubs":[\n${clubs.map((c) => JSON.stringify(c)).join(",\n")}\n]}\n`);
+if (!NO_PAGES) {
+  await Promise.all(clubs.map(async (c) => {
+    await mkdir(`${ROOT}clubs/${c.slug}`, { recursive: true });
+    await writeFile(`${ROOT}clubs/${c.slug}/index.html`, clubPage(c));
+  }));
+  await writeFile(ROOT + "clubs/index.html", directoryPage(clubs));
+}
 // a club that left the registry loses its page; its slug stays reserved in the registry file
 const live = new Set(clubs.map((c) => c.slug));
 for (const d of await readdir(ROOT + "clubs", { withFileTypes: true }))
   if (d.isDirectory() && !live.has(d.name)) await rm(`${ROOT}clubs/${d.name}`, { recursive: true });
 await writeFile(ROOT + "sitemap.xml", sitemap);
 await writeFile(ROOT + "robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
-console.log(`built ${clubs.length} club pages, directory, sitemap (${rows.length} public clubs, ${Object.keys(slugs).length} slugs reserved)`);
+console.log(`built ${NO_PAGES ? "data files (pages: bun scripts/build-directory.ts)" : clubs.length + " club pages, directory"}, sitemap (${rows.length} public clubs, ${Object.keys(slugs).length} slugs reserved)`);
