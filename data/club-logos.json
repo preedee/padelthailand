@@ -155,6 +155,10 @@
   "src": "/img/logos/padel-tropical.webp",
   "dark": false
  },
+ "pat-tennis-and-padel-club": {
+  "src": "/img/logos/pat-tennis-and-padel-club.webp",
+  "dark": false
+ },
  "pattaya-padel-club": {
   "src": "/img/logos/pattaya-padel-club.webp",
   "dark": false
@@ -179,6 +183,10 @@
   "src": "/img/logos/prime-padel-samui.webp",
   "dark": false
  },
+ "ptp-phuket-padel-and-tennis-bang-tao": {
+  "src": "/img/logos/ptp-phuket-padel-and-tennis-bang-tao.webp",
+  "dark": false
+ },
  "purple-padel-samui": {
   "src": "/img/logos/purple-padel-samui.webp",
   "dark": false
@@ -195,6 +203,10 @@
   "src": "/img/logos/sabai-padel-krabi.webp",
   "dark": true
  },
+ "sensei-padel-phuket": {
+  "src": "/img/logos/sensei-padel-phuket.webp",
+  "dark": false
+ },
  "sigma-padel-club": {
   "src": "/img/logos/sigma-padel-club.webp",
   "dark": false
@@ -205,6 +217,10 @@
  },
  "success-padel-and-pilates-samui": {
   "src": "/img/logos/success-padel-and-pilates-samui.webp",
+  "dark": false
+ },
+ "sunshine-padel-club": {
+  "src": "/img/logos/sunshine-padel-club.webp",
   "dark": false
  },
  "the-padel-club-at-samui-karting": {
