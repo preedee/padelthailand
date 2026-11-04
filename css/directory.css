@@ -48,7 +48,8 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .site-foot .wrap { padding-top: 32px; padding-bottom: 32px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; font-size: 14px; }
 .site-foot nav { display: flex; flex-wrap: wrap; gap: 4px 20px; align-items: center; }
 .site-foot nav a { min-height: 44px; display: inline-flex; align-items: center; }
-.site-foot p { margin: 6px 0 0; color: var(--text-2); max-width: 420px; }
+.site-foot p { margin: 6px 0 0; color: var(--text-2); }
+@media (min-width: 900px) { .site-foot .wrap > div:first-child { flex: 0 0 auto; } .site-foot .wrap > div:first-child p { white-space: nowrap; } .site-foot nav { flex: 1 1 0; justify-content: flex-end; } }
 
 /* buttons + chips */
 .btn { min-height: 44px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 4px; border: 1.5px solid var(--ink); background: var(--surface); color: var(--ink); font-weight: 600; font-size: 15px; text-decoration: none; cursor: pointer; }
@@ -256,6 +257,8 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .strip .g .clubs.one { border-top: 0; padding-top: 4px; }
 .strip .c { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; text-align: center; width: 110px; min-height: 44px; font-size: 13px; line-height: 1.2; }
 .strip .c .logo-slot { width: 48px; height: 48px; font-size: 18px; }
+.strip .c .logo-slot.has-logo { border: 1.5px solid var(--line, #D5D8D6); background: #fff; padding: 3px; }
+.strip .c .logo-slot img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .strip .c.here .logo-slot { border: 2.5px solid var(--ink); }
 .strip .c.here { font-weight: 700; }
 

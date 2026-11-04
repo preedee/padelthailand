@@ -28,7 +28,7 @@ gtag('js',new Date());gtag('config','${GA_ID}',{allow_google_signals:false,allow
   <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>`;
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">`;
-const NAV: [string, string, string][] = [["map", "/", "Network Map"], ["clubs", "/clubs/", "Clubs"], ["tournaments", "/tournaments/", "Tournaments"], ["events", "/events/", "Events"]];
+const NAV: [string, string, string][] = [["map", "/", "Network Map"], ["clubs", "/clubs/", "Clubs"]];
 const header = (active: string) => `<header class="site-head"><div class="wrap">
   <a class="brand" href="/" aria-label="padelthailand home">${LOGO(62, 30)}<span class="word"><b>padel</b><i>thailand</i></span></a>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">${svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 22, 2)}</button>
@@ -36,8 +36,8 @@ const header = (active: string) => `<header class="site-head"><div class="wrap">
 </div></header>`;
 const footer = () => `<footer class="site-foot"><div class="wrap">
   <div><span class="brand" style="min-height:0">${LOGO(46, 22, "#F3F4F2")}<span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
-  <p>Run a Club That Is Not on the Map? Use Submit a Club Below and We Will Add Your Stop.</p></div>
-  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#tournament">Submit a Tournament</a><a href="/submit/#event">Submit an Event</a><a href="/submit/#club">Submit a Club</a><a href="/submit/#correction">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
+  <p>Run a club that is not on the map? Use Submit a Club below and we will add your stop.</p></div>
+  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#club">Submit a Club</a><a href="/submit/#correction">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
 </div></footer>`;
 
 export function shell(o: { title: string; description: string; path: string; active: string; body: string; image?: string; ld?: unknown | unknown[]; bodyClass?: string; bodyAttrs?: string; scripts?: string; head?: string; noindex?: boolean; imageAlt?: string }): string {
