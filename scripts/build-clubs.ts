@@ -299,12 +299,6 @@ for (const m of manualClubs)
   if (!clubs.some((c) => c.slug === m.slug || (Math.abs(c.lat - m.lat) < 0.0008 && Math.abs(c.lng - m.lng) < 0.0008))) clubs.push(m);
 const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => a.localeCompare(b)));
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[["/", null], ["/tournaments/", null], ["/events/", null], ["/about/", null], ["/submit/", null], ["/calendar.html", null], ["/clubs/", null], ...clubs.map((c) => [`/clubs/${c.slug}/`, c.updated] as const)]
-  .map(([p, d]) => `  <url><loc>${SITE}${p}</loc>${d ? `<lastmod>${d}</lastmod>` : ""}</url>`).join("\n")}
-</urlset>
-`;
 // The map needs a fraction of each record; the full record only feeds the static pages. One club per line keeps weekly diffs readable.
 const toMapClub = (c: Club) => ({
   id: c.id, slug: c.slug, name: c.name, nameTh: c.nameTh, city: c.city, province: c.province, lat: c.lat, lng: c.lng,
@@ -336,6 +330,4 @@ if (!NO_PAGES) {
 const live = new Set(clubs.map((c) => c.slug));
 for (const d of await readdir(ROOT + "clubs", { withFileTypes: true }))
   if (d.isDirectory() && !live.has(d.name)) await rm(`${ROOT}clubs/${d.name}`, { recursive: true });
-await writeFile(ROOT + "sitemap.xml", sitemap);
-await writeFile(ROOT + "robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
-console.log(`built ${NO_PAGES ? "data files (pages: bun scripts/build-directory.ts)" : clubs.length + " club pages, directory"}, sitemap (${rows.length} public clubs, ${Object.keys(slugs).length} slugs reserved)`);
+console.log(`built ${NO_PAGES ? "data files (pages: bun scripts/build-directory.ts; sitemap: bun scripts/build-seo.ts)" : clubs.length + " club pages, directory"} (${rows.length} public clubs, ${Object.keys(slugs).length} slugs reserved)`);

@@ -18,6 +18,7 @@
   var POSTER = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-4 4 3 3-2 6 5"/></svg>';
   var CLOCK = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>';
 
+  function track(name, params) { if (window.ptTrack) window.ptTrack(name, params); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   function utc(iso) { var p = iso.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12)); }
@@ -137,12 +138,12 @@
     /** every card gets an action: registration, then the Instagram post, then the club page, then the organiser */
     function actions(t) {
       var a = '', primary = false;
-      if (t._up && t.regUrl) { a += '<a class="btn solid" href="' + esc(t.regUrl) + '" target="_blank" rel="noopener">' + esc(t.regLabel) + '</a>'; primary = true; }
-      if (t._up && t.regUrl2) a += '<a class="btn" href="' + esc(t.regUrl2) + '" target="_blank" rel="noopener">' + esc(t.regLabel2) + '</a>';
+      if (t._up && t.regUrl) { a += '<a class="btn solid" href="' + esc(t.regUrl) + '" target="_blank" rel="noopener" data-track="register_click" data-t-tournament="' + esc(t.id) + '" data-t-organizer="' + esc(t.organizer) + '">' + esc(t.regLabel) + '</a>'; primary = true; }
+      if (t._up && t.regUrl2) a += '<a class="btn" href="' + esc(t.regUrl2) + '" target="_blank" rel="noopener" data-track="register_click" data-t-tournament="' + esc(t.id) + '" data-t-organizer="' + esc(t.organizer) + '">' + esc(t.regLabel2) + '</a>';
       if (t.instagramUrl) {
         var label = t._up ? 'View Details' : 'View Results & Photos';
         a += primary ? '<a class="btn icon" href="' + esc(t.instagramUrl) + '" target="_blank" rel="noopener" aria-label="Open the Instagram post for ' + esc(t.title) + '">' + IG + '</a>'
-          : '<a class="btn solid" href="' + esc(t.instagramUrl) + '" target="_blank" rel="noopener">' + esc(label) + '</a>';
+          : '<a class="btn solid" href="' + esc(t.instagramUrl) + '" target="_blank" rel="noopener" data-track="details_click" data-t-tournament="' + esc(t.id) + '" data-t-state="' + (t._up ? 'upcoming' : 'past') + '">' + esc(label) + '</a>';
         primary = true;
       }
       if (!primary) {
@@ -227,13 +228,13 @@
     root.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b || b.disabled) return;
       if (b.dataset.tab) { st.tab = b.dataset.tab; st.limit = 24; st.sort = 'first'; paint(); }
-      else if (b.dataset.g) { toggleIn(st[b.dataset.g], b.dataset.v); st.limit = 24; paint(); }
-      else if (b.dataset.when) { st.when = b.dataset.when; paint(); }
+      else if (b.dataset.g) { toggleIn(st[b.dataset.g], b.dataset.v); st.limit = 24; paint(); track('filter_use', { page: 'tournaments', group: b.dataset.g, option: b.dataset.v }); }
+      else if (b.dataset.when) { st.when = b.dataset.when; paint(); track('filter_use', { page: 'tournaments', group: 'when', option: b.dataset.when }); }
       else if (b.hasAttribute('data-clear')) clearAll();
       else if (b.hasAttribute('data-more')) { st.limit += 24; paint(); }
       else if (b.dataset.rm) { var k = b.dataset.rm, v = b.dataset.v; if (Array.isArray(st[k])) toggleIn(st[k], v); else st[k] = k === 'when' ? 'any' : k === 'regOpen' ? false : ''; paint(); }
     });
-    root.addEventListener('input', function (e) { if (e.target.id === 'fq') { st.q = e.target.value; st.limit = 24; paint(true); } });
+    root.addEventListener('input', function (e) { if (e.target.id === 'fq') { st.q = e.target.value; st.limit = 24; paint(true); if (window.ptTrackSearch) window.ptTrackSearch('tournaments', st.q, visible().length > 0); } });
     root.addEventListener('change', function (e) { if (e.target.id === 'fclub') { st.club = e.target.value; paint(); } else if (e.target.id === 'freg') { st.regOpen = e.target.checked; paint(); } else if (e.target.id === 'fsort') { st.sort = e.target.value; paint(); } });
     paint();
   }
@@ -334,8 +335,8 @@
     }
     root.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b || b.disabled) return;
-      if (b.dataset.g) toggleIn(st[b.dataset.g], b.dataset.v);
-      else if (b.dataset.when) st.when = st.when === b.dataset.when ? '' : b.dataset.when;
+      if (b.dataset.g) { toggleIn(st[b.dataset.g], b.dataset.v); track('filter_use', { page: 'events', group: b.dataset.g, option: b.dataset.v }); }
+      else if (b.dataset.when) { st.when = st.when === b.dataset.when ? '' : b.dataset.when; track('filter_use', { page: 'events', group: 'when', option: b.dataset.when }); }
       else if (b.dataset.rm) { var k = b.dataset.rm; if (Array.isArray(st[k])) toggleIn(st[k], b.dataset.v); else st[k] = ''; }
       else if (b.hasAttribute('data-clear')) st = { when: '', type: [], region: [], level: [], gender: [], showNext: st.showNext, sort: st.sort };
       else if (b.hasAttribute('data-next')) st.showNext = true; else return;

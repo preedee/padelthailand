@@ -169,9 +169,9 @@
       return '<div class="pclub">' + photo + '<div class="nm"><span>' + esc(nm(slug)) + '</span>' + (c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '') + '</div>' +
         '<div class="meta"><strong style="color:' + INK + '">' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + '</strong>' + tHtml + '</div>' +
         (km != null ? '<div class="meta">' + icon('walk', 16) + '~' + Math.max(1, Math.round(km * 13)) + ' Min Walk · ' + km.toFixed(1) + ' km (Est.)</div>' : '') +
-        '<a class="more" href="/clubs/' + esc(slug) + '/">View Club Page ' + icon('arrow', 16) + '</a>' +
-        '<div class="acts">' + (c.booking ? '<a class="btn solid" href="' + esc(c.booking.url) + '" target="_blank" rel="noopener">' + esc(c.booking.label) + '</a>' : '') +
-        '<a class="btn" href="' + esc(dir) + '" target="_blank" rel="noopener">Directions</a></div></div>';
+        '<a class="more" href="/clubs/' + esc(slug) + '/" data-track="club_open" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">View Club Page ' + icon('arrow', 16) + '</a>' +
+        '<div class="acts">' + (c.booking ? '<a class="btn solid" href="' + esc(c.booking.url) + '" target="_blank" rel="noopener" data-track="book_click" data-t-club_slug="' + esc(slug) + '" data-t-platform="' + esc(c.booking.platform) + '" data-t-place="map_panel">' + esc(c.booking.label) + '</a>' : '') +
+        '<a class="btn" href="' + esc(dir) + '" target="_blank" rel="noopener" data-track="directions_click" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">Directions</a></div></div>';
     }
 
     function render() {
@@ -219,7 +219,11 @@
       panel.classList.toggle('open', state.user && window.matchMedia('(max-width:760px)').matches);
     }
 
-    function go(view, id, user) { state.view = view; state.sel = id || DEF[view]; state.user = !!user; render(); }
+    function go(view, id, user) {
+      var viewChanged = view !== state.view;
+      state.view = view; state.sel = id || DEF[view]; state.user = !!user; render();
+      if (window.ptTrack) { if (viewChanged) window.ptTrack('map_view', { view: view }); if (user) window.ptTrack('map_select', { view: view, stop: state.sel }); }
+    }
 
     // ---- events ----
     box.addEventListener('click', function (e) { var b = e.target.closest('[data-id]'); if (b) go(state.view, b.dataset.id, true); });
@@ -230,7 +234,7 @@
     });
     tabsEl.addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b) go(b.dataset.view, null, false); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-f]'), function (b) {
-      b.addEventListener('click', function () { var k = b.dataset.f; state.f[k] = !state.f[k]; b.setAttribute('aria-pressed', state.f[k] ? 'true' : 'false'); render(); });
+      b.addEventListener('click', function () { var k = b.dataset.f; state.f[k] = !state.f[k]; if (window.ptTrack) window.ptTrack('filter_use', { page: 'home', group: k, state: state.f[k] ? 'on' : 'off' }); b.setAttribute('aria-pressed', state.f[k] ? 'true' : 'false'); render(); });
     });
 
     // ---- search ----
@@ -238,11 +242,12 @@
     function focusClub(slug) { var p = placeOf[slug]; if (p) { go(p.view, p.id, true); document.getElementById('map').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } }
     if (q) {
       q.addEventListener('input', function () {
-        var t = q.value.trim().toLowerCase(); if (t.length < 2) { sug.hidden = true; return; }
+        var t = q.value.trim().toLowerCase();  if (t.length < 2) { sug.hidden = true; return; }
         var out = [];
         list.forEach(function (c) { var hay = (nm(c.slug) + ' ' + c.name + ' ' + c.city + ' ' + (c.aliases || []).join(' ')).toLowerCase(); if (hay.indexOf(t) > -1) out.push('<a href="/clubs/' + esc(c.slug) + '/" role="option"><span>' + esc(nm(c.slug)) + '</span><small>' + esc(c.city) + '</small></a>'); });
         net.bkk.forEach(function (b) { if ((b.name + ' ' + b.th).toLowerCase().indexOf(t) > -1) out.push('<a href="#map" role="option" data-st="' + esc(b.id) + '"><span>' + esc(b.name) + '</span><small>' + esc(b.line) + '</small></a>'); });
         sug.innerHTML = out.slice(0, 8).join('') || '<a href="#" role="option" tabindex="-1"><span>No Match. Try the List Below.</span></a>'; sug.hidden = false;
+        if (window.ptTrackSearch) window.ptTrackSearch('home', t, out.length > 0);
       });
       sug.addEventListener('click', function (e) { var a = e.target.closest('[data-st]'); if (a) { e.preventDefault(); go('bkk', a.dataset.st, true); sug.hidden = true; document.getElementById('map').scrollIntoView(); } });
       document.addEventListener('click', function (e) { if (!e.target.closest('.finder')) sug.hidden = true; });

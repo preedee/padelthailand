@@ -261,7 +261,10 @@
 
       ready.then(function () {
         return fetch(endpoint, { method: "POST", mode: "no-cors", body: body });
-      }).then(done, function () {
+      }).then(function () {
+        if (window.ptTrack) window.ptTrack("submission_sent", { form_type: k });   // real sends only, never the honeypot path
+        done();
+      }, function () {
         sending = false;
         btn.disabled = false;
         btn.textContent = label;

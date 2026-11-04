@@ -35,11 +35,17 @@ jobs:
       - name: Re-render club pages (upcoming tournaments teaser)
         run: bun scripts/build-directory.ts
 
+      - name: Re-render listing pages (tournament structured data, events indexing rule)
+        run: bun scripts/build-listing-pages.ts
+
+      - name: Build sitemap, robots.txt and llms.txt
+        run: bun scripts/build-seo.ts
+
       - name: Commit if anything changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/tournaments.json data/events.json clubs
+          git add data/tournaments.json data/events.json clubs regions tournaments events 404.html sitemap.xml robots.txt llms.txt
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "Listings refresh $(date -u +%F)"
           git push

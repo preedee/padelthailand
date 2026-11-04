@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://padelthailand.com/</loc></url>
-  <url><loc>https://padelthailand.com/tournaments/</loc></url>
-  <url><loc>https://padelthailand.com/events/</loc></url>
   <url><loc>https://padelthailand.com/about/</loc></url>
-  <url><loc>https://padelthailand.com/submit/</loc></url>
   <url><loc>https://padelthailand.com/calendar.html</loc></url>
   <url><loc>https://padelthailand.com/clubs/</loc></url>
   <url><loc>https://padelthailand.com/clubs/ama-padel-pilates-recovery/</loc><lastmod>2026-10-31</lastmod></url>
@@ -19,8 +16,8 @@
   <url><loc>https://padelthailand.com/clubs/fifteenlove-tennis-and-padel-club/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/highlands-padel/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/hua-hin-padel-center-thailandresort/</loc><lastmod>2026-10-31</lastmod></url>
-  <url><loc>https://padelthailand.com/clubs/koh-tao-athletic-club-sport-complex/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/koh-s-33-stadium/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/clubs/koh-tao-athletic-club-sport-complex/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/kross-padel-asoke/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/kross-padel-indoor-bangkok/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/kross-padel-on-nut/</loc><lastmod>2026-10-31</lastmod></url>
@@ -30,24 +27,24 @@
   <url><loc>https://padelthailand.com/clubs/moma-padel-club-sathorn/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/no-drama-padel/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/pad-thai-padel/</loc><lastmod>2026-10-31</lastmod></url>
-  <url><loc>https://padelthailand.com/clubs/padel-rsc/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-and-co/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-asia-bangkok/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-bay-indoor-club/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-club-chiang-mai/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/clubs/padel-cnx/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-lodge-koh-chang/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-of-thailand/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-paradise-lamai/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-phangan-suite-family-suite/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-phuket-blue-tree/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-phuket-chalong/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/clubs/padel-rsc/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-samui/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-sozial/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-tennis-oxygen-village/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-tennis-phuket/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/padel-tropical/</loc><lastmod>2026-10-31</lastmod></url>
-  <url><loc>https://padelthailand.com/clubs/padel-cnx/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/pat-tennis-and-padel-club/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/pattaya-padel-club/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/phangan-padel-club/</loc><lastmod>2026-10-31</lastmod></url>
@@ -69,8 +66,16 @@
   <url><loc>https://padelthailand.com/clubs/the-padel-club-at-samui-karting/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/the-padel-co-bangkok/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/top-padel-bangkok/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/clubs/vita-padel-ekkamai/</loc><lastmod>2026-11-04</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/warehaus-club-padel-and-more/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/xplore-padel-phuket/</loc><lastmod>2026-10-31</lastmod></url>
   <url><loc>https://padelthailand.com/clubs/zen-padel-phangan/</loc><lastmod>2026-10-31</lastmod></url>
-  <url><loc>https://padelthailand.com/clubs/vita-padel-ekkamai/</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/bangkok/</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/chiang-mai/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/hua-hin/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/krabi-and-lanta/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/pattaya-and-bangsaen/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/phuket/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/regions/samui-phangan-and-tao/</loc><lastmod>2026-10-31</lastmod></url>
+  <url><loc>https://padelthailand.com/tournaments/</loc></url>
 </urlset>

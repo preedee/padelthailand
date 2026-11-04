@@ -1,3 +1,6 @@
+# padelthailand.com: all crawlers welcome, including search engines and AI assistants.
+# Do not block /data/: the tournament and event pages render from the JSON files in it.
 User-agent: *
 Allow: /
+
 Sitemap: https://padelthailand.com/sitemap.xml

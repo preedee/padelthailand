@@ -110,7 +110,7 @@ const isYes = (s?: string) => /^(y|yes|true|1|x)$/i.test(s ?? "");
 const csvList = (s: string) => s.split(/[,;/]/).map((x) => x.trim()).filter(Boolean);
 
 // ---------- club matching ----------
-type ClubRef = { slug: string; name: string; aliases: string[] };
+type ClubRef = { slug: string; name: string; city: string; aliases: string[] };
 const clubsFile = JSON.parse(await readFile(ROOT + "data/clubs-full.json", "utf8")).clubs as ClubRef[];
 const network = JSON.parse(await readFile(ROOT + "data/network.json", "utf8")) as {
   shortNames: Record<string, string>; colors: Record<string, string>;
@@ -124,18 +124,28 @@ for (const [list, col] of [[network.ring, network.colors.g], [network.pha, netwo
 for (const [keys, col] of [[["pty", "bs", "chang"], network.colors.e], [["cm"], network.colors.n], [["hh"], network.colors.s]] as const) for (const k of keys) for (const s of network.regions[k]?.slugs ?? []) lineColor.set(s, col);
 for (const s of network.regions.bkk.slugs) if (!lineColor.has(s)) lineColor.set(s, "#4A5058"); // Bangkok clubs off the rail network
 const manualAlias: Record<string, string> = existsSync(ROOT + "data/listing-club-aliases.json") ? JSON.parse(await readFile(ROOT + "data/listing-club-aliases.json", "utf8")) : {};
+// regions for listings that only know their club
+const REGION_OF_KEY: Record<string, string> = { bkk: "Bangkok", gulf: "Samui, Phangan, & Tao", phk: "Phuket", pty: "Pattaya", bs: "Pattaya", cm: "Chiang Mai", hh: "Hua Hin", kbi: "Krabi", chang: "Koh Chang" };
+const clubRegion = new Map<string, string>();
+for (const [k, v] of Object.entries(network.regions)) for (const s of v.slugs) clubRegion.set(s, REGION_OF_KEY[k] ?? "");
+
+const clubCity = new Map(clubsFile.map((c) => [c.slug, c.city]));
+const cityConflicts: string[] = [];
 const clubDisplay = new Map(clubsFile.map((c) => [c.slug, network.shortNames[c.slug] ?? c.name]));
 const byNorm = new Map<string, string>();
 for (const c of clubsFile) for (const n of [c.name, network.shortNames[c.slug] ?? "", ...(c.aliases ?? [])]) if (n && !byNorm.has(norm(n))) byNorm.set(norm(n), c.slug);
 for (const [k, v] of Object.entries(manualAlias)) if (!k.startsWith("_")) byNorm.set(norm(k), v);
-function clubSlugOf(name: string): string | null {
+/** exact = the sheet's text normalises to a club name, short name or confirmed alias; otherwise a unique substring hit ("fuzzy") */
+function clubMatchOf(name: string): { slug: string; exact: boolean } | null {
   if (!name || PLACEHOLDER.test(name.trim())) return null;
   const n = norm(name);
-  if (byNorm.has(n)) return byNorm.get(n)!;
+  if (byNorm.has(n)) return { slug: byNorm.get(n)!, exact: true };
   if (n.length < 6) return null;
   const hits = [...new Set([...byNorm].filter(([k]) => k.includes(n) || n.includes(k)).filter(([k]) => k.length >= 6).map(([, v]) => v))];
-  return hits.length === 1 ? hits[0] : null;
+  return hits.length === 1 ? { slug: hits[0], exact: false } : null;
 }
+const clubSlugOf = (name: string) => clubMatchOf(name)?.slug ?? null;
+const fuzzyMatches = new Map<string, string>();
 
 // ---------- posters ----------
 const posters: Record<string, { file: string; w: number; h: number }> = existsSync(ROOT + "data/posters.json") ? JSON.parse(await readFile(ROOT + "data/posters.json", "utf8")) : {};
@@ -150,9 +160,16 @@ function buildTournament(r: Record<string, string>, source: "sheet" | "submissio
   const s = parseDate(r["Start Date"] ?? ""), e = parseDate(r["End Date"] ?? "");
   const start = s.date ?? null, end = e.date ?? s.date ?? null;
   const monthOnly = !start ? (s.month ?? e.month ?? null) : null;
-  const city = r["City"] ?? ""; const region = regionOf(city);
-  if (city && !PLACEHOLDER.test(city) && !region) unmappedCities.add(city);
-  const clubName = r["Club"] ?? ""; const clubSlug = clubSlugOf(clubName);
+  const sheetCity = r["City"] ?? ""; const sheetRegion = regionOf(sheetCity);
+  if (sheetCity && !PLACEHOLDER.test(sheetCity) && !sheetRegion) unmappedCities.add(sheetCity);
+  const clubName = r["Club"] ?? ""; const match = clubMatchOf(clubName); const clubSlug = match?.slug ?? null;
+  if (match && !match.exact) fuzzyMatches.set(clubName, match.slug);
+  // An exactly matched club knows where it is: if the sheet disagrees (a stale city) the club wins and the conflict is listed in the build log.
+  // A fuzzy match is only a guess, so it never overrides the sheet; it just fills a blank.
+  const clubReg = clubSlug ? clubRegion.get(clubSlug) ?? "" : "";
+  if (match?.exact && clubReg && sheetRegion && clubReg !== sheetRegion) cityConflicts.push(`${title}: sheet city "${sheetCity}" but ${clubDisplay.get(clubSlug!)} is in ${clubReg}`);
+  const city = (match?.exact ? clubCity.get(clubSlug!) : "") || sheetCity || (clubSlug ? clubCity.get(clubSlug) ?? "" : "");
+  const region = (match?.exact ? clubReg : "") || sheetRegion || clubReg;
   if (clubName && !PLACEHOLDER.test(clubName) && !clubSlug) unmatchedClubs.set(clubName, (unmatchedClubs.get(clubName) ?? 0) + 1);
   const cats = csvList(sheet ? r["Categories"] ?? "" : r["Gender"] ?? "").map((x) => x.toLowerCase());
   const genders = [...new Set(cats.map((c) => GENDER[c]).filter(Boolean))];
@@ -215,17 +232,13 @@ const events: EventItem[] = [];
 for (const r of eTab ?? []) { if (isYes(r["Hide"])) continue; const e = buildEvent(r, "sheet"); if (e) events.push(e); }
 let eLive = 0;
 for (const r of unescapeRecords(eSubs ?? [])) if (/^live$/i.test(r["Status"])) { const e = buildEvent(r, "submission"); if (e) { events.push(e); eLive++; } }
-// regions for listings that only know their club
-const REGION_OF_KEY: Record<string, string> = { bkk: "Bangkok", gulf: "Samui, Phangan, & Tao", phk: "Phuket", pty: "Pattaya", bs: "Pattaya", cm: "Chiang Mai", hh: "Hua Hin", kbi: "Krabi", chang: "Koh Chang" };
-const clubRegion = new Map<string, string>();
-for (const [k, v] of Object.entries(network.regions)) for (const s of v.slugs) clubRegion.set(s, REGION_OF_KEY[k] ?? "");
-for (const x of [...tournaments, ...events]) if (!x.region && x.clubSlug) x.region = clubRegion.get(x.clubSlug) ?? "";
-
 // ---------- report + write ----------
 const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
 const up = tournaments.filter((t) => (t.endDate ?? (t.monthOnly ? t.monthOnly + "-31" : "")) >= today).length;
 console.log(`tournaments: ${tournaments.length} (${hidden} hidden, ${foreign} outside Thailand skipped, ${tLive} live submissions) · ${up} upcoming · ${tournaments.filter((t) => t.monthOnly).length} month-only dates · ${tournaments.filter((t) => t.poster).length} with poster · ${tournaments.filter((t) => t.clubSlug).length} matched to a club · ${tournaments.filter((t) => !t.region).length} without a region`);
 console.log(`events: ${events.length} (${eLive} live submissions)${eTab === null ? " — WARNING: no \"Events\" tab with the expected header; events.json is empty until the tab exists" : ""}${tSubs === null ? " · no Tournament Submissions tab yet" : ""}`);
+if (fuzzyMatches.size) console.log("club names matched by substring only (sheet city kept; add an alias in data/listing-club-aliases.json to make it exact):", [...fuzzyMatches].map(([k, v]) => `${k} -> ${v}`).join("; "));
+if (cityConflicts.length) console.log("sheet city vs club location conflicts (club location used; fix the sheet):", cityConflicts.join("; "));
 if (unmappedCities.size) console.log("cities with no region:", [...unmappedCities].join(", "));
 if (unmatchedClubs.size) console.log("club names that matched no club (add to data/listing-club-aliases.json):", [...unmatchedClubs].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} (${n})`).join("; "));
 if (!CHECK) {

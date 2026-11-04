@@ -163,7 +163,7 @@ ${FORMS.map(([, , html]) => html).join("\n")}
 const html = shell({
   title: "Submit a Tournament, Event or Club | Padel Thailand",
   description: "Send a padel tournament, social event, missing club, court photo or correction to Padel Thailand. Every submission is reviewed by a person before it goes live.",
-  path: "/submit/", active: "", body,
+  path: "/submit/", active: "", noindex: true, body,
   head: `<link rel="stylesheet" href="/css/forms.css?v=1">`,
   scripts: `<script src="/js/submit.js?v=1"></script>`,
 });

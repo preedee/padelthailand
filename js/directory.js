@@ -14,7 +14,7 @@
 
   // ---- Clubs page: region filters + Photos / List ----
   var grid = $('#club-grid');
-  if (grid) {
+  if (grid && $('#showing') && $('#no-match')) {   // the Clubs page only
     var cards = $$('.pcard', grid), active = 'all';
     var showing = $('#showing'), none = $('#no-match');
     var apply = function () {
