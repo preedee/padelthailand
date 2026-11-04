@@ -72,7 +72,9 @@
           stops.push({ id: 'h-' + k, kind: 'hub', name: h.name, sub: plural(n, 'Club') + ' · ' + ct + ' Courts', x: h.x, y: h.y, lp: h.lp, color: h.color, d: 1.8 + 0.55 * Math.sqrt(n), count: n, courts: ct, hub: h, clubs: h.slugs.map(function (s) { return [s, null]; }) });
         });
       } else if (view === 'bkk') {
-        net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.km]; }), seq: b.seq, d: 1.5 }); });
+        net.bkk.forEach(function (b) { stops.push({ id: b.id, kind: 'station', name: b.name, th: b.th, sub: plural(b.clubs.length, 'Club'), x: b.x, y: b.y, lp: b.lp, bar: b.line, color: b.color, clubs: b.clubs.map(function (c) { return [c.slug, c.across ? null : c.km, c.across ? c.km : null]; }), seq: b.seq, d: 1.5 });
+          // a club across the river from its station gets its own dot on the far bank; clicking it opens the station
+          b.clubs.forEach(function (c) { if (c.across) stops.push({ id: b.id, slug: c.slug, kind: 'club', name: nm(c.slug), sub: 'Across the River', x: c.x, y: c.y, lp: c.lp, color: b.color, d: 1.3, clubs: [[c.slug, null]], satellite: true }); }); });
         net.ticks.forEach(function (t) { stops.push({ id: t.id, kind: 'tick', name: t.name, sub: '', x: t.x, y: t.y, lp: t.lp, d: 1.0 }); });
         net.off.forEach(function (o) { var st = clubStop(o.slugs[0], o.sub, o.x, o.y, o.lp, 'Off the Rail Network', '#4A5058', null); st.off = true; stops.push(st); });
       } else if (EXTRA[view]) {
@@ -124,7 +126,7 @@
         '<path d="M700 420 L750 470 H880 L970 560" stroke="#E08A2E" stroke-width="18"/><path d="M700 420 L750 470 H880 L970 560" stroke="#fff" stroke-width="5"/>' +
         '<path d="M620 700 L780 860 H800" stroke="#0E7C86" stroke-width="12" stroke-dasharray="16 14" stroke-linecap="butt"/>' +
         '<path d="M700 420 L620 500 V700 L500 820 H330" stroke="#C2367A" stroke-width="18"/><path d="M700 420 L620 500 V700 L500 820 H330" stroke="#fff" stroke-width="5"/></g>',
-      bkk: '<path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#2A4C80" stroke-width="38" stroke-linecap="round"/><path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#3C66A6" stroke-width="20" stroke-linecap="round"/>' +
+      bkk: '<path d="M480 700 L292 733" fill="none" stroke="#00704A" stroke-width="4" stroke-dasharray="4 8" stroke-linecap="round"/><path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#2A4C80" stroke-width="38" stroke-linecap="round"/><path d="M230 -10 C190 120 180 300 215 440 S300 560 330 640 S340 760 420 860 S520 960 560 1010" fill="none" stroke="#3C66A6" stroke-width="20" stroke-linecap="round"/>' +
         '<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M840 460 V120 L800 80 H340 L260 160 V540 H760 Z" stroke="#1E4F9C" stroke-width="12"/>' +
         '<path d="M340 80 H100" stroke="#6F2C91" stroke-width="12"/><path d="M560 240 H840 L960 120 H1250" stroke="#A6192E" stroke-width="12"/>' +
         '<path d="M440 380 H560 L620 440 V640 L560 700 H360" stroke="#00704A" stroke-width="12"/><path d="M560 150 V380 H1180 L1330 530 V700" stroke="#6CBE45" stroke-width="12"/></g>',
@@ -271,7 +273,7 @@
       else if (s.kind === 'station') dot += 'background:#fff;border:.34cqw solid ' + INK + ';box-shadow:' + shadow(null, on) + ';';
       else if (s.kind === 'tick') dot += 'background:#fff;border:.24cqw solid ' + INK + ';';
       else if (s.kind === 'off') dot += 'border-radius:.25cqw;background:#fff;border:.3cqw solid ' + INK + ';box-shadow:' + shadow(null, on) + ';';
-      else dot += typeDot(typeOf(s.id), s.color, on);
+      else dot += typeDot(typeOf(s.slug || s.id), s.color, on);
       var nameCls = 'nm ' + s.kind + (on ? ' sel' : '');
       var dim = anyFilter() && s.clubs && s.kind !== 'tick' && !s.clubs.some(function (c) { return matches(c[0]); });
       var inner = s.kind === 'tick'
@@ -281,7 +283,7 @@
         '<span class="lbl" style="' + lab(s.lp, r) + '"><span class="' + nameCls + '"' + (s.kind === 'tick' ? '' : ' data-id="' + esc(s.id) + '"') + '>' + esc(s.name) + '</span>' + (s.sub ? '<span class="th">' + esc(s.sub) + '</span>' : '') + '</span></div>';
     }
 
-    function clubCard(slug, km, showPhoto) {
+    function clubCard(slug, km, showPhoto, across) {
       var c = C[slug]; if (!c) return '';
       var k = c.courts || {}, types = [];
       if (k.indoor) types.push(['indoor', k.indoor]); if (k.covered) types.push(['covered', k.covered]); if (k.outdoor) types.push(['outdoor', k.outdoor]);
@@ -290,7 +292,7 @@
       var dir = c.directionsUrl || ('https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng);
       return '<div class="pclub">' + photo + '<div class="nm"><span>' + esc(nm(slug)) + '</span>' + (c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '') + '</div>' +
         '<div class="meta"><strong style="color:' + INK + '">' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + '</strong>' + tHtml + '</div>' +
-        (km != null ? '<div class="meta">' + icon('walk', 16) + '~' + Math.max(1, Math.round(km * 13)) + ' Min Walk · ' + km.toFixed(1) + ' km (Est.)</div>' : '') +
+        (across != null ? '<div class="meta">' + icon('walk', 16) + across.toFixed(1) + ' km Across the River (Est.)</div>' : '') + (km != null ? '<div class="meta">' + icon('walk', 16) + '~' + Math.max(1, Math.round(km * 13)) + ' Min Walk · ' + km.toFixed(1) + ' km (Est.)</div>' : '') +
         '<a class="more" href="/clubs/' + esc(slug) + '/" data-track="club_open" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">View Club Page ' + icon('arrow', 16) + '</a>' +
         '<div class="acts">' + (c.booking ? '<a class="btn solid" href="' + esc(c.booking.url) + '" target="_blank" rel="noopener" data-track="book_click" data-t-club_slug="' + esc(slug) + '" data-t-platform="' + esc(c.booking.platform) + '" data-t-place="map_panel">' + esc(c.booking.label) + '</a>' : '') +
         '<a class="btn" href="' + esc(dir) + '" target="_blank" rel="noopener" data-track="directions_click" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">Directions</a></div></div>';
@@ -330,9 +332,9 @@
         if (C[sel.id] && C[sel.id].openingSoon) stat = 'Opening Soon';
       } else {
         var off = sel.kind === 'off'; eyebrow = off ? 'Off the Rail Network' : 'Station'; title = sel.name; sub = off ? sel.th : '';
-        stat = off ? '' : plural(sel.clubs.length, 'Club') + ' Within Walking Distance';
+        stat = off ? '' : sel.clubs.every(function (c) { return c[2] != null; }) ? plural(sel.clubs.length, 'Club') + ' Across the River' : plural(sel.clubs.length, 'Club') + ' Within Walking Distance';
         if (off) note = '<div class="note-box">Not Within Walking Distance of BTS/MRT. Drive, Taxi or Grab.</div>';
-        var vv = visible(sel.clubs); cards = vv.map(function (p) { return clubCard(p[0], p[1], true); }).join('');
+        var vv = visible(sel.clubs); cards = vv.map(function (p) { return clubCard(p[0], p[1], true, p[2]); }).join('');
         if (sel.seq) { nav = stops.filter(function (s) { return s.seq === sel.seq; }); idx = nav.indexOf(sel); }
       }
       if (filtered && !cards) cards = '<p class="fine">No Clubs Here Match the Filters.</p>';
