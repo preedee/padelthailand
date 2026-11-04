@@ -34,6 +34,9 @@ jobs:
       - name: Build directory pages (home, clubs, club pages)
         run: bun scripts/build-directory.ts
 
+      - name: Build the admin pages (owner tools)
+        run: bun scripts/build-admin.ts
+
       - name: Build sitemap, robots.txt and llms.txt
         run: bun scripts/build-seo.ts
 
@@ -41,7 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/clubs.json data/club-slugs.json data/clubs-full.json clubs regions index.html events sitemap.xml robots.txt llms.txt
+          git add data/clubs.json data/club-slugs.json data/clubs-full.json clubs regions index.html events sitemap.xml robots.txt llms.txt admin
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "Club registry refresh $(date -u +%F)"
           git push

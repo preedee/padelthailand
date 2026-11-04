@@ -16,10 +16,7 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
-const SUPABASE_URL = "https://zmnchzfvbflexrlciadn.supabase.co";
-// The publishable key is public by design (the registry's preview site ships it too); the view grants anon SELECT only.
-const ANON_KEY = "sb_publishable_KKLfjbhBJ_qF420UNtM2JQ_2YM-v6ld";
-const PHOTO_BASE = `${SUPABASE_URL}/storage/v1/object/public/club-photos/`;
+import { ANON_KEY, PHOTO_BASE, SUPABASE_URL } from "./lib/registry.ts";
 const SITE = "https://padelthailand.com";
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
@@ -269,10 +266,13 @@ const [rows, photoRows] = await Promise.all([
 if (rows.length < 30) throw new Error(`registry returned only ${rows.length} clubs; refusing to overwrite the site (expected ~65)`);
 
 const photosBy = new Map<string, Photo[]>();
-for (const p of photoRows) photosBy.set(p.place_id, [...(photosBy.get(p.place_id) ?? []), { url: PHOTO_BASE + p.storage_path, author: p.author_name, authorUrl: safeUrl(p.author_uri) }]);
+// the registry lists some photo files twice; a gallery shows each file once
+for (const p of photoRows) { const have = photosBy.get(p.place_id) ?? []; if (!have.some((x) => x.url === PHOTO_BASE + p.storage_path)) photosBy.set(p.place_id, [...have, { url: PHOTO_BASE + p.storage_path, author: p.author_name, authorUrl: safeUrl(p.author_uri) }]); }
 
 const read = async <T>(f: string, fallback: T): Promise<T> => (existsSync(ROOT + f) ? JSON.parse(await readFile(ROOT + f, "utf8")) : fallback);
 // aliases: the names tournaments use for a club ("Padel Asia" for "Padel Asia - Bangkok"), confirmed by hand, keyed by place_id
+// top-photo picks (data/club-photo-picks.json, made with /tools/photo-picker/): club slug -> storage_path of the photo that should come first
+const picks = await read<Record<string, string>>("data/club-photo-picks.json", {});
 const [slugs, aliases, fixes] = await Promise.all([
   read<Record<string, string>>("data/club-slugs.json", {}), read<Record<string, string[]>>("data/club-aliases.json", {}),
   read<{ city: Record<string, string>; province: Record<string, string>; merge: Record<string, string> }>("data/club-fixes.json", { city: {}, province: {}, merge: {} }),
@@ -291,7 +291,10 @@ const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
     for (let n = 2; taken.has(s); n++) s = `${base}-${n}`;
     slugs[r.place_id] = s; taken.add(s);
   }
-  return toClub(r, slugs[r.place_id], city, (photosBy.get(r.place_id) ?? []).slice(0, 5), aliases[r.place_id] ?? []);
+  const all = photosBy.get(r.place_id) ?? [];
+  const top = picks[slugs[r.place_id]] ? PHOTO_BASE + picks[slugs[r.place_id]] : "";
+  const ordered = top && all.some((x) => x.url === top) ? [...all.filter((x) => x.url === top), ...all.filter((x) => x.url !== top)] : all;
+  return toClub(r, slugs[r.place_id], city, ordered.slice(0, 5), aliases[r.place_id] ?? []);
 });
 // hand-entered clubs the registry lacks (Playtomic venues Google has not listed); a registry club at the same spot or slug wins
 const manualClubs = await read<Club[]>("data/club-manual.json", []);

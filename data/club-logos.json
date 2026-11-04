@@ -135,10 +135,6 @@
   "src": "/img/logos/padel-phuket-chalong.webp",
   "dark": false
  },
- "padel-rsc": {
-  "src": "/img/logos/padel-rsc.webp",
-  "dark": false
- },
  "padel-samui": {
   "src": "/img/logos/padel-samui.webp",
   "dark": false
@@ -205,6 +201,10 @@
  },
  "rawai-padel": {
   "src": "/img/logos/rawai-padel.webp",
+  "dark": false
+ },
+ "rsc-ratchaphruek-sports-club": {
+  "src": "/img/logos/rsc-ratchaphruek-sports-club.webp",
   "dark": false
  },
  "rtf-padel-club": {
