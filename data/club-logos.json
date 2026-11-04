@@ -23,12 +23,24 @@
   "src": "/img/logos/chilli-padel-club.webp",
   "dark": false
  },
+ "coco-padel-club": {
+  "src": "/img/logos/coco-padel-club.webp",
+  "dark": false
+ },
  "destination-padel-club": {
   "src": "/img/logos/destination-padel-club.webp",
   "dark": false
  },
+ "fifteenlove-tennis-and-padel-club": {
+  "src": "/img/logos/fifteenlove-tennis-and-padel-club.webp",
+  "dark": false
+ },
  "highlands-padel": {
   "src": "/img/logos/highlands-padel.webp",
+  "dark": false
+ },
+ "hua-hin-padel-center-thailandresort": {
+  "src": "/img/logos/hua-hin-padel-center-thailandresort.webp",
   "dark": false
  },
  "koh-s-33-stadium": {
@@ -53,6 +65,10 @@
  },
  "kross-padel-sky-bangkok": {
   "src": "/img/logos/kross-padel-sky-bangkok.webp",
+  "dark": false
+ },
+ "lamai-padel-samui": {
+  "src": "/img/logos/lamai-padel-samui.webp",
   "dark": false
  },
  "lanna-padel-padel": {
@@ -123,6 +139,10 @@
   "src": "/img/logos/padel-sozial.webp",
   "dark": false
  },
+ "padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24": {
+  "src": "/img/logos/padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24.webp",
+  "dark": false
+ },
  "padel-tennis-oxygen-village": {
   "src": "/img/logos/padel-tennis-oxygen-village.webp",
   "dark": false
@@ -137,6 +157,10 @@
  },
  "pattaya-padel-club": {
   "src": "/img/logos/pattaya-padel-club.webp",
+  "dark": false
+ },
+ "pickleball-and-padel-decathlon-bangyai": {
+  "src": "/img/logos/pickleball-and-padel-decathlon-bangyai.webp",
   "dark": false
  },
  "pista-samakom-racquet-and-social-club": {
@@ -189,6 +213,10 @@
  },
  "top-padel-bangkok": {
   "src": "/img/logos/top-padel-bangkok.webp",
+  "dark": false
+ },
+ "vita-padel-ekkamai": {
+  "src": "/img/logos/vita-padel-ekkamai.webp",
   "dark": false
  },
  "warehaus-club-padel-and-more": {
