@@ -180,7 +180,7 @@
     // ---- motion: trains, draw-in, fly-through, hover tip (all off for reduced-motion) ----
     var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var AV = { right: [-6.5, -6.5], below: [-6.5, -6.5], down: [-6.5, -6.5], left: [1.1, -6.5], sw: [1.1, -6.5], up: [-6.5, 1.1], above: [1.1, 1.1], nw: [1.1, 1.1] };
-    function photoOf(pairs) { for (var i = 0; i < (pairs || []).length; i++) { var c = C[pairs[i][0]]; if (c && c.photos && c.photos[0]) return c.photos[0].url; } return ''; }
+    function photoOf(pairs) { for (var i = 0; i < (pairs || []).length; i++) { var c = C[pairs[i][0]]; if (c && c.photos && c.photos[0]) return c.photos[0].thumb || c.photos[0].url; } return ''; }
     var TRAINS = {
       th: [['M700 420 V180 L610 90 H520', 11, 0]],
       bkk: [['M840 460 V120 L800 80 H340 L260 160 V540 H760 Z', 40, 1, 0], ['M840 460 V120 L800 80 H340 L260 160 V540 H760 Z', 40, 1, -20], ['M340 80 H100', 9, 0], ['M560 240 H840 L960 120 H1250', 16, 0], ['M440 380 H560 L620 440 V640 L560 700 H360', 16, 0], ['M560 150 V380 H1180 L1330 530 V700', 26, 0]],
@@ -295,7 +295,7 @@
       var k = c.courts || {}, types = [];
       if (k.indoor) types.push(['indoor', k.indoor]); if (k.covered) types.push(['covered', k.covered]); if (k.outdoor) types.push(['outdoor', k.outdoor]);
       var tHtml = types.length ? types.map(function (t) { return '<span class="ct">' + icon(t[0]) + '<span>' + t[1] + '</span><span class="sr"> ' + t[0] + '</span></span>'; }).join('') : '<span class="ct" title="Court Type Not Listed">' + icon('unknown') + (k.total ? '<span>' + k.total + '</span>' : '') + '</span>';
-      var photo = showPhoto ? '<div class="ph"' + (c.photos && c.photos[0] ? ' style="background-image:url(\'' + esc(c.photos[0].url) + '\')" role="img" aria-label="' + esc(c.name) + ' photo"' : '') + '>' + (c.photos && c.photos[0] ? '' : 'No Photo Yet') + '</div>' : '';
+      var photo = showPhoto ? '<div class="ph"' + (c.photos && c.photos[0] ? ' style="background-image:url(\'' + esc(c.photos[0].mid || c.photos[0].url) + '\')" role="img" aria-label="' + esc(c.name) + ' photo"' : '') + '>' + (c.photos && c.photos[0] ? '' : 'No Photo Yet') + '</div>' : '';
       var dir = c.directionsUrl || ('https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng);
       return '<div class="pclub">' + photo + '<div class="nm"><span>' + esc(nm(slug)) + '</span>' + (c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '') + '</div>' +
         '<div class="meta"><strong style="color:' + INK + '">' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + '</strong>' + tHtml + '</div>' +
