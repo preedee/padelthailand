@@ -106,7 +106,8 @@
     var row = $$('li', list).filter(function (li) { return li.dataset.day === day; })[0];
     if (row) row.classList.add('today');
     var toM = function (s) {
-      var m = /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i.exec(s); if (!m) return null;
+      if (/midnight/i.test(s)) return 0;   // the page prints 12:00 AM as "Midnight"
+      var m =/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i.exec(s); if (!m) return null;
       var h = Number(m[1]) % 12, mm = Number(m[2] || 0);
       if (/PM/i.test(m[3] || '')) h += 12; return h * 60 + mm;
     };

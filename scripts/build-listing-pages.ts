@@ -8,6 +8,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { SITE, SITE_IG, esc, shell, breadcrumbLd, CONSENT_REQUIRED } from "./lib/chrome.ts";
 import { MONTHS_SHORT, readJson, todayBkk, tourEnd } from "./lib/util.ts";
+import { hubPath, hubRegions } from "./lib/regions.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
@@ -94,7 +95,8 @@ const notFoundPage = () => shell({
   title: "Page Not Found | Padel Thailand", path: "/404.html", active: "", noindex: true, description: "This page does not exist. Find a padel club, tournament or event in Thailand.",
   body: `<main class="wrap"><div class="page-head"><span class="badge-ink">404</span><h1 style="margin-top:14px">Page Not Found</h1>
   <p>That page does not exist or has moved. Try one of these:</p>
-  <p><a class="btn solid" href="/">Network Map</a> <a class="btn" href="/clubs/">All Clubs</a> <a class="btn" href="/tournaments/">Tournaments</a></p></div></main>`,
+  <p><a class="btn solid" href="/">Network Map</a> <a class="btn" href="/clubs/">All Clubs</a> <a class="btn" href="/tournaments/">Tournaments</a></p>
+  <p class="fine">Or pick a region: ${hubRegions().map((r) => `<a href="${hubPath(r[0])}">${esc(r[0])}</a>`).join(" · ")}</p></div></main>`,
 });
 const pages: [string, string][] = [["404.html", notFoundPage()], ["tournaments/index.html", tournamentsPage()], ["events/index.html", eventsPage()], ["about/index.html", aboutPage()]];
 if (CHECK) { console.log(`check: ${pages.length} pages`); process.exit(0); }
