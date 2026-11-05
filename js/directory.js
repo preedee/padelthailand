@@ -65,9 +65,20 @@
   var drv = $('#driver');
   var openD = $('[data-driver]'), closeD = $('[data-driver-close]');
   if (drv && openD) {
-    openD.addEventListener('click', function () { drv.hidden = false; if (closeD) closeD.focus(); });
-    if (closeD) closeD.addEventListener('click', function () { drv.hidden = true; openD.focus(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) { drv.hidden = true; openD.focus(); } });
+    // While the dialog is open the rest of the page is inert, so Tab cannot leave it
+    var setBg = function (off) {
+      // inert every sibling along the path from the dialog up to <body>, never the dialog or its ancestors
+      for (var n = drv; n && n !== document.body; n = n.parentNode) {
+        Array.prototype.forEach.call(n.parentNode.children, function (sib) {
+          if (sib === n || /^(SCRIPT|STYLE|LINK)$/.test(sib.tagName)) return;
+          if (off) sib.setAttribute('inert', ''); else sib.removeAttribute('inert');
+        });
+      }
+    };
+    var shut = function () { drv.hidden = true; setBg(false); openD.focus(); };
+    openD.addEventListener('click', function () { drv.hidden = false; setBg(true); if (closeD) closeD.focus(); });
+    if (closeD) closeD.addEventListener('click', shut);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) shut(); });
   }
   $$('[data-copy]').forEach(function (b) { b.addEventListener('click', function () {
     var t = b.dataset.copy, old = b.textContent;
@@ -94,15 +105,26 @@
       if (/open 24/i.test(txt)) status = { open: true, text: 'Open Now · 24 Hours' };
       else if (/closed/i.test(txt)) status = { open: false, text: 'Closed Today' };
       else {
-        var ranges = txt.split(/,\s*(?=\d)/), ok = true, hit = null;
-        ranges.forEach(function (r) {
-          var se = r.split(/\s*[–-]\s*/); if (se.length !== 2) { ok = false; return; }
-          // "8:00 – 10:00 PM": borrow the period from the closing time when the opening time has none
-          var per = /(AM|PM)/i.exec(se[1]); var a = se[0]; if (per && !/(AM|PM)/i.test(a)) a += ' ' + per[1];
-          var s = toM(a), e = toM(se[1]); if (s == null || e == null) { ok = false; return; }
-          if (e <= s) e += 1440;
-          if (nowM >= s && nowM < e) hit = e;
-        });
+        var ok = true, hit = null;
+        // [start, end] minute pairs for one day's text; an end past 1440 means it closes after midnight
+        var rangesOf = function (t) {
+          var out = [];
+          t.split(/,\s*(?=\d)/).forEach(function (r) {
+            var se = r.split(/\s*[–-]\s*/); if (se.length !== 2) { ok = false; return; }
+            // "8:00 – 10:00 PM": borrow the period from the closing time when the opening time has none
+            var per = /(AM|PM)/i.exec(se[1]); var a = se[0]; if (per && !/(AM|PM)/i.test(a)) a += ' ' + per[1];
+            var s0 = toM(a), e0 = toM(se[1]); if (s0 == null || e0 == null) { ok = false; return; }
+            if (e0 <= s0) e0 += 1440;
+            out.push([s0, e0]);
+          });
+          return out;
+        };
+        rangesOf(txt).forEach(function (r) { if (nowM >= r[0] && nowM < r[1]) hit = r[1]; });
+        // Yesterday's late close (e.g. 7 AM - 2 AM) still covers the early hours of today
+        var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var prev = $$('li', list).filter(function (li) { return li.dataset.day === DAYS[(DAYS.indexOf(day) + 6) % 7]; })[0];
+        var ptxt = prev ? prev.lastElementChild.textContent.trim() : '';
+        if (hit == null && ptxt && !/open 24|closed/i.test(ptxt)) rangesOf(ptxt).forEach(function (r) { if (nowM + 1440 < r[1]) hit = r[1] - 1440; });
         if (ok) status = hit != null ? { open: true, text: 'Open Now · Until ' + label(hit) } : { open: false, text: 'Closed Now' };
       }
       if (status) { badge.textContent = status.text; badge.classList.toggle('closed', !status.open); badge.hidden = false; }
