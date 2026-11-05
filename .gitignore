@@ -13,3 +13,4 @@ bun.lock
 
 # Holds the Apps Script endpoint + shared secret
 scripts/.ingest-config.json
+node_modules
