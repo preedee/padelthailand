@@ -96,3 +96,4 @@
   .filters-panel .clear-all { position: absolute; top: 0; right: 12px; }
   .filters-panel .fbody { padding-top: 0; }
 }
+#listing-root { min-height: 900px; }

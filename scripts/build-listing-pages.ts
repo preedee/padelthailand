@@ -32,7 +32,7 @@ const day = (s: string) => `${+s.slice(8)} ${MONS[+s.slice(5, 7) - 1]}`;
 const when = (x: Tour) => x.startDate ? (x.endDate && x.endDate !== x.startDate ? `${day(x.startDate)} – ${day(x.endDate)} ${x.endDate.slice(0, 4)}` : `${day(x.startDate)} ${x.startDate.slice(0, 4)}`) : x.monthOnly ? `${MONS[+x.monthOnly.slice(5) - 1]} ${x.monthOnly.slice(0, 4)} (Date to Be Confirmed)` : "Date to Be Confirmed";
 /** the no-JavaScript view: a plain list of what the page shows by default, for crawlers and visitors that do not run scripts */
 const upcomingFallback = upcomingTours.length ? `<h2>Upcoming Tournaments</h2><ul>${upcomingTours.map((x) => { const link = x.regUrl ?? x.instagramUrl; const where = [x.clubName || x.venueText, x.city].filter(Boolean).join(", "); return `<li><strong>${esc(x.title)}</strong>: ${esc(when(x))}${where ? ` · ${esc(where)}` : ""}${x.organizer ? ` · ${esc(x.organizer)}` : ""}${link ? ` · <a href="${esc(link)}" rel="noopener">Details</a>` : ""}</li>`; }).join("")}</ul>` : "";
-const HEAD = `<link rel="stylesheet" href="/css/listings.css?v=1">`;
+const HEAD = `<link rel="stylesheet" href="/css/listings.css?v=2">`;
 const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-state"><h2>Turn On JavaScript</h2><p>The ${what} List Needs JavaScript. You Can Also Find Us on <a href="${SITE_IG}" rel="noopener">Instagram</a>.</p></div>${extra}</noscript>`;
 
 const tournamentsPage = () => shell({
