@@ -25,7 +25,9 @@ const end = day(new Date(Date.now() - 864e5));
 const cur = { startDate: add(end, -29), endDate: end }, prev = { startDate: add(end, -59), endDate: add(end, -30) };
 const num = (v: string | undefined) => Number(v ?? 0) || 0;
 const d = (...n: string[]) => n.map((name) => ({ name })), m = d;
-const q = (r: ReportRequest) => runReport(property, r);
+// only the live site: hits from localhost or a preview (development and testing) never count
+const LIVE = { filter: { fieldName: "hostName", stringFilter: { matchType: "EXACT", value: "padelthailand.com" } } };
+const q = (r: ReportRequest) => runReport(property, { ...r, dimensionFilter: r.dimensionFilter ? { andGroup: { expressions: [LIVE, r.dimensionFilter] } } : LIVE });
 const top = (rows: Row[], key: string, metric: string, n: number) => rows.slice(0, n).map((r) => ({ name: r[key] ?? "", n: num(r[metric]) }));
 
 const EVENTS = ["book_click", "directions_click", "show_to_driver", "contact_click", "outbound_click", "club_open", "details_click", "register_click", "map_select", "filter_use"];

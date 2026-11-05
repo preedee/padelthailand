@@ -55,9 +55,13 @@ const card = (label: string, k: string, fmt = n0) => `<div class="ad-stat"><b>${
 const mins = (s: number) => `${Math.floor(s / 60)}m ${String(Math.round(s % 60)).padStart(2, "0")}s`;
 
 // 30-day bar chart of visitors per day
-const max = Math.max(1, ...snap.daily.map((r) => r.users));
-const bw = 100 / Math.max(1, snap.daily.length);
-const chart = `<svg class="st-chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="Visitors per day, last 30 days">${snap.daily.map((r, i) => { const h = (r.users / max) * 38; return `<rect x="${(i * bw + bw * 0.12).toFixed(2)}" y="${(40 - h).toFixed(2)}" width="${(bw * 0.76).toFixed(2)}" height="${h.toFixed(2)}"><title>${fmtDate(r.date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"))}: ${r.users} visitors</title></rect>`; }).join("")}</svg>
+// GA leaves out days with no traffic: fill every day of the range so the chart shows the real 30 days
+const byDay = new Map(snap.daily.map((r) => [r.date, r]));
+const days: { date: string; users: number }[] = [];
+for (let t = Date.parse(snap.range.startDate + "T00:00:00Z"); t <= Date.parse(snap.range.endDate + "T00:00:00Z"); t += 864e5) { const k = new Date(t).toISOString().slice(0, 10).replace(/-/g, ""); days.push({ date: k, users: byDay.get(k)?.users ?? 0 }); }
+const max = Math.max(1, ...days.map((r) => r.users));
+const bw = 100 / Math.max(1, days.length);
+const chart = `<svg class="st-chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="Visitors per day, last 30 days">${days.map((r, i) => { const h = (r.users / max) * 38; return `<rect x="${(i * bw + bw * 0.12).toFixed(2)}" y="${(40 - h).toFixed(2)}" width="${(bw * 0.76).toFixed(2)}" height="${h.toFixed(2)}"><title>${fmtDate(r.date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"))}: ${r.users} visitors</title></rect>`; }).join("")}</svg>
   <div class="st-axis"><span>${fmtDate(snap.range.startDate)}</span><span>Peak day: ${n0(max)} visitors</span><span>${fmtDate(snap.range.endDate)}</span></div>`;
 
 const pageName = (p: string) => {
