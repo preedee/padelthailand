@@ -1,0 +1,45 @@
+name: admin-stats
+
+# Refreshes the owner's /admin/stats/ page every morning from Google Analytics 4 and commits it, encrypted.
+# The GA numbers are never committed in the clear: data/ga-snapshot.json is git-ignored and the page is encrypted
+# with ADMIN_PASSWORD (scripts/lib/lock.ts).
+#
+# Repository secrets: GA4_SA_KEY (service-account JSON with Viewer on the GA4 property), ADMIN_PASSWORD.
+# The property id lives in data/ga4-property.json. Without them the job leaves the stats page as it was.
+on:
+  schedule:
+    - cron: "50 1 * * *" # 08:50 Asia/Bangkok
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: clubs-build
+  cancel-in-progress: false
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+      - name: Fetch GA4 numbers
+        env:
+          GA4_SA_KEY: ${{ secrets.GA4_SA_KEY }}
+        run: bun scripts/fetch-ga4.ts
+      - name: Build the stats page (encrypted)
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: bun scripts/build-admin-stats.ts
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin/stats
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "Admin stats refresh $(date -u +%F)"
+          git pull --rebase -q && git push

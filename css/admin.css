@@ -64,3 +64,12 @@
 .pk-newchip { padding: 2px 8px; border-radius: 3px; background: #0E7C86; color: #fff; font-size: 13px; font-weight: 700; }
 .pk-reviewed { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .pk-newcount { font-weight: 700; }
+/* stats page */
+.st-up { color: var(--green); font-weight: 600; } .st-down { color: #B23A2E; font-weight: 600; } .ad-stat small.st-up, .ad-stat small.st-down { flex-basis: 100%; font-size: 12px; }
+.st-chart { width: 100%; height: 160px; display: block; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; padding: 8px; box-sizing: border-box; } .st-chart rect { fill: var(--ink); }
+.st-axis { display: flex; justify-content: space-between; color: var(--text-3); font-size: 13px; margin-top: 6px; }
+.st-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; } .st-list li { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; border-bottom: 1px solid var(--fill); } .st-list li:last-child { border-bottom: 0; } .st-list li span { flex: 1; } .st-list small { font-size: 12px; }
+.st-h3 { font-size: 17px; margin: 18px 0 8px; } .st-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 22px; }
+.st-table td.st-bar { width: 38%; text-align: left; } .st-bar i { display: block; height: 10px; background: var(--ink); border-radius: 2px; } .st-table thead th { text-align: center; } .st-table tbody td { text-align: right; } .st-table tbody td.st-bar { text-align: left; }
+.st-steps li { margin-bottom: 8px; }
+.st-axis { margin-bottom: 30px; } .st-list { margin-bottom: 26px; } .st-cols .st-list { margin-bottom: 8px; }
