@@ -12,7 +12,7 @@
     fetch('/data/clubs.json').then(function (r) { return r.json(); }),
     fetch('/data/network.json').then(function (r) { return r.json(); })
   ]).then(function (res) { init(res[0].clubs, res[1]); }).catch(function () {
-    box.innerHTML = '<p style="padding:24px">The Map Could Not Load. Use the List of All Clubs Below.</p>';
+    box.innerHTML = '<p style="padding:24px">The map could not load. Use the list of all clubs below.</p>';
   });
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -387,7 +387,7 @@
         var out = [];
         list.forEach(function (c) { var hay = (nm(c.slug) + ' ' + c.name + ' ' + c.city + ' ' + (c.aliases || []).join(' ')).toLowerCase(); if (hay.indexOf(t) > -1) out.push('<a href="/clubs/' + esc(c.slug) + '/" role="option"><span>' + esc(nm(c.slug)) + '</span><small>' + esc(c.city) + '</small></a>'); });
         net.bkk.forEach(function (b) { if ((b.name + ' ' + b.th).toLowerCase().indexOf(t) > -1) out.push('<a href="#map" role="option" data-st="' + esc(b.id) + '"><span>' + esc(b.name) + '</span><small>' + esc(b.line) + '</small></a>'); });
-        sug.innerHTML = out.slice(0, 8).join('') || '<a href="#" role="option" tabindex="-1"><span>No Match. Try the List Below.</span></a>'; sug.hidden = false;
+        sug.innerHTML = out.slice(0, 8).join('') || '<a href="#" role="option" tabindex="-1"><span>No match. Try the list below.</span></a>'; sug.hidden = false;
         if (window.ptTrackSearch) window.ptTrackSearch('home', t, out.length > 0);
       });
       sug.addEventListener('click', function (e) { var a = e.target.closest('[data-st]'); if (a) { e.preventDefault(); go('bkk', a.dataset.st, true); sug.hidden = true; document.getElementById('map').scrollIntoView(); } });
