@@ -16,6 +16,7 @@ on:
     paths:
       - data/club-photo-picks.json
       - data/club-photo-hidden.json
+      - data/club-photo-seen.json
 
 permissions:
   contents: write
@@ -42,6 +43,9 @@ jobs:
 
       - name: Build the admin pages (owner tools)
         run: bun scripts/build-admin.ts
+        env:
+          # repository secret; without it the admin pages are left as last published (locked)
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
       - name: Build sitemap, robots.txt and llms.txt
         run: bun scripts/build-seo.ts

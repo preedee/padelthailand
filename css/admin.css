@@ -58,3 +58,9 @@
 .pk-gh p { margin: 0 0 12px; color: var(--text-2); font-size: 14px; }
 .pk-gh-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-bottom: 14px; }
 .pk-gh-row .pk-search { flex: 1 1 240px; } .pk-gh-row input { width: 100%; }
+
+/* new photos since the last review */
+.pk-badge.new { background: #0E7C86; color: #fff; left: auto; top: auto; right: 8px; bottom: 8px; }
+.pk-newchip { padding: 2px 8px; border-radius: 3px; background: #0E7C86; color: #fff; font-size: 13px; font-weight: 700; }
+.pk-reviewed { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.pk-newcount { font-weight: 700; }
