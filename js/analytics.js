@@ -56,7 +56,11 @@
   var STYLE = '.cookie-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483000;max-width:760px;margin:0 auto;background:#fff;color:#2D2A4A;border:1.5px solid #2D2A4A;border-radius:6px;box-shadow:6px 6px 0 #2D2A4A;padding:14px 16px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif}' +
     '.cookie-bar p{margin:0;flex:1 1 320px}.cookie-bar a{color:#2D2A4A}.cookie-acts{display:flex;gap:8px}' +
     '.cookie-bar .btn{min-height:44px;padding:0 16px;border-radius:4px;border:1.5px solid #2D2A4A;background:#fff;color:#2D2A4A;font:600 15px "IBM Plex Sans",system-ui,sans-serif;cursor:pointer}.cookie-bar .btn.solid{background:#2D2A4A;color:#fff}' +
-    'body.cookie-open{padding-bottom:130px}@media(max-width:760px){body.cookie-open{padding-bottom:190px}body.has-bar.cookie-open{padding-bottom:260px}.has-bar .cookie-bar{bottom:84px}}';
+    'body.cookie-open{padding-bottom:130px}' +
+    // phones: one compact row (text left, buttons right), shorter wording, about 62px tall instead of 128px
+    '@media(max-width:760px){.cookie-bar{left:8px;right:8px;bottom:8px;padding:8px 10px;gap:8px;flex-wrap:nowrap;box-shadow:3px 3px 0 #2D2A4A;font-size:12px;line-height:1.35}' +
+    '.cookie-bar p{flex:1 1 auto}.ck-more{display:none}.cookie-acts{flex:none;gap:6px}.cookie-bar .btn{padding:0 12px;font-size:14px}' +
+    'body.cookie-open{padding-bottom:84px}body.has-bar.cookie-open{padding-bottom:150px}.has-bar .cookie-bar{bottom:76px}}';
   function dropGaCookies() {   // Decline after Accept: also remove the cookies Google already set
     document.cookie.split(';').forEach(function (c) {
       var n = c.split('=')[0].trim();
@@ -78,7 +82,7 @@
     if (!document.getElementById('cookie-style')) { var st = document.createElement('style'); st.id = 'cookie-style'; st.textContent = STYLE; document.head.appendChild(st); }
     var bar = document.createElement('div');
     bar.id = 'cookie-bar'; bar.className = 'cookie-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Cookie Preferences');
-    bar.innerHTML = '<p>We Use Anonymous Analytics Cookies to See Which Pages Help Players. No Names, No Emails. <a href="/about/#privacy">Details</a></p>' +
+    bar.innerHTML = '<p>We use anonymous analytics cookies<span class="ck-more"> to see which pages help players</span>. No names, no emails. <a href="/about/#privacy">Details</a></p>' +
       '<div class="cookie-acts"><button type="button" class="btn" data-choice="denied">Decline</button><button type="button" class="btn solid" data-choice="granted">Accept</button></div>';
     bar.addEventListener('click', function (e) { var b = e.target.closest('[data-choice]'); if (b) choose(b.getAttribute('data-choice')); });
     document.body.appendChild(bar);

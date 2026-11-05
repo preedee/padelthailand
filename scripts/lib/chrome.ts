@@ -60,7 +60,7 @@ export function shell(o: { title: string; description: string; path: string; act
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(o.title)}"><meta name="twitter:description" content="${esc(o.description)}"><meta name="twitter:image" content="${esc(image)}">
   <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"><link rel="icon" type="image/png" sizes="180x180" href="/img/apple-touch-icon.png"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   ${FONTS}
-  <link rel="stylesheet" href="/css/directory.css?v=16">
+  <link rel="stylesheet" href="/css/directory.css?v=25">
   ${o.head ?? ""}
   ${lds.map((l) => `<script type="application/ld+json">${jsonLd(l)}</script>`).join("\n  ")}
   ${GA}
@@ -70,8 +70,8 @@ export function shell(o: { title: string; description: string; path: string; act
 ${header(o.active)}
 ${o.body.replace("<main", '<main id="main" tabindex="-1"')}
 ${footer()}
-<script src="/js/directory.js?v=6"></script>
-<script src="/js/analytics.js?v=1" defer></script>
+<script src="/js/directory.js?v=8"></script>
+<script src="/js/analytics.js?v=2" defer></script>
 ${o.scripts ?? ""}
 </body>
 </html>

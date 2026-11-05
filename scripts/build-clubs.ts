@@ -17,6 +17,7 @@ import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
 import { ANON_KEY, PHOTO_BASE, SUPABASE_URL } from "./lib/registry.ts";
+import { photoVariants } from "./lib/photos.ts";
 const SITE = "https://padelthailand.com";
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
@@ -35,7 +36,7 @@ type Row = {
   amenities: Amenities | null; google_links: Record<string, string> | null; last_detailed_at: string;
 };
 type PhotoRow = { place_id: string; storage_path: string; position: number; author_name: string | null; author_uri: string | null };
-type Photo = { url: string; author: string | null; authorUrl: string | null };
+type Photo = { url: string; thumb?: string; mid?: string; author: string | null; authorUrl: string | null };
 
 const COLUMNS = "place_id,name,name_th,province,district,lat,lng,formatted_address,phone,phone_local,website,google_maps_uri,rating,user_rating_count," +
   "weekday_descriptions,current_weekday_descriptions,courts_total,courts_indoor,courts_outdoor,courts_covered,courts_surface," +
@@ -269,7 +270,7 @@ if (rows.length < 30) throw new Error(`registry returned only ${rows.length} clu
 
 const photosBy = new Map<string, Photo[]>();
 // the registry lists some photo files twice; a gallery shows each file once
-for (const p of photoRows) { const have = photosBy.get(p.place_id) ?? []; if (!have.some((x) => x.url === PHOTO_BASE + p.storage_path)) photosBy.set(p.place_id, [...have, { url: PHOTO_BASE + p.storage_path, author: p.author_name, authorUrl: safeUrl(p.author_uri) }]); }
+for (const p of photoRows) { const have = photosBy.get(p.place_id) ?? []; if (!have.some((x) => x.url === PHOTO_BASE + p.storage_path)) photosBy.set(p.place_id, [...have, { url: PHOTO_BASE + p.storage_path, ...photoVariants(PHOTO_BASE + p.storage_path), author: p.author_name, authorUrl: safeUrl(p.author_uri) }]); }
 
 const read = async <T>(f: string, fallback: T): Promise<T> => (existsSync(ROOT + f) ? JSON.parse(await readFile(ROOT + f, "utf8")) : fallback);
 // aliases: the names tournaments use for a club ("Padel Asia" for "Padel Asia - Bangkok"), confirmed by hand, keyed by place_id

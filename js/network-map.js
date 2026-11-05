@@ -12,7 +12,7 @@
     fetch('/data/clubs.json').then(function (r) { return r.json(); }),
     fetch('/data/network.json').then(function (r) { return r.json(); })
   ]).then(function (res) { init(res[0].clubs, res[1]); }).catch(function () {
-    box.innerHTML = '<p style="padding:24px">The Map Could Not Load. Use the List of All Clubs Below.</p>';
+    box.innerHTML = '<p style="padding:24px">The map could not load. Use the list of all clubs below.</p>';
   });
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -153,7 +153,7 @@
       (TAGS[view] || []).forEach(function (t) { h += '<span class="tagline" style="left:' + t[1] + ';top:' + t[2] + ';background:' + t[3] + ';color:' + fg(t[3]) + '">' + esc(t[0]) + '</span>'; });
       if (view === 'th') h += '<span class="cap">Schematic · Circle Size = Number of Clubs · Tap a Region</span>';
       if (view === 'cm') {
-        h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
+        h += '<span class="cm-tag old" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
       }
       if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
       if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="tagline" style="left:7%;top:52%;background:#0E7C86;color:#fff">Car Ferry to/from Don Sak</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
@@ -164,12 +164,12 @@
       ((net.airports || {})[view] || []).forEach(function (o) { h += '<div class="poi airport" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><svg class="plane" aria-hidden="true" viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg><span class="lbl" style="' + lab(o.lp, 0.9) + '">' + esc(o.name) + '</span></div>'; });
       if (view === 'gulf') {
         var n = net.ring.length;
-        h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
-          '<div style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
+        h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div class="isl" style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div class="isl-sub" style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
+          '<div class="isl2" style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
           '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak to Lipa Noi Pier. Boats Run Samui → Phangan → Tao, and There Is a Direct Ferry From Samui to Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
       }
       if (view === 'phk') {
-        h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
+        h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div class="isl" style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div class="isl-sub" style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
           '<span class="tagline" style="left:58.5%;top:25.5%;background:#E08A2E;color:#2D2A4A">Road to Krabi</span>' +
           '<span class="tagline" style="left:72.5%;top:56%;background:#fff;border:1px solid #E08A2E;color:#2D2A4A">Car Ferry to Lanta</span>' +
           '<div class="note" style="left:2%;top:68%;width:22%"><b>Getting Here</b>Fly Into Phuket (HKT) or Krabi (KBV). Clubs Cluster in the North-West Around Bang Tao and in the South Around Chalong.</div>';
@@ -180,7 +180,7 @@
     // ---- motion: trains, draw-in, fly-through, hover tip (all off for reduced-motion) ----
     var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var AV = { right: [-6.5, -6.5], below: [-6.5, -6.5], down: [-6.5, -6.5], left: [1.1, -6.5], sw: [1.1, -6.5], up: [-6.5, 1.1], above: [1.1, 1.1], nw: [1.1, 1.1] };
-    function photoOf(pairs) { for (var i = 0; i < (pairs || []).length; i++) { var c = C[pairs[i][0]]; if (c && c.photos && c.photos[0]) return c.photos[0].url; } return ''; }
+    function photoOf(pairs) { for (var i = 0; i < (pairs || []).length; i++) { var c = C[pairs[i][0]]; if (c && c.photos && c.photos[0]) return c.photos[0].thumb || c.photos[0].url; } return ''; }
     var TRAINS = {
       th: [['M700 420 V180 L610 90 H520', 11, 0]],
       bkk: [['M840 460 V120 L800 80 H340 L260 160 V540 H760 Z', 40, 1, 0], ['M840 460 V120 L800 80 H340 L260 160 V540 H760 Z', 40, 1, -20], ['M340 80 H100', 9, 0], ['M560 240 H840 L960 120 H1250', 16, 0], ['M440 380 H560 L620 440 V640 L560 700 H360', 16, 0], ['M560 150 V380 H1180 L1330 530 V700', 26, 0]],
@@ -249,6 +249,17 @@
         var s = curStops[i], l = el.querySelector('.lbl'); if (!s || !l || !FLIP[s.lp]) return;
         var r = l.getBoundingClientRect();
         if (r.left < bx.left || r.right > bx.right || r.top < bx.top || r.bottom > bx.bottom) { l.style.cssText = lab(FLIP[s.lp], s.d / 2); }
+        // still hanging over a side after the flip (long names on a narrow map): nudge it back inside
+        var r2 = l.getBoundingClientRect(), dx = 0;
+        if (r2.left < bx.left) dx = bx.left - r2.left; else if (r2.right > bx.right) dx = bx.right - r2.right;
+        if (dx) l.style.marginLeft = Math.round(dx) + 'px';
+      });
+      // airport labels are not stops: same nudge so none is cut off at the edge
+      Array.prototype.forEach.call(layer.querySelectorAll('.poi .lbl'), function (l) {
+        if (!l.offsetParent) return;
+        var r = l.getBoundingClientRect(), dx = 0;
+        if (r.left < bx.left) dx = bx.left - r.left; else if (r.right > bx.right) dx = bx.right - r.right;
+        if (dx) l.style.marginLeft = Math.round(dx) + 'px';
       });
     }
 
@@ -295,7 +306,7 @@
       var k = c.courts || {}, types = [];
       if (k.indoor) types.push(['indoor', k.indoor]); if (k.covered) types.push(['covered', k.covered]); if (k.outdoor) types.push(['outdoor', k.outdoor]);
       var tHtml = types.length ? types.map(function (t) { return '<span class="ct">' + icon(t[0]) + '<span>' + t[1] + '</span><span class="sr"> ' + t[0] + '</span></span>'; }).join('') : '<span class="ct" title="Court Type Not Listed">' + icon('unknown') + (k.total ? '<span>' + k.total + '</span>' : '') + '</span>';
-      var photo = showPhoto ? '<div class="ph"' + (c.photos && c.photos[0] ? ' style="background-image:url(\'' + esc(c.photos[0].url) + '\')" role="img" aria-label="' + esc(c.name) + ' photo"' : '') + '>' + (c.photos && c.photos[0] ? '' : 'No Photo Yet') + '</div>' : '';
+      var photo = showPhoto ? '<div class="ph"' + (c.photos && c.photos[0] ? ' style="background-image:url(\'' + esc(c.photos[0].mid || c.photos[0].url) + '\')" role="img" aria-label="' + esc(c.name) + ' photo"' : '') + '>' + (c.photos && c.photos[0] ? '' : 'No Photo Yet') + '</div>' : '';
       var dir = c.directionsUrl || ('https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng);
       return '<div class="pclub">' + photo + '<div class="nm"><span>' + esc(nm(slug)) + '</span>' + (c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '') + '</div>' +
         '<div class="meta"><strong style="color:' + INK + '">' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + '</strong>' + tHtml + '</div>' +
@@ -393,7 +404,7 @@
         var out = [];
         list.forEach(function (c) { var hay = (nm(c.slug) + ' ' + c.name + ' ' + c.city + ' ' + (c.aliases || []).join(' ')).toLowerCase(); if (hay.indexOf(t) > -1) out.push('<a href="/clubs/' + esc(c.slug) + '/" role="option"><span>' + esc(nm(c.slug)) + '</span><small>' + esc(c.city) + '</small></a>'); });
         net.bkk.forEach(function (b) { if ((b.name + ' ' + b.th + ' ' + b.line).toLowerCase().indexOf(t) > -1) out.push('<a href="#map" role="option" data-st="' + esc(b.id) + '"><span>' + esc(b.name) + '</span><small>' + esc(b.line) + '</small></a>'); });
-        sug.innerHTML = out.slice(0, 8).join('') || '<span role="option" aria-disabled="true"><span>No Match. Try the List Below.</span></span>'; sug.hidden = false;
+        sug.innerHTML = out.slice(0, 8).join('') || '<span role="option" aria-disabled="true"><span>No match. Try the list below.</span></span>'; sug.hidden = false;
         if (window.ptTrackSearch) window.ptTrackSearch('home', t, out.length > 0);
       });
       sug.addEventListener('click', function (e) { var a = e.target.closest('[data-st]'); if (a) { e.preventDefault(); go('bkk', a.dataset.st, true); sug.hidden = true; document.getElementById('map').scrollIntoView(); } });
