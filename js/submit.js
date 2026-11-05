@@ -68,9 +68,9 @@
   function fileProblem(file) {
     var ext = (file.name.split(".").pop() || "").toLowerCase();
     var okExt = TYPES[file.type] && TYPES[file.type].indexOf(ext) >= 0;
-    if (!okExt) return "This File Is Not a JPG, PNG or WebP Image. Please Choose One of Those.";
-    if (file.size > MAX_BYTES) return "This File Is " + mb(file.size) + ". The Limit Is 5 MB. Please Choose a Smaller Image.";
-    if (file.size === 0) return "This File Is Empty. Please Choose Another Image.";
+    if (!okExt) return "This file is not a JPG, PNG or WebP image. Please choose one of those.";
+    if (file.size > MAX_BYTES) return "This file is " + mb(file.size) + ". The limit is 5 MB. Please choose a smaller image.";
+    if (file.size === 0) return "This file is empty. Please choose another image.";
     return "";
   }
 
@@ -81,23 +81,23 @@
     var label = labelText(el);
     if (el.type === "file") {
       var f = el.files && el.files[0];
-      if (!f) return el.required ? "Please Choose an Image to Upload." : "";
+      if (!f) return el.required ? "Please choose an image to upload." : "";
       return fileProblem(f);
     }
     if (el.type === "checkbox" && !el.closest("fieldset.group")) {
-      if (el.required && !el.checked) return el.name === "licenceConfirmed" ? "Please Confirm You Have the Right to Share This Photo." : "Please Tick This Box to Continue.";
+      if (el.required && !el.checked) return el.name === "licenceConfirmed" ? "Please confirm you have the right to share this photo." : "Please tick this box to continue.";
       return "";
     }
     if (el.type === "radio" || el.type === "checkbox") {
       var group = el.closest("fieldset.group");
-      if (group.hasAttribute("data-required") && !group.querySelector("input:checked")) return "Please Choose One: " + label + ".";
+      if (group.hasAttribute("data-required") && !group.querySelector("input:checked")) return "Please choose one: " + label + ".";
       return "";
     }
     if (!v) return el.required ? label + " is required." : "";
     var max = +el.getAttribute("maxlength");
     if (max && v.length > max) return label + " is too long. Keep it under " + max + " characters.";
     switch (el.dataset.kind) {
-      case "email": return v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "That Email Address Does Not Look Right. Check It and Try Again.";
+      case "email": return v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "That email address does not look right. Check it and try again.";
       case "url": return isHttps(v) ? "" : "Use a Full Web Address Starting With https://";
       case "igurl": return /(^|\.)instagram\.com$/.test(isHttps(v)) ? "" : "Use an Instagram link starting with https://www.instagram.com/";
       case "date": return isDate(v) ? "" : "Use a Real Date.";
@@ -239,7 +239,7 @@
       formErr.hidden = true;
       var bad = validate(form);
       if (bad.length) {
-        formErr.textContent = bad.length === 1 ? "Please Fix the Field Marked Below." : "Please Fix the " + bad.length + " Fields Marked Below.";
+        formErr.textContent = bad.length === 1 ? "Please fix the field marked below." : "Please fix the " + bad.length + " fields marked below.";
         formErr.hidden = false;
         bad[0].focus();
         return;
@@ -268,7 +268,7 @@
         sending = false;
         btn.disabled = false;
         btn.textContent = label;
-        formErr.textContent = "We Could Not Send This. Check Your Connection and Try Again.";
+        formErr.textContent = "We could not send this. Check your connection and try again.";
         formErr.hidden = false;
       });
     });

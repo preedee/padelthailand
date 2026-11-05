@@ -47,7 +47,7 @@
   }
 
   fetch('/data/' + page + '.json').then(function (r) { return r.json(); }).then(start).catch(function () {
-    root.innerHTML = '<div class="empty-state"><h2>Listings Could Not Load</h2><p>Please Refresh the Page. If It Keeps Happening, Tell Us on Instagram.</p></div>';
+    root.innerHTML = '<div class="empty-state"><h2>Listings Could Not Load</h2><p>Please refresh the page. If it keeps happening, tell us on Instagram.</p></div>';
   });
 
   function start(data) {
@@ -206,7 +206,7 @@
       var a = [];
       st.region.forEach(function (v) { a.push(['region', v, v]); }); st.gender.forEach(function (v) { a.push(['gender', v, GENDER_LABEL[v] || v]); });
       st.level.forEach(function (v) { a.push(['level', v, v]); }); st.format.forEach(function (v) { a.push(['format', v, v]); });
-      if (st.club) a.push(['club', st.club, clubName(st.club)]); if (st.q) a.push(['q', st.q, '"' + st.q + '"']);
+      if (st.club) a.push(['club', st.club, clubName(st.club) || st.club.replace(/-/g, ' ').replace(/\b[a-z]/g, function (m) { return m.toUpperCase(); })]); if (st.q) a.push(['q', st.q, '"' + st.q + '"']);
       if (st.when !== 'any' && st.tab === 'up') a.push(['when', st.when, { week: 'This Week', month: 'This Month', next: 'Next Month' }[st.when]]);
       if (st.regOpen && st.tab === 'up') a.push(['regOpen', '1', 'Registration Link Only']);
       return a;
@@ -260,7 +260,7 @@
     if (el && all.length) el.textContent = occ.filter(function (o) { return o.i < 7; }).length + ' This Week Across ' + Object.keys(clubSet).length + ' Clubs';
 
     if (!all.length) {
-      root.innerHTML = '<div class="empty-state"><h2>No Events Listed Yet</h2><p>Weekly Americanos, Clinics, Socials and League Nights Will Show Up Here as Clubs and Organisers Add Them. Run One? List It Free, and It Repeats Every Week Until You Stop It.</p><div class="empty-acts"><a class="btn solid" href="/submit/#event">Submit an Event</a><a class="btn" href="/clubs/">Browse Clubs</a></div></div>';
+      root.innerHTML = '<div class="empty-state"><h2>No Events Listed Yet</h2><p>Weekly americanos, clinics, socials and league nights will show up here as clubs and organisers add them. Run one? List it free, and it repeats every week until you stop it.</p><div class="empty-acts"><a class="btn solid" href="/submit/#event">Submit an Event</a><a class="btn" href="/clubs/">Browse Clubs</a></div></div>';
       return;
     }
     var st = { when: '', type: [], region: [], level: [], gender: [], showNext: false, sort: 'soon' };

@@ -20,12 +20,14 @@ import { REGION_ORDER, hubPath, hubRegions, isHub, listingRegion } from "./lib/r
 import { MONTHS_SHORT, readJson, todayBkk, tourEnd } from "./lib/util.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
+/** src (+ srcset when the photo has 400px and 800px copies) for an <img> */
+const imgAttrs = (p: Photo, sizes: string) => p.thumb && p.mid ? `src="${esc(p.mid)}" srcset="${esc(p.thumb)} 400w, ${esc(p.mid)} 800w" sizes="${sizes}"` : `src="${esc(p.url)}"`;
 const CHECK = process.argv.includes("--check");
 // the site's own handle sometimes appears as a club's Instagram in the registry; it is not club data (handoff decision 10)
 const ownIg = (u: string) => /instagram\.com\/padelthailand\/?$/i.test(u);
 
 // ---------- types ----------
-type Photo = { url: string; author: string | null; authorUrl: string | null };
+type Photo = { url: string; thumb?: string; mid?: string; author: string | null; authorUrl: string | null };
 type Club = {
   id: string; slug: string; name: string; nameTh: string; city: string; province: string; district: string; lat: number; lng: number; address: string;
   courts: { total: number | null; indoor: number | null; outdoor: number | null; covered: number | null; surface?: string | null };
@@ -145,7 +147,7 @@ function clubCard(c: Club): string {
   const reg = regionOf(c.slug)[0];
   const flags = [c.courts.indoor ? "indoor" : "", c.courts.covered ? "covered" : "", w.kind === "rail" && w.walkKm != null ? "rail" : "", c.booking ? "book" : ""].filter(Boolean).join(" ");
   return `<a class="pcard" href="/clubs/${esc(c.slug)}/"${trk("club_open", { club_slug: c.slug, place: "clubs_list" })} data-region="${esc(reg)}" data-flags="${flags}">
-  <div class="ph">${c.photos[0] ? `<img loading="lazy" decoding="async" src="${esc(c.photos[0].url)}" alt="${esc(c.name)} photo">` : ICON.cam + "<span>Photo Not Available Yet</span>"}
+  <div class="ph">${c.photos[0] ? `<img loading="lazy" decoding="async" ${imgAttrs(c.photos[0], "(max-width: 700px) 100vw, 360px")} alt="${esc(c.name)} photo">` : ICON.cam + "<span>Photo Not Available Yet</span>"}
     <span class="tag" style="background:${w.color};color:${fg(w.color)}">${esc(w.line)}</span>${c.openingSoon ? '<span class="tag soon r">Opening Soon</span>' : ""}</div>
   <div class="band" style="background:${w.color}"></div>
   <div class="info"><span class="area">${esc(w.area)}</span><span class="nm">${esc(shortName(c))}</span>
@@ -282,11 +284,11 @@ function clubPage(c: Club): string {
   facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : (c.courts.total ?? "")}</span>`));
   const stopTxt = w.stop ? `${w.kind === "rail" ? "Station" : "Stop"} ${String(w.stop.n).padStart(2, "0")} of ${String(w.stop.of).padStart(2, "0")}` : w.offNetwork ? "Off Network" : "";
   const gal = ph.length
-    ? `<div class="gal" data-gal data-photos='${esc(JSON.stringify(ph.map((p) => ({ u: p.url, a: p.author }))))}' data-name="${esc(c.name)}">
-        <div class="main"><img src="${esc(ph[0].url)}" alt="${esc(c.name)} photo 1 of ${ph.length}" fetchpriority="high" data-main>
+    ? `<div class="gal" data-gal data-photos='${esc(JSON.stringify(ph.map((p) => ({ u: p.mid ?? p.url, t: p.thumb ?? p.url, a: p.author }))))}' data-name="${esc(c.name)}">
+        <div class="main"><img ${imgAttrs(ph[0], "(max-width: 900px) 100vw, 800px")} alt="${esc(c.name)} photo 1 of ${ph.length}" fetchpriority="high" data-main>
           ${ph.length > 1 ? `<button class="arrow p" type="button" aria-label="Previous photo" data-prev>${ICON.left}</button><button class="arrow n" type="button" aria-label="Next photo" data-next>${ICON.right}</button>` : ""}
           <div class="cr" data-credit>${ph[0].author ? `Photo: ${esc(ph[0].author)} · Google Maps` : ""}</div></div>
-        ${ph.slice(1, 5).map((p, i) => `<button class="th" type="button" data-i="${i + 1}" aria-label="Show photo ${i + 2} of ${ph.length}"><img loading="lazy" src="${esc(p.url)}" alt="">${i === 3 && ph.length > 5 ? `<span class="more">+${ph.length - 5} More</span>` : ""}</button>`).join("")}</div>`
+        ${ph.slice(1, 5).map((p, i) => `<button class="th" type="button" data-i="${i + 1}" aria-label="Show photo ${i + 2} of ${ph.length}"><img loading="lazy" decoding="async" src="${esc(p.thumb ?? p.url)}" alt="">${i === 3 && ph.length > 5 ? `<span class="more">+${ph.length - 5} More</span>` : ""}</button>`).join("")}</div>`
     : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos Are Shown Only With a Credit Line.</span></div></div>`;
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
   // machine-readable description: sentence case, and no rating (the stars are Google's, not ours, so they stay out of structured data)
@@ -374,7 +376,7 @@ function homePage(): string {
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=22"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=29"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
