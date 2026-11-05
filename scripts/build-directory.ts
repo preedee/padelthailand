@@ -279,7 +279,7 @@ function clubPage(c: Club): string {
   const wMin = w.walkKm != null ? walkMin(w.walkKm) : null;
   const station = w.kind === "rail" ? net.bkk.find((s) => s.clubs.some((k) => k.slug === c.slug))! : null;
   const facts: string[] = [`<strong>${esc(w.area)}</strong>`];
-  if (w.kind === "rail" && wMin != null) facts.push(`<span class="ct">${ICON.walk}~${wMin} Min Walk From ${esc(stationLabel(station!.name))}</span>`);
+  if (w.kind === "rail" && wMin != null) facts.push(`<span class="ct" title="Straight-line estimate">${ICON.walk}~${wMin} Min Walk From ${esc(stationLabel(station!.name))}<span class="sr"> (straight-line estimate)</span></span>`);
   else if (w.offNetwork) facts.push(`<span class="ct">${ICON.car}Off the Rail Network · Drive or Taxi</span>`);
   facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : (c.courts.total ?? "")}</span>`));
   const stopTxt = w.stop ? `${w.kind === "rail" ? "Station" : "Stop"} ${String(w.stop.n).padStart(2, "0")} of ${String(w.stop.of).padStart(2, "0")}` : w.offNetwork ? "Off Network" : "";
@@ -299,10 +299,10 @@ function clubPage(c: Club): string {
   const TH = /[\u0E00-\u0E7F]/;
   const thaiAddr = addrOk(c) && TH.test(c.address);
   const hasTh = !!c.nameTh || thaiAddr;
-  const addr = `<section class="card" aria-labelledby="addr-h"><h3 id="addr-h">${w.kind === "rail" || w.offNetwork || w.region === "Bangkok" ? "Address" : "Getting Here"}</h3>
+  const addr = `<section class="card" aria-labelledby="addr-h"><h2 id="addr-h">${w.kind === "rail" || w.offNetwork || w.region === "Bangkok" ? "Address" : "Getting Here"}</h2>
     ${w.kind === "loop" || w.kind === "line" ? `<p class="fine" style="margin:0">${w.region.startsWith("Samui") || w.region.startsWith("Phuket") || w.line.startsWith("Phangan") ? "No Rail Here. Taxi, Grab or Scooter." : "Drive, Taxi or Grab."}</p>` : ""}
     <p style="margin:0" id="addr-text">${addrOk(c) ? esc(c.address) : "Street Address Not Listed Yet. Use Directions."}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">${hasTh ? `<button class="btn solid" style="flex:1 1 auto" type="button" data-driver data-track="show_to_driver" data-t-club_slug="${esc(c.slug)}">${ICON.car}Show to Driver</button>` : ""}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${hasTh ? `<button class="btn solid" style="flex:1 1 auto" type="button" data-driver title="Shows the address in Thai, to hand to a taxi or Grab driver" data-track="show_to_driver" data-t-club_slug="${esc(c.slug)}">${ICON.car}Show to Driver</button>` : ""}
     <a class="btn${hasTh ? "" : " solid"}" style="flex:1 1 auto" href="${esc(dirUrl)}" target="_blank" rel="noopener"${trk("directions_click", { club_slug: c.slug, place: "address_card" })}>Directions</a>
     ${addrOk(c) ? `<button class="btn" type="button" data-copy="${esc(c.address)}">Copy</button>` : ""}</div></section>
     ${hasTh ? `<div class="driver" id="driver" role="dialog" aria-modal="true" aria-label="Address for driver" hidden><div class="eyebrow" style="color:#fff">Show to Driver</div><div class="big" lang="th">${c.nameTh ? esc(c.nameTh) + "<br>" : ""}${thaiAddr ? esc(c.address) : ""}</div><div class="eng">${esc(c.name)}<br>${esc(c.address)}</div><div class="acts"><button class="btn" type="button" data-copy="${esc(thaiAddr ? c.address : c.nameTh)}">Copy</button><button class="btn" type="button" data-driver-close>Close</button></div></div>` : ""}`;
@@ -311,7 +311,12 @@ function clubPage(c: Club): string {
     c.instagramUrl && !ownIg(c.instagramUrl) ? `<li>${ICON.ig}<span><small>Instagram</small><a href="${esc(c.instagramUrl)}" target="_blank" rel="noopener"${trk("contact_click", { club_slug: c.slug, method: "instagram", place: "contact_card" })}>@${esc(c.instagramUrl.replace(/\/$/, "").split("/").pop())}</a></span></li>` : "",
     c.website ? `<li>${ICON.web}<span><small>Website</small><a href="${esc(c.website)}" target="_blank" rel="noopener"${trk("contact_click", { club_slug: c.slug, method: "website", place: "contact_card" })}>${esc(c.website.replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/$/, ""))}</a></span></li>` : "",
   ].filter(Boolean);
-  const hours = c.hours.length ? `<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim())}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours Not Listed.</p>`;
+  // the nearest other clubs in the same region (straight-line distance), so a visitor and a crawler can move sideways
+  const reg = regionOf(c.slug);
+  const kmBetween = (a: Club, b: Club) => { const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r; const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+  const near = clubs.filter((k) => k.slug !== c.slug && reg[2].includes(k.slug)).map((k) => ({ k, km: kmBetween(c, k) })).sort((a, b) => a.km - b.km).slice(0, 5);
+  const related = near.length ? `<section class="related" aria-labelledby="rel-h"><h2 id="rel-h">More Padel Clubs in ${esc(reg[0])}</h2><ul class="pills rel">${near.map(({ k, km }) => `<li><a href="/clubs/${esc(k.slug)}/"${trk("club_open", { club_slug: k.slug, place: "related" })}>${esc(shortName(k))}</a><small>${km < 10 ? km.toFixed(1) : Math.round(km)} km</small></li>`).join("")}</ul>${isHub(reg[0]) ? `<p class="fine"><a href="${hubPath(reg[0])}">All ${reg[2].length} clubs in ${esc(reg[0])} →</a></p>` : ""}</section>` : "";
+  const hours = c.hours.length ?`<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim().replace(/\b12:00 AM\b/g, "Midnight"))}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours Not Listed.</p>`;
   const barPrice = c.booking ? `<a class="btn solid" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "sticky_bar" })}>${platIcon(c)}${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid" href="tel:${esc(c.tel)}">Call</a>` : "");
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <a href="${hubOk ? hubPath(w.region) : `/clubs/#${encodeURIComponent(w.region)}`}">${esc(w.region)}</a> / <span aria-current="page"><strong>${esc(shortName(c))}</strong></span></nav>
@@ -332,6 +337,7 @@ function clubPage(c: Club): string {
     </div>
   </div>
   ${lineStrip(c, w)}
+  ${related}
 </main>
 <div class="book-bar"><span><span class="price-from">Price</span><br><strong>${c.priceNote ? esc(c.priceNote) : "Not Listed Yet"}</strong></span>${barPrice}</div>`;
   const hs = hoursSpec(c.hours);
@@ -371,7 +377,7 @@ function homePage(): string {
     <div class="chips" role="group" aria-label="Quick filters"><button class="chip" type="button" data-f="indoor" aria-pressed="false">Indoor</button><button class="chip" type="button" data-f="covered" aria-pressed="false">Covered</button><button class="chip" type="button" data-f="rail" aria-pressed="false">Near BTS/MRT</button><button class="chip" type="button" data-f="book" aria-pressed="false">Book Online</button></div></form></section>
 <section class="wrap" id="map" aria-labelledby="map-h"><div class="map-head"><h2 id="map-h">Network Map</h2><div class="tabs" id="tabs" role="group" aria-label="Map view"></div></div>
   <div class="map-layout"><div class="map-box" id="map-box" role="group" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
-  <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See All Clubs by Region</a>.</span></div></section>
+  <div class="map-key"><span class="k" title="Fully enclosed courts">${ICON.indoor} Indoor</span><span class="k" title="Roofed, with open sides">${ICON.covered} Covered</span><span class="k" title="Open air">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Coloured lines group clubs by area, dots are stations or islands, and a tap on a dot shows its clubs. Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See All Clubs by Region</a>.</span></div></section>
 <section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
 </main>`;
