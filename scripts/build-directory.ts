@@ -282,7 +282,7 @@ function clubPage(c: Club): string {
   facts.push(...courtTypes(c).map((t) => `<span class="ct">${ICON[t.type]}${t.n != null ? `${t.n} ${t.type[0].toUpperCase() + t.type.slice(1)}` : (c.courts.total ?? "")}</span>`));
   const stopTxt = w.stop ? `${w.kind === "rail" ? "Station" : "Stop"} ${String(w.stop.n).padStart(2, "0")} of ${String(w.stop.of).padStart(2, "0")}` : w.offNetwork ? "Off Network" : "";
   const gal = ph.length
-    ? `<div class="gal" data-gal data-photos='${esc(JSON.stringify(ph.map((p) => ({ u: p.url, a: p.author }))))}' data-name="${esc(c.name)}">
+    ? `<div class="gal" data-gal data-photos='${esc(JSON.stringify(ph.map((p) => ({ u: p.url, t: p.url, a: p.author }))))}' data-name="${esc(c.name)}">
         <div class="main"><img src="${esc(ph[0].url)}" alt="${esc(c.name)} photo 1 of ${ph.length}" fetchpriority="high" data-main>
           ${ph.length > 1 ? `<button class="arrow p" type="button" aria-label="Previous photo" data-prev>${ICON.left}</button><button class="arrow n" type="button" aria-label="Next photo" data-next>${ICON.right}</button>` : ""}
           <div class="cr" data-credit>${ph[0].author ? `Photo: ${esc(ph[0].author)} · Google Maps` : ""}</div></div>
@@ -373,7 +373,7 @@ function homePage(): string {
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=21"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=22"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }

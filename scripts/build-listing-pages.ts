@@ -38,7 +38,7 @@ const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-stat
 const tournamentsPage = () => shell({
   title: "Tournaments | Padel Thailand", path: "/tournaments/", active: "tournaments", head: HEAD, bodyAttrs: 'data-listing="tournaments"',
   description: "Every padel tournament in Thailand: upcoming draws and past results, with posters. Filter by date, region, gender and club, then register.",
-  scripts: `<script src="/js/listings.js?v=2"></script>`,
+  scripts: `<script src="/js/listings.js?v=3"></script>`,
   ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Padel Tournaments in Thailand", url: `${SITE}/tournaments/`, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: `${SITE}/` } },
     ...(sportsEvents.length ? [{ "@context": "https://schema.org", "@type": "ItemList", name: "Upcoming padel tournaments in Thailand", itemListElement: sportsEvents.map((item, i) => ({ "@type": "ListItem", position: i + 1, item })) }] : []),
     breadcrumbLd([["Padel Thailand", "/"], ["Tournaments", "/tournaments/"]])],
@@ -57,7 +57,7 @@ const eventsPage = () => shell({
   noindex: eventCount === 0, // an empty events page is thin content; the nightly build flips this as soon as the first event exists
   ld: [breadcrumbLd([["Padel Thailand", "/"], ["Events", "/events/"]])],
   description: "Weekly Americanos, clinics, socials and league nights at padel clubs across Thailand.",
-  scripts: `<script src="/js/listings.js?v=2"></script>`,
+  scripts: `<script src="/js/listings.js?v=3"></script>`,
   body: `<main class="wrap">
   <div class="listing-head"><div><span class="badge-ink">Events</span><span class="counts" id="e-count"></span>
     <h1>Play Something Tonight</h1><p>Weekly Americanos, Clinics, Socials and Beginner Sessions at Every Club in Thailand. Turn Up Solo — Get Matched In.</p></div>
