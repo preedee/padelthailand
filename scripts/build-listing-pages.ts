@@ -32,7 +32,7 @@ const day = (s: string) => `${+s.slice(8)} ${MONS[+s.slice(5, 7) - 1]}`;
 const when = (x: Tour) => x.startDate ? (x.endDate && x.endDate !== x.startDate ? `${day(x.startDate)} – ${day(x.endDate)} ${x.endDate.slice(0, 4)}` : `${day(x.startDate)} ${x.startDate.slice(0, 4)}`) : x.monthOnly ? `${MONS[+x.monthOnly.slice(5) - 1]} ${x.monthOnly.slice(0, 4)} (Date to Be Confirmed)` : "Date to Be Confirmed";
 /** the no-JavaScript view: a plain list of what the page shows by default, for crawlers and visitors that do not run scripts */
 const upcomingFallback = upcomingTours.length ? `<h2>Upcoming Tournaments</h2><ul>${upcomingTours.map((x) => { const link = x.regUrl ?? x.instagramUrl; const where = [x.clubName || x.venueText, x.city].filter(Boolean).join(", "); return `<li><strong>${esc(x.title)}</strong>: ${esc(when(x))}${where ? ` · ${esc(where)}` : ""}${x.organizer ? ` · ${esc(x.organizer)}` : ""}${link ? ` · <a href="${esc(link)}" rel="noopener">Details</a>` : ""}</li>`; }).join("")}</ul>` : "";
-const HEAD = `<link rel="stylesheet" href="/css/listings.css?v=1">`;
+const HEAD = `<link rel="stylesheet" href="/css/listings.css?v=3">`;
 const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-state"><h2>Turn On JavaScript</h2><p>The ${what} List Needs JavaScript. You Can Also Find Us on <a href="${SITE_IG}" rel="noopener">Instagram</a>.</p></div>${extra}</noscript>`;
 
 const tournamentsPage = () => shell({
@@ -46,7 +46,7 @@ const tournamentsPage = () => shell({
   <div class="listing-head"><div><span class="badge-ink">Tournaments</span><span class="counts" id="t-count"></span>
     <h1>Every Draw in Thailand</h1><p>Every Padel Tournament in Thailand, From Every Club and Organiser — Filter by Date, Region and Club, Then Register.</p></div>
     <div class="cta-box"><a class="btn solid" href="/submit/#tournament">Submit a Tournament — It’s Free</a><p class="fine">Organisers: List It Once With Your Poster. A Person Checks Every Listing Before It Goes Live.</p></div></div>
-  <div id="listing-root">${NOSCRIPT("Tournaments", upcomingFallback)}</div>
+  <div id="listing-root" class="reserve">${NOSCRIPT("Tournaments", upcomingFallback)}</div>
   <p class="listing-note">Listings From Clubs, Organisers and Our Own Research · Posters Shared With Permission</p>
 </main>
 <section class="cta-band" aria-labelledby="run-t"><div class="wrap"><div><h2 id="run-t">Running a Tournament?</h2><p>List It Free With Your Poster in Two Minutes. It Appears Here Once a Person Has Checked It.</p></div><a class="btn" href="/submit/#tournament">Submit a Tournament</a></div></section>`,
