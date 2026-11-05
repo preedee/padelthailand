@@ -65,9 +65,13 @@
   var drv = $('#driver');
   var openD = $('[data-driver]'), closeD = $('[data-driver-close]');
   if (drv && openD) {
-    openD.addEventListener('click', function () { drv.hidden = false; if (closeD) closeD.focus(); });
-    if (closeD) closeD.addEventListener('click', function () { drv.hidden = true; openD.focus(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) { drv.hidden = true; openD.focus(); } });
+    // While the dialog is open the rest of the page is inert, so Tab cannot leave it
+    var bg = $$('header, footer, .book-bar, .cookie-bar, main > *').filter(function (el) { return el !== drv; });
+    var setBg = function (off) { bg.forEach(function (el) { if (off) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }); };
+    var shut = function () { drv.hidden = true; setBg(false); openD.focus(); };
+    openD.addEventListener('click', function () { drv.hidden = false; setBg(true); if (closeD) closeD.focus(); });
+    if (closeD) closeD.addEventListener('click', shut);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) shut(); });
   }
   $$('[data-copy]').forEach(function (b) { b.addEventListener('click', function () {
     var t = b.dataset.copy, old = b.textContent;
