@@ -21,9 +21,9 @@ const LEVELS = bands.map((b) => b.label);
 const GENDERS = ["Men", "Women", "Mixed", "Open"];
 const EVENT_TYPES = ["Americano", "Mexicano", "Social", "Clinic", "League Night"];
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const PDPA = "We Use Your Name and Email Only to Check This Submission. We Delete Them 12 Months After It Is Reviewed.";
-const CLOSED = `Submissions Open Soon — For Now Message Us on Instagram: <a href="${SITE_IG}" rel="noopener">@padelthailand</a>.`;
-const THANKS = "Thanks — Your Submission Is Waiting for Review. Nothing Goes Live Until a Person Has Checked It.";
+const PDPA = "We use your name and email only to check this submission. We delete them 12 months after it is reviewed.";
+const CLOSED = `Submissions open soon. For now, message us on Instagram: <a href="${SITE_IG}" rel="noopener">@padelthailand</a>.`;
+const THANKS = "Thanks. Your submission is waiting for review. Nothing goes live until a person has checked it.";
 
 // ---------- field builders ----------
 // Every control gets a visible <label>, an error slot (<p class="err">) and aria-describedby. No placeholders.
@@ -67,7 +67,7 @@ function tick(p: string, name: string, label: string, required?: boolean): strin
 /** Club select, filled from /data/clubs.json by js/submit.js, with an "Other venue" free-text fallback. */
 function clubPicker(p: string, label = "Club or Venue"): string {
   const id = `${p}-club`;
-  return `<div class="fld"><label for="${id}">${label}</label><p class="hint" id="${id}-hint">Pick a Club From Our List, or Choose Other Venue at the Bottom.</p>
+  return `<div class="fld"><label for="${id}">${label}</label><p class="hint" id="${id}-hint">Pick a club from our list, or choose Other venue at the bottom.</p>
     <select id="${id}" name="club" required data-clubs ${describedBy(id, "y")}><option value="">Choose a Club</option><option value="__other">Other Venue (Not Listed)</option></select>${errP(id)}</div>
   <div class="fld other-venue" hidden>${input(p, { name: "clubOther", label: "Venue Name", required: true, max: 200, local: true }).replace(/^<div class="fld">|<\/div>$/g, "")}</div>`;
 }
@@ -94,67 +94,67 @@ function form(key: string, p: string, title: string, lede: string, button: strin
     ${contact(p)}
     ${honeypot(p)}
     <p class="form-err" role="alert" hidden></p>
-    <div class="actions"><button class="btn solid" type="submit" disabled>${button}</button><span class="fine">Fields Marked (Optional) Can Be Left Empty.</span></div>
+    <div class="actions"><button class="btn solid" type="submit" disabled>${button}</button><span class="fine">Fields marked (optional) can be left empty.</span></div>
   </div>
   <div class="sent" role="status" hidden><p class="sent-h">Sent</p><p>${THANKS}</p><button class="btn" type="button" data-again>Send Another</button></div>
 </form>`;
 }
 
-const levelsHint = "Tick Every Level That Can Enter. Leave All Empty if You Are Not Sure.";
+const levelsHint = "Tick every level that can enter. Leave all empty if you are not sure.";
 const FORMS: [string, string, string][] = [
-  ["tournament", "Tournament", form("tournament", "t", "Submit a Tournament", "Running a Tournament in Thailand? Send the Details and We Will Add It to the Calendar.", "Submit Tournament", `
+  ["tournament", "Tournament", form("tournament", "t", "Submit a Tournament", "Running a tournament in Thailand? Send the details and we will add it to the calendar.", "Submit Tournament", `
     ${input("t", { name: "title", label: "Tournament Name", required: true, max: 200 })}
     ${input("t", { name: "organizer", label: "Organizer", max: 200 })}
     ${clubPicker("t")}
     ${input("t", { name: "city", label: "City", required: true, max: 100, attrs: 'autocomplete="address-level2"' })}
-    <div class="row2">${input("t", { name: "startDate", label: "Start Date", type: "date", required: true, kind: "date" })}${input("t", { name: "endDate", label: "End Date", type: "date", kind: "date", hint: "Leave Empty for a One-Day Tournament." })}</div>
+    <div class="row2">${input("t", { name: "startDate", label: "Start Date", type: "date", required: true, kind: "date" })}${input("t", { name: "endDate", label: "End Date", type: "date", kind: "date", hint: "Leave empty for a one-day tournament." })}</div>
     ${choices("t", "gender", "Gender", "radio", GENDERS, { required: true })}
     ${choices("t", "levels", "Levels", "checkbox", LEVELS, { hint: levelsHint })}
-    ${input("t", { name: "format", label: "Format", max: 200, hint: "For Example: Groups Then Knockout, Best of Three Sets." })}
-    <div class="row2">${input("t", { name: "entryFee", label: "Entry Fee", max: 100, hint: "For Example: 1,500 THB per Player." })}${input("t", { name: "prize", label: "Prize", max: 200 })}</div>
+    ${input("t", { name: "format", label: "Format", max: 200, hint: "For example: groups then knockout, best of three sets." })}
+    <div class="row2">${input("t", { name: "entryFee", label: "Entry Fee", max: 100, hint: "For example: 1,500 THB per player." })}${input("t", { name: "prize", label: "Prize", max: 200 })}</div>
     ${input("t", { name: "registrationUrl", label: "Registration Link", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
     ${input("t", { name: "instagramUrl", label: "Instagram Post", type: "url", kind: "igurl", max: 500, hint: "The Tournament Post, Starting With https://www.instagram.com/" })}
-    ${upload("t", "Poster", false, "JPG, PNG or WebP, Up to 5 MB.")}
+    ${upload("t", "Poster", false, "JPG, PNG or WebP, up to 5 MB.")}
     ${input("t", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
-  ["event", "Event", form("event", "e", "Submit an Event", "Americanos, Mexicanos, Socials, Clinics and League Nights. One-Off or Every Week.", "Submit Event", `
+  ["event", "Event", form("event", "e", "Submit an Event", "Americanos, mexicanos, socials, clinics and league nights. One-off or every week.", "Submit Event", `
     ${input("e", { name: "title", label: "Event Name", required: true, max: 200 })}
     ${select("e", { name: "eventType", label: "Event Type", required: true }, EVENT_TYPES.map((t) => [t, t]), "Choose a Type")}
     ${clubPicker("e")}
     ${input("e", { name: "city", label: "City", required: true, max: 100, attrs: 'autocomplete="address-level2"' })}
     ${choices("e", "howOften", "How Often", "radio", ["One Date", "Every Week"], { required: true, checked: "One Date", local: true })}
     <div class="when-once">${input("e", { name: "date", label: "Date", type: "date", required: true, kind: "date" })}</div>
-    <div class="when-weekly row2" hidden>${select("e", { name: "weekday", label: "Weekday", required: true }, WEEKDAYS.map((d) => [d, d]), "Choose a Day")}${input("e", { name: "until", label: "Runs Until", type: "date", kind: "date", hint: "The Last Week It Runs, if You Know It." })}</div>
+    <div class="when-weekly row2" hidden>${select("e", { name: "weekday", label: "Weekday", required: true }, WEEKDAYS.map((d) => [d, d]), "Choose a Day")}${input("e", { name: "until", label: "Runs Until", type: "date", kind: "date", hint: "The last week it runs, if you know it." })}</div>
     <div class="row2">${input("e", { name: "startTime", label: "Start Time", type: "time", required: true, kind: "time", hint: "24-Hour Clock." })}${input("e", { name: "endTime", label: "End Time", type: "time", kind: "time" })}</div>
     ${choices("e", "levels", "Levels", "checkbox", LEVELS, { hint: levelsHint })}
     ${select("e", { name: "gender", label: "Gender" }, GENDERS.slice().reverse().map((g) => [g, g]))}
-    <div class="row2">${input("e", { name: "capacity", label: "Capacity", type: "number", kind: "int", attrs: 'min="1" max="500" inputmode="numeric" data-min="1" data-max="500"', hint: "Players per Session." })}${input("e", { name: "pricePerPerson", label: "Price Per Person", max: 100, hint: "For Example: 500 THB." })}</div>
+    <div class="row2">${input("e", { name: "capacity", label: "Capacity", type: "number", kind: "int", attrs: 'min="1" max="500" inputmode="numeric" data-min="1" data-max="500"', hint: "Players per session." })}${input("e", { name: "pricePerPerson", label: "Price Per Person", max: 100, hint: "For Example: 500 THB." })}</div>
     ${input("e", { name: "signupUrl", label: "Sign-Up Link", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
-    ${upload("e", "Poster", false, "JPG, PNG or WebP, Up to 5 MB.")}
+    ${upload("e", "Poster", false, "JPG, PNG or WebP, up to 5 MB.")}
     ${input("e", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
-  ["club", "Club", form("club", "c", "Missing a Club? Add It", "Tell Us About a Padel Club That Is Not on the Map Yet.", "Submit Club", `
+  ["club", "Club", form("club", "c", "Missing a Club? Add It", "Tell us about a padel club that is not on the map yet.", "Submit Club", `
     ${input("c", { name: "clubName", label: "Club Name", required: true, max: 200 })}
     ${input("c", { name: "city", label: "City", required: true, max: 100, attrs: 'autocomplete="address-level2"' })}
     ${input("c", { name: "address", label: "Address", type: "textarea", max: 500 })}
     ${input("c", { name: "courts", label: "Courts", type: "number", kind: "int", attrs: 'min="1" max="60" inputmode="numeric" data-min="1" data-max="60"', hint: "How Many Padel Courts." })}
-    ${input("c", { name: "bookingUrl", label: "Booking Link", type: "url", kind: "url", max: 500, hint: "Where Players Book, Starting With https://" })}
+    ${input("c", { name: "bookingUrl", label: "Booking Link", type: "url", kind: "url", max: 500, hint: "Where players book, starting with https://" })}
     <div class="row2">${input("c", { name: "phone", label: "Phone", type: "tel", kind: "phone", max: 30, attrs: 'autocomplete="tel"' })}${input("c", { name: "instagram", label: "Instagram", kind: "instagram", max: 500, hint: "An @handle or an https://instagram.com Link." })}</div>
     ${input("c", { name: "website", label: "Website", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
     ${input("c", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
-  ["photo", "Photo", form("photo", "p", "Share a Club Photo", "Good Court Photos Help Players Pick a Club. We Show the Credit Line With the Photo.", "Send Photo", `
+  ["photo", "Photo", form("photo", "p", "Share a Club Photo", "Good court photos help players pick a club. We show the credit line with the photo.", "Send Photo", `
     ${clubPicker("p", "Club")}
-    ${upload("p", "Photo", true, "JPG, PNG or WebP, Up to 5 MB. Landscape Works Best.")}
-    ${input("p", { name: "credit", label: "Photo Credit", required: true, max: 200, hint: "Shown Under the Photo, for Example: Photo by Somchai K." })}
-    ${tick("p", "licenceConfirmed", "I Took This Photo, or I Have Permission to Share It, and padelthailand.com May Show It With the Credit Above.", true)}`)],
-  ["correction", "Correction", form("correction", "x", "Report a Correction", "Spotted Wrong Hours, a Closed Club or a Bad Link? Tell Us What to Fix.", "Send Correction", `
+    ${upload("p", "Photo", true, "JPG, PNG or WebP, up to 5 MB. Landscape works best.")}
+    ${input("p", { name: "credit", label: "Photo Credit", required: true, max: 200, hint: "Shown under the photo, for example: Photo by Somchai K." })}
+    ${tick("p", "licenceConfirmed", "I took this photo, or I have permission to share it, and padelthailand.com may show it with the credit above.", true)}`)],
+  ["correction", "Correction", form("correction", "x", "Report a Correction", "Spotted wrong hours, a closed club or a bad link? Tell us what to fix.", "Send Correction", `
     ${input("x", { name: "pageUrl", label: "Page Link", type: "url", kind: "url", required: true, max: 500, hint: "The padelthailand.com Page With the Mistake." })}
     ${input("x", { name: "whatIsWrong", label: "What Is Wrong", type: "textarea", required: true, max: 2000 })}
     ${input("x", { name: "correctValue", label: "Correct Information", type: "textarea", max: 2000 })}
-    ${tick("x", "isOwner", "I Run or Work at This Club or Event.")}`)],
+    ${tick("x", "isOwner", "I run or work at this club or event.")}`)],
 ];
 
 const body = `<main class="wrap sub-page">
 <div class="page-head"><span class="badge-ink">Submit</span><h1 style="margin-top:14px">Send Us a Listing</h1>
-  <p>Tell Us About a Tournament, a Social Event, a Club We Are Missing, a Court Photo or a Mistake. A Person Reviews Every Submission Before Anything Goes Live.</p></div>
+  <p>Tell us about a tournament, a social event, a club we are missing, a court photo or a mistake. A person reviews every submission before anything goes live.</p></div>
 <div class="seg sub-seg" role="group" aria-label="What are you sending?">${FORMS.map(([k, l]) => `<button type="button" data-form="${k}" aria-controls="f-${k}" aria-pressed="false">${l}</button>`).join("")}</div>
 <noscript><p class="closed">These Forms Need JavaScript. You Can Send the Details to Us on Instagram Instead: <a href="${SITE_IG}" rel="noopener">${SITE_IG}</a></p></noscript>
 ${FORMS.map(([, , html]) => html).join("\n")}
@@ -165,7 +165,7 @@ const html = shell({
   description: "Send a padel tournament, social event, missing club, court photo or correction to Padel Thailand. Every submission is reviewed by a person before it goes live.",
   path: "/submit/", active: "", noindex: true, body,
   head: `<link rel="stylesheet" href="/css/forms.css?v=1">`,
-  scripts: `<script src="/js/submit.js?v=1"></script>`,
+  scripts: `<script src="/js/submit.js?v=2"></script>`,
 });
 
 // ---------- checks ----------

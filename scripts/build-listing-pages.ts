@@ -33,23 +33,23 @@ const when = (x: Tour) => x.startDate ? (x.endDate && x.endDate !== x.startDate 
 /** the no-JavaScript view: a plain list of what the page shows by default, for crawlers and visitors that do not run scripts */
 const upcomingFallback = upcomingTours.length ? `<h2>Upcoming Tournaments</h2><ul>${upcomingTours.map((x) => { const link = x.regUrl ?? x.instagramUrl; const where = [x.clubName || x.venueText, x.city].filter(Boolean).join(", "); return `<li><strong>${esc(x.title)}</strong>: ${esc(when(x))}${where ? ` · ${esc(where)}` : ""}${x.organizer ? ` · ${esc(x.organizer)}` : ""}${link ? ` · <a href="${esc(link)}" rel="noopener">Details</a>` : ""}</li>`; }).join("")}</ul>` : "";
 const HEAD = `<link rel="stylesheet" href="/css/listings.css?v=3">`;
-const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-state"><h2>Turn On JavaScript</h2><p>The ${what} List Needs JavaScript. You Can Also Find Us on <a href="${SITE_IG}" rel="noopener">Instagram</a>.</p></div>${extra}</noscript>`;
+const NOSCRIPT = (what: string, extra = "") => `<noscript><div class="empty-state"><h2>Turn On JavaScript</h2><p>The ${what.toLowerCase()} list needs JavaScript. You can also find us on <a href="${SITE_IG}" rel="noopener">Instagram</a>.</p></div>${extra}</noscript>`;
 
 const tournamentsPage = () => shell({
   title: "Tournaments | Padel Thailand", path: "/tournaments/", active: "tournaments", head: HEAD, bodyAttrs: 'data-listing="tournaments"',
   description: "Every padel tournament in Thailand: upcoming draws and past results, with posters. Filter by date, region, gender and club, then register.",
-  scripts: `<script src="/js/listings.js?v=2"></script>`,
+  scripts: `<script src="/js/listings.js?v=3"></script>`,
   ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Padel Tournaments in Thailand", url: `${SITE}/tournaments/`, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: `${SITE}/` } },
     ...(sportsEvents.length ? [{ "@context": "https://schema.org", "@type": "ItemList", name: "Upcoming padel tournaments in Thailand", itemListElement: sportsEvents.map((item, i) => ({ "@type": "ListItem", position: i + 1, item })) }] : []),
     breadcrumbLd([["Padel Thailand", "/"], ["Tournaments", "/tournaments/"]])],
   body: `<main class="wrap">
   <div class="listing-head"><div><span class="badge-ink">Tournaments</span><span class="counts" id="t-count"></span>
-    <h1>Every Draw in Thailand</h1><p>Every Padel Tournament in Thailand, From Every Club and Organiser — Filter by Date, Region and Club, Then Register.</p></div>
-    <div class="cta-box"><a class="btn solid" href="/submit/#tournament">Submit a Tournament — It’s Free</a><p class="fine">Organisers: List It Once With Your Poster. A Person Checks Every Listing Before It Goes Live.</p></div></div>
+    <h1>Every Draw in Thailand</h1><p>Every padel tournament in Thailand, from every club and organiser. Filter by date, region and club, then register.</p></div>
+    <div class="cta-box"><a class="btn solid" href="/submit/#tournament">Submit a Tournament — It’s Free</a><p class="fine">Organisers: list it once with your poster. A person checks every listing before it goes live.</p></div></div>
   <div id="listing-root" class="reserve">${NOSCRIPT("Tournaments", upcomingFallback)}</div>
-  <p class="listing-note">Listings From Clubs, Organisers and Our Own Research · Posters Shared With Permission</p>
+  <p class="listing-note">Listings from clubs, organisers and our own research. Posters shared with permission.</p>
 </main>
-<section class="cta-band" aria-labelledby="run-t"><div class="wrap"><div><h2 id="run-t">Running a Tournament?</h2><p>List It Free With Your Poster in Two Minutes. It Appears Here Once a Person Has Checked It.</p></div><a class="btn" href="/submit/#tournament">Submit a Tournament</a></div></section>`,
+<section class="cta-band" aria-labelledby="run-t"><div class="wrap"><div><h2 id="run-t">Running a Tournament?</h2><p>List it free with your poster in two minutes. It appears here once a person has checked it.</p></div><a class="btn" href="/submit/#tournament">Submit a Tournament</a></div></section>`,
 });
 
 const eventsPage = () => shell({
@@ -57,15 +57,15 @@ const eventsPage = () => shell({
   noindex: eventCount === 0, // an empty events page is thin content; the nightly build flips this as soon as the first event exists
   ld: [breadcrumbLd([["Padel Thailand", "/"], ["Events", "/events/"]])],
   description: "Weekly Americanos, clinics, socials and league nights at padel clubs across Thailand.",
-  scripts: `<script src="/js/listings.js?v=2"></script>`,
+  scripts: `<script src="/js/listings.js?v=3"></script>`,
   body: `<main class="wrap">
   <div class="listing-head"><div><span class="badge-ink">Events</span><span class="counts" id="e-count"></span>
-    <h1>Play Something Tonight</h1><p>Weekly Americanos, Clinics, Socials and Beginner Sessions at Every Club in Thailand. Turn Up Solo — Get Matched In.</p></div>
-    <div class="cta-box"><a class="btn solid" href="/submit/#event">Submit an Event — It’s Free</a><p class="fine">List It Once and It Repeats Every Week. Organisers Reconfirm Every 30 Days.</p></div></div>
+    <h1>Play Something Tonight</h1><p>Weekly americanos, clinics, socials and beginner sessions at every club in Thailand. Turn up solo and get matched in.</p></div>
+    <div class="cta-box"><a class="btn solid" href="/submit/#event">Submit an Event — It’s Free</a><p class="fine">List it once and it repeats every week. Organisers reconfirm every 30 days.</p></div></div>
   <div id="listing-root">${NOSCRIPT("Events")}</div>
-  <p class="listing-note">Listings From Clubs and Organisers · Posters Shared With Permission</p>
+  <p class="listing-note">Listings from clubs and organisers. Posters shared with permission.</p>
 </main>
-<section class="cta-band" aria-labelledby="run-e"><div class="wrap"><div><h2 id="run-e">Run a Weekly Americano?</h2><p>List It Once and It Repeats Every Week. We Hide an Event if It Has Not Been Reconfirmed in 30 Days, So Players Never Turn Up to Nothing.</p></div><a class="btn" href="/submit/#event">Submit an Event</a></div></section>`,
+<section class="cta-band" aria-labelledby="run-e"><div class="wrap"><div><h2 id="run-e">Run a Weekly Americano?</h2><p>List it once and it repeats every week. We hide an event if it has not been reconfirmed in 30 days, so players never turn up to nothing.</p></div><a class="btn" href="/submit/#event">Submit an Event</a></div></section>`,
 });
 
 const aboutPage = () => shell({
@@ -93,7 +93,7 @@ const aboutPage = () => shell({
 const notFoundPage = () => shell({
   title: "Page Not Found | Padel Thailand", path: "/404.html", active: "", noindex: true, description: "This page does not exist. Find a padel club, tournament or event in Thailand.",
   body: `<main class="wrap"><div class="page-head"><span class="badge-ink">404</span><h1 style="margin-top:14px">Page Not Found</h1>
-  <p>That Page Does Not Exist or Has Moved. Try One of These:</p>
+  <p>That page does not exist or has moved. Try one of these:</p>
   <p><a class="btn solid" href="/">Network Map</a> <a class="btn" href="/clubs/">All Clubs</a> <a class="btn" href="/tournaments/">Tournaments</a></p></div></main>`,
 });
 const pages: [string, string][] = [["404.html", notFoundPage()], ["tournaments/index.html", tournamentsPage()], ["events/index.html", eventsPage()], ["about/index.html", aboutPage()]];

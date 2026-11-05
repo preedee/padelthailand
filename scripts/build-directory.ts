@@ -169,13 +169,13 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   const rail = list.filter((c) => where.get(c.slug)!.walkKm != null);
   const noRail = !rail.length && !list.some((c) => where.get(c.slug)!.kind === "rail" || where.get(c.slug)!.offNetwork);
   const areas = [...new Set(list.map((c) => where.get(c.slug)!.area))];
-  const intro = `${n} Padel Clubs and ${courts} ${courts === 1 ? "Court" : "Courts"} in ${name}. ${indoorN} ${indoorN === 1 ? "Club Has" : "Clubs Have"} Indoor Courts and ${bookable.length} List Online Booking.` + (rail.length ? ` ${rail.length} ${rail.length === 1 ? "Club Is" : "Clubs Are"} Within Walking Distance of a BTS or MRT Station.` : "") + (soonN ? ` ${soonN} ${soonN === 1 ? "Club Is" : "Clubs Are"} Opening Soon.` : "");
+  const intro = `${n} padel clubs and ${courts} ${courts === 1 ? "court" : "courts"} in ${name}. ${indoorN} ${indoorN === 1 ? "club has" : "clubs have"} indoor courts and ${bookable.length} list online booking.` + (rail.length ? ` ${rail.length} ${rail.length === 1 ? "club is" : "clubs are"} within walking distance of a BTS or MRT station.` : "") + (soonN ? ` ${soonN} ${soonN === 1 ? "club is" : "clubs are"} opening soon.` : "");
   const ups = tournamentsAll.filter((x) => x.region === listingRegion(name) && tourEnd(x) >= TODAY_BKK).sort((a, b) => (a.startDate ?? a.monthOnly ?? "").localeCompare(b.startDate ?? b.monthOnly ?? "")).slice(0, 4);
   const faq: [string, string][] = [
-    [`How Many Padel Clubs Are in ${name}?`, `${n} Clubs With ${courts} ${courts === 1 ? "Court" : "Courts"} Are Listed on Padel Thailand, and ${indoorN} of Them Have Indoor Courts.`],
-    [`Can I Book a Padel Court Online in ${name}?`, bookable.length ? `${bookable.length} of ${n} Clubs List an Online Booking Link: ${platforms}. The Rest Take Bookings by Phone, Message or Walk-In.` : `None of the ${n} Clubs Lists an Online Booking Link Yet. Use the Phone or Instagram Link on Each Club Page.`],
-    ...(rail.length ? [[`Which Padel Clubs in ${name} Are Near the BTS or MRT?`, `${rail.map((c) => `${shortName(c)} (${where.get(c.slug)!.line}${where.get(c.slug)!.walkKm != null ? `, About ${walkMin(where.get(c.slug)!.walkKm!)} Min on Foot` : ""})`).join("; ")}. Walk Times Are Straight-Line Estimates.`] as [string, string]] : []),
-    ...(noRail ? [[`How Do I Get to Padel Courts in ${name}?`, `There Is No Rail Here. Clubs Are Reached by Taxi, Grab or Scooter, and Each Club Page Has Directions.`] as [string, string]] : []),
+    [`How Many Padel Clubs Are in ${name}?`, `${n} clubs with ${courts} ${courts === 1 ? "court" : "courts"} are listed on Padel Thailand, and ${indoorN} of them have indoor courts.`],
+    [`Can I Book a Padel Court Online in ${name}?`, bookable.length ? `${bookable.length} of ${n} clubs list an online booking link: ${platforms}. The rest take bookings by phone, message or walk-in.` : `None of the ${n} clubs lists an online booking link yet. Use the phone or Instagram link on each club page.`],
+    ...(rail.length ? [[`Which Padel Clubs in ${name} Are Near the BTS or MRT?`, `${rail.map((c) => `${shortName(c)} (${where.get(c.slug)!.line}${where.get(c.slug)!.walkKm != null ? `, about ${walkMin(where.get(c.slug)!.walkKm!)} min on foot` : ""})`).join("; ")}. Walk times are straight-line estimates.`] as [string, string]] : []),
+    ...(noRail ? [[`How Do I Get to Padel Courts in ${name}?`, `There is no rail here. Clubs are reached by taxi, Grab or scooter, and each club page has directions.`] as [string, string]] : []),
   ];
   const others = hubRegions().filter((r) => r[0] !== name);
   const path = hubPath(name);
@@ -187,8 +187,8 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   <h2 style="font-size:30px;margin:32px 0 16px">All ${n} Clubs in ${esc(name)}</h2>
   <div class="grid" id="hub-grid">${list.map(clubCard).join("\n")}</div>
   <h2 style="font-size:30px;margin:40px 0 12px">Upcoming Tournaments in ${esc(name)}</h2>
-  ${ups.length ? `<ul class="tour-list">${ups.map((x) => tourRow(x, "region_page")).join("")}</ul>` : `<p class="fine" style="margin:0 0 12px">No Upcoming Tournaments Listed in ${esc(name)} Right Now.</p>`}
-  <div class="tour-note"><span>Every Tournament in Thailand, With Posters.</span><a class="btn" href="/tournaments/?region=${encodeURIComponent(listingRegion(name))}">See Tournaments in ${esc(name)} ${ICON.arrow}</a></div>
+  ${ups.length ? `<ul class="tour-list">${ups.map((x) => tourRow(x, "region_page")).join("")}</ul>` : `<p class="fine" style="margin:0 0 12px">No upcoming tournaments listed in ${esc(name)} right now.</p>`}
+  <div class="tour-note"><span>Every tournament in Thailand, with posters.</span><a class="btn" href="/tournaments/?region=${encodeURIComponent(listingRegion(name))}">See Tournaments in ${esc(name)} ${ICON.arrow}</a></div>
   <h2 style="font-size:30px;margin:40px 0 4px">Questions About Padel in ${esc(name)}</h2>
   <dl class="faq">${faq.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl>
   <h2 style="font-size:30px;margin:40px 0 12px">Other Regions</h2>
@@ -208,7 +208,7 @@ function clubsPage(): string {
   const regionBtns = REGION_ORDER.map(([name, , slugs, color]) => `<button class="chip sq" type="button" data-filter="${esc(name)}" aria-pressed="false"><span class="dot-line" style="background:${color}"></span>${esc(name)} <span class="count">${slugs.length}</span></button>`).join("");
   const body = `<main class="wrap">
   <div class="page-head"><span class="badge-ink">Clubs</span><h1 style="margin-top:14px">Every Stop on the Network</h1>
-  <p>${clubs.length} Clubs in Thailand. Browse by Photo or as a List, Then Pick a Line. Every Booking Button Goes to Where the Club Actually Takes Bookings.</p>
+  <p>${clubs.length} clubs in Thailand. Browse by photo or as a list, then pick a line. Every booking button goes to where the club actually takes bookings.</p>
   <p><a href="/submit/#club" style="font-size:14px">Missing a Club? Add It →</a></p>
   <p class="fine">Browse by Region: ${hubRegions().map((r) => `<a href="${hubPath(r[0])}">${esc(r[0])}</a>`).join(" · ")}</p></div>
   <div class="filters" role="group" aria-label="Filter by region">
@@ -220,7 +220,7 @@ function clubsPage(): string {
   <div class="grid" id="club-grid">
 ${sorted.map(clubCard).join("\n")}
   </div>
-  <p class="empty" id="no-match" hidden>No Clubs Match That Filter.</p>
+  <p class="empty" id="no-match" hidden>No clubs match that filter.</p>
 </main>`;
   return shell({ title: "Clubs | Padel Thailand", description: `All ${clubs.length} padel clubs in Thailand with courts, photos and where to book. Bangkok, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/clubs/", active: "clubs", body,
     ld: [{ "@context": "https://schema.org", "@type": "ItemList", name: "Padel clubs in Thailand", itemListElement: sorted.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) }, breadcrumbLd([["Padel Thailand", "/"], ["Clubs", "/clubs/"]])] });
@@ -317,7 +317,7 @@ function clubPage(c: Club): string {
     <div class="facts">${facts.join("")}${c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '<span class="open-now" data-open hidden></span>'}</div></div></section>
   <div class="club-grid">
     <div class="gal-col">${gal}
-      <div class="gal-note"><span>${ph.length ? "Photos Are Credited to Their Source." : "Club-Supplied Photos With a Credit Line Replace This Placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
+      <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
     <aside class="aside" aria-label="Contact and address">
       ${contacts.length ? `<section class="card" aria-label="Contact"><ul class="contact">${contacts.join("")}</ul></section>` : ""}
       ${addr}
@@ -368,12 +368,12 @@ function homePage(): string {
     <div class="chips" role="group" aria-label="Quick filters"><button class="chip" type="button" data-f="indoor" aria-pressed="false">Indoor</button><button class="chip" type="button" data-f="covered" aria-pressed="false">Covered</button><button class="chip" type="button" data-f="rail" aria-pressed="false">Near BTS/MRT</button><button class="chip" type="button" data-f="book" aria-pressed="false">Book Online</button></div></form></section>
 <section class="wrap" id="map" aria-labelledby="map-h"><div class="map-head"><h2 id="map-h">Network Map</h2><div class="tabs" id="tabs" role="group" aria-label="Map view"></div></div>
   <div class="map-layout"><div class="map-box" id="map-box" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
-  <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, Not to Scale. Walk Times Are Straight-Line Estimates From the Nearest Station. Prefer a List? <a href="#index">See All Clubs by Region</a>.</span></div></section>
+  <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See All Clubs by Region</a>.</span></div></section>
 <section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=21"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=22"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
