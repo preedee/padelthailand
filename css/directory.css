@@ -387,3 +387,18 @@ body.cookie-open { padding-bottom: 130px; }
 .skip { position: absolute; left: 8px; top: -60px; z-index: 3000; padding: 12px 16px; background: var(--ink); color: #fff; font-weight: 600; border-radius: 4px; }
 .skip:focus { top: 8px; }
 main:focus { outline: none; }
+
+/* phone map (container is about 360px wide): readable labels, bigger tap areas, no clutter */
+@media (max-width: 760px) {
+  .map-box .stn > span { font-size: 0 !important; }                       /* the count is in the label; at this size it is 3-6px */
+  .map-box .cap { display: none; }
+  .map-box .lbl .nm { font-size: 12px; }
+  .map-box .lbl .nm.hub { font-size: 14px; }
+  .map-box .lbl .th, .map-box .lbl .nm.tick, .map-box .tagline, .map-box .cm-tag { font-size: 11px; }
+  .map-box .lbl .th, .map-box .lbl .nm.tick { display: none; }   /* secondary station names: the club stations are enough on a phone */
+  .map-box[data-bg="bkk"] .lbl .nm, .map-box[data-bg="gulf"] .lbl .nm { font-size: 11px; }   /* dense views: 12px would overprint */                         
+  .map-box .poi:not(:has(.plane)) .lbl { display: none; }      /* landmark names; airports keep theirs */
+  .map-box .poi .lbl { font-size: 11px; }
+  .map-box .stn::before { content: ""; position: absolute; inset: -14px; }   /* hit area around the dot, the dot is unchanged */
+  .map-box[data-bg="bkk"] .stn::before, .map-box[data-bg="gulf"] .stn::before, .map-box[data-bg="phk"] .stn::before { inset: -6px; }   /* dense views: smaller so neighbours stay tappable */
+}

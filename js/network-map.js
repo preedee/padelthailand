@@ -249,6 +249,17 @@
         var s = curStops[i], l = el.querySelector('.lbl'); if (!s || !l || !FLIP[s.lp]) return;
         var r = l.getBoundingClientRect();
         if (r.left < bx.left || r.right > bx.right || r.top < bx.top || r.bottom > bx.bottom) { l.style.cssText = lab(FLIP[s.lp], s.d / 2); }
+        // still hanging over a side after the flip (long names on a narrow map): nudge it back inside
+        var r2 = l.getBoundingClientRect(), dx = 0;
+        if (r2.left < bx.left) dx = bx.left - r2.left; else if (r2.right > bx.right) dx = bx.right - r2.right;
+        if (dx) l.style.marginLeft = Math.round(dx) + 'px';
+      });
+      // airport labels are not stops: same nudge so none is cut off at the edge
+      Array.prototype.forEach.call(layer.querySelectorAll('.poi .lbl'), function (l) {
+        if (!l.offsetParent) return;
+        var r = l.getBoundingClientRect(), dx = 0;
+        if (r.left < bx.left) dx = bx.left - r.left; else if (r.right > bx.right) dx = bx.right - r.right;
+        if (dx) l.style.marginLeft = Math.round(dx) + 'px';
       });
     }
 
