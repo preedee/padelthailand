@@ -65,9 +65,20 @@
   var drv = $('#driver');
   var openD = $('[data-driver]'), closeD = $('[data-driver-close]');
   if (drv && openD) {
-    openD.addEventListener('click', function () { drv.hidden = false; if (closeD) closeD.focus(); });
-    if (closeD) closeD.addEventListener('click', function () { drv.hidden = true; openD.focus(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) { drv.hidden = true; openD.focus(); } });
+    // While the dialog is open the rest of the page is inert, so Tab cannot leave it
+    var setBg = function (off) {
+      // inert every sibling along the path from the dialog up to <body>, never the dialog or its ancestors
+      for (var n = drv; n && n !== document.body; n = n.parentNode) {
+        Array.prototype.forEach.call(n.parentNode.children, function (sib) {
+          if (sib === n || /^(SCRIPT|STYLE|LINK)$/.test(sib.tagName)) return;
+          if (off) sib.setAttribute('inert', ''); else sib.removeAttribute('inert');
+        });
+      }
+    };
+    var shut = function () { drv.hidden = true; setBg(false); openD.focus(); };
+    openD.addEventListener('click', function () { drv.hidden = false; setBg(true); if (closeD) closeD.focus(); });
+    if (closeD) closeD.addEventListener('click', shut);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drv.hidden) shut(); });
   }
   $$('[data-copy]').forEach(function (b) { b.addEventListener('click', function () {
     var t = b.dataset.copy, old = b.textContent;
