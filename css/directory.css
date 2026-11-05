@@ -199,7 +199,7 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .pcard .area { font-size: 13px; color: var(--text-3); }
 .pcard .nm { font-family: var(--font-display); font-weight: 800; font-stretch: 92%; font-size: 20px; line-height: 1.1; color: var(--ink); }
 .pcard .meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--text-2); align-items: center; }
-.pcard .credit { font-size: 11.5px; color: var(--text-3); }
+.pcard .credit { font-size: 13px; color: var(--text-3); }
 .grid.list { grid-template-columns: 1fr; gap: 0; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--surface); }
 .grid.list .pcard { flex-direction: row; align-items: center; border: 0; border-bottom: 1px solid var(--fill); border-radius: 0; }
 .grid.list .pcard:hover { box-shadow: none; background: var(--ground); }
@@ -232,7 +232,7 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .gal .main img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gal .main .arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ink); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .gal .main .arrow.p { left: 12px; } .gal .main .arrow.n { right: 12px; }
-.gal .main .cr { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 12px; font-size: 12px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.65)); }
+.gal .main .cr { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 12px 8px; font-size: 13px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.8)); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 .gal .th { border: 1.5px solid var(--ink); border-radius: 6px; padding: 0; overflow: hidden; background: var(--fill) center / cover no-repeat; cursor: pointer; position: relative; min-height: 44px; }
 .gal .th[aria-current="true"] { outline: 3px solid var(--ink); outline-offset: -3px; }
 .gal .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -348,7 +348,7 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 .tour-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .tour-list li { display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; }
 .tdate { flex: none; min-width: 52px; padding: 4px 6px; text-align: center; background: var(--ink); color: #fff; border-radius: 4px; line-height: 1; }
-.tdate small { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.tdate small { display: block; font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .tdate b { font-family: var(--font-display); font-weight: 850; font-size: 22px; }
 .tour-list .tt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .tour-list .tt small { color: var(--text-3); font-size: 13px; }

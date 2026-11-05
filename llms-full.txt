@@ -1,0 +1,85 @@
+# Padel Thailand: club index
+
+> 66 padel clubs in Thailand, one line each. Source: padelthailand.com club pages (see https://padelthailand.com/llms.txt). Court counts are as listed by the club or Google; walk times and prices are on each club page.
+
+## Bangkok
+- [Baan Padel](https://padelthailand.com/clubs/baan-padel/): Bangkok, Watthana; 7 courts (7 indoor); books via Playtomic
+- [Bangkok Padel](https://padelthailand.com/clubs/bangkok-padel/): Bangkok, Watthana; 4 courts (3 covered, 1 outdoor); books via Playtomic
+- [Bel Club 22](https://padelthailand.com/clubs/bel-club-22/): Bangkok, Khet Huai Khwang; 3 courts (2 covered, 1 outdoor); books via Playtomic
+- [Kross Padel Asoke](https://padelthailand.com/clubs/kross-padel-asoke/): Bangkok, Watthana; 2 courts (2 covered); books via Kross
+- [Kross Padel Indoor Bangkok](https://padelthailand.com/clubs/kross-padel-indoor-bangkok/): Bangkok, Khet Khlong Toei; 3 courts (3 indoor); books via Kross
+- [Kross Padel On Nut](https://padelthailand.com/clubs/kross-padel-on-nut/): Bangkok, Watthana; 3 courts (2 covered, 1 outdoor); books via Kross
+- [Kross Padel Sky Bangkok](https://padelthailand.com/clubs/kross-padel-sky-bangkok/): Bangkok, Watthana; 2 courts (2 outdoor); books via Kross
+- [MOMA Padel Club Sathorn](https://padelthailand.com/clubs/moma-padel-club-sathorn/): Bangkok, Sathorn; court count not listed; no online booking link; opening soon
+- [No Drama Padel](https://padelthailand.com/clubs/no-drama-padel/): Bangkok, Khet Khlong San; 4 courts (4 indoor); books via Playtomic
+- [Pad Thai Padel](https://padelthailand.com/clubs/pad-thai-padel/): Bangkok, Khet Khlong Toei; 3 courts (2 covered, 1 outdoor); no online booking link
+- [Padel Asia - Bangkok](https://padelthailand.com/clubs/padel-asia-bangkok/): Bangkok, Huai Khwang; 3 courts (3 covered); books via LINE
+- [Padel Tennis Bangkok: Open 24 Hours at Banthat Thong Road. (สนามกีฬาปาเดลถนนบรรทัดทอง เปิด 24 ชั่วโมง)](https://padelthailand.com/clubs/padel-tennis-bangkok-open-24-hours-at-banthat-thong-road-24/): Bangkok, Pathum Wan; 4 courts (4 outdoor); no online booking link
+- [Pickleball & Padel Decathlon Bangyai](https://padelthailand.com/clubs/pickleball-and-padel-decathlon-bangyai/): Bangkok, Sao ThongHi, Nonthaburi; 1 court (1 covered); no online booking link
+- [Pista Samakom Racquet & Social Club](https://padelthailand.com/clubs/pista-samakom-racquet-and-social-club/): Bangkok, Tambon Bang Talat, Nonthaburi; 4 courts (4 indoor); no online booking link
+- [RSC Ratchaphruek Sports Club](https://padelthailand.com/clubs/rsc-ratchaphruek-sports-club/): Bangkok, Taling Chan; 5 courts (5 covered); books via Playtomic
+- [Sterling Sport and Wellness (Sukhumvit 24)](https://padelthailand.com/clubs/sterling-sport-and-wellness-sukhumvit-24/): Bangkok, Khet Khlong Toei; 5 courts (5 indoor); no online booking link
+- [Sunshine Padel Club](https://padelthailand.com/clubs/sunshine-padel-club/): Bangkok, Khet Bang Na; 4 courts (2 covered, 2 outdoor); books via Playtomic
+- [the padel co. - Bangkok](https://padelthailand.com/clubs/the-padel-co-bangkok/): Bangkok, Khet Khlong Toei; 2 courts (2 indoor); books via Playtomic
+- [Top Padel Bangkok](https://padelthailand.com/clubs/top-padel-bangkok/): Bangkok, Khet Ratchathewi; 2 courts (2 outdoor); no online booking link
+- [Vita Padel Ekkamai](https://padelthailand.com/clubs/vita-padel-ekkamai/): Bangkok, Watthana; 3 courts (2 indoor, 1 outdoor); books via Playtomic; opening soon
+
+## Samui & Phangan
+- [Bantai Padel](https://padelthailand.com/clubs/bantai-padel/): Samui & Phangan, Tambon Mae Nam, Koh Samui; 3 courts (3 outdoor); books via Playtomic
+- [Coco Padel Club](https://padelthailand.com/clubs/coco-padel-club/): Samui & Phangan, Tambon Maret, Koh Samui; 1 court (1 covered); books via Playtomic
+- [Koh Tao Athletic Club Sport Complex / ศูนย์กีฬาเกาะเต่า แอธเลติก คลับ](https://padelthailand.com/clubs/koh-tao-athletic-club-sport-complex/): Samui & Phangan, Amphoe Ko Pha-ngan, Koh Tao; 2 courts (2 outdoor); books via Playtomic
+- [KOH’S 33 STADIUM](https://padelthailand.com/clubs/koh-s-33-stadium/): Samui & Phangan, Maret, Koh Samui; 2 courts (2 outdoor); books via Playtomic
+- [Lamai Padel - Samui](https://padelthailand.com/clubs/lamai-padel-samui/): Samui & Phangan, Tambon Maret, Koh Samui; 2 courts (2 outdoor); books via Playtomic
+- [Padel & Co](https://padelthailand.com/clubs/padel-and-co/): Samui & Phangan, Ko Pha-ngan District, Koh Phangan; 7 courts (4 covered, 3 outdoor); no online booking link
+- [Padel Paradise Lamai](https://padelthailand.com/clubs/padel-paradise-lamai/): Samui & Phangan, Tambon Maret, Koh Samui; 3 courts (3 covered); books via Playtomic
+- [Padel Phangan Suite](https://padelthailand.com/clubs/padel-phangan-suite-family-suite/): Samui & Phangan, Ko Pha-ngan District, Koh Phangan; 1 court (1 outdoor); no online booking link
+- [Padel Samui](https://padelthailand.com/clubs/padel-samui/): Samui & Phangan, Tambon Bo Put, Koh Samui; 4 courts (2 covered, 2 outdoor); books via Facebook
+- [Padel tennis OXYGEN village](https://padelthailand.com/clubs/padel-tennis-oxygen-village/): Samui & Phangan, Ko Phan-gan, Koh Phangan; 2 courts (2 covered); books via Playtomic
+- [Padel Tropical](https://padelthailand.com/clubs/padel-tropical/): Samui & Phangan, Tambon Bo Put, Koh Samui; 5 courts (3 covered, 2 outdoor); books via Playtomic
+- [Phangan Padel Club](https://padelthailand.com/clubs/phangan-padel-club/): Samui & Phangan, Amphoe Ko Pha-ngan, Koh Phangan; 2 courts; no online booking link
+- [Prime Padel Samui](https://padelthailand.com/clubs/prime-padel-samui/): Samui & Phangan, Mae Nam, Koh Samui; 6 courts (4 covered, 2 outdoor); books via Playtomic
+- [Purple Padel Samui](https://padelthailand.com/clubs/purple-padel-samui/): Samui & Phangan, Tambon Taling Ngam, Koh Samui; 1 court (1 outdoor); no online booking link
+- [RTF Padel Club](https://padelthailand.com/clubs/rtf-padel-club/): Samui & Phangan, Koh Phangan; court count not listed; no online booking link
+- [Success Padel and Pilates Samui](https://padelthailand.com/clubs/success-padel-and-pilates-samui/): Samui & Phangan, Tambon Bo Put, Koh Samui; 3 courts; no online booking link
+- [The Padel Club at Samui Karting](https://padelthailand.com/clubs/the-padel-club-at-samui-karting/): Samui & Phangan, Tambon Bo Put, Koh Samui; 1 court (1 outdoor); books via website
+- [Zen Padel Phangan](https://padelthailand.com/clubs/zen-padel-phangan/): Samui & Phangan, Koh phangan, Koh Phangan; 4 courts (3 covered, 1 outdoor); books via Playtomic
+
+## Phuket
+- [Destination Padel Club](https://padelthailand.com/clubs/destination-padel-club/): Phuket, Amphoe Thalang; 6 courts (4 covered, 2 outdoor); books via Playtomic
+- [FifteenLove Tennis & Padel Club](https://padelthailand.com/clubs/fifteenlove-tennis-and-padel-club/): Phuket, Amphoe Mueang Phuket; 2 courts (2 covered); no online booking link
+- [Padel Bay Indoor Club](https://padelthailand.com/clubs/padel-bay-indoor-club/): Phuket, Amphoe Thalang; 3 courts (3 indoor); books via WhatsApp
+- [Padel Phuket @ Blue Tree](https://padelthailand.com/clubs/padel-phuket-blue-tree/): Phuket, Amphoe Thalang; 6 courts (4 indoor, 2 outdoor); books via Matchi
+- [Padel Phuket @ Chalong](https://padelthailand.com/clubs/padel-phuket-chalong/): Phuket, Muang; 3 courts (3 indoor); books via Matchi
+- [Padel Tennis Phuket](https://padelthailand.com/clubs/padel-tennis-phuket/): Phuket; 4 courts (4 covered); books via Facebook
+- [PAT Tennis and Padel Club / PAT Tennis & Padel Club](https://padelthailand.com/clubs/pat-tennis-and-padel-club/): Phuket, Muang; 4 courts (4 covered); books via Playtomic
+- [PTP Phuket PADEL & TENNIS Bang Tao](https://padelthailand.com/clubs/ptp-phuket-padel-and-tennis-bang-tao/): Phuket, Thalang District; 6 courts (1 indoor, 5 covered); books via Playtomic
+- [Rawai Padel](https://padelthailand.com/clubs/rawai-padel/): Phuket, Amphoe Mueang Phuket; 3 courts (3 covered); books via Playtomic
+- [Sensei Padel Phuket](https://padelthailand.com/clubs/sensei-padel-phuket/): Phuket, Amphoe Kathu; 4 courts (4 outdoor); books via Playtomic
+- [SIGMA Padel Club](https://padelthailand.com/clubs/sigma-padel-club/): Phuket, Muengphuket; 5 courts (5 covered); books via LINE
+- [WAREHAUS.club | PADEL and more](https://padelthailand.com/clubs/warehaus-club-padel-and-more/): Phuket, Amphoe Thalang; 5 courts (5 covered); no online booking link
+- [Xplore Padel Phuket](https://padelthailand.com/clubs/xplore-padel-phuket/): Phuket; 4 courts (4 indoor); books via Playtomic
+
+## Pattaya & Bangsaen
+- [Bangsaen Padel](https://padelthailand.com/clubs/bangsaen-padel/): Pattaya & Bangsaen, Saensook, Bangsaen; 1 court (1 covered); no online booking link
+- [Chilli Padel Club](https://padelthailand.com/clubs/chilli-padel-club/): Pattaya & Bangsaen, Amphoe Bang Lamung, Pattaya; 6 courts (5 covered, 1 outdoor); books via Playtomic
+- [Pattaya Padel Club](https://padelthailand.com/clubs/pattaya-padel-club/): Pattaya & Bangsaen, Amphoe Bang Lamung, Pattaya; 3 courts; no online booking link
+- [Play Padel Pattaya](https://padelthailand.com/clubs/play-padel-pattaya/): Pattaya & Bangsaen, Amphoe Bang Lamung, Pattaya; 2 courts (2 indoor); no online booking link
+- [Prime Padel Pattaya](https://padelthailand.com/clubs/prime-padel-pattaya/): Pattaya & Bangsaen, Amphoe Bang Lamung, Pattaya; 4 courts (4 indoor); books via Playtomic
+
+## Chiang Mai
+- [AMA Padel Pilates Recovery](https://padelthailand.com/clubs/ama-padel-pilates-recovery/): Chiang Mai, Tambon Chang Phueak; 4 courts (1 indoor, 3 covered); books via Playtomic
+- [Lanna Padel 泰國首座華人Padel球場](https://padelthailand.com/clubs/lanna-padel-padel/): Chiang Mai, Tambon Tha Sala; 4 courts (4 covered); books via Playtomic
+- [Padel Club Chiang Mai](https://padelthailand.com/clubs/padel-club-chiang-mai/): Chiang Mai, Amphoe Saraphi; 4 courts (4 indoor); books via Playtomic
+- [PADEL.CNX](https://padelthailand.com/clubs/padel-cnx/): Chiang Mai, Tambon Chang Phueak; 4 courts (4 covered); books via Playtomic
+
+## Hua Hin
+- [Hua Hin Padel Center @Thailandresort](https://padelthailand.com/clubs/hua-hin-padel-center-thailandresort/): Hua Hin; 4 courts (2 covered, 2 outdoor); no online booking link
+- [Padel Of Thailand](https://padelthailand.com/clubs/padel-of-thailand/): Hua Hin, Amphoe Hua Hin; 4 courts (4 indoor); books via Matchi
+- [Padel Sozial](https://padelthailand.com/clubs/padel-sozial/): Hua Hin, Amphoe Hua Hin; 6 courts (6 indoor); books via Playtomic
+
+## Krabi & Lanta
+- [Highlands Padel](https://padelthailand.com/clubs/highlands-padel/): Krabi & Lanta, Amphoe Ko Lanta, Krabi; 1 court (1 covered); books via website
+- [Sabai Padel Krabi](https://padelthailand.com/clubs/sabai-padel-krabi/): Krabi & Lanta, Amphoe Mueang Krabi, Krabi; 4 courts (3 covered, 1 outdoor); no online booking link
+
+## Koh Chang
+- [Padel Lodge Koh Chang](https://padelthailand.com/clubs/padel-lodge-koh-chang/): Koh Chang, Amphoe Ko Chang; 1 court; books via website

@@ -224,7 +224,7 @@ ${sorted.map(clubCard).join("\n")}
   </div>
   <p class="empty" id="no-match" hidden>No Clubs Match That Filter.</p>
 </main>`;
-  return shell({ title: "Clubs | Padel Thailand", description: `All ${clubs.length} padel clubs in Thailand with courts, photos and where to book. Bangkok, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/clubs/", active: "clubs", body,
+  return shell({ title: `Padel Clubs in Thailand: ${clubs.length} Clubs | Padel Thailand`, description: `All ${clubs.length} padel clubs in Thailand with courts, photos and where to book. Bangkok, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/clubs/", active: "clubs", body,
     ld: [{ "@context": "https://schema.org", "@type": "ItemList", name: "Padel clubs in Thailand", itemListElement: sorted.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) }, breadcrumbLd([["Padel Thailand", "/"], ["Clubs", "/clubs/"]])] });
 }
 
@@ -291,7 +291,8 @@ function clubPage(c: Club): string {
         ${ph.slice(1, 5).map((p, i) => `<button class="th" type="button" data-i="${i + 1}" aria-label="Show photo ${i + 2} of ${ph.length}"><img loading="lazy" decoding="async" src="${esc(p.thumb ?? p.url)}" alt="">${i === 3 && ph.length > 5 ? `<span class="more">+${ph.length - 5} More</span>` : ""}</button>`).join("")}</div>`
     : `<div class="gal empty-gal"><div class="gal-empty">${ICON.cam}<strong>Photos Not Available Yet</strong><span>Photos Are Shown Only With a Credit Line.</span></div></div>`;
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
-  const aboutLine = `${c.name} Is a Padel Club in ${c.city}, Thailand` + (c.courts.total ? ` With ${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type[0].toUpperCase() + x.type.slice(1)}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as Opening Soon." : "") + (c.rating ? ` Rated ${c.rating} From ${c.ratingCount} Google Ratings.` : "") + (w.walkKm != null ? ` About ${wMin} Minutes on Foot From the Nearest Station (Straight-Line Estimate).` : "");
+  // machine-readable description: sentence case, and no rating (the stars are Google's, not ours, so they stay out of structured data)
+  const aboutLine = `${c.name} is a padel club in ${c.city}, Thailand` + (c.courts.total ? ` with ${c.courts.total} ${c.courts.total === 1 ? "court" : "courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as opening soon." : "") + (w.walkKm != null ? ` About ${wMin} minutes on foot from the nearest station (straight-line estimate).` : "");
   // the Book button sits at the right of the header (phones use the sticky bar at the bottom instead)
   const headBook = c.booking ? `<a class="btn solid book-cta" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "club_page" })}>${platIcon(c)}${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid book-cta" href="tel:${esc(c.tel)}"${trk("contact_click", { club_slug: c.slug, method: "phone", place: "club_header" })}>Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : "");
   const dirUrl = c.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`;
@@ -337,7 +338,7 @@ function clubPage(c: Club): string {
   const seoName = c.name.length > 48 ? shortName(c) : c.name;
   const clean = (u: string) => { try { const x = new URL(u); [...x.searchParams.keys()].filter((k) => k.startsWith("utm_")).forEach((k) => x.searchParams.delete(k)); return x.href; } catch { return u; } };
   const ld = [{
-    "@context": "https://schema.org", "@type": "SportsActivityLocation", "@id": `${SITE}/clubs/${c.slug}/#club`, name: seoName, url: `${SITE}/clubs/${c.slug}/`, description: aboutLine,
+    "@context": "https://schema.org", "@type": "SportsActivityLocation", "@id": `${SITE}/clubs/${c.slug}/#club`, name: seoName, ...(c.nameTh ? { alternateName: c.nameTh } : {}), url: `${SITE}/clubs/${c.slug}/`, description: aboutLine,
     ...(ph.length ? { image: [...new Set(ph.map((p) => p.url))] } : {}), ...(c.phone ? { telephone: c.phone } : {}),
     address: { "@type": "PostalAddress", ...(addrOk(c) ? { streetAddress: c.address } : {}), addressLocality: c.city, addressCountry: "TH" },
     geo: { "@type": "GeoCoordinates", latitude: c.lat, longitude: c.lng }, hasMap: c.mapsUrl || dirUrl, sameAs: [...new Set([c.website, c.instagramUrl, c.facebookUrl].filter(Boolean).map(clean))],
@@ -350,7 +351,7 @@ function clubPage(c: Club): string {
   // registry names are sometimes Google's full keyword-stuffed listing; search snippets cut titles near 60 and descriptions near 160 characters
   const seoDesc = `${seoName} is a padel club in ${c.city}, Thailand${c.courts.total ? ` with ${c.courts.total} courts` : ""}. ${w.line}${w.stop ? `, ${stopTxt.toLowerCase()}` : ""}. Hours, booking and directions.`;
   return shell({ title: `${seoName}, ${c.city} | Padel Thailand`, description: seoDesc.length > 160 ? seoDesc.slice(0, 157).replace(/\s+\S*$/, "") + "…" : seoDesc,
-    path: `/clubs/${c.slug}/`, active: "clubs", body, image: ph[0]?.url, ld, bodyClass: "has-bar" });
+    path: `/clubs/${c.slug}/`, active: "clubs", body, image: ph[0]?.url, imageAlt: ph[0] ? `${seoName} padel courts in ${c.city}` : undefined, ld, bodyClass: "has-bar" });
 }
 
 // ---------- home ----------
@@ -369,13 +370,13 @@ function homePage(): string {
     <div class="suggest" id="suggest" role="listbox" hidden></div>
     <div class="chips" role="group" aria-label="Quick filters"><button class="chip" type="button" data-f="indoor" aria-pressed="false">Indoor</button><button class="chip" type="button" data-f="covered" aria-pressed="false">Covered</button><button class="chip" type="button" data-f="rail" aria-pressed="false">Near BTS/MRT</button><button class="chip" type="button" data-f="book" aria-pressed="false">Book Online</button></div></form></section>
 <section class="wrap" id="map" aria-labelledby="map-h"><div class="map-head"><h2 id="map-h">Network Map</h2><div class="tabs" id="tabs" role="group" aria-label="Map view"></div></div>
-  <div class="map-layout"><div class="map-box" id="map-box" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
+  <div class="map-layout"><div class="map-box" id="map-box" role="group" aria-label="Schematic network map. The club list below is the keyboard-friendly alternative."></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
   <div class="map-key"><span class="k">${ICON.indoor} Indoor</span><span class="k">${ICON.covered} Covered</span><span class="k">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Schematic, Not to Scale. Walk Times Are Straight-Line Estimates From the Nearest Station. Prefer a List? <a href="#index">See All Clubs by Region</a>.</span></div></section>
 <section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=28"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=29"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
