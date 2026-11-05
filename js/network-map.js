@@ -374,7 +374,13 @@
     }
 
     // ---- events ----
-    box.addEventListener('click', function (e) { var b = e.target.closest('[data-id]'); if (b) go(state.view, b.dataset.id, true); });
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-id]'); if (!b) return;
+      var kept = box.contains(document.activeElement), id = b.dataset.id;
+      go(state.view, id, true);
+      // render() rebuilds the stops, which drops keyboard focus to <body>: put it back on the same stop
+      if (kept) { var again = box.querySelector('button.stn[data-id="' + id + '"]'); if (again) again.focus({ preventScroll: true }); }
+    });
     box.addEventListener('mouseover', function (e) { var b = e.target.closest('[data-id]'); if (b) showTip(b); else hideTip(); });
     box.addEventListener('mouseleave', hideTip);
     box.addEventListener('focusin', function (e) { var b = e.target.closest('[data-id]'); if (b) showTip(b); });
@@ -397,22 +403,45 @@
         var t = q.value.trim().toLowerCase();  if (t.length < 2) { sug.hidden = true; return; }
         var out = [];
         list.forEach(function (c) { var hay = (nm(c.slug) + ' ' + c.name + ' ' + c.city + ' ' + (c.aliases || []).join(' ')).toLowerCase(); if (hay.indexOf(t) > -1) out.push('<a href="/clubs/' + esc(c.slug) + '/" role="option"><span>' + esc(nm(c.slug)) + '</span><small>' + esc(c.city) + '</small></a>'); });
-        net.bkk.forEach(function (b) { if ((b.name + ' ' + b.th).toLowerCase().indexOf(t) > -1) out.push('<a href="#map" role="option" data-st="' + esc(b.id) + '"><span>' + esc(b.name) + '</span><small>' + esc(b.line) + '</small></a>'); });
-        sug.innerHTML = out.slice(0, 8).join('') || '<a href="#" role="option" tabindex="-1"><span>No match. Try the list below.</span></a>'; sug.hidden = false;
+        net.bkk.forEach(function (b) { if ((b.name + ' ' + b.th + ' ' + b.line).toLowerCase().indexOf(t) > -1) out.push('<a href="#map" role="option" data-st="' + esc(b.id) + '"><span>' + esc(b.name) + '</span><small>' + esc(b.line) + '</small></a>'); });
+        sug.innerHTML = out.slice(0, 8).join('') || '<span role="option" aria-disabled="true"><span>No match. Try the list below.</span></span>'; sug.hidden = false;
         if (window.ptTrackSearch) window.ptTrackSearch('home', t, out.length > 0);
       });
       sug.addEventListener('click', function (e) { var a = e.target.closest('[data-st]'); if (a) { e.preventDefault(); go('bkk', a.dataset.st, true); sug.hidden = true; document.getElementById('map').scrollIntoView(); } });
       document.addEventListener('click', function (e) { if (!e.target.closest('.finder')) sug.hidden = true; });
-      q.addEventListener('keydown', function (e) { if (e.key === 'Escape') sug.hidden = true; });
+      q.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') sug.hidden = true;
+        if (e.key === 'ArrowDown' && !sug.hidden) { var f = sug.querySelector('a'); if (f) { e.preventDefault(); f.focus(); } }
+      });
+      sug.addEventListener('keydown', function (e) {   // arrow keys move through the suggestions, Escape goes back to the box
+        var links = Array.prototype.slice.call(sug.querySelectorAll('a')), at = links.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown' && at < links.length - 1) { e.preventDefault(); links[at + 1].focus(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); if (at > 0) links[at - 1].focus(); else q.focus(); }
+        else if (e.key === 'Escape') { sug.hidden = true; q.focus(); }
+      });
+    }
+    var nearMsg = null;
+    function say(t) {   // one polite status line under the finder
+      if (!nearMsg) { nearMsg = document.createElement('p'); nearMsg.className = 'fine'; nearMsg.setAttribute('role', 'status'); nearMsg.style.margin = '8px 0 0'; (near.closest('.finder') || near.parentNode).appendChild(nearMsg); }
+      nearMsg.textContent = t;
+    }
+    function km(lat1, lng1, lat2, lng2) {   // haversine distance in km
+      var r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r;
+      var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 12742 * Math.asin(Math.sqrt(h));
     }
     if (near) near.addEventListener('click', function () {
-      if (!navigator.geolocation) return;
+      if (!navigator.geolocation) { say('Your browser cannot share your location. Type a club or station instead.'); return; }
       near.textContent = 'Locating…';
       navigator.geolocation.getCurrentPosition(function (pos) {
         var best = null, bd = 1e9;
-        list.forEach(function (c) { var dx = (c.lng - pos.coords.longitude) * Math.cos(pos.coords.latitude * Math.PI / 180), dy = c.lat - pos.coords.latitude, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } });
-        near.textContent = 'Near Me'; if (best) focusClub(best.slug);
-      }, function () { near.textContent = 'Near Me'; q.placeholder = 'Location Blocked. Type a Club or Station.'; }, { timeout: 8000 });
+        list.forEach(function (c) { var d = km(pos.coords.latitude, pos.coords.longitude, c.lat, c.lng); if (d < bd) { bd = d; best = c; } });
+        near.textContent = 'Near Me';
+        if (!best) return;
+        var far = bd >= 100, dist = bd < 10 ? bd.toFixed(1) : Math.round(bd).toLocaleString('en');
+        say(far ? 'You are far from Thailand. The nearest club is ' + nm(best.slug) + ', ' + dist + ' km away.' : 'Nearest club: ' + nm(best.slug) + ', ' + dist + ' km away.');
+        focusClub(best.slug);
+      }, function () { near.textContent = 'Near Me'; q.placeholder = 'Location Blocked. Type a Club or Station.'; say('Location is blocked. Type a club or station instead.'); }, { timeout: 8000 });
     });
 
     render();

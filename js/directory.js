@@ -53,12 +53,20 @@
       i = (n + photos.length) % photos.length;
       img.src = photos[i].u; img.alt = nm + ' photo ' + (i + 1) + ' of ' + photos.length;
       cr.textContent = photos[i].a ? 'Photo: ' + photos[i].a + ' · Google Maps' : '';
-      $$('.th', gal).forEach(function (t) { t.setAttribute('aria-current', Number(t.dataset.i) === i ? 'true' : 'false'); });
+      // the strip always shows the other photos (not the one on show), so any photo, including the first, stays one tap away
+      var others = []; photos.forEach(function (_, k) { if (k !== i) others.push(k); });
+      $$('.th', gal).forEach(function (t, k) {
+        var idx = others[k]; if (idx == null) { t.hidden = true; return; }
+        t.hidden = false; t.dataset.i = idx;
+        var ti = $('img', t); if (ti) ti.src = photos[idx].t || photos[idx].u;
+        t.setAttribute('aria-label', 'Show photo ' + (idx + 1) + ' of ' + photos.length);
+      });
     };
     var p = $('[data-prev]', gal), n = $('[data-next]', gal);
     if (p) p.addEventListener('click', function () { show(i - 1); });
     if (n) n.addEventListener('click', function () { show(i + 1); });
     $$('.th', gal).forEach(function (t) { t.addEventListener('click', function () { show(Number(t.dataset.i)); }); });
+    gal.addEventListener('keydown', function (e) { if (e.key === 'ArrowLeft') { e.preventDefault(); show(i - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); show(i + 1); } });
   }
 
   // ---- Show to Driver + copy ----

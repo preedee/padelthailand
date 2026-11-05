@@ -206,7 +206,7 @@
       var a = [];
       st.region.forEach(function (v) { a.push(['region', v, v]); }); st.gender.forEach(function (v) { a.push(['gender', v, GENDER_LABEL[v] || v]); });
       st.level.forEach(function (v) { a.push(['level', v, v]); }); st.format.forEach(function (v) { a.push(['format', v, v]); });
-      if (st.club) a.push(['club', st.club, clubName(st.club)]); if (st.q) a.push(['q', st.q, '"' + st.q + '"']);
+      if (st.club) a.push(['club', st.club, clubName(st.club) || st.club.replace(/-/g, ' ').replace(/\b[a-z]/g, function (m) { return m.toUpperCase(); })]); if (st.q) a.push(['q', st.q, '"' + st.q + '"']);
       if (st.when !== 'any' && st.tab === 'up') a.push(['when', st.when, { week: 'This Week', month: 'This Month', next: 'Next Month' }[st.when]]);
       if (st.regOpen && st.tab === 'up') a.push(['regOpen', '1', 'Registration Link Only']);
       return a;
