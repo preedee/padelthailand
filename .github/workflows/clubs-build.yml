@@ -16,6 +16,7 @@ on:
     paths:
       - data/club-photo-picks.json
       - data/club-photo-hidden.json
+      - data/club-photo-seen.json
 
 permissions:
   contents: write

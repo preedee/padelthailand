@@ -4,13 +4,14 @@
 (function () {
   'use strict';
   var KEY = 'pt-photo-admin-v2', TOKEN_KEY = 'pt-gh-token';
-  var REPO = 'preedee/padelthailand', BRANCH = 'main', PICKS_FILE = 'data/club-photo-picks.json', HIDDEN_FILE = 'data/club-photo-hidden.json';
+  var REPO = 'preedee/padelthailand', BRANCH = 'main', PICKS_FILE = 'data/club-photo-picks.json', HIDDEN_FILE = 'data/club-photo-hidden.json', SEEN_FILE = 'data/club-photo-seen.json';
   var $ = function (s, r) { return (r || document).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var parse = function (id) { try { return JSON.parse($(id).textContent) || null; } catch (e) { return null; } };
-  var saved = { picks: parse('#pk-saved') || {}, hidden: parse('#pk-hidden') || [] };   // what the site currently uses
+  var saved = { picks: parse('#pk-saved') || {}, hidden: parse('#pk-hidden') || [], seen: parse('#pk-seen') || [] };   // what the site currently uses
   var state = null;
   try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : null; } catch (e) {}
   if (!state || typeof state.picks !== 'object' || !Array.isArray(state.hidden)) state = clone(saved);
+  if (!Array.isArray(state.seen)) state.seen = saved.seen.slice();
   var filter = 'all', q = '';
   var msg = $('#pk-msg');
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -22,6 +23,9 @@
   function hiddenJson() { return JSON.stringify(state.hidden.slice().sort(), null, 2) + '\n'; }
   function savedPicksJson() { return JSON.stringify(sortedPicks(saved.picks), null, 2) + '\n'; }
   function savedHiddenJson() { return JSON.stringify(saved.hidden.slice().sort(), null, 2) + '\n'; }
+  function seenJson(o) { return JSON.stringify(o.seen.slice().sort(), null, 1) + '\n'; }
+  var clubPaths = function (sec) { return $$('.pk-ph', sec).map(function (ph) { return ph.dataset.path; }); };
+  var isNew = function (path) { return state.seen.indexOf(path) < 0 && !isHidden(path); };
 
   function changes() {   // how many things differ from what the site uses now
     var n = 0, slugs = {};
@@ -29,6 +33,7 @@
     Object.keys(slugs).forEach(function (k) { if (state.picks[k] !== saved.picks[k]) n++; });
     state.hidden.forEach(function (p) { if (saved.hidden.indexOf(p) < 0) n++; });
     saved.hidden.forEach(function (p) { if (state.hidden.indexOf(p) < 0) n++; });
+    $$('.pk-club').forEach(function (sec) { if (clubPaths(sec).some(function (p) { return state.seen.indexOf(p) > -1 && saved.seen.indexOf(p) < 0; })) n++; });   // a club marked reviewed
     return n;
   }
   function dirty() { var n = changes(); $('#pk-dirty').textContent = n ? n + (n === 1 ? ' change' : ' changes') + ' not saved' : ''; $('#pk-save').disabled = !n; }
@@ -42,22 +47,29 @@
       $('.pk-badge.pick', ph).hidden = !on;
       $('.pk-badge.gone', ph).hidden = !gone;
       ph.classList.toggle('is-hidden', gone);
+      $('.pk-badge.new', ph).hidden = !isNew(path);
       var h = $('.pk-hide', ph); h.setAttribute('aria-pressed', gone ? 'true' : 'false'); h.textContent = gone ? 'Show Again' : 'Hide';
       h.setAttribute('aria-label', (gone ? 'Show' : 'Hide') + ' this photo ' + (gone ? 'on' : 'from') + ' the site');
     });
+    var fresh = clubPaths(sec).filter(isNew).length;
+    sec.dataset.new = fresh ? '1' : '0';
+    $('.pk-newchip', sec).hidden = !fresh; $('.pk-newchip', sec).textContent = fresh + ' new';
+    $('.pk-reviewed', sec).hidden = !fresh;
     $('.pk-clear', sec).hidden = !pick;
     $('.pk-state', sec).textContent = pick ? 'Picked' : '';
     sec.dataset.done = pick ? '1' : '0';
   }
   function apply() {
-    var done = 0;
+    var done = 0, newClubs = 0;
     $$('.pk-club').forEach(function (sec) {
       var d = sec.dataset.done === '1', has = sec.dataset.has === '1';
       if (d) done++;
-      var ok = (filter === 'all' || (filter === 'done' && d) || (filter === 'todo' && !d && has)) && (!q || sec.dataset.name.indexOf(q) > -1);
+      var fresh = sec.dataset.new === '1';
+      if (fresh) newClubs++;
+      var ok = (filter === 'all' || (filter === 'done' && d) || (filter === 'todo' && !d && has) || (filter === 'new' && fresh)) && (!q || sec.dataset.name.indexOf(q) > -1);
       sec.hidden = !ok;
     });
-    $('#pk-done').textContent = done; dirty();
+    $('#pk-done').textContent = done; $('#pk-newcount').textContent = newClubs ? '(' + newClubs + ')' : ''; dirty();
   }
   $$('.pk-club').forEach(paint); apply();
 
@@ -72,6 +84,8 @@
       else { state.hidden.push(path); if (state.picks[sec.dataset.slug] === path) delete state.picks[sec.dataset.slug]; }   // a hidden photo cannot stay the top photo
       store(); paint(sec); apply(); return;
     }
+    var rv = e.target.closest('.pk-reviewed');
+    if (rv && sec) { clubPaths(sec).forEach(function (p) { if (state.seen.indexOf(p) < 0) state.seen.push(p); }); store(); paint(sec); apply(); return; }
     var c = e.target.closest('.pk-clear'); if (c && sec) { delete state.picks[sec.dataset.slug]; store(); paint(sec); apply(); return; }
     var f = e.target.closest('[data-f]'); if (f) { filter = f.dataset.f; $$('[data-f]').forEach(function (x) { x.setAttribute('aria-pressed', x === f ? 'true' : 'false'); }); apply(); }
   });
@@ -127,6 +141,7 @@
     var chain = Promise.resolve();
     if (picksChanged) chain = chain.then(function () { return putFile(PICKS_FILE, picksJson(), msgText + ' (top photos)'); });
     if (hiddenChanged) chain = chain.then(function () { return putFile(HIDDEN_FILE, hiddenJson(), msgText + ' (hidden photos)'); });
+    if (seenJson(state) !== seenJson(saved)) chain = chain.then(function () { return putFile(SEEN_FILE, seenJson(state), msgText + ' (reviewed photos)'); });
     chain.then(function () {
       saved = clone(state); store(); apply();
       say('Saved ' + n + (n === 1 ? ' change' : ' changes') + '. The site updates by itself in about two minutes.', true);
