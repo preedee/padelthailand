@@ -66,7 +66,15 @@
   var openD = $('[data-driver]'), closeD = $('[data-driver-close]');
   if (drv && openD) {
     // While the dialog is open the rest of the page is inert, so Tab cannot leave it
-    var setBg = function (off) { $$('.skip, header, footer, .book-bar, .cookie-bar, main > *').filter(function (el) { return el !== drv; }).forEach(function (el) { if (off) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }); };
+    var setBg = function (off) {
+      // inert every sibling along the path from the dialog up to <body>, never the dialog or its ancestors
+      for (var n = drv; n && n !== document.body; n = n.parentNode) {
+        Array.prototype.forEach.call(n.parentNode.children, function (sib) {
+          if (sib === n || /^(SCRIPT|STYLE|LINK)$/.test(sib.tagName)) return;
+          if (off) sib.setAttribute('inert', ''); else sib.removeAttribute('inert');
+        });
+      }
+    };
     var shut = function () { drv.hidden = true; setBg(false); openD.focus(); };
     openD.addEventListener('click', function () { drv.hidden = false; setBg(true); if (closeD) closeD.focus(); });
     if (closeD) closeD.addEventListener('click', shut);
