@@ -69,7 +69,7 @@ export function shell(o: { title: string; description: string; path: string; act
 ${header(o.active)}
 ${o.body}
 ${footer()}
-<script src="/js/directory.js?v=1"></script>
+<script src="/js/directory.js?v=2"></script>
 <script src="/js/analytics.js?v=1" defer></script>
 ${o.scripts ?? ""}
 </body>
