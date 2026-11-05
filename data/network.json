@@ -351,57 +351,6 @@
    "seq": null
   },
   {
-   "id": "phet",
-   "name": "Phetchaburi",
-   "th": "เพชรบุรี · ARL มักกะสัน",
-   "x": 840,
-   "y": 240,
-   "lp": "nw",
-   "line": "MRT Blue + Airport Rail Link",
-   "color": "#1E4F9C",
-   "clubs": [
-    {
-     "slug": "bel-club-22",
-     "km": 1
-    }
-   ],
-   "seq": null
-  },
-  {
-   "id": "huai",
-   "name": "Huai Khwang",
-   "th": "ห้วยขวาง",
-   "x": 840,
-   "y": 140,
-   "lp": "left",
-   "line": "MRT Blue",
-   "color": "#1E4F9C",
-   "clubs": [
-    {
-     "slug": "padel-asia-bangkok",
-     "km": 1.5
-    }
-   ],
-   "seq": null
-  },
-  {
-   "id": "qsncc",
-   "name": "Queen Sirikit Centre",
-   "th": "ศูนย์สิริกิติ์",
-   "x": 840,
-   "y": 460,
-   "lp": "right",
-   "line": "MRT Blue",
-   "color": "#1E4F9C",
-   "clubs": [
-    {
-     "slug": "kross-padel-indoor-bangkok",
-     "km": 1.3
-    }
-   ],
-   "seq": null
-  },
-  {
    "id": "samyan",
    "name": "Sam Yan",
    "th": "สามย่าน",
@@ -511,6 +460,27 @@
    "x": 990,
    "y": 380,
    "lp": "up"
+  },
+  {
+   "id": "phet",
+   "name": "Phetchaburi",
+   "x": 840,
+   "y": 240,
+   "lp": "nw"
+  },
+  {
+   "id": "huai",
+   "name": "Huai Khwang",
+   "x": 840,
+   "y": 140,
+   "lp": "left"
+  },
+  {
+   "id": "qsncc",
+   "name": "Queen Sirikit Centre",
+   "x": 840,
+   "y": 460,
+   "lp": "right"
   }
  ],
  "off": [
@@ -549,6 +519,42 @@
    ],
    "lp": "right",
    "th": "คลองเตย"
+  },
+  {
+   "id": "belclub",
+   "name": "Bang Kapi",
+   "sub": "Phetchaburi Road",
+   "x": 985,
+   "y": 175,
+   "slugs": [
+    "bel-club-22"
+   ],
+   "lp": "right",
+   "th": "บางกะปิ"
+  },
+  {
+   "id": "kross-indoor",
+   "name": "Ardnarong Road",
+   "sub": "Khlong Toei",
+   "x": 720,
+   "y": 680,
+   "slugs": [
+    "kross-padel-indoor-bangkok"
+   ],
+   "lp": "left",
+   "th": "คลองเตย"
+  },
+  {
+   "id": "padelasia",
+   "name": "Sam Sen Nok",
+   "sub": "Huai Khwang",
+   "x": 1180,
+   "y": 200,
+   "slugs": [
+    "padel-asia-bangkok"
+   ],
+   "lp": "right",
+   "th": "สามเสนนอก"
   }
  ],
  "ring": [
