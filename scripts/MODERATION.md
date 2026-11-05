@@ -1,5 +1,7 @@
 # Submissions and Moderation Runbook
 
+> **Update 2026-11-06:** the **Missing a Club** and **Report a Correction** forms no longer use Google Sheets. They write to the club registry (Supabase project `padelthailand`, table `clubs.submissions`) through `clubs.submit_form()`; the SQL is `supabase/0001_submissions.sql`. Review them in the Supabase dashboard: Table Editor > schema `clubs` > `submissions`. Set `status` to `live` or `rejected` (rows start as `pending`; nothing goes on the site until you act on it). Switch forms on or off with `submitForms` in `data/site-config.json` (for example `["club", "correction"]`; `[]` closes them all). The Apps Script sections below still describe the other three forms, which stay closed.
+
 The forms at padelthailand.com/submit/ let anyone send a tournament, an event, a missing club, a club photo or a correction. Nothing they send goes on the site until a person has read it and marked it `live`.
 
 ## How It Fits Together

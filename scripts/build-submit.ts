@@ -2,9 +2,9 @@
 /**
  * /submit/ — one page, five forms (Phase 1b): tournament, event, club, photo, correction.
  * The hash picks the form (#tournament #event #club #photo #correction); js/submit.js does the switching,
- * validation, poster checks and the POST to the Apps Script endpoint in data/site-config.json.
- * The page ships in its closed state (submit disabled, Instagram fallback); js/submit.js opens it only
- * when submitEndpoint is set. Server side: scripts/AppsScript-Submissions.gs. Runbook: scripts/MODERATION.md.
+ * validation and the POST (club and correction go to the Supabase function clubs.submit_form).
+ * The page ships in its closed state (submit disabled, Instagram fallback); js/submit.js opens each form only
+ * when its name is in data/site-config.json submitForms. Server side: supabase/0001_submissions.sql. Runbook: scripts/MODERATION.md.
  *
  * Usage: bun scripts/build-submit.ts [--check]
  */
@@ -165,7 +165,7 @@ const html = shell({
   description: "Send a padel tournament, social event, missing club, court photo or correction to Padel Thailand. Every submission is reviewed by a person before it goes live.",
   path: "/submit/", active: "", noindex: true, body,
   head: `<link rel="stylesheet" href="/css/forms.css?v=1">`,
-  scripts: `<script src="/js/submit.js?v=2"></script>`,
+  scripts: `<script src="/js/submit.js?v=3"></script>`,
 });
 
 // ---------- checks ----------
