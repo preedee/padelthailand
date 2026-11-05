@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * The owner's Admin pages (noindex, not in the sitemap, no login: they only read public data and export files).
+ * The owner's Admin pages (noindex, not in the sitemap, locked behind a password: see lib/lock.ts).
  *   /admin/         the home: a card per tool and a data-health table (what each club still lacks)
  *   /admin/photos/  Top Photos: every registry photo per club; click the one that should come first. Picks are kept in the
  *                   browser; Download / Copy export { clubSlug: storage_path } as data/club-photo-picks.json, which
@@ -15,6 +15,7 @@ import { esc, shell } from "./lib/chrome.ts";
 import { PHOTO_BASE, registryGet, type PhotoRow } from "./lib/registry.ts";
 import { REGION_ORDER } from "./lib/regions.ts";
 import { readJson } from "./lib/util.ts";
+import { lockPage } from "./lib/lock.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
@@ -104,6 +105,10 @@ const home = `<main class="wrap pk">
 const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=4">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
 await mkdir(ROOT + dirname(OUT), { recursive: true });
-await writeFile(ROOT + OUT, html);
-await writeFile(ROOT + OUT_HOME, homeHtml);
-console.log(`built ${OUT_HOME} and ${OUT} (${ordered.length} clubs, ${photoRows.length} photos)`);
+// The pages are published encrypted (scripts/lib/lock.ts). With no ADMIN_PASSWORD the build leaves the published pages as
+// they are rather than ever writing a readable copy.
+const password = process.env.ADMIN_PASSWORD;
+if (!password) { console.log("ADMIN_PASSWORD is not set: admin pages left unchanged (they are never published unlocked)"); process.exit(0); }
+await writeFile(ROOT + OUT, await lockPage(html, password));
+await writeFile(ROOT + OUT_HOME, await lockPage(homeHtml, password));
+console.log(`built (locked) ${OUT_HOME} and ${OUT} (${ordered.length} clubs, ${photoRows.length} photos)`);
