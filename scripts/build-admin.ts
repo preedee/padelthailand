@@ -75,7 +75,7 @@ const body = `<main class="wrap pk">
   <script type="application/json" id="pk-seen">${JSON.stringify(seenSaved).replace(/</g, "\\u003c")}</script>
 </main>`;
 
-const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=4">`, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
+const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=5">`, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
 
 // ---------- /admin/: tool cards and the data-health table ----------
 const picks = saved;
@@ -90,6 +90,7 @@ const count = (f: (c: Club) => boolean) => ordered.filter((o) => f(o.club)).leng
 const stat = (label: string, have: number) => `<div class="ad-stat"><b>${have}</b><span>of ${ordered.length}</span><small>${label}</small></div>`;
 const tools = [
   { href: "/admin/photos/", title: "Top Photos", text: "Choose the photo that comes first on each club page, card and map panel.", meta: `${Object.keys(picks).length} of ${withPhotos} clubs chosen${newClubs ? ` · ${newClubs} ${newClubs === 1 ? "club has" : "clubs have"} new photos to review` : ""}` },
+  { href: "/admin/stats/", title: "Visitor Stats", text: "Visitors, most viewed pages, where people come from and what they tap, from Google Analytics.", meta: "Refreshed every morning" },
 ];
 const home = `<main class="wrap pk">
   <div class="page-head"><span class="badge-ink">Admin</span><h1 style="margin-top:14px">Padel Thailand Admin</h1>
@@ -102,7 +103,7 @@ const home = `<main class="wrap pk">
   <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-g="all" aria-pressed="true">All Clubs</button><button type="button" class="chip sq" data-g="gaps" aria-pressed="false">Only Clubs With Gaps</button></div></div>
   <div class="ad-table-wrap"><table class="ad-table"><thead><tr><th scope="col">Club</th><th scope="col">Photos</th><th scope="col">Top Pick</th><th scope="col">Logo</th><th scope="col">Instagram</th><th scope="col">Website</th><th scope="col">Phone</th><th scope="col">Courts</th><th scope="col">Booking</th><th scope="col">Hours</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
 </main>`;
-const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=4">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
+const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=5">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
 await mkdir(ROOT + dirname(OUT), { recursive: true });
 // The pages are published encrypted (scripts/lib/lock.ts). With no ADMIN_PASSWORD the build leaves the published pages as

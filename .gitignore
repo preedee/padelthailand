@@ -14,3 +14,6 @@ bun.lock
 # Holds the Apps Script endpoint + shared secret
 scripts/.ingest-config.json
 node_modules
+
+# GA4 snapshot: traffic numbers must never reach the public repo (the Stats page is published encrypted)
+data/ga-snapshot.json
