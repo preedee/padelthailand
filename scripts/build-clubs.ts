@@ -101,8 +101,10 @@ const instagramUrl = (h: string | null) => (h ? `https://www.instagram.com/${enc
 const facebookUrl = (h: string | null) => (h ? "https://www.facebook.com/" + h.replace(/[^A-Za-z0-9_.?=\-]/g, "") : null);
 
 type Club = ReturnType<typeof toClub>;
+// logo of each booking platform where we have one (data/platforms.json), shown on the Book buttons
+const PLATFORM_ICONS: Record<string, string> = JSON.parse(await readFile(ROOT + "data/platforms.json", "utf8"));
 function toClub(r: Row, slug: string, city: string, photos: Photo[], aliases: string[]) {
-  const booking = r.booking_platform && safeUrl(r.booking_url) ? { platform: r.booking_platform, url: safeUrl(r.booking_url)!, label: bookLabel(r.booking_platform) } : null;
+  const booking = r.booking_platform && safeUrl(r.booking_url) ? { platform: r.booking_platform, url: safeUrl(r.booking_url)!, label: bookLabel(r.booking_platform), ...(PLATFORM_ICONS[r.booking_platform] ? { icon: PLATFORM_ICONS[r.booking_platform] } : {}) } : null;
   return {
     id: r.place_id, slug, name: r.name, nameTh: r.name_th && r.name_th !== r.name ? r.name_th : "",
     city, province: r.province ?? "", district: r.district ?? "", lat: r.lat, lng: r.lng, address: r.formatted_address ?? "",
@@ -298,6 +300,7 @@ const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
 });
 // hand-entered clubs the registry lacks (Playtomic venues Google has not listed); a registry club at the same spot or slug wins
 const manualClubs = await read<Club[]>("data/club-manual.json", []);
+for (const m of manualClubs) if (m.booking && !(m.booking as { icon?: string }).icon && PLATFORM_ICONS[m.booking.platform]) (m.booking as { icon?: string }).icon = PLATFORM_ICONS[m.booking.platform];
 for (const m of manualClubs)
   if (!clubs.some((c) => c.slug === m.slug || (Math.abs(c.lat - m.lat) < 0.0008 && Math.abs(c.lng - m.lng) < 0.0008))) clubs.push(m);
 const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => a.localeCompare(b)));

@@ -30,7 +30,7 @@ type Club = {
   id: string; slug: string; name: string; nameTh: string; city: string; province: string; district: string; lat: number; lng: number; address: string;
   courts: { total: number | null; indoor: number | null; outdoor: number | null; covered: number | null; surface?: string | null };
   hours: string[]; phone: string; phoneLocal: string; tel: string; website: string; instagramUrl: string; facebookUrl: string;
-  directionsUrl: string; mapsUrl: string; booking: { platform: string; url: string; label: string } | null; priceNote: string;
+  directionsUrl: string; mapsUrl: string; booking: { platform: string; url: string; label: string; icon?: string } | null; priceNote: string;
   rating: number | null; ratingCount: number; amenities: string[]; openingSoon: boolean; photos: Photo[]; updated: string;
 };
 type Net = {
@@ -135,6 +135,8 @@ const courtTypes = (c: Club): CT[] => {
 const ctHtml = (c: Club) => courtTypes(c).map((t) => `<span class="ct" title="${t.type === "unknown" ? "Court Type Not Listed" : t.type}">${ICON[t.type]}<span>${t.n ?? c.courts.total ?? ""}</span><span class="sr"> ${t.type === "unknown" ? "" : t.type}</span></span>`).join("");
 const courtsWord = (c: Club) => (c.courts.total ? `${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}` : "Courts Not Listed");
 const platformName = (c: Club) => c.booking?.label.replace(/^Book (on |via )?(the )?/, "") ?? "";
+/** the booking platform's logo in a small white chip, when we have one */
+const platIcon = (c: Club) => c.booking?.icon ? `<span class="plat" aria-hidden="true"><img src="${esc(c.booking.icon)}" alt="" height="20"></span>` : "";
 const bookText = (c: Club) => c.booking?.label.replace(/^Book (on|via) the /, "Book on ") ?? "";
 
 // ---------- shared card pieces ----------
@@ -289,7 +291,7 @@ function clubPage(c: Club): string {
   const ts = courtTypes(c).filter((x) => x.type !== "unknown");
   const aboutLine = `${c.name} Is a Padel Club in ${c.city}, Thailand` + (c.courts.total ? ` With ${c.courts.total} ${c.courts.total === 1 ? "Court" : "Courts"}${ts.length ? ` (${ts.map((x) => `${x.n} ${x.type[0].toUpperCase() + x.type.slice(1)}`).join(", ")})` : ""}` : "") + "." + (c.openingSoon ? " Listed as Opening Soon." : "") + (c.rating ? ` Rated ${c.rating} From ${c.ratingCount} Google Ratings.` : "") + (w.walkKm != null ? ` About ${wMin} Minutes on Foot From the Nearest Station (Straight-Line Estimate).` : "");
   // the Book button sits at the right of the header (phones use the sticky bar at the bottom instead)
-  const headBook = c.booking ? `<a class="btn solid book-cta" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "club_page" })}>${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid book-cta" href="tel:${esc(c.tel)}"${trk("contact_click", { club_slug: c.slug, method: "phone", place: "club_header" })}>Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : "");
+  const headBook = c.booking ? `<a class="btn solid book-cta" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "club_page" })}>${platIcon(c)}${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid book-cta" href="tel:${esc(c.tel)}"${trk("contact_click", { club_slug: c.slug, method: "phone", place: "club_header" })}>Call to Book · ${esc(c.phoneLocal || c.phone)}</a>` : "");
   const dirUrl = c.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}`;
   const TH = /[\u0E00-\u0E7F]/;
   const thaiAddr = addrOk(c) && TH.test(c.address);
@@ -307,7 +309,7 @@ function clubPage(c: Club): string {
     c.website ? `<li>${ICON.web}<span><small>Website</small><a href="${esc(c.website)}" target="_blank" rel="noopener"${trk("contact_click", { club_slug: c.slug, method: "website", place: "contact_card" })}>${esc(c.website.replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/$/, ""))}</a></span></li>` : "",
   ].filter(Boolean);
   const hours = c.hours.length ? `<ul class="hours" data-hours>${c.hours.map((h) => { const i = h.indexOf(":"); return `<li data-day="${esc(h.slice(0, i))}"><span>${esc(h.slice(0, i))}</span><span>${esc(h.slice(i + 1).trim())}</span></li>`; }).join("")}</ul>` : `<p class="fine">Hours Not Listed.</p>`;
-  const barPrice = c.booking ? `<a class="btn solid" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "sticky_bar" })}>${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid" href="tel:${esc(c.tel)}">Call</a>` : "");
+  const barPrice = c.booking ? `<a class="btn solid" href="${esc(c.booking.url)}" target="_blank" rel="noopener"${trk("book_click", { club_slug: c.slug, platform: c.booking.platform, place: "sticky_bar" })}>${platIcon(c)}${esc(bookText(c))}</a>` : (c.phone ? `<a class="btn solid" href="tel:${esc(c.tel)}">Call</a>` : "");
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <a href="${hubOk ? hubPath(w.region) : `/clubs/#${encodeURIComponent(w.region)}`}">${esc(w.region)}</a> / <span aria-current="page"><strong>${esc(shortName(c))}</strong></span></nav>
   <section class="sign" aria-label="Club header">
@@ -371,7 +373,7 @@ function homePage(): string {
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=20"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=21"></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }

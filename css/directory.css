@@ -380,6 +380,10 @@ body.cookie-open { padding-bottom: 130px; }
 .map-box[data-bg="pty"] { background-color: #F3ECDD; background-image: radial-gradient(#D8CDB6 1px, transparent 1px); }
 .map-box[data-bg="pty"] .lbl { text-shadow: 0 0 .25cqw #F3ECDD, 0 0 .25cqw #F3ECDD, 0 0 .25cqw #F3ECDD; }
 
+/* booking platform logo inside a Book button */
+.plat { flex: none; display: inline-flex; align-items: center; justify-content: center; height: 26px; min-width: 26px; padding: 3px; border-radius: 4px; background: #fff; }
+.plat img { height: 20px; width: auto; max-width: 64px; display: block; }
+.btn .plat { margin-right: -2px; }
 .skip { position: absolute; left: 8px; top: -60px; z-index: 3000; padding: 12px 16px; background: var(--ink); color: #fff; font-weight: 600; border-radius: 4px; }
 .skip:focus { top: 8px; }
 main:focus { outline: none; }
