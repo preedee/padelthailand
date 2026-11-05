@@ -269,8 +269,10 @@ const [rows, photoRows] = await Promise.all([
 if (rows.length < 30) throw new Error(`registry returned only ${rows.length} clubs; refusing to overwrite the site (expected ~65)`);
 
 const photosBy = new Map<string, Photo[]>();
+// photos hidden from the site with the admin photo tool (data/club-photo-hidden.json: storage paths); the files stay in the registry
+const hiddenPhotos = new Set<string>(existsSync(ROOT + "data/club-photo-hidden.json") ? JSON.parse(await readFile(ROOT + "data/club-photo-hidden.json", "utf8")) : []);
 // the registry lists some photo files twice; a gallery shows each file once
-for (const p of photoRows) { const have = photosBy.get(p.place_id) ?? []; if (!have.some((x) => x.url === PHOTO_BASE + p.storage_path)) photosBy.set(p.place_id, [...have, { url: PHOTO_BASE + p.storage_path, ...photoVariants(PHOTO_BASE + p.storage_path), author: p.author_name, authorUrl: safeUrl(p.author_uri) }]); }
+for (const p of photoRows) { if (hiddenPhotos.has(p.storage_path)) continue; const have = photosBy.get(p.place_id) ?? []; if (!have.some((x) => x.url === PHOTO_BASE + p.storage_path)) photosBy.set(p.place_id, [...have, { url: PHOTO_BASE + p.storage_path, ...photoVariants(PHOTO_BASE + p.storage_path), author: p.author_name, authorUrl: safeUrl(p.author_uri) }]); }
 
 const read = async <T>(f: string, fallback: T): Promise<T> => (existsSync(ROOT + f) ? JSON.parse(await readFile(ROOT + f, "utf8")) : fallback);
 // aliases: the names tournaments use for a club ("Padel Asia" for "Padel Asia - Bangkok"), confirmed by hand, keyed by place_id
