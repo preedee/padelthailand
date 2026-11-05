@@ -97,3 +97,4 @@
   .filters-panel .fbody { padding-top: 0; }
 }
 #listing-root.reserve { min-height: 900px; }
+.lwhere a { display: inline-block; min-height: 24px; line-height: 24px; }

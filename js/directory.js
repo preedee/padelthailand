@@ -11,6 +11,10 @@
     var open = nav.classList.toggle('open');
     tg.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
+  // Escape closes the open menu and hands focus back to the button
+  if (tg && nav) document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && nav.classList.contains('open')) { nav.classList.remove('open'); tg.setAttribute('aria-expanded', 'false'); tg.focus(); }
+  });
 
   // ---- Clubs page: region filters + Photos / List ----
   var grid = $('#club-grid');

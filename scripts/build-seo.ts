@@ -19,7 +19,8 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
 const read = (f: string) => readFile(ROOT + f, "utf8");
 
-const clubs = (await readJson<{ clubs: { slug: string; updated: string; courts: { total: number | null } }[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
+type SeoClub = { slug: string; name: string; nameTh?: string; city?: string; district?: string; updated: string; courts: { total: number | null; indoor?: number | null; covered?: number | null; outdoor?: number | null }; booking?: { platform: string } | null; openingSoon?: boolean };
+const clubs = (await readJson<{ clubs: SeoClub[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
 const tournaments = (await readJson<{ tournaments: { startDate: string | null; endDate: string | null; monthOnly: string | null }[] }>(ROOT, "data/tournaments.json", { tournaments: [] })).tournaments;
 const updatedOf = new Map(clubs.map((c) => [c.slug, c.updated]));
 const today = todayBkk();
@@ -73,6 +74,7 @@ ${regionLines.join("\n")}
 ## Main pages
 - [Network map](${SITE}/): every club on a transit-style map, including Bangkok BTS and MRT stations
 - [All clubs](${SITE}/clubs/): photos, court counts and where each club takes bookings
+- [Club index, one line per club](${SITE}/llms-full.txt): name, area, courts by type and booking platform for every club
 - [Tournaments](${SITE}/tournaments/): ${upcoming} upcoming and the archive of past tournaments, with posters
 - [Events](${SITE}/events/): weekly social play, once clubs and organisers list it
 - [About](${SITE}/about/): where the data comes from and how clubs are treated equally
@@ -89,6 +91,23 @@ ${regionLines.join("\n")}
 - Report a correction or add a club: ${SITE}/submit/
 `;
 
+// ---------- llms-full.txt: one line per club, counted from the same data ----------
+const regionOf = new Map(REGION_ORDER.flatMap(([name, , slugs]) => slugs.map((s) => [s, name] as const)));
+const PLATFORM = { playtomic: "Playtomic", matchi: "Matchi", tps: "The Padel Society", kross: "Kross", line: "LINE", facebook: "Facebook", whatsapp: "WhatsApp" } as Record<string, string>;
+const clubLine = (c: SeoClub) => {
+  const types = ([["indoor", c.courts.indoor], ["covered", c.courts.covered], ["outdoor", c.courts.outdoor]] as [string, number | null | undefined][]).filter(([, n]) => n).map(([t, n]) => `${n} ${t}`);
+  const where = [regionOf.get(c.slug), c.district, c.city].filter((x, i, a) => x && a.indexOf(x) === i).join(", ");
+  const courts = c.courts.total ? `${c.courts.total} ${c.courts.total === 1 ? "court" : "courts"}${types.length ? ` (${types.join(", ")})` : ""}` : "court count not listed";
+  const book = c.booking ? `books via ${PLATFORM[c.booking.platform] ?? c.booking.platform}` : "no online booking link";
+  return `- [${c.name}${c.nameTh ? ` / ${c.nameTh}` : ""}](${SITE}/clubs/${c.slug}/): ${where}; ${courts}; ${book}${c.openingSoon ? "; opening soon" : ""}`;
+};
+const llmsFull = `# Padel Thailand: club index
+
+> ${clubs.length} padel clubs in Thailand, one line each. Source: padelthailand.com club pages (see ${SITE}/llms.txt). Court counts are as listed by the club or Google; walk times and prices are on each club page.
+
+${REGION_ORDER.map(([name, , slugs]) => `## ${name}\n${clubs.filter((c) => slugs.includes(c.slug)).map(clubLine).join("\n")}`).join("\n\n")}
+`;
+
 const LEGACY = ["calendar.html", "competition.html", "organizer.html"];
 for (const f of LEGACY) {
   const html = await read(f);
@@ -103,4 +122,5 @@ if (CHECK) {
 await writeFile(ROOT + "sitemap.xml", sitemap);
 await writeFile(ROOT + "robots.txt", robots);
 await writeFile(ROOT + "llms.txt", llms);
+await writeFile(ROOT + "llms-full.txt", llmsFull);
 console.log(`wrote sitemap.xml (${entries.length} urls), robots.txt, llms.txt`);

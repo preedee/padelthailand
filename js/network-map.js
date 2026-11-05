@@ -13,6 +13,8 @@
     fetch('/data/network.json').then(function (r) { return r.json(); })
   ]).then(function (res) { init(res[0].clubs, res[1]); }).catch(function () {
     box.innerHTML = '<p style="padding:24px">The Map Could Not Load. Use the List of All Clubs Below.</p>';
+    // nothing to filter or search without the data: say so instead of leaving live controls that do nothing
+    Array.prototype.forEach.call(document.querySelectorAll('[data-f], #q, #near'), function (el) { el.disabled = true; el.setAttribute('aria-disabled', 'true'); });
   });
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -299,7 +301,7 @@
       var dir = c.directionsUrl || ('https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng);
       return '<div class="pclub">' + photo + '<div class="nm"><span>' + esc(nm(slug)) + '</span>' + (c.openingSoon ? '<span class="tag soon">Opening Soon</span>' : '') + '</div>' +
         '<div class="meta"><strong style="color:' + INK + '">' + (k.total ? plural(k.total, 'Court') : 'Courts Not Listed') + '</strong>' + tHtml + '</div>' +
-        (across != null ? '<div class="meta">' + icon('walk', 16) + across.toFixed(1) + ' km Across the River (Est.)</div>' : '') + (km != null ? '<div class="meta">' + icon('walk', 16) + '~' + Math.max(1, Math.round(km * 13)) + ' Min Walk · ' + km.toFixed(1) + ' km (Est.)</div>' : '') +
+        (across != null ? '<div class="meta">' + icon('walk', 16) + across.toFixed(1) + ' km Across the River (Estimated)</div>' : '') + (km != null ? '<div class="meta">' + icon('walk', 16) + '~' + Math.max(1, Math.round(km * 13)) + ' Min Walk · ' + km.toFixed(1) + ' km (Est.)</div>' : '') +
         '<a class="more" href="/clubs/' + esc(slug) + '/" data-track="club_open" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">View Club Page ' + icon('arrow', 16) + '</a>' +
         '<div class="acts">' + (c.booking ? '<a class="btn solid" href="' + esc(c.booking.url) + '" target="_blank" rel="noopener" data-track="book_click" data-t-club_slug="' + esc(slug) + '" data-t-platform="' + esc(c.booking.platform) + '" data-t-place="map_panel">' + (c.booking.icon ? '<span class="plat" aria-hidden="true"><img src="' + esc(c.booking.icon) + '" alt="" height="20"></span>' : '') + esc(c.booking.label) + '</a>' : '') +
         '<a class="btn" href="' + esc(dir) + '" target="_blank" rel="noopener" data-track="directions_click" data-t-club_slug="' + esc(slug) + '" data-t-place="map_panel">Directions</a></div></div>';
