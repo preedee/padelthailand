@@ -70,7 +70,7 @@ export function shell(o: { title: string; description: string; path: string; act
 ${header(o.active)}
 ${o.body.replace("<main", '<main id="main" tabindex="-1"')}
 ${footer()}
-<script src="/js/directory.js?v=5"></script>
+<script src="/js/directory.js?v=6"></script>
 <script src="/js/analytics.js?v=1" defer></script>
 ${o.scripts ?? ""}
 </body>
