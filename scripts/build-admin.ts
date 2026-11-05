@@ -24,6 +24,7 @@ const OUT_HOME = "admin/index.html";
 type Club = { id: string; slug: string; name: string; city: string; photos: { url: string }[]; website: string; instagramUrl: string; booking: unknown; courts: { total: number | null }; hours: string[]; phone: string };
 const clubs = (await readJson<{ clubs: Club[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
 const saved = await readJson<Record<string, string>>(ROOT, "data/club-photo-picks.json", {});
+const hiddenSaved = await readJson<string[]>(ROOT, "data/club-photo-hidden.json", []);
 const logos = await readJson<Record<string, unknown>>(ROOT, "data/club-logos.json", {});
 const photoRows = await registryGet<PhotoRow>("club_photos_public?select=place_id,storage_path,position,author_name,author_uri&order=place_id,position");
 const byPlace = new Map<string, PhotoRow[]>();
@@ -41,7 +42,7 @@ const section = ({ region, club }: { region: string; club: Club }) => {
   const list = byPlace.get(club.id) ?? [];
   const current = club.photos[0] ? rel(club.photos[0].url) : "";
   const grid = list.length
-    ? list.map((p, i) => `<div class="pk-ph" data-path="${esc(p.storage_path)}"><button class="pk-pick" type="button" aria-pressed="false" aria-label="Use photo ${i + 1} of ${list.length} as the top photo for ${esc(club.name)}"><img loading="lazy" decoding="async" src="${esc(PHOTO_BASE + p.storage_path)}" alt="${esc(club.name)} photo ${i + 1}"><span class="pk-badge now"${p.storage_path === current ? "" : " hidden"}>Top Now</span><span class="pk-badge pick" hidden>Your Pick</span></button><a class="pk-zoom" href="${esc(PHOTO_BASE + p.storage_path)}" target="_blank" rel="noopener" aria-label="Open photo ${i + 1} larger (new tab)">↗</a>${p.author_name ? `<small>${esc(p.author_name)}</small>` : ""}</div>`).join("")
+    ? list.map((p, i) => `<div class="pk-ph" data-path="${esc(p.storage_path)}"><button class="pk-pick" type="button" aria-pressed="false" aria-label="Use photo ${i + 1} of ${list.length} as the top photo for ${esc(club.name)}"><img loading="lazy" decoding="async" src="${esc(PHOTO_BASE + p.storage_path)}" alt="${esc(club.name)} photo ${i + 1}"><span class="pk-badge now"${p.storage_path === current ? "" : " hidden"}>Top Now</span><span class="pk-badge pick" hidden>Your Pick</span><span class="pk-badge gone" hidden>Hidden</span></button><button class="pk-hide" type="button" aria-pressed="false" aria-label="Hide photo ${i + 1} from the site">Hide</button><a class="pk-zoom" href="${esc(PHOTO_BASE + p.storage_path)}" target="_blank" rel="noopener" aria-label="Open photo ${i + 1} larger (new tab)">↗</a>${p.author_name ? `<small>${esc(p.author_name)}</small>` : ""}</div>`).join("")
     : `<p class="pk-none">No photos in the registry for this club yet.</p>`;
   return `<section class="pk-club" id="c-${esc(club.slug)}" data-slug="${esc(club.slug)}" data-name="${esc(club.name.toLowerCase())}" data-has="${list.length ? 1 : 0}">
     <header><h2>${esc(club.name)}</h2><span class="pk-meta">${esc(region)} · ${list.length} ${list.length === 1 ? "photo" : "photos"}</span><span class="pk-state" aria-live="polite"></span><button class="pk-clear" type="button" hidden>Clear pick</button></header>
@@ -51,19 +52,24 @@ const section = ({ region, club }: { region: string; club: Club }) => {
 const body = `<main class="wrap pk">
   <p class="ad-back"><a href="/admin/">← Admin</a></p>
   <div class="page-head"><span class="badge-ink">Admin · Top Photos</span><h1 style="margin-top:14px">Choose the Top Photo for Each Club</h1>
-  <p class="pk-help">Click the photo that should come first on the club page. The first photo is also the one shown on cards and the map. Your picks are saved in this browser. When you are done, press <b>Download Picks</b> (or <b>Copy Picks</b>) and give the file or the text to Claude. <span class="pk-keys">↗ opens a photo larger in a new tab.</span></p></div>
+  <p class="pk-help">Click the photo that should come first on the club page. The first photo is also the one shown on cards and the map. <b>Hide</b> takes a photo off the site (it stays in the registry, and you can bring it back). Press <b>Save to Site</b> when you are done: the site updates by itself in about two minutes. <span class="pk-keys">↗ opens a photo larger in a new tab.</span></p>
+  <details class="pk-gh" id="pk-gh"><summary>Connect GitHub (one time)</summary>
+    <p>Saving writes two small files to the site's repository, so this page needs a GitHub token. Create one at <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>: choose <b>Only select repositories</b> and pick <b>padelthailand</b>, then under Permissions set <b>Contents</b> to <b>Read and write</b>. Paste the token below. It is kept only in this browser.</p>
+    <div class="pk-gh-row"><label class="pk-search"><span class="sr">GitHub token</span><input id="pk-token" type="password" placeholder="github_pat_…" autocomplete="off"></label><button type="button" class="btn" id="pk-token-save">Connect</button><button type="button" class="btn" id="pk-token-clear" hidden>Disconnect</button></div>
+  </details></div>
   <div class="pk-bar" role="region" aria-label="Progress and tools">
     <span class="pk-progress"><b id="pk-done">0</b> of ${withPhotos} clubs chosen</span>
     <div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-f="all" aria-pressed="true">All</button><button type="button" class="chip sq" data-f="todo" aria-pressed="false">Not Chosen</button><button type="button" class="chip sq" data-f="done" aria-pressed="false">Chosen</button></div>
     <label class="pk-search"><span class="sr">Search clubs</span><input id="pk-q" type="search" placeholder="Search clubs" autocomplete="off"></label>
-    <div class="pk-actions"><button type="button" class="btn solid" id="pk-download">Download Picks</button><button type="button" class="btn" id="pk-copy">Copy Picks</button><button type="button" class="btn" id="pk-reset" title="Forget this browser's picks and go back to the saved ones">Reset</button></div>
+    <div class="pk-actions"><span class="pk-dirty" id="pk-dirty" role="status"></span><button type="button" class="btn solid" id="pk-save">Save to Site</button><button type="button" class="btn" id="pk-download" title="Backup: download the picks and hidden photos as files">Download</button><button type="button" class="btn" id="pk-reset" title="Forget this browser's changes and go back to the saved ones">Reset</button></div>
   </div>
   <p class="pk-msg" id="pk-msg" role="status" aria-live="polite"></p>
   ${ordered.map(section).join("\n  ")}
   <script type="application/json" id="pk-saved">${JSON.stringify(saved).replace(/</g, "\\u003c")}</script>
+  <script type="application/json" id="pk-hidden">${JSON.stringify(hiddenSaved).replace(/</g, "\\u003c")}</script>
 </main>`;
 
-const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=2">`, scripts: `<script src="/js/admin-photos.js?v=1" defer></script>` });
+const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=3">`, scripts: `<script src="/js/admin-photos.js?v=2" defer></script>` });
 
 // ---------- /admin/: tool cards and the data-health table ----------
 const picks = saved;
@@ -90,7 +96,7 @@ const home = `<main class="wrap pk">
   <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-g="all" aria-pressed="true">All Clubs</button><button type="button" class="chip sq" data-g="gaps" aria-pressed="false">Only Clubs With Gaps</button></div></div>
   <div class="ad-table-wrap"><table class="ad-table"><thead><tr><th scope="col">Club</th><th scope="col">Photos</th><th scope="col">Top Pick</th><th scope="col">Logo</th><th scope="col">Instagram</th><th scope="col">Website</th><th scope="col">Phone</th><th scope="col">Courts</th><th scope="col">Booking</th><th scope="col">Hours</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
 </main>`;
-const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=2">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
+const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=3">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
 await mkdir(ROOT + dirname(OUT), { recursive: true });
 await writeFile(ROOT + OUT, html);

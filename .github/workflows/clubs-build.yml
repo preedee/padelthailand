@@ -10,6 +10,12 @@ on:
   schedule:
     - cron: "0 22 * * 6"
   workflow_dispatch:
+  # the admin photo tool saves picks and hidden photos by committing these two files: rebuild the pages when that happens
+  push:
+    branches: [main]
+    paths:
+      - data/club-photo-picks.json
+      - data/club-photo-hidden.json
 
 permissions:
   contents: write

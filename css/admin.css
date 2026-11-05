@@ -44,3 +44,17 @@
 .ad-table tbody th { text-align: left; font-weight: 600; } .ad-table tbody th small { display: block; font-weight: 400; color: var(--text-3); }
 .ad-table tr[hidden] { display: none; }
 .ad-y { color: var(--green); font-weight: 700; } .ad-n { color: #B23A2E; font-weight: 700; }
+
+/* hide / restore a photo, save bar, GitHub connection */
+.pk-hide { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.pk-hide[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.pk-ph.is-hidden .pk-pick img { opacity: .25; filter: grayscale(1); }
+.pk-ph.is-hidden .pk-pick { cursor: not-allowed; }
+.pk-badge.gone { background: #B3261E; color: #fff; left: 8px; top: 8px; }
+.pk-dirty { font-size: 14px; font-weight: 600; color: var(--text-2); }
+.pk-actions .btn:disabled { opacity: .45; cursor: not-allowed; }
+.pk-gh { margin: 14px 0 0; max-width: 70ch; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--surface); padding: 0 14px; }
+.pk-gh > summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.pk-gh p { margin: 0 0 12px; color: var(--text-2); font-size: 14px; }
+.pk-gh-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-bottom: 14px; }
+.pk-gh-row .pk-search { flex: 1 1 240px; } .pk-gh-row input { width: 100%; }
