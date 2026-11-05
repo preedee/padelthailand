@@ -395,6 +395,11 @@ main:focus { outline: none; }
   .map-box .lbl .nm { font-size: 6px; line-height: 1.1; }       /* small enough to fit a 360px map; names are in the club list and panel too */
   .map-box .lbl .nm.hub { font-size: 7.5px; }
   .map-box .poi .lbl, .map-box .tagline { font-size: 4.5px; }     /* landmarks and airports: smaller than the club names */
+  .map-box .isl { font-size: 9px !important; }                  /* island names (Koh Samui, Phuket) */
+  .map-box .isl-sub { font-size: 5.5px !important; }            /* "Samui Loop · 11 Clubs" */
+  .map-box .isl2 { font-size: 6px !important; letter-spacing: .04em !important; margin: -9px 0 0 -9px; }   /* lifted off the blue line */
+  .map-box .cm-tag.old { margin-top: 5px; }                 /* Koh Phangan */
+  .map-box .cm-tag { font-size: 5px !important; letter-spacing: .04em; }   /* river, sea and rail names */
   .map-box .lbl .th, .map-box .lbl .nm.tick { display: none; }   /* secondary station names: the club stations are enough on a phone */
   .map-box .stn::before { content: ""; position: absolute; inset: -14px; }   /* hit area around the dot, the dot is unchanged */
   .map-box[data-bg="bkk"] .stn::before, .map-box[data-bg="gulf"] .stn::before, .map-box[data-bg="phk"] .stn::before { inset: -6px; }   /* dense views: smaller so neighbours stay tappable */

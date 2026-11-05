@@ -153,7 +153,7 @@
       (TAGS[view] || []).forEach(function (t) { h += '<span class="tagline" style="left:' + t[1] + ';top:' + t[2] + ';background:' + t[3] + ';color:' + fg(t[3]) + '">' + esc(t[0]) + '</span>'; });
       if (view === 'th') h += '<span class="cap">Schematic · Circle Size = Number of Clubs · Tap a Region</span>';
       if (view === 'cm') {
-        h += '<span class="cm-tag" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
+        h += '<span class="cm-tag old" style="left:50%;top:27.5%;transform:translate(-50%,-50%)">Old City</span><span class="cm-tag river" style="left:60.4%;top:55%">Ping River</span><span class="cap">Schematic · Positions Are Approximate</span>';
       }
       if (view === 'bkk') h += '<span class="cm-tag river" style="left:11%;top:13%;transform:rotate(86deg)">Chao Phraya River</span>';
       if (view === 'gulf') h += '<span class="tagline" style="left:9.5%;top:42%;background:#0E7C86;color:#fff">Ferry to Koh Tao</span><span class="tagline" style="left:7%;top:52%;background:#0E7C86;color:#fff">Car Ferry to/from Don Sak</span><span class="cm-tag sea" style="left:76%;top:84%">Gulf of Thailand</span>';
@@ -164,12 +164,12 @@
       ((net.airports || {})[view] || []).forEach(function (o) { h += '<div class="poi airport" style="left:' + (o.x / 16) + '%;top:' + (o.y / 10) + '%"><svg class="plane" aria-hidden="true" viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg><span class="lbl" style="' + lab(o.lp, 0.9) + '">' + esc(o.name) + '</span></div>'; });
       if (view === 'gulf') {
         var n = net.ring.length;
-        h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
-          '<div style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
+        h += '<div style="position:absolute;left:38.75%;top:66%;transform:translate(-50%,-50%);text-align:center"><div class="isl" style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#0E7C86">Koh Samui</div><div class="isl-sub" style="font-size:max(11px,1.05cqw);color:#3D434A">Samui Loop · ' + n + ' Clubs</div></div>' +
+          '<div class="isl2" style="position:absolute;left:40.6%;top:22.8%;font-family:Archivo,sans-serif;font-weight:800;font-size:max(11px,1.15cqw);letter-spacing:.06em;color:#2F6DB5">Koh Phangan</div>' +
           '<div class="note" style="left:66%;top:40%;width:30%"><b>Getting Here</b>Fly Into Samui (USM) or Take the Car Ferry From Don Sak to Lipa Noi Pier. Boats Run Samui → Phangan → Tao, and There Is a Direct Ferry From Samui to Tao. Lamai Has the Densest Cluster: 4 Clubs Within a Few Kilometres.</div>';
       }
       if (view === 'phk') {
-        h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
+        h += '<div style="position:absolute;left:41.25%;top:52%;transform:translate(-50%,-50%);text-align:center"><div class="isl" style="font-family:Archivo,sans-serif;font-weight:850;font-stretch:110%;font-size:max(14px,2.4cqw);letter-spacing:.04em;color:#C2367A">Phuket</div><div class="isl-sub" style="font-size:max(11px,1.05cqw);color:#3D434A">Phuket Loop · ' + net.phk.length + ' Clubs</div></div>' +
           '<span class="tagline" style="left:58.5%;top:25.5%;background:#E08A2E;color:#2D2A4A">Road to Krabi</span>' +
           '<span class="tagline" style="left:72.5%;top:56%;background:#fff;border:1px solid #E08A2E;color:#2D2A4A">Car Ferry to Lanta</span>' +
           '<div class="note" style="left:2%;top:68%;width:22%"><b>Getting Here</b>Fly Into Phuket (HKT) or Krabi (KBV). Clubs Cluster in the North-West Around Bang Tao and in the South Around Chalong.</div>';
