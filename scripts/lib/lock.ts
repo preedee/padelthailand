@@ -44,9 +44,12 @@ button:disabled{opacity:.6;cursor:wait}#m{min-height:1.5em;margin-top:10px;color
   var IV = "${iv}", DATA = "${data}", SALT = "${SALT}", ROUNDS = ${ROUNDS}, KEY = "pt-admin-key";
   var f = document.getElementById("f"), m = document.getElementById("m"), b = document.getElementById("b");
   var bin = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
+  // document.open() is ignored while the browser is still parsing this page (the unlock form would then stay on screen
+  // under the admin page), so the swap only happens once the page has fully loaded.
+  var loaded = new Promise(function (res) { if (document.readyState === "complete") res(); else window.addEventListener("load", function () { res(); }); });
   function open(key) {
-    return crypto.subtle.decrypt({ name: "AES-GCM", iv: bin(IV) }, key, bin(DATA)).then(function (buf) {
-      document.open(); document.write(new TextDecoder().decode(buf)); document.close();
+    return Promise.all([crypto.subtle.decrypt({ name: "AES-GCM", iv: bin(IV) }, key, bin(DATA)), loaded]).then(function (r) {
+      return new Promise(function (res) { setTimeout(function () { document.open(); document.write(new TextDecoder().decode(r[0])); document.close(); res(); }, 0); });
     });
   }
   function fromRaw(raw) { return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]); }

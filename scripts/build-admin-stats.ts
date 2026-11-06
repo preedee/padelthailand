@@ -91,6 +91,6 @@ await write(`<main class="wrap pk">${back}
   ${clubPages.length ? `<h2 class="ad-h">Most Viewed Clubs</h2>${list(clubPages.map((p) => ({ name: pageName(p.path), n: p.views })))}` : ""}
   <div class="st-cols"><div><h2 class="ad-h">How They Found Us</h2>${list(snap.channels)}<h3 class="st-h3">Top Sources</h3>${list(snap.sources)}</div>
   <div><h2 class="ad-h">Where They Are</h2>${list(snap.countries)}<h3 class="st-h3">Cities</h3>${list(snap.cities)}</div>
-  <div><h2 class="ad-h">Devices</h2>${list(snap.devices)}<h3 class="st-h3">First Page Seen</h3>${list(snap.landing, pageName)}</div></div>
+  <div><h2 class="ad-h">Devices</h2>${list(snap.devices)}<h3 class="st-h3">First Page Seen</h3>${list(snap.landing.filter((l) => !l.name.startsWith("/admin")), pageName)}</div></div>
   <p class="pk-help" style="margin-top:28px">Visits from you may not show: some browsers block Google Analytics. Visitors who decline cookies are counted without a profile, so totals can run a little low.</p></main>`);
 console.log(`wrote ${OUT} (${n0(t.activeUsers ?? 0)} visitors)`);
