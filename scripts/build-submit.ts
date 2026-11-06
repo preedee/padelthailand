@@ -23,13 +23,15 @@ const EVENT_TYPES = ["Americano", "Mexicano", "Social", "Clinic", "League Night"
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const PDPA = "We use your name and email only to check this submission. We delete them 12 months after it is reviewed.";
 const CLOSED = `Submissions open soon. For now, message us on Instagram: <a href="${SITE_IG}" rel="noopener">@padelthailand</a>.`;
+// the forms that are wired to a server (js/submit.js WIRED): only their tabs show; a direct link such as /submit/#tournament still opens that form with its "opens soon" note
+const LIVE = ["club", "correction"];
 const THANKS = "Thanks. Your submission is waiting for review. Nothing goes live until a person has checked it.";
 
 // ---------- field builders ----------
 // Every control gets a visible <label>, an error slot (<p class="err">) and aria-describedby. No placeholders.
 type F = {
   name: string; label: string; type?: string; required?: boolean; max?: number; kind?: string; hint?: string;
-  attrs?: string; local?: boolean; wide?: boolean;
+  attrs?: string; local?: boolean; wide?: boolean; rows?: number;
 };
 const opt = (required?: boolean) => (required ? "" : ` <span class="opt">(optional)</span>`);
 const describedBy = (id: string, hint?: string, extra?: string) => `aria-describedby="${[hint ? `${id}-hint` : "", extra ?? "", `${id}-err`].filter(Boolean).join(" ")}"`;
@@ -40,7 +42,7 @@ function input(p: string, f: F): string {
   const id = `${p}-${f.name}`;
   const t = f.type ?? "text";
   const tag = t === "textarea"
-    ? `<textarea id="${id}" name="${f.name}" rows="5"${f.max ? ` maxlength="${f.max}"` : ""}${f.required ? " required" : ""}${f.kind ? ` data-kind="${f.kind}"` : ""} ${describedBy(id, f.hint)}${f.attrs ? " " + f.attrs : ""}></textarea>`
+    ? `<textarea id="${id}" name="${f.name}" rows="${f.rows ?? 5}"${f.max ? ` maxlength="${f.max}"` : ""}${f.required ? " required" : ""}${f.kind ? ` data-kind="${f.kind}"` : ""} ${describedBy(id, f.hint)}${f.attrs ? " " + f.attrs : ""}></textarea>`
     : `<input id="${id}" name="${f.name}" type="${t}"${f.max ? ` maxlength="${f.max}"` : ""}${f.required ? " required" : ""}${f.kind ? ` data-kind="${f.kind}"` : ""}${f.local ? " data-local" : ""} ${describedBy(id, f.hint)}${f.attrs ? " " + f.attrs : ""}>`;
   return `<div class="fld${f.wide ? " wide" : ""}"><label for="${id}">${f.label}${opt(f.required)}</label>${hintP(id, f.hint)}${tag}${errP(id)}</div>`;
 }
@@ -94,7 +96,7 @@ function form(key: string, p: string, title: string, lede: string, button: strin
     ${contact(p)}
     ${honeypot(p)}
     <p class="form-err" role="alert" hidden></p>
-    <div class="actions"><button class="btn solid" type="submit" disabled>${button}</button><span class="fine">Fields marked (optional) can be left empty.</span></div>
+    <div class="actions"><button class="btn solid" type="submit" disabled>${button}</button></div>
   </div>
   <div class="sent" role="status" hidden><p class="sent-h">Sent</p><p>${THANKS}</p><button class="btn" type="button" data-again>Send Another</button></div>
 </form>`;
@@ -112,8 +114,8 @@ const FORMS: [string, string, string][] = [
     ${choices("t", "levels", "Levels", "checkbox", LEVELS, { hint: levelsHint })}
     ${input("t", { name: "format", label: "Format", max: 200, hint: "For example: groups then knockout, best of three sets." })}
     <div class="row2">${input("t", { name: "entryFee", label: "Entry Fee", max: 100, hint: "For example: 1,500 THB per player." })}${input("t", { name: "prize", label: "Prize", max: 200 })}</div>
-    ${input("t", { name: "registrationUrl", label: "Registration Link", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
-    ${input("t", { name: "instagramUrl", label: "Instagram Post", type: "url", kind: "igurl", max: 500, hint: "The Tournament Post, Starting With https://www.instagram.com/" })}
+    ${input("t", { name: "registrationUrl", label: "Registration Link", type: "url", kind: "url", max: 500, hint: "Must start with https://" })}
+    ${input("t", { name: "instagramUrl", label: "Instagram Post", type: "url", kind: "igurl", max: 500, hint: "The tournament post, starting with https://www.instagram.com/" })}
     ${upload("t", "Poster", false, "JPG, PNG or WebP, up to 5 MB.")}
     ${input("t", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
   ["event", "Event", form("event", "e", "Submit an Event", "Americanos, mexicanos, socials, clinics and league nights. One-off or every week.", "Submit Event", `
@@ -124,21 +126,22 @@ const FORMS: [string, string, string][] = [
     ${choices("e", "howOften", "How Often", "radio", ["One Date", "Every Week"], { required: true, checked: "One Date", local: true })}
     <div class="when-once">${input("e", { name: "date", label: "Date", type: "date", required: true, kind: "date" })}</div>
     <div class="when-weekly row2" hidden>${select("e", { name: "weekday", label: "Weekday", required: true }, WEEKDAYS.map((d) => [d, d]), "Choose a Day")}${input("e", { name: "until", label: "Runs Until", type: "date", kind: "date", hint: "The last week it runs, if you know it." })}</div>
-    <div class="row2">${input("e", { name: "startTime", label: "Start Time", type: "time", required: true, kind: "time", hint: "24-Hour Clock." })}${input("e", { name: "endTime", label: "End Time", type: "time", kind: "time" })}</div>
+    <div class="row2">${input("e", { name: "startTime", label: "Start Time", type: "time", required: true, kind: "time", hint: "24-hour clock." })}${input("e", { name: "endTime", label: "End Time", type: "time", kind: "time" })}</div>
     ${choices("e", "levels", "Levels", "checkbox", LEVELS, { hint: levelsHint })}
     ${select("e", { name: "gender", label: "Gender" }, GENDERS.slice().reverse().map((g) => [g, g]))}
-    <div class="row2">${input("e", { name: "capacity", label: "Capacity", type: "number", kind: "int", attrs: 'min="1" max="500" inputmode="numeric" data-min="1" data-max="500"', hint: "Players per session." })}${input("e", { name: "pricePerPerson", label: "Price Per Person", max: 100, hint: "For Example: 500 THB." })}</div>
-    ${input("e", { name: "signupUrl", label: "Sign-Up Link", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
+    <div class="row2">${input("e", { name: "capacity", label: "Capacity", type: "number", kind: "int", attrs: 'min="1" max="500" inputmode="numeric" data-min="1" data-max="500"', hint: "Players per session." })}${input("e", { name: "pricePerPerson", label: "Price Per Person", max: 100, hint: "For example: 500 THB." })}</div>
+    ${input("e", { name: "signupUrl", label: "Sign-Up Link", type: "url", kind: "url", max: 500, hint: "Must start with https://" })}
     ${upload("e", "Poster", false, "JPG, PNG or WebP, up to 5 MB.")}
     ${input("e", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
   ["club", "Club", form("club", "c", "Missing a Club? Add It", "Tell us about a padel club that is not on the map yet.", "Submit Club", `
     ${input("c", { name: "clubName", label: "Club Name", required: true, max: 200 })}
+    <div class="dup" id="c-dup" role="status" aria-live="polite" hidden></div>
     ${input("c", { name: "city", label: "City", required: true, max: 100, attrs: 'autocomplete="address-level2"' })}
-    ${input("c", { name: "address", label: "Address", type: "textarea", max: 500 })}
-    ${input("c", { name: "courts", label: "Courts", type: "number", kind: "int", attrs: 'min="1" max="60" inputmode="numeric" data-min="1" data-max="60"', hint: "How Many Padel Courts." })}
+    ${input("c", { name: "address", label: "Address", type: "textarea", max: 500, rows: 3 })}
+    ${input("c", { name: "courts", label: "Courts", type: "number", kind: "int", attrs: 'min="1" max="60" inputmode="numeric" data-min="1" data-max="60"', hint: "How many padel courts." })}
     ${input("c", { name: "bookingUrl", label: "Booking Link", type: "url", kind: "url", max: 500, hint: "Where players book, starting with https://" })}
-    <div class="row2">${input("c", { name: "phone", label: "Phone", type: "tel", kind: "phone", max: 30, attrs: 'autocomplete="tel"' })}${input("c", { name: "instagram", label: "Instagram", kind: "instagram", max: 500, hint: "An @handle or an https://instagram.com Link." })}</div>
-    ${input("c", { name: "website", label: "Website", type: "url", kind: "url", max: 500, hint: "Must Start With https://" })}
+    <div class="row2">${input("c", { name: "phone", label: "Phone", type: "tel", kind: "phone", max: 30, attrs: 'autocomplete="tel"', hint: "With the area code." })}${input("c", { name: "instagram", label: "Instagram", kind: "instagram", max: 500, hint: "An @handle or a link." })}</div>
+    ${input("c", { name: "website", label: "Website", type: "url", kind: "url", max: 500, hint: "Must start with https://" })}
     ${input("c", { name: "notes", label: "Notes", type: "textarea", max: 2000 })}`)],
   ["photo", "Photo", form("photo", "p", "Share a Club Photo", "Good court photos help players pick a club. We show the credit line with the photo.", "Send Photo", `
     ${clubPicker("p", "Club")}
@@ -146,26 +149,26 @@ const FORMS: [string, string, string][] = [
     ${input("p", { name: "credit", label: "Photo Credit", required: true, max: 200, hint: "Shown under the photo, for example: Photo by Somchai K." })}
     ${tick("p", "licenceConfirmed", "I took this photo, or I have permission to share it, and padelthailand.com may show it with the credit above.", true)}`)],
   ["correction", "Correction", form("correction", "x", "Report a Correction", "Spotted wrong hours, a closed club or a bad link? Tell us what to fix.", "Send Correction", `
-    ${input("x", { name: "pageUrl", label: "Page Link", type: "url", kind: "url", required: true, max: 500, hint: "The padelthailand.com Page With the Mistake." })}
+    ${input("x", { name: "pageUrl", label: "Page Link", type: "url", kind: "url", required: true, max: 500, hint: "The padelthailand.com page with the mistake." })}
     ${input("x", { name: "whatIsWrong", label: "What Is Wrong", type: "textarea", required: true, max: 2000 })}
     ${input("x", { name: "correctValue", label: "Correct Information", type: "textarea", max: 2000 })}
     ${tick("x", "isOwner", "I run or work at this club or event.")}`)],
 ];
 
 const body = `<main class="wrap sub-page">
-<div class="page-head"><span class="badge-ink">Submit</span><h1 style="margin-top:14px">Send Us a Listing</h1>
-  <p>Tell us about a tournament, a social event, a club we are missing, a court photo or a mistake. A person reviews every submission before anything goes live.</p></div>
-<div class="seg sub-seg" role="group" aria-label="What are you sending?">${FORMS.map(([k, l]) => `<button type="button" data-form="${k}" aria-controls="f-${k}" aria-pressed="false">${l}</button>`).join("")}</div>
+<div class="page-head"><span class="badge-ink">Submit</span><h1 style="margin-top:14px">Add a Club or Report a Correction</h1>
+  <p>Tell us about a padel club that is missing from the map, or something on the site that needs fixing. A person reviews every submission before anything goes live.</p></div>
+<div class="seg sub-seg" role="group" aria-label="What are you sending?">${FORMS.map(([k, l]) => `<button type="button" data-form="${k}" aria-controls="f-${k}" aria-pressed="false"${LIVE.includes(k) ? "" : " hidden"}>${l}</button>`).join("")}</div>
 <noscript><p class="closed">These Forms Need JavaScript. You Can Send the Details to Us on Instagram Instead: <a href="${SITE_IG}" rel="noopener">${SITE_IG}</a></p></noscript>
 ${FORMS.map(([, , html]) => html).join("\n")}
 </main>`;
 
 const html = shell({
-  title: "Submit a Tournament, Event or Club | Padel Thailand",
-  description: "Send a padel tournament, social event, missing club, court photo or correction to Padel Thailand. Every submission is reviewed by a person before it goes live.",
+  title: "Add a Club or Report a Correction | Padel Thailand",
+  description: "Tell Padel Thailand about a padel club that is missing from the map, or report a mistake. Every submission is reviewed by a person before it goes live.",
   path: "/submit/", active: "", noindex: true, body,
-  head: `<link rel="stylesheet" href="/css/forms.css?v=1">`,
-  scripts: `<script src="/js/submit.js?v=3"></script>`,
+  head: `<link rel="stylesheet" href="/css/forms.css?v=3">`,
+  scripts: `<script src="/js/submit.js?v=4"></script>`,
 });
 
 // ---------- checks ----------
