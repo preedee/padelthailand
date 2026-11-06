@@ -1,13 +1,17 @@
-/* /submit/ — form switching, validation, poster checks and the POST to the Apps Script endpoint.
-   Markup comes from scripts/build-submit.ts; the server mirror of these rules is scripts/AppsScript-Submissions.gs.
-   The page ships closed (submit disabled + Instagram note); it opens only when data/site-config.json has submitEndpoint. */
+/* /submit/ — form switching, validation and the POST to the club registry (Supabase function clubs.submit_form).
+   Markup comes from scripts/build-submit.ts; the server mirror of these rules is supabase/0001_submissions.sql.
+   Each form ships closed (submit disabled + Instagram note); it opens only when its name is in data/site-config.json submitForms.
+   Only the Missing a Club and Correction forms are wired to Supabase; the others stay closed until they have somewhere to go. */
 (function () {
   "use strict";
   var KEYS = ["tournament", "event", "club", "photo", "correction"];
   var MAX_BYTES = 5 * 1024 * 1024;
   var TYPES = { "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"], "image/webp": ["webp"] };
   var forms = {};
-  var endpoint = "";
+  var API = "https://zmnchzfvbflexrlciadn.supabase.co/rest/v1/rpc/submit_form";
+  var KEY = "sb_publishable_KKLfjbhBJ_qF420UNtM2JQ_2YM-v6ld";   // public by design: it can only call submit_form()
+  var WIRED = { club: true, correction: true };
+  var open = {};   // forms switched on by data/site-config.json
   KEYS.forEach(function (k) { forms[k] = document.getElementById("f-" + k); });
   var seg = document.querySelectorAll(".sub-seg button[data-form]");
 
@@ -235,7 +239,7 @@
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      if (sending || !endpoint) return;
+      if (sending || !open[k]) return;
       formErr.hidden = true;
       var bad = validate(form);
       if (bad.length) {
@@ -250,21 +254,30 @@
       var hp = form.querySelector('[name="website_url"]');
       if (hp && hp.value.trim()) { setTimeout(done, 400); return; } // honeypot: pretend it worked, send nothing
 
-      var body = payload(form);
-      var fileInput = form.querySelector("input[type=file]");
-      var file = fileInput && fileInput.files && fileInput.files[0];
-      var ready = file ? readBase64(file).then(function (b64) {
-        body.set("posterName", file.name);
-        body.set("posterMime", file.type);
-        body.set("posterData", b64);
-      }) : Promise.resolve();
-
-      ready.then(function () {
-        return fetch(endpoint, { method: "POST", mode: "no-cors", body: body });
-      }).then(function () {
-        if (window.ptTrack) window.ptTrack("submission_sent", { form_type: k });   // real sends only, never the honeypot path
-        done();
-      }, function () {
+      var data = {};
+      payload(form).forEach(function (v, key) { data[key] = v; });
+      fetch(API, {
+        method: "POST",
+        headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json", "Content-Profile": "clubs" },
+        body: JSON.stringify({ p: data })
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function (res) {
+        if (res && res.ok) {
+          if (window.ptTrack) window.ptTrack("submission_sent", { form_type: k });   // real sends only, never the honeypot path
+          done();
+          return;
+        }
+        // the server refused it with a reason (its rules mirror validate() above, so this is rare)
+        sending = false;
+        btn.disabled = false;
+        btn.textContent = label;
+        var field = res && res.field && form.querySelector('[name="' + res.field + '"]');
+        if (field) { setErr(field, res.error); field.focus(); }
+        formErr.textContent = (res && res.error) || "We could not send this. Please try again.";
+        formErr.hidden = false;
+      }).catch(function () {
         sending = false;
         btn.disabled = false;
         btn.textContent = label;
@@ -302,12 +315,12 @@
     getJson("/data/clubs.json").catch(function () { return { clubs: [] }; }),
   ]).then(function (res) {
     fillClubs((res[1] && res[1].clubs) || []);
-    var url = String((res[0] && res[0].submitEndpoint) || "").trim();
-    endpoint = /^https:\/\//.test(url) ? url : "";
+    var on = (res[0] && res[0].submitForms) || [];
     KEYS.forEach(function (k) {
-      forms[k].querySelector(".closed").hidden = !!endpoint;
-      forms[k].querySelector('button[type="submit"]').disabled = !endpoint;
+      open[k] = !!WIRED[k] && on.indexOf(k) >= 0;
+      forms[k].querySelector(".closed").hidden = open[k];
+      forms[k].querySelector('button[type="submit"]').disabled = !open[k];
     });
-    document.body.dataset.submit = endpoint ? "open" : "closed";
+    document.body.dataset.submit = KEYS.some(function (k) { return open[k]; }) ? "open" : "closed";
   });
 })();
