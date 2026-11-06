@@ -102,12 +102,12 @@
     if (max && v.length > max) return label + " is too long. Keep it under " + max + " characters.";
     switch (el.dataset.kind) {
       case "email": return v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "That email address does not look right. Check it and try again.";
-      case "url": return isHttps(v) ? "" : "Use a Full Web Address Starting With https://";
+      case "url": return isHttps(v) ? "" : "Use a full web address starting with https://";
       case "igurl": return /(^|\.)instagram\.com$/.test(isHttps(v)) ? "" : "Use an Instagram link starting with https://www.instagram.com/";
-      case "date": return isDate(v) ? "" : "Use a Real Date.";
-      case "time": return /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? "" : "Use a 24-Hour Time Like 19:30.";
-      case "int": return /^\d+$/.test(v) && +v >= +el.dataset.min && +v <= +el.dataset.max ? "" : "Use a Whole Number From " + el.dataset.min + " to " + el.dataset.max + ".";
-      case "phone": return /^[+0-9 ()\-]{6,30}$/.test(v) ? "" : "Use Only Digits, Spaces, + and -.";
+      case "date": return isDate(v) ? "" : "Use a real date.";
+      case "time": return /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? "" : "Use a 24-hour time like 19:30.";
+      case "int": return /^\d+$/.test(v) && +v >= +el.dataset.min && +v <= +el.dataset.max ? "" : "Use a whole number from " + el.dataset.min + " to " + el.dataset.max + ".";
+      case "phone": return /^[+0-9 ()\-]{6,30}$/.test(v) ? "" : "Use only digits, spaces, + and -.";
       case "instagram": return /^@?[A-Za-z0-9._]{1,30}$/.test(v) || /(^|\.)instagram\.com$/.test(isHttps(v)) ? "" : "Use an @handle or an https://instagram.com link.";
     }
     return "";
@@ -352,8 +352,11 @@
   // ---------- correction: prefill the page link ----------
   var page = document.querySelector('#f-correction [name="pageUrl"]');
   var q = new URLSearchParams(location.search).get("page");
-  if (page && q && isHttps(q)) page.value = q;
-  else if (page && document.referrer && /^https:\/\/(www\.)?padelthailand\.com\//.test(document.referrer)) page.value = document.referrer;
+  var OWN = /^https:\/\/(www\.)?padelthailand\.com\//;
+  if (page && q && OWN.test(q)) page.value = q;
+  else if (page && document.referrer && OWN.test(document.referrer)) page.value = document.referrer;
+  var pageHint = document.getElementById("x-pageUrl-hint");
+  if (page && page.value && pageHint) pageHint.textContent = "Filled in from the page you were on. Change it if the mistake is on another page.";
 
   // ---------- open or stay closed ----------
   function getJson(url) {

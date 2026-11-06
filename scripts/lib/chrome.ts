@@ -34,10 +34,11 @@ const header = (active: string) => `<header class="site-head"><div class="wrap">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">${svg('<path d="M4 7h16M4 12h16M4 17h16"/>', 22, 2)}</button>
   <nav class="nav" id="site-nav" aria-label="Main">${NAV.map(([k, h, l]) => `<a href="${h}"${k === active ? ' aria-current="page"' : ""}>${l}</a>`).join("")}<a class="cta" href="/clubs/#book">Book a Court</a></nav>
 </div></header>`;
-const footer = () => `<footer class="site-foot"><div class="wrap">
+// path = the page being built, so the footer's Report a Correction link can name it (the form prefills it)
+const footer = (path = "") => `<footer class="site-foot"><div class="wrap">
   <div><span class="brand" style="min-height:0">${LOGO(46, 22, "#F3F4F2")}<span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
   <p>Run a club that is not on the map? Use Submit a Club below and we will add your stop.</p></div>
-  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#club">Submit a Club</a><a href="/submit/#correction">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
+  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#club">Submit a Club</a><a href="${/^\/(submit|admin)\//.test(path) || !path ? "/submit/#correction" : `/submit/?page=${encodeURIComponent(SITE + path)}#correction`}">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
 </div></footer>`;
 
 export function shell(o: { title: string; description: string; path: string; active: string; body: string; image?: string; ld?: unknown | unknown[]; bodyClass?: string; bodyAttrs?: string; scripts?: string; head?: string; noindex?: boolean; imageAlt?: string }): string {
@@ -69,7 +70,7 @@ export function shell(o: { title: string; description: string; path: string; act
 <a class="skip" href="#main">Skip to Content</a>
 ${header(o.active)}
 ${o.body.replace("<main", '<main id="main" tabindex="-1"')}
-${footer()}
+${footer(o.path)}
 <script src="/js/directory.js?v=10"></script>
 <script src="/js/analytics.js?v=2" defer></script>
 ${o.scripts ?? ""}
