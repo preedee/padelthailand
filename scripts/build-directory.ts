@@ -47,6 +47,9 @@ const clubs: Club[] = JSON.parse(await readFile(ROOT + "data/clubs-full.json", "
 const net: Net = JSON.parse(await readFile(ROOT + "data/network.json", "utf8"));
 const bySlug = new Map(clubs.map((c) => [c.slug, c]));
 
+// Tournaments are out of scope for now (decision 2026-11-06): region and club pages show nothing about them.
+// FUTURE PHASE: set this to true to bring back the "Upcoming Tournaments in <region>" section on region pages.
+const SHOW_TOURNAMENTS = false;
 // tournaments per club, for the teaser on each club page (data/tournaments.json comes from scripts/build-listings.ts)
 type TourLite = { title: string; organizer: string; region: string; clubSlug: string | null; startDate: string | null; endDate: string | null; monthOnly: string | null; regUrl: string | null; instagramUrl: string | null };
 const tournamentsAll: TourLite[] = (await readJson<{ tournaments: TourLite[] }>(ROOT, "data/tournaments.json", { tournaments: [] })).tournaments;
@@ -188,9 +191,9 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   <p><a class="btn" href="/#map">View on the Network Map</a></p></div>
   <h2 style="font-size:30px;margin:32px 0 16px">All ${n} Clubs in ${esc(name)}</h2>
   <div class="grid" id="hub-grid">${list.map(clubCard).join("\n")}</div>
-  <h2 style="font-size:30px;margin:40px 0 12px">Upcoming Tournaments in ${esc(name)}</h2>
+  ${SHOW_TOURNAMENTS ? `<h2 style="font-size:30px;margin:40px 0 12px">Upcoming Tournaments in ${esc(name)}</h2>
   ${ups.length ? `<ul class="tour-list">${ups.map((x) => tourRow(x, "region_page")).join("")}</ul>` : `<p class="fine" style="margin:0 0 12px">No upcoming tournaments listed in ${esc(name)} right now.</p>`}
-  <div class="tour-note"><span>Every tournament in Thailand, with posters.</span><a class="btn" href="/tournaments/?region=${encodeURIComponent(listingRegion(name))}">See Tournaments in ${esc(name)} ${ICON.arrow}</a></div>
+  <div class="tour-note"><span>Every tournament in Thailand, with posters.</span><a class="btn" href="/tournaments/?region=${encodeURIComponent(listingRegion(name))}">See Tournaments in ${esc(name)} ${ICON.arrow}</a></div>` : ""}
   <h2 style="font-size:30px;margin:40px 0 4px">Questions About Padel in ${esc(name)}</h2>
   <dl class="faq">${faq.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl>
   <h2 style="font-size:30px;margin:40px 0 12px">Other Regions</h2>
