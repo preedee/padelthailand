@@ -71,3 +71,10 @@ fieldset[aria-invalid="true"] .choice { border-color: var(--red); }
 @media (prefers-reduced-motion: reduce) {
   .sub-page *, .sub-page *::before, .sub-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* tabs for forms that are not open yet stay out of the way */
+.sub-seg button[hidden] { display: none; }
+/* "is it already on the site?" note under the club name */
+.dup { margin: -6px 0 18px; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; font-size: 15px; }
+.dup p { margin: 0; } .dup p + p { margin-top: 6px; }
+.sub-form textarea[rows="3"] { min-height: 88px; }

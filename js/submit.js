@@ -18,7 +18,7 @@
   // ---------- switching ----------
   function current() {
     var h = location.hash.replace("#", "");
-    return KEYS.indexOf(h) >= 0 ? h : "tournament";
+    return KEYS.indexOf(h) >= 0 ? h : "club";
   }
   function show(key) {
     KEYS.forEach(function (k) { forms[k].hidden = k !== key; });
@@ -141,7 +141,56 @@
   }
 
   // ---------- club picker ----------
+  // ---------- Missing a Club: warn when the name looks like a club we already list ----------
+  var known = [];
+  var STOP = { padel: 1, club: 1, the: 1, court: 1, courts: 1, sports: 1, sport: 1, and: 1, bangkok: 1, thailand: 1, phuket: 1, pickleball: 1 };
+  function squash(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9\u0e00-\u0e7f]/g, ""); }
+  function words(s) { return String(s || "").toLowerCase().split(/[^a-z0-9\u0e00-\u0e7f]+/).filter(function (w) { return w.length >= 3 && !STOP[w]; }); }
+  function matches(q) {
+    var sq = squash(q), qw = words(q);
+    if (sq.length < 3) return [];
+    return known.filter(function (c) {
+      var names = [c.name].concat(c.aliases || []);
+      return names.some(function (n) {
+        var sn = squash(n);
+        if (sn && (sn.indexOf(sq) >= 0 || (sn.length >= 4 && sq.indexOf(sn) >= 0))) return true;
+        var nw = words(n);
+        return qw.some(function (w) { return w.length >= 4 && nw.indexOf(w) >= 0; });
+      });
+    }).slice(0, 4);
+  }
+  var nameBox = document.getElementById("c-clubName"), dup = document.getElementById("c-dup");
+  function showDup() {
+    if (!nameBox || !dup) return;
+    var m = matches(nameBox.value);
+    if (!m.length) { dup.hidden = true; dup.textContent = ""; return; }
+    dup.textContent = "";
+    var p = document.createElement("p"), b = document.createElement("b");
+    b.textContent = "Is it already on the site? ";
+    p.appendChild(b);
+    m.forEach(function (c, i) {
+      if (i) p.appendChild(document.createTextNode(" · "));
+      var a = document.createElement("a");
+      a.href = "/clubs/" + c.slug + "/";
+      a.textContent = c.name;
+      p.appendChild(a);
+    });
+    var q = document.createElement("p");
+    q.className = "fine";
+    q.appendChild(document.createTextNode("If it is listed but something is wrong, use "));
+    var a2 = document.createElement("a");
+    a2.href = "#correction";
+    a2.textContent = "Report a Correction";
+    q.appendChild(a2);
+    q.appendChild(document.createTextNode(" instead."));
+    dup.appendChild(p);
+    dup.appendChild(q);
+    dup.hidden = false;
+  }
+  if (nameBox) nameBox.addEventListener("input", showDup);
+
   function fillClubs(clubs) {
+    known = clubs;
     document.querySelectorAll("select[data-clubs]").forEach(function (sel) {
       var other = sel.querySelector('option[value="__other"]');
       clubs.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (c) {
