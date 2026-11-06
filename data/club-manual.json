@@ -36,7 +36,10 @@
     "ratingCount": 0,
     "amenities": [],
     "openingSoon": true,
-    "photos": [],
+    "photos": [
+      {"url": "https://zmnchzfvbflexrlciadn.supabase.co/storage/v1/object/public/club-photos/manual-vita-padel-ekkamai/f92d4404734cb983.jpg", "author": "Vita Padel Bangkok", "authorUrl": "https://maps.google.com/maps/contrib/107288693658770983740"},
+      {"url": "https://zmnchzfvbflexrlciadn.supabase.co/storage/v1/object/public/club-photos/manual-vita-padel-ekkamai/fd9ca5ade9166a40.jpg", "author": "Vita Padel Bangkok", "authorUrl": "https://maps.google.com/maps/contrib/107288693658770983740"}
+    ],
     "aliases": ["Vita Padel", "VITA Ekkamai"],
     "updated": "2026-11-04",
     "_source": "Playtomic listing https://playtomic.com/clubs/vita-padel-ekkamai, read 2026-11-04 (listed as Coming Soon). Hand entry: the registry only holds Vita as a platform_venues lead. Remove this entry once the registry lists it."
