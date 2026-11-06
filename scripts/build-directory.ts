@@ -332,7 +332,7 @@ function clubPage(c: Club): string {
     <aside class="aside" aria-label="Contact and address">
       ${contacts.length ? `<section class="card" aria-label="Contact"><ul class="contact">${contacts.join("")}</ul></section>` : ""}
       ${addr}
-      <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/#correction">Report a Correction</a> · <a href="/submit/#correction">Own This Club? Claim It</a></p>
+      <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/?page=${encodeURIComponent(`${SITE}/clubs/${c.slug}/`)}#correction">Report a Correction</a> · <a href="/submit/?page=${encodeURIComponent(`${SITE}/clubs/${c.slug}/`)}#correction">Own This Club? Claim It</a></p>
     </aside>
     <div class="rest">
       ${c.amenities.length ? `<h2>Amenities</h2><ul class="pills">${c.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}

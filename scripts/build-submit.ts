@@ -150,9 +150,9 @@ const FORMS: [string, string, string][] = [
     ${tick("p", "licenceConfirmed", "I took this photo, or I have permission to share it, and padelthailand.com may show it with the credit above.", true)}`)],
   ["correction", "Correction", form("correction", "x", "Report a Correction", "Spotted wrong hours, a closed club or a bad link? Tell us what to fix.", "Send Correction", `
     ${input("x", { name: "pageUrl", label: "Page Link", type: "url", kind: "url", required: true, max: 500, hint: "The padelthailand.com page with the mistake." })}
-    ${input("x", { name: "whatIsWrong", label: "What Is Wrong", type: "textarea", required: true, max: 2000 })}
-    ${input("x", { name: "correctValue", label: "Correct Information", type: "textarea", max: 2000 })}
-    ${tick("x", "isOwner", "I run or work at this club or event.")}`)],
+    ${input("x", { name: "whatIsWrong", label: "What Is Wrong", type: "textarea", required: true, max: 2000, hint: "For example: the club is closed on Mondays, or the booking link no longer works." })}
+    ${input("x", { name: "correctValue", label: "Correct Information", type: "textarea", max: 2000, hint: "What it should say, if you know." })}
+    ${tick("x", "isOwner", "I run or work at this club.")}`)],
 ];
 
 const body = `<main class="wrap sub-page">
@@ -168,7 +168,7 @@ const html = shell({
   description: "Tell Padel Thailand about a padel club that is missing from the map, or report a mistake. Every submission is reviewed by a person before it goes live.",
   path: "/submit/", active: "", noindex: true, body,
   head: `<link rel="stylesheet" href="/css/forms.css?v=3">`,
-  scripts: `<script src="/js/submit.js?v=4"></script>`,
+  scripts: `<script src="/js/submit.js?v=5"></script>`,
 });
 
 // ---------- checks ----------
