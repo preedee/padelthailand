@@ -4,7 +4,7 @@
 -- Visitors can only call clubs.submit_form(). They cannot read, change or delete submissions, and nothing a
 -- visitor sends goes on the site until you review it here (Table Editor > clubs > submissions) and set status = 'live'
 -- or 'rejected'. Only whitelisted fields are stored, every field is length-checked, links must be https, a hidden
--- trap field (website_url) silently drops bots, and at most 40 submissions per rolling hour are accepted site-wide.
+-- trap field (website_url) silently drops bots (a correction needs no name or email; a club submission does), and at most 40 submissions per rolling hour are accepted site-wide.
 
 grant usage on schema clubs to anon, authenticated;   -- already true for the registry views; harmless to repeat
 
@@ -42,7 +42,7 @@ begin
                ["contactName","Your name",100,true,"text"],["contactEmail","Your email",200,true,"email"]]'::jsonb;
   elsif kind = 'correction' then
     specs := '[["pageUrl","Page link",500,true,"url"],["whatIsWrong","What is wrong",2000,true,"text"],["correctValue","Correct information",2000,false,"text"],
-               ["isOwner","Owner",3,false,"text"],["contactName","Your name",100,true,"text"],["contactEmail","Your email",200,true,"email"]]'::jsonb;
+               ["isOwner","Owner",3,false,"text"],["contactName","Your name",100,false,"text"],["contactEmail","Your email",200,false,"email"]]'::jsonb;
   else
     return jsonb_build_object('ok', false, 'error', 'Unknown form.');
   end if;
@@ -67,6 +67,7 @@ begin
     return jsonb_build_object('ok', false, 'error', 'We are getting a lot of submissions right now. Please try again in an hour, or message us on Instagram.');
   end if;
 
+  perform clubs._purge_contacts();   -- from 0002: contact details go 12 months after review
   insert into clubs.submissions (kind, data) values (kind, d);
   return jsonb_build_object('ok', true, 'status', 'pending');
 end $$;

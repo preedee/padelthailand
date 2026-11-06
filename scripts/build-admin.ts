@@ -12,7 +12,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { esc, shell } from "./lib/chrome.ts";
-import { PHOTO_BASE, registryGet, type PhotoRow } from "./lib/registry.ts";
+import { ANON_KEY, PHOTO_BASE, SUPABASE_URL, registryGet, type PhotoRow } from "./lib/registry.ts";
 import { REGION_ORDER } from "./lib/regions.ts";
 import { readJson } from "./lib/util.ts";
 import { lockPage } from "./lib/lock.ts";
@@ -75,7 +75,7 @@ const body = `<main class="wrap pk">
   <script type="application/json" id="pk-seen">${JSON.stringify(seenSaved).replace(/</g, "\\u003c")}</script>
 </main>`;
 
-const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=5">`, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
+const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
 
 // ---------- /admin/: tool cards and the data-health table ----------
 const picks = saved;
@@ -88,22 +88,38 @@ const rows = ordered.map(({ region, club }) => {
 });
 const count = (f: (c: Club) => boolean) => ordered.filter((o) => f(o.club)).length;
 const stat = (label: string, have: number) => `<div class="ad-stat"><b>${have}</b><span>of ${ordered.length}</span><small>${label}</small></div>`;
-const tools = [
+// Submissions: the unlocked page reads and reviews visitor reports through two database functions that only answer to this key
+// (supabase/0002_admin_submissions.sql). The key sits inside the encrypted pages only; with none set, that page is left unchanged.
+const apiKey = process.env.ADMIN_API_KEY;
+const sbConfig = apiKey ? `<script type="application/json" id="sb-config">${JSON.stringify({ url: SUPABASE_URL, anon: ANON_KEY, key: apiKey }).replace(/</g, "\\u003c")}</script>` : "";
+const tools: { href: string; title: string; text: string; meta: string; id?: string }[] = [
+  { href: "/admin/submissions/", title: "Submissions", text: "New club and correction reports from visitors. Mark each one live or rejected.", meta: "Open to see what is waiting", id: "sb-meta" },
   { href: "/admin/photos/", title: "Top Photos", text: "Choose the photo that comes first on each club page, card and map panel.", meta: `${Object.keys(picks).length} of ${withPhotos} clubs chosen${newClubs ? ` · ${newClubs} ${newClubs === 1 ? "club has" : "clubs have"} new photos to review` : ""}` },
   { href: "/admin/stats/", title: "Visitor Stats", text: "Visitors, most viewed pages, where people come from and what they tap, from Google Analytics.", meta: "Refreshed every morning" },
 ];
 const home = `<main class="wrap pk">
   <div class="page-head"><span class="badge-ink">Admin</span><h1 style="margin-top:14px">Padel Thailand Admin</h1>
   <p class="pk-help">Owner tools. These pages are hidden from search engines and cannot change the live site by themselves: they read public data and export files that Claude (or you) commit.</p></div>
+  ${sbConfig}
   <h2 class="ad-h">Tools</h2>
-  <div class="ad-tools">${tools.map((t) => `<a class="ad-tool" href="${t.href}"><h3>${esc(t.title)}</h3><p>${esc(t.text)}</p><small>${esc(t.meta)}</small></a>`).join("")}</div>
+  <div class="ad-tools">${tools.map((t) => `<a class="ad-tool" href="${t.href}"><h3>${esc(t.title)}</h3><p>${esc(t.text)}</p><small${t.id ? ` id="${t.id}"` : ""}>${esc(t.meta)}</small></a>`).join("")}</div>
   <h2 class="ad-h">Data Health</h2>
   <p class="pk-help">What each club still lacks, from the registry and the files in <code>data/</code>. Refreshed with every weekly build.</p>
   <div class="ad-stats">${stat("with a top-photo pick", Object.keys(picks).length)}${stat("with a logo", count((c) => !!logos[c.slug]))}${stat("with Instagram", count((c) => !!c.instagramUrl))}${stat("with a website", count((c) => !!c.website))}${stat("with court counts", count((c) => !!c.courts.total))}${stat("with a booking link", count((c) => !!c.booking))}</div>
   <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-g="all" aria-pressed="true">All Clubs</button><button type="button" class="chip sq" data-g="gaps" aria-pressed="false">Only Clubs With Gaps</button></div></div>
   <div class="ad-table-wrap"><table class="ad-table"><thead><tr><th scope="col">Club</th><th scope="col">Photos</th><th scope="col">Top Pick</th><th scope="col">Logo</th><th scope="col">Instagram</th><th scope="col">Website</th><th scope="col">Phone</th><th scope="col">Courts</th><th scope="col">Booking</th><th scope="col">Hours</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
 </main>`;
-const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=5">`, scripts: `<script src="/js/admin-home.js?v=1" defer></script>` });
+const subBody = `<main class="wrap pk">
+  <p class="ad-back"><a href="/admin/">← Admin</a></p>
+  <div class="page-head"><span class="badge-ink">Admin · Submissions</span><h1 style="margin-top:14px">Club and Correction Reports</h1>
+  <p class="pk-help">What visitors sent through the forms on <a href="/submit/">/submit/</a>. Nothing is on the site until you act: <b>Mark Live</b> means it is checked and ready, so tell Claude and it goes on the site. Contact details are removed 12 months after a report is reviewed.</p></div>
+  ${sbConfig}
+  <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-f="pending" aria-pressed="true">Pending<span></span></button><button type="button" class="chip sq" data-f="live" aria-pressed="false">Live<span></span></button><button type="button" class="chip sq" data-f="rejected" aria-pressed="false">Rejected<span></span></button><button type="button" class="chip sq" data-f="all" aria-pressed="false">All<span></span></button></div><button type="button" class="btn" id="sb-refresh">Refresh</button></div>
+  <p class="pk-msg" id="sb-msg" role="status" aria-live="polite"></p>
+  <div id="sb-list" class="sb-list"></div>
+</main>`;
+const subHtml = shell({ title: "Admin: Submissions | Padel Thailand", description: "Owner tool: review submissions.", path: "/admin/submissions/", active: "", body: subBody, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-submissions.js?v=1" defer></script>` });
+const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-home.js?v=2" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
 await mkdir(ROOT + dirname(OUT), { recursive: true });
 // The pages are published encrypted (scripts/lib/lock.ts). With no ADMIN_PASSWORD the build leaves the published pages as
@@ -112,4 +128,6 @@ const password = process.env.ADMIN_PASSWORD;
 if (!password) { console.log("ADMIN_PASSWORD is not set: admin pages left unchanged (they are never published unlocked)"); process.exit(0); }
 await writeFile(ROOT + OUT, await lockPage(html, password));
 await writeFile(ROOT + OUT_HOME, await lockPage(homeHtml, password));
+if (apiKey) { await mkdir(ROOT + "admin/submissions", { recursive: true }); await writeFile(ROOT + "admin/submissions/index.html", await lockPage(subHtml, password)); }
+else console.log("ADMIN_API_KEY is not set: the Submissions page was left unchanged");
 console.log(`built (locked) ${OUT_HOME} and ${OUT} (${ordered.length} clubs, ${photoRows.length} photos)`);
