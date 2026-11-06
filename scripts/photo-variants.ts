@@ -18,6 +18,9 @@ if (!key) { console.error("missing SUPABASE_SERVICE_ROLE_KEY"); process.exit(1);
 const MANIFEST = new URL("../data/photo-variants.json", import.meta.url).pathname;
 const done = new Set<string>(existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, "utf8")) : []);
 const rows = await registryGet<{ storage_path: string; width_px: number | null }>("club_photos_public?select=storage_path,width_px&limit=5000");
+// photos of hand-entered clubs (scripts/manual-club-photos.ts) live in the same bucket but not in the registry
+const manual = existsSync(new URL("../data/club-manual.json", import.meta.url).pathname) ? (JSON.parse(readFileSync(new URL("../data/club-manual.json", import.meta.url).pathname, "utf8")) as { photos?: { url: string }[] }[]) : [];
+for (const c of manual) for (const p of c.photos ?? []) if (p.url.startsWith(PHOTO_BASE)) rows.push({ storage_path: p.url.slice(PHOTO_BASE.length), width_px: null });
 const todo = [...new Set(rows.map((r) => r.storage_path))].filter((p) => !done.has(p)).slice(0, limit);
 console.log(`${rows.length} photos, ${done.size} already done, ${todo.length} to do`);
 const tmp = mkdtempSync(join(tmpdir(), "photo-variants-"));
