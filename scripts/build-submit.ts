@@ -25,6 +25,7 @@ const PDPA = "We use your name and email only to check this submission. We delet
 const CLOSED = `Submissions open soon. For now, message us on Instagram: <a href="${SITE_IG}" rel="noopener">@padelthailand</a>.`;
 // the forms that are wired to a server (js/submit.js WIRED): only their tabs show; a direct link such as /submit/#tournament still opens that form with its "opens soon" note
 const LIVE = ["club", "correction"];
+const PDPA_OPTIONAL = "Leave your name and email only if you would like a reply. We use them only to check this submission and delete them 12 months after it is reviewed.";
 const THANKS = "Thanks. Your submission is waiting for review. Nothing goes live until a person has checked it.";
 
 // ---------- field builders ----------
@@ -80,20 +81,20 @@ function upload(p: string, label: string, required: boolean, hint: string): stri
     <input id="${id}" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-upload${required ? " required" : ""} ${describedBy(id, "y")}>${errP(id)}</div>`;
 }
 
-const contact = (p: string) => `<fieldset class="fld contact"><legend>About You</legend>
-  <div class="row2">${input(p, { name: "contactName", label: "Your Name", required: true, max: 100, attrs: 'autocomplete="name"' })}
-  <div class="fld"><label for="${p}-contactEmail">Your Email</label><input id="${p}-contactEmail" name="contactEmail" type="email" maxlength="254" required data-kind="email" autocomplete="email" inputmode="email" aria-describedby="${p}-pdpa ${p}-contactEmail-err">
-  <p class="hint pdpa" id="${p}-pdpa">${PDPA}</p>${errP(`${p}-contactEmail`)}</div></div></fieldset>`;
+const contact = (p: string, required = true) => `<fieldset class="fld contact"><legend>About You${opt(required)}</legend>
+  <div class="row2">${input(p, { name: "contactName", label: "Your Name", required, max: 100, attrs: 'autocomplete="name"' })}
+  <div class="fld"><label for="${p}-contactEmail">Your Email${opt(required)}</label><input id="${p}-contactEmail" name="contactEmail" type="email" maxlength="254"${required ? " required" : ""} data-kind="email" autocomplete="email" inputmode="email" aria-describedby="${p}-pdpa ${p}-contactEmail-err">
+  <p class="hint pdpa" id="${p}-pdpa">${required ? PDPA : PDPA_OPTIONAL}</p>${errP(`${p}-contactEmail`)}</div></div></fieldset>`;
 
 const honeypot = (p: string) => `<div class="hp" aria-hidden="true"><label for="${p}-website_url">Leave This Empty</label><input id="${p}-website_url" name="website_url" type="text" tabindex="-1" autocomplete="off"></div>`;
 
-function form(key: string, p: string, title: string, lede: string, button: string, fields: string): string {
+function form(key: string, p: string, title: string, lede: string, button: string, fields: string, contactRequired = true): string {
   return `<form class="sub-form" id="f-${key}" data-type="${key}" aria-labelledby="${p}-h" novalidate hidden>
   <h2 id="${p}-h">${title}</h2><p class="lede">${lede}</p>
   <p class="closed" role="note">${CLOSED}</p>
   <div class="fields">
     ${fields}
-    ${contact(p)}
+    ${contact(p, contactRequired)}
     ${honeypot(p)}
     <p class="form-err" role="alert" hidden></p>
     <div class="actions"><button class="btn solid" type="submit" disabled>${button}</button></div>
@@ -152,7 +153,7 @@ const FORMS: [string, string, string][] = [
     ${input("x", { name: "pageUrl", label: "Page Link", type: "url", kind: "url", required: true, max: 500, hint: "The padelthailand.com page with the mistake." })}
     ${input("x", { name: "whatIsWrong", label: "What Is Wrong", type: "textarea", required: true, max: 2000, hint: "For example: the club is closed on Mondays, or the booking link no longer works." })}
     ${input("x", { name: "correctValue", label: "Correct Information", type: "textarea", max: 2000, hint: "What it should say, if you know." })}
-    ${tick("x", "isOwner", "I run or work at this club.")}`)],
+    ${tick("x", "isOwner", "I run or work at this club.")}`, false)],
 ];
 
 const body = `<main class="wrap sub-page">

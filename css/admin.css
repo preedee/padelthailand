@@ -73,3 +73,17 @@
 .st-table td.st-bar { width: 38%; text-align: left; } .st-bar i { display: block; height: 10px; background: var(--ink); border-radius: 2px; } .st-table thead th { text-align: center; } .st-table tbody td { text-align: right; } .st-table tbody td.st-bar { text-align: left; }
 .st-steps li { margin-bottom: 8px; }
 .st-axis { margin-bottom: 30px; } .st-list { margin-bottom: 26px; } .st-cols .st-list { margin-bottom: 8px; }
+
+/* submissions page */
+.sb-list { display: flex; flex-direction: column; gap: 14px; margin: 8px 0 40px; }
+.sb-card { background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; padding: 16px 18px; box-shadow: var(--shadow-sign); }
+.sb-card.sb-live { border-left: 8px solid var(--green); } .sb-card.sb-rejected { opacity: .72; }
+.sb-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 8px; }
+.sb-kind { font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; } .sb-when { color: var(--text-3); font-size: 14px; flex: 1; }
+.sb-pill { font-size: 13px; font-weight: 700; padding: 2px 10px; border: 1.5px solid var(--ink); border-radius: 99px; }
+.sb-pending .sb-pill { background: #FFE9A8; } .sb-live .sb-pill { background: #CFEFC2; }
+.sb-body h3 { font-size: 22px; margin: 0 0 6px; } .sb-line { margin: 4px 0; overflow-wrap: anywhere; } .sb-dim { color: var(--text-3); } .sb-flag { font-weight: 600; }
+.sb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--fill); }
+.sb-note { flex: 1; min-width: 200px; min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); font: inherit; }
+.sb-empty { color: var(--text-3); padding: 24px 0; }
+.pk-filters { flex-wrap: wrap; }
