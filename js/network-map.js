@@ -379,6 +379,9 @@
     box.addEventListener('click', function (e) {
       var b = e.target.closest('[data-id]'); if (!b) return;
       var kept = box.contains(document.activeElement), id = b.dataset.id;
+      // on the Thailand overview a region's dot or name opens that region's map; a region without one (Koh Chang) shows its panel
+      var hub = state.view === 'th' && curStops.filter(function (s) { return s.id === id && s.kind === 'hub'; })[0];
+      if (hub && hub.hub.view) { go(hub.hub.view, null, true); return; }
       go(state.view, id, true);
       // render() rebuilds the stops, which drops keyboard focus to <body>: put it back on the same stop
       if (kept) { var again = box.querySelector('button.stn[data-id="' + id + '"]'); if (again) again.focus({ preventScroll: true }); }
