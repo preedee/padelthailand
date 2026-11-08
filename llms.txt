@@ -16,7 +16,7 @@
 - [Network map](https://padelthailand.com/): every club on a transit-style map, including Bangkok BTS and MRT stations
 - [All clubs](https://padelthailand.com/clubs/): photos, court counts and where each club takes bookings
 - [Club index, one line per club](https://padelthailand.com/llms-full.txt): name, area, courts by type and booking platform for every club
-- [Tournaments](https://padelthailand.com/tournaments/): 9 upcoming and the archive of past tournaments, with posters
+- [Tournaments](https://padelthailand.com/tournaments/): 8 upcoming and the archive of past tournaments, with posters
 - [Events](https://padelthailand.com/events/): weekly social play, once clubs and organisers list it
 - [About](https://padelthailand.com/about/): where the data comes from and how clubs are treated equally
 
