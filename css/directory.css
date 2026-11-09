@@ -75,6 +75,9 @@ body.dir { margin: 0; background: var(--ground); color: var(--ink); font-family:
 /* hero (home) */
 .hero { padding-top: 56px; padding-bottom: 36px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-end; justify-content: space-between; }
 .hero .lead { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+/* the three-line intro under the H1: what the site is, for people and for crawlers; the long guide lives at /guide/ */
+.hero .intro { margin: -4px 0 0; color: var(--text-2); font-size: 16px; line-height: 1.5; max-width: 62ch; }
+.hero .intro a { color: var(--ink); font-weight: 600; }
 .hero h1 { font-size: clamp(40px, 6.4vw, 84px); line-height: .98; font-stretch: 88%; font-weight: 850; }
 .hero .stats { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--text-3); display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .badge-ink { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; background: var(--ink); color: #fff; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .06em; border-radius: 3px; }

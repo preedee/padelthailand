@@ -7,6 +7,7 @@
  *   index.html               home: hero, search, network-map shell (js/network-map.js hydrates it), all-clubs index
  *   clubs/index.html         Clubs page: Photos / List, region filters
  *   clubs/<slug>/index.html  one station-sign page per club
+ *   guide/index.html         "Padel in Thailand" guide: courts, booking, prices, hours, getting there, FAQ (the home page keeps a three-line intro)
  *   events/index.html        "coming soon" stub until Phase 1b
  *
  * Usage: bun scripts/build-directory.ts [--check]
@@ -420,7 +421,8 @@ function homePage(): string {
   }).join("\n");
   const body = `<main>
 <section class="wrap hero"><div class="lead"><div class="stats"><span class="badge-ink">Thailand Padel Network</span><span>${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions</span></div>
-  <h1>Padel in Thailand: Every Court on One Map.</h1></div>
+  <h1>Padel in Thailand: Every Court on One Map.</h1>
+  ${homeIntro()}</div>
   <form class="finder" role="search" onsubmit="return false"><label for="q">Where Do You Want to Play?</label>
     <div class="row"><input id="q" type="search" placeholder="Club, Island or BTS/MRT Station" autocomplete="off" aria-controls="suggest"><button class="btn solid" type="button" id="near" style="min-height:48px">Near Me</button></div>
     <div class="suggest" id="suggest" role="listbox" hidden></div>
@@ -430,13 +432,28 @@ function homePage(): string {
   <div class="map-key"><span class="k" title="Fully enclosed courts">${ICON.indoor} Indoor</span><span class="k" title="Roofed, with open sides">${ICON.covered} Covered</span><span class="k" title="Open air">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Coloured lines group clubs by area, dots are stations or islands, and a tap on a dot shows its clubs. Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See All Clubs by Region</a>.</span></div></section>
 <section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
-${guideSection()}
+${homeFoot()}
 </main>`;
   return shell({ title: `Padel in Thailand: ${clubs.length} Clubs and ${totalCourts} Courts on One Map | Padel Thailand`, description: `Padel in Thailand: ${clubs.length} clubs and ${totalCourts} courts on one map, with booking links, indoor and covered courts, hours and directions. Bangkok, Phuket, Samui, Pattaya, Chiang Mai, Hua Hin and more.`, path: "/", active: "map", body,
     head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=31"></script><script src="/js/availability.js?v=1" defer></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
-      { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } },
-      { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: homeFaq().map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] });
+      { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
+}
+
+// The home page keeps three lines under the H1 — the facts a search engine or an assistant quotes to say what the
+// site is — and sends the rest to /guide/. The long guide used to sit at the foot of the page, after every club,
+// where no visitor reached it and where its questions competed with the map for the page's one topic (2026-11-09).
+function homeIntro(): string {
+  const F = guideFacts(clubs);
+  const bookable = clubs.filter((c) => c.booking).length;
+  return `<p class="intro">${nClubs(F.n)} and ${nCourts(F.courts)} in ${REGION_ORDER.length} regions, with hours, directions and a booking link for each. ${bookable} of the ${F.n} clubs take bookings online. ${F.indoor.length} have indoor courts and ${F.covered.length} covered, the safer booking from May to October. <a href="/guide/">Read the guide to padel in Thailand</a>.</p>`;
+}
+// What still changes week to week stays on the home page: who is opening, and how to report a club.
+function homeFoot(): string {
+  const F = guideFacts(clubs);
+  return `<section class="wrap section guide" id="guide" aria-labelledby="guide-h"><h2 id="guide-h">New and Opening Soon</h2>
+  <p>${F.soon.length ? `${esc(list_(F.soon.map(shortName)))} ${F.soon.length === 1 ? "is" : "are"} listed as opening soon. ` : ""}Run a club that is not on the map, or spotted a change? <a href="/submit/#club">Add a club</a> or <a href="/submit/#correction">report a correction</a>; every report is checked by a person.</p>
+  <p>Courts by region, indoor and covered courts, hours, booking, prices and getting there: <a href="/guide/">the guide to padel in Thailand</a>.</p></section>`;
 }
 
 // the "Padel in Thailand" guide on the home page: the questions people search for, answered from the registry
@@ -453,7 +470,7 @@ function homeFaq(): [string, string][] {
     ["Is Padel Played Indoors in Thailand?", `Yes. ${F.indoor.length} of the ${F.n} clubs have fully indoor courts and ${F.covered.length} have covered courts with a roof and open sides, which keep play going through the rainy months from about May to October. Filter the map by Indoor or Covered.`],
   ];
 }
-function guideSection(): string {
+function guideBody(): string {
   const F = guideFacts(clubs);
   const regions = REGION_ORDER.map(([name, , slugs]) => { const l = slugs.map((s) => bySlug.get(s)!).filter(Boolean); return { name, g: guideFacts(l) }; });
   const top = [...regions].sort((a, b) => b.g.n - a.g.n).slice(0, 3).map((r) => r.name);
@@ -461,8 +478,7 @@ function guideSection(): string {
   const bkk = regions.find((r) => r.name === "Bangkok")!;
   const bkkRail = REGION_ORDER.find((r) => r[0] === "Bangkok")![2].filter((s) => bySlug.get(s) && where.get(s)!.walkKm != null).length;
   const faq = homeFaq();
-  return `<section class="wrap section guide" id="guide" aria-labelledby="guide-h"><h2 id="guide-h">Padel in Thailand</h2><p class="sub">${esc(updatedLine())}</p>
-  <div class="guide-grid">
+  return `<div class="guide-grid">
     <div><h3>Where the Courts Are</h3><p>${nClubs(F.n)} and ${nCourts(F.courts)} in ${REGION_ORDER.length} regions. ${esc(top[0])} has the most, then ${esc(top[1])} and ${esc(top[2])}.</p><ul class="guide-list">${regionLines}</ul></div>
     <div><h3>Indoor, Covered or Outdoor</h3><p>${F.indoor.length} clubs have indoor courts, ${F.covered.length} have covered courts with a roof and open sides, and ${F.outdoorOnly.length} are outdoor only. In the rainy months, roughly May to October, a covered or indoor court is the safer booking. The Indoor and Covered filters on the map show them.</p>
       <h3>Hours</h3><p>${F.hours ? `Most clubs open around ${esc(F.hours.open)} and close around ${esc(F.hours.close)}. ` : ""}${F.h24.length ? `${esc(list_(F.h24.map(shortName)))} ${F.h24.length === 1 ? "is" : "are"} open 24 hours.` : ""}</p></div>
@@ -470,12 +486,31 @@ function guideSection(): string {
     <div><h3>Getting There</h3><p>In Bangkok, ${bkkRail} of ${nClubs(bkk.g.n)} are within walking distance of a BTS or MRT station, and the map shows walk times. Everywhere else, clubs are reached by taxi, Grab or scooter; each club page has directions. Fly into ${esc(AIRPORTS["Bangkok"])} for Bangkok, ${esc(AIRPORTS["Phuket"])} for Phuket and ${esc(AIRPORTS["Samui & Phangan"])}.</p>
       <h3>New and Opening Soon</h3><p>${F.soon.length ? `${esc(list_(F.soon.map(shortName)))} ${F.soon.length === 1 ? "is" : "are"} listed as opening soon. ` : ""}Run a club that is not on the map, or spotted a change? <a href="/submit/#club">Add a club</a> or <a href="/submit/#correction">report a correction</a>; every report is checked by a person.</p></div>
   </div>
-  <h3 class="faq-h">Questions About Padel in Thailand</h3>
-  <dl class="faq">${faq.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl></section>`;
+  <h2 class="faq-h" id="faq">Questions About Padel in Thailand</h2>
+  <dl class="faq">${faq.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl>`;
+}
+// /guide/: one URL for the questions people search for about padel in Thailand, answered from the registry.
+function guidePage(): string {
+  const F = guideFacts(clubs);
+  const path = "/guide/";
+  const desc = `Padel in Thailand: ${F.n} clubs and ${F.courts} courts by region, indoor and covered courts, opening hours, how to book, what it costs and how to get there.`;
+  const body = `<main class="wrap guide" id="main" tabindex="-1">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <span aria-current="page"><strong>Guide</strong></span></nav>
+  <div class="page-head"><span class="badge-ink">Guide</span><h1 style="margin-top:14px">Padel in Thailand</h1>
+  <p>${esc(desc)}</p><p class="fine">${esc(updatedLine())}</p>
+  <p><a class="btn" href="/#map">View the Network Map</a></p></div>
+  ${guideBody()}
+  <h2 style="font-size:30px;margin:40px 0 12px">Regions</h2>
+  <p class="fine">${hubRegions().map((r) => `<a href="${hubPath(r[0])}">${esc(r[0])} (${r[2].length})</a>`).join(" · ")}</p>
+</main>`;
+  return shell({ title: `Padel in Thailand: Courts, Booking, Prices and Hours | Padel Thailand`, description: desc, path, active: "guide", body,
+    ld: [{ "@context": "https://schema.org", "@type": "Article", headline: "Padel in Thailand: Courts, Booking, Prices and Hours", url: SITE + path, description: desc, dateModified: TODAY_BKK, inLanguage: "en", author: { "@id": `${SITE}/#org` }, publisher: { "@id": `${SITE}/#org` }, isPartOf: { "@id": `${SITE}/#website` } },
+      { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: homeFaq().map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+      breadcrumbLd([["Padel Thailand", "/"], ["Guide", path]])] });
 }
 
 // ---------- write ----------
-const pages: [string, string][] = [["index.html", homePage()], ["clubs/index.html", clubsPage()], ...hubRegions().map(([name, th, slugs]) => [`${hubPath(name).slice(1)}index.html`, regionPage(name, th, slugs)] as [string, string]), ...clubs.map((c) => [`clubs/${c.slug}/index.html`, clubPage(c)] as [string, string])];
+const pages: [string, string][] = [["index.html", homePage()], ["guide/index.html", guidePage()], ["clubs/index.html", clubsPage()], ...hubRegions().map(([name, th, slugs]) => [`${hubPath(name).slice(1)}index.html`, regionPage(name, th, slugs)] as [string, string]), ...clubs.map((c) => [`clubs/${c.slug}/index.html`, clubPage(c)] as [string, string])];
 if (CHECK) { console.log(`check: ${pages.length} pages, ${clubs.length} clubs placed, 0 missing`); process.exit(0); }
 await Promise.all(pages.map(async ([p, html]) => { await mkdir(dirname(ROOT + p), { recursive: true }); await writeFile(ROOT + p, html); }));
-console.log(`built ${pages.length} pages (home, clubs, ${hubRegions().length} region pages, ${clubs.length} club pages)`);
+console.log(`built ${pages.length} pages (home, guide, clubs, ${hubRegions().length} region pages, ${clubs.length} club pages)`);
