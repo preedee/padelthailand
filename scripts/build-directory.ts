@@ -32,7 +32,7 @@ type Club = {
   id: string; slug: string; name: string; nameTh: string; city: string; province: string; district: string; lat: number; lng: number; address: string;
   courts: { total: number | null; indoor: number | null; outdoor: number | null; covered: number | null; surface?: string | null };
   hours: string[]; phone: string; phoneLocal: string; tel: string; website: string; instagramUrl: string; facebookUrl: string;
-  directionsUrl: string; mapsUrl: string; booking: { platform: string; url: string; label: string; icon?: string } | null; priceNote: string;
+  directionsUrl: string; mapsUrl: string; booking: { platform: string; url: string; label: string; icon?: string; setpoint?: string } | null; priceNote: string;
   rating: number | null; ratingCount: number; amenities: string[]; openingSoon: boolean; photos: Photo[]; updated: string;
 };
 type Net = {
@@ -330,6 +330,7 @@ function clubPage(c: Club): string {
     <div class="gal-col">${gal}
       <div class="gal-note"><span>${ph.length ? "Photos are credited to their source." : "Club-supplied photos with a credit line replace this placeholder."}</span><a href="/submit/#photo">+ Add a Photo of This Club</a></div></div>
     <aside class="aside" aria-label="Contact and address">
+      ${c.booking?.setpoint ? `<section class="card avail" aria-labelledby="avail-h" data-avail="${esc(c.booking.setpoint)}" data-url="${esc(c.booking.url)}" data-club="${esc(c.slug)}"><div class="row1"><h3 id="avail-h">Live Availability</h3><span class="live" aria-hidden="true">Live</span></div><div data-avail-body><p class="fine">Live court times appear here when JavaScript is on. <a href="${esc(c.booking.url)}" target="_blank" rel="noopener">See times on Setpoint</a>.</p></div></section>` : ""}
       ${contacts.length ? `<section class="card" aria-label="Contact"><ul class="contact">${contacts.join("")}</ul></section>` : ""}
       ${addr}
       <p class="fine">Info Last Updated ${esc(c.updated)} · <a href="/submit/?page=${encodeURIComponent(`${SITE}/clubs/${c.slug}/`)}#correction">Report a Correction</a> · <a href="/submit/?page=${encodeURIComponent(`${SITE}/clubs/${c.slug}/`)}#correction">Own This Club? Claim It</a></p>
@@ -360,7 +361,8 @@ function clubPage(c: Club): string {
   // registry names are sometimes Google's full keyword-stuffed listing; search snippets cut titles near 60 and descriptions near 160 characters
   const seoDesc = `${seoName} is a padel club in ${c.city}, Thailand${c.courts.total ? ` with ${c.courts.total} courts` : ""}. ${w.line}${w.stop ? `, ${stopTxt.toLowerCase()}` : ""}. Hours, booking and directions.`;
   return shell({ title: `${seoName}, ${c.city} | Padel Thailand`, description: seoDesc.length > 160 ? seoDesc.slice(0, 157).replace(/\s+\S*$/, "") + "…" : seoDesc,
-    path: `/clubs/${c.slug}/`, active: "clubs", body, image: ph[0]?.url, imageAlt: ph[0] ? `${seoName} padel courts in ${c.city}` : undefined, ld, bodyClass: "has-bar" });
+    path: `/clubs/${c.slug}/`, active: "clubs", body, image: ph[0]?.url, imageAlt: ph[0] ? `${seoName} padel courts in ${c.city}` : undefined, ld, bodyClass: "has-bar",
+    ...(c.booking?.setpoint ? { scripts: `<script src="/js/availability.js?v=1" defer></script>` } : {}) });
 }
 
 // ---------- home ----------
@@ -385,7 +387,7 @@ function homePage(): string {
   <div class="regions">${index}</div></section>
 </main>`;
   return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=30"></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=31"></script><script src="/js/availability.js?v=1" defer></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
