@@ -26,7 +26,7 @@ const updatedOf = new Map(clubs.map((c) => [c.slug, c.updated]));
 const today = todayBkk();
 
 // ---------- sitemap: every generated page that is indexable ----------
-const pageDirs = ["", "clubs", "regions", "tournaments", "events", "about", "submit"];
+const pageDirs = ["", "guide", "clubs", "regions", "tournaments", "events", "about", "submit"];
 const files: string[] = [];
 for (const d of pageDirs) {
   if (existsSync(ROOT + (d ? d + "/" : "") + "index.html")) files.push(d ? `${d}/index.html` : "index.html");
@@ -74,6 +74,7 @@ ${regionLines.join("\n")}
 ## Main pages
 - [Network map](${SITE}/): every club on a transit-style map, including Bangkok BTS and MRT stations
 - [All clubs](${SITE}/clubs/): photos, court counts and where each club takes bookings
+- [Guide to padel in Thailand](${SITE}/guide/): courts by region, indoor and covered courts, hours, how to book, prices, getting there
 - [Club index, one line per club](${SITE}/llms-full.txt): name, area, courts by type and booking platform for every club
 - [Tournaments](${SITE}/tournaments/): ${upcoming} upcoming and the archive of past tournaments, with posters
 - [Events](${SITE}/events/): weekly social play, once clubs and organisers list it

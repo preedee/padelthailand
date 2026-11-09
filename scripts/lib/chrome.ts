@@ -38,7 +38,7 @@ const header = (active: string) => `<header class="site-head"><div class="wrap">
 const footer = (path = "") => `<footer class="site-foot"><div class="wrap">
   <div><span class="brand" style="min-height:0">${LOGO(46, 22, "#F3F4F2")}<span class="word" style="font-size:20px"><b>padel</b><i>thailand</i></span></span>
   <p>Run a club that is not on the map? Use Submit a Club below and we will add your stop.</p></div>
-  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/submit/#club">Submit a Club</a><a href="${/^\/(submit|admin)\//.test(path) || !path ? "/submit/#correction" : `/submit/?page=${encodeURIComponent(SITE + path)}#correction`}">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
+  <nav aria-label="Footer"><a href="/clubs/">All Clubs</a><a href="/guide/">Guide</a><a href="/submit/#club">Submit a Club</a><a href="${/^\/(submit|admin)\//.test(path) || !path ? "/submit/#correction" : `/submit/?page=${encodeURIComponent(SITE + path)}#correction`}">Report a Correction</a><a href="/about/">About</a>${CONSENT_REQUIRED ? '<button type="button" class="linklike" data-cookie-settings>Cookie Settings</button>' : ""}<a href="${SITE_IG}" rel="noopener">@padelthailand</a></nav>
 </div></footer>`;
 
 export function shell(o: { title: string; description: string; path: string; active: string; body: string; image?: string; ld?: unknown | unknown[]; bodyClass?: string; bodyAttrs?: string; scripts?: string; head?: string; noindex?: boolean; imageAlt?: string }): string {
