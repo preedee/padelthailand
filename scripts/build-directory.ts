@@ -184,11 +184,26 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   ];
   const others = hubRegions().filter((r) => r[0] !== name);
   const path = hubPath(name);
+  // region guide: where the clubs cluster, court types, hours and how to get there, all from the registry
+  const G = guideFacts(list);
+  const areaCounts = new Map<string, number>(); for (const c of list) areaCounts.set(where.get(c.slug)!.area, (areaCounts.get(where.get(c.slug)!.area) ?? 0) + 1);
+  const areaText = [...areaCounts].sort((a, b) => b[1] - a[1]).map(([a, k]) => `${a} (${k})`);
+  faq.push(...(G.indoor.length ? [[`Which Padel Clubs in ${name} Have Indoor Courts?`, `${list_(G.indoor.map(shortName))}. ${G.covered.length} ${G.covered.length === 1 ? "club has" : "clubs have"} covered courts with a roof and open sides.`] as [string, string]] : []));
+  faq.push([`When Are Padel Courts in ${name} Open?`, (G.hours ? `Most clubs open around ${G.hours.open} and close around ${G.hours.close}. ` : "") + (G.h24.length ? `${list_(G.h24.map(shortName))} ${G.h24.length === 1 ? "is" : "are"} open 24 hours. ` : "") + "Each club page lists the week's hours and shows whether it is open now."]);
+  if (areaText.length > 1) faq.push([`Where in ${name} Are the Padel Clubs?`, `${areaText.join(", ")}. The map groups them by area.`]);
+  const regionGuide = `<section class="guide region-guide" aria-labelledby="rg-h"><h2 id="rg-h" style="font-size:30px;margin:32px 0 4px">Padel in ${esc(name)}</h2><p class="sub">${esc(updatedLine())}</p>
+  <div class="guide-grid">
+    <div><h3>Where the Clubs Are</h3><p>${areaText.length > 1 ? `${esc(areaText.join(", "))}. ` : ""}${rail.length ? `${rail.length} ${rail.length === 1 ? "club is" : "clubs are"} within walking distance of a BTS or MRT station; the map shows walk times.` : `Clubs are reached by taxi, Grab or scooter, and each club page has directions.`}</p></div>
+    <div><h3>Courts</h3><p>${nCourts(G.courts)} at ${nClubs(G.n)}. ${G.indoor.length} ${G.indoor.length === 1 ? "club has" : "clubs have"} indoor courts, ${G.covered.length} ${G.covered.length === 1 ? "has" : "have"} covered courts and ${G.outdoorOnly.length} ${G.outdoorOnly.length === 1 ? "is" : "are"} outdoor only.${G.soon.length ? ` ${esc(list_(G.soon.map(shortName)))} ${G.soon.length === 1 ? "is" : "are"} opening soon.` : ""}</p></div>
+    <div><h3>Booking and Prices</h3><p>${esc(platformSentence(list))}${G.live.length ? ` ${esc(list_(G.live.map(shortName)))} ${G.live.length === 1 ? "shows" : "show"} live availability on this site.` : ""} Courts are booked by the hour and each club sets its own price, shown before you pay.</p></div>
+    <div><h3>Hours and Getting There</h3><p>${G.hours ? `Most clubs open around ${esc(G.hours.open)} and close around ${esc(G.hours.close)}. ` : ""}${G.h24.length ? `${esc(list_(G.h24.map(shortName)))} ${G.h24.length === 1 ? "is" : "are"} open 24 hours. ` : ""}${AIRPORTS[name] ? `Fly into ${esc(AIRPORTS[name])}.` : ""}</p></div>
+  </div></section>`;
   const body = `<main class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Network Map</a> / <a href="/clubs/">Clubs</a> / <span aria-current="page"><strong>${esc(name)}</strong></span></nav>
-  <div class="page-head"><span class="badge-ink">Region</span><h1 style="margin-top:14px">Padel Courts in ${esc(name)}</h1>
+  <div class="page-head"><span class="badge-ink">Region</span><h1 style="margin-top:14px">Padel in ${esc(name)}</h1>
   <p>${esc(intro)}</p><p class="fine">${esc(th)} · Areas: ${esc(areas.join(", "))}</p>
   <p><a class="btn" href="/#map">View on the Network Map</a></p></div>
+  ${regionGuide}
   <h2 style="font-size:30px;margin:32px 0 16px">All ${n} Clubs in ${esc(name)}</h2>
   <div class="grid" id="hub-grid">${list.map(clubCard).join("\n")}</div>
   ${SHOW_TOURNAMENTS ? `<h2 style="font-size:30px;margin:40px 0 12px">Upcoming Tournaments in ${esc(name)}</h2>
@@ -201,7 +216,7 @@ function regionPage(name: string, th: string, slugs: string[]): string {
 </main>`;
   const desc = `${n} padel clubs and ${courts} courts in ${name}, Thailand: indoor and outdoor courts, booking links, hours and directions.`;
   return shell({ title: `Padel in ${name}: ${n} Clubs and ${courts} ${courts === 1 ? "Court" : "Courts"} | Padel Thailand`, description: desc, path, active: "clubs", body,
-    ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: `Padel Courts in ${name}`, url: SITE + path, description: desc, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: SITE + "/" } },
+    ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: `Padel in ${name}`, url: SITE + path, description: desc, dateModified: TODAY_BKK, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: SITE + "/" } },
       { "@context": "https://schema.org", "@type": "ItemList", name: `Padel clubs in ${name}`, itemListElement: list.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) },
       { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
       breadcrumbLd([["Padel Thailand", "/"], ["Clubs", "/clubs/"], [name, path]])] });
@@ -365,6 +380,36 @@ function clubPage(c: Club): string {
     ...(c.booking?.setpoint ? { scripts: `<script src="/js/availability.js?v=1" defer></script>` } : {}) });
 }
 
+// ---------- guide copy: every fact below is derived from the registry at build time, nothing is hand-written ----------
+const AIRPORTS: Record<string, string> = { "Bangkok": "Suvarnabhumi (BKK) or Don Mueang (DMK)", "Samui & Phangan": "Samui (USM), then the ferry to Phangan or Tao", "Phuket": "Phuket (HKT)", "Pattaya & Bangsaen": "U-Tapao (UTP) or Bangkok's airports", "Chiang Mai": "Chiang Mai (CNX)", "Hua Hin": "Hua Hin (HHQ) or Bangkok's airports", "Krabi & Lanta": "Krabi (KBV)" };
+const PLATFORM_WORD: Record<string, string> = { playtomic: "Playtomic", matchi: "Matchi", tps: "The Padel Society", kross: "the Kross app", line: "LINE", whatsapp: "WhatsApp", facebook: "Facebook", website: "the club's own website" };
+const list_ = (xs: string[]) => xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+const nClubs = (n: number) => `${n} ${n === 1 ? "club" : "clubs"}`, nCourts = (n: number) => `${n} ${n === 1 ? "court" : "courts"}`;
+const is24h = (c: Club) => c.hours.some((h) => /24 hours/i.test(h));
+/** the most common opening and closing time among clubs with listed hours (mode, Monday–Sunday) */
+function hoursPattern(list: Club[]): { open: string; close: string; n: number } | null {
+  const opens = new Map<string, number>(), closes = new Map<string, number>(); let n = 0;
+  for (const c of list) {
+    if (!c.hours.length || is24h(c)) continue; n++;
+    for (const h of c.hours) { const m = /:\s*(\d{1,2}(?::\d{2})?\s*[AP]M)\s*[–-]\s*(\d{1,2}(?::\d{2})?\s*[AP]M)/i.exec(h); if (!m) continue; opens.set(m[1], (opens.get(m[1]) ?? 0) + 1); closes.set(m[2], (closes.get(m[2]) ?? 0) + 1); }
+  }
+  const top = (m: Map<string, number>) => [...m].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const open = top(opens), close = top(closes);
+  return open && close ? { open, close, n } : null;
+}
+function platformSentence(list: Club[]): string {
+  const by = new Map<string, number>(); for (const c of list) if (c.booking) by.set(c.booking.platform, (by.get(c.booking.platform) ?? 0) + 1);
+  const parts = [...by].sort((a, b) => b[1] - a[1]).map(([p, n]) => `${n} on ${PLATFORM_WORD[p] ?? p}`);
+  const rest = list.length - [...by.values()].reduce((a, b) => a + b, 0);
+  return `${list.filter((c) => c.booking).length} of the ${nClubs(list.length)} list an online booking link: ${list_(parts)}.` + (rest ? ` The other ${rest === 1 ? "club takes" : `${rest} take`} bookings by phone, LINE or Instagram message, or at the desk; each club page has the contact.` : "");
+}
+const guideFacts = (list: Club[]) => ({
+  n: list.length, courts: list.reduce((a, c) => a + (c.courts.total ?? 0), 0),
+  indoor: list.filter((c) => (c.courts.indoor ?? 0) > 0), covered: list.filter((c) => (c.courts.covered ?? 0) > 0), outdoorOnly: list.filter((c) => !(c.courts.indoor ?? 0) && !(c.courts.covered ?? 0) && (c.courts.outdoor ?? 0) > 0),
+  h24: list.filter(is24h), soon: list.filter((c) => c.openingSoon), live: list.filter((c) => c.booking?.setpoint), hours: hoursPattern(list),
+});
+const updatedLine = () => `Updated ${new Date(TODAY_BKK + "T00:00:00+07:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok" })} from the club registry.`;
+
 // ---------- home ----------
 function homePage(): string {
   const totalCourts = clubs.reduce((a, c) => a + (c.courts.total ?? 0), 0);
@@ -375,7 +420,7 @@ function homePage(): string {
   }).join("\n");
   const body = `<main>
 <section class="wrap hero"><div class="lead"><div class="stats"><span class="badge-ink">Thailand Padel Network</span><span>${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions</span></div>
-  <h1>Every Padel Court in Thailand, on One Map.</h1></div>
+  <h1>Padel in Thailand: Every Court on One Map.</h1></div>
   <form class="finder" role="search" onsubmit="return false"><label for="q">Where Do You Want to Play?</label>
     <div class="row"><input id="q" type="search" placeholder="Club, Island or BTS/MRT Station" autocomplete="off" aria-controls="suggest"><button class="btn solid" type="button" id="near" style="min-height:48px">Near Me</button></div>
     <div class="suggest" id="suggest" role="listbox" hidden></div>
@@ -385,11 +430,48 @@ function homePage(): string {
   <div class="map-key"><span class="k" title="Fully enclosed courts">${ICON.indoor} Indoor</span><span class="k" title="Roofed, with open sides">${ICON.covered} Covered</span><span class="k" title="Open air">${ICON.outdoor} Outdoor</span><span class="k">${ICON.unknown} Type Not Listed</span><span>Coloured lines group clubs by area, dots are stations or islands, and a tap on a dot shows its clubs. Schematic, not to scale. Walk times are straight-line estimates from the nearest station. Prefer a list? <a href="#index">See All Clubs by Region</a>.</span></div></section>
 <section class="wrap section" id="index"><h2>All Clubs</h2><p class="sub">${clubs.length} Clubs · ${totalCourts} Courts · ${REGION_ORDER.length} Regions.</p>
   <div class="regions">${index}</div></section>
+${guideSection()}
 </main>`;
-  return shell({ title: "Padel Thailand — Every Padel Court in Thailand on One Map", description: `Find a padel club anywhere in Thailand. ${clubs.length} clubs and ${totalCourts} courts on one network map: Bangkok BTS/MRT, Phuket, Samui, Pattaya, Chiang Mai and more.`, path: "/", active: "map", body,
+  return shell({ title: `Padel in Thailand: ${clubs.length} Clubs and ${totalCourts} Courts on One Map | Padel Thailand`, description: `Padel in Thailand: ${clubs.length} clubs and ${totalCourts} courts on one map, with booking links, indoor and covered courts, hours and directions. Bangkok, Phuket, Samui, Pattaya, Chiang Mai, Hua Hin and more.`, path: "/", active: "map", body,
     head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=31"></script><script src="/js/availability.js?v=1" defer></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
-      { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
+      { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } },
+      { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: homeFaq().map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] });
+}
+
+// the "Padel in Thailand" guide on the home page: the questions people search for, answered from the registry
+function homeFaq(): [string, string][] {
+  const F = guideFacts(clubs);
+  const bkk = REGION_ORDER.find((r) => r[0] === "Bangkok")!, bkkList = bkk[2].map((s) => bySlug.get(s)!).filter(Boolean);
+  const bkkRail = bkkList.filter((c) => where.get(c.slug)!.walkKm != null).length;
+  return [
+    ["How Many Padel Courts Are in Thailand?", `${F.n} clubs with ${F.courts} courts are listed on Padel Thailand across ${REGION_ORDER.length} regions, from Chiang Mai to Phuket. ${F.indoor.length} clubs have indoor courts and ${F.covered.length} have covered courts. ${F.soon.length ? `${list_(F.soon.map(shortName))} ${F.soon.length === 1 ? "is" : "are"} listed as opening soon.` : "New clubs are added as they open."}`],
+    ["Where Can I Play Padel in Bangkok?", `${nClubs(bkkList.length)} in Bangkok and Nonthaburi, ${bkkRail} of them within walking distance of a BTS or MRT station. The Bangkok page shows every club on the rail map with walk times.`],
+    ["Can I Book a Padel Court Online in Thailand?", platformSentence(clubs) + (F.live.length ? ` ${list_(F.live.map(shortName))} show live court availability on this site.` : "")],
+    ["How Much Does Padel Cost in Thailand?", "Courts are booked by the hour and each club sets its own price, shown on its booking platform before you pay. Prices vary with the time of day, the court type and the location, so compare on the club pages."],
+    ["Which Padel Clubs in Thailand Are Open 24 Hours?", (F.h24.length ? `${list_(F.h24.map(shortName))} list 24-hour opening. ` : "No club lists 24-hour opening. ") + (F.hours ? `Most other clubs open around ${F.hours.open} and close around ${F.hours.close}.` : "")],
+    ["Is Padel Played Indoors in Thailand?", `Yes. ${F.indoor.length} of the ${F.n} clubs have fully indoor courts and ${F.covered.length} have covered courts with a roof and open sides, which keep play going through the rainy months from about May to October. Filter the map by Indoor or Covered.`],
+  ];
+}
+function guideSection(): string {
+  const F = guideFacts(clubs);
+  const regions = REGION_ORDER.map(([name, , slugs]) => { const l = slugs.map((s) => bySlug.get(s)!).filter(Boolean); return { name, g: guideFacts(l) }; });
+  const top = [...regions].sort((a, b) => b.g.n - a.g.n).slice(0, 3).map((r) => r.name);
+  const regionLines = regions.map(({ name, g }) => `<li><a href="${isHub(name) ? hubPath(name) : `/clubs/#${encodeURIComponent(name)}`}">${esc(name)}</a>: ${nClubs(g.n)}, ${nCourts(g.courts)}${g.indoor.length ? `, ${g.indoor.length} with indoor courts` : ""}</li>`).join("");
+  const bkk = regions.find((r) => r.name === "Bangkok")!;
+  const bkkRail = REGION_ORDER.find((r) => r[0] === "Bangkok")![2].filter((s) => bySlug.get(s) && where.get(s)!.walkKm != null).length;
+  const faq = homeFaq();
+  return `<section class="wrap section guide" id="guide" aria-labelledby="guide-h"><h2 id="guide-h">Padel in Thailand</h2><p class="sub">${esc(updatedLine())}</p>
+  <div class="guide-grid">
+    <div><h3>Where the Courts Are</h3><p>${nClubs(F.n)} and ${nCourts(F.courts)} in ${REGION_ORDER.length} regions. ${esc(top[0])} has the most, then ${esc(top[1])} and ${esc(top[2])}.</p><ul class="guide-list">${regionLines}</ul></div>
+    <div><h3>Indoor, Covered or Outdoor</h3><p>${F.indoor.length} clubs have indoor courts, ${F.covered.length} have covered courts with a roof and open sides, and ${F.outdoorOnly.length} are outdoor only. In the rainy months, roughly May to October, a covered or indoor court is the safer booking. The Indoor and Covered filters on the map show them.</p>
+      <h3>Hours</h3><p>${F.hours ? `Most clubs open around ${esc(F.hours.open)} and close around ${esc(F.hours.close)}. ` : ""}${F.h24.length ? `${esc(list_(F.h24.map(shortName)))} ${F.h24.length === 1 ? "is" : "are"} open 24 hours.` : ""}</p></div>
+    <div><h3>How to Book</h3><p>${esc(platformSentence(clubs))}</p>${F.live.length ? `<p>${esc(list_(F.live.map(shortName)))} show live court availability on this site, so you can see free slots before you book.</p>` : ""}<p>Courts are booked by the hour and each club sets its own price, shown before you pay.</p></div>
+    <div><h3>Getting There</h3><p>In Bangkok, ${bkkRail} of ${nClubs(bkk.g.n)} are within walking distance of a BTS or MRT station, and the map shows walk times. Everywhere else, clubs are reached by taxi, Grab or scooter; each club page has directions. Fly into ${esc(AIRPORTS["Bangkok"])} for Bangkok, ${esc(AIRPORTS["Phuket"])} for Phuket and ${esc(AIRPORTS["Samui & Phangan"])}.</p>
+      <h3>New and Opening Soon</h3><p>${F.soon.length ? `${esc(list_(F.soon.map(shortName)))} ${F.soon.length === 1 ? "is" : "are"} listed as opening soon. ` : ""}Run a club that is not on the map, or spotted a change? <a href="/submit/#club">Add a club</a> or <a href="/submit/#correction">report a correction</a>; every report is checked by a person.</p></div>
+  </div>
+  <h3 class="faq-h">Questions About Padel in Thailand</h3>
+  <dl class="faq">${faq.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join("")}</dl></section>`;
 }
 
 // ---------- write ----------
