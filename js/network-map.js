@@ -39,7 +39,7 @@
     var REG = net.regions;
     // single-region views with clubs placed from real coordinates: Chiang Mai and Hua Hin
     var EXTRA = { cm: { clubs: 'cm', pois: 'cmPois', name: 'Chiang Mai', col: COL.n }, hh: { clubs: 'hh', pois: 'hhPois', name: 'Hua Hin', col: COL.s }, pty: { clubs: 'pty', pois: 'ptyPois', name: 'Pattaya', col: COL.e } };
-    var DEF = { th: 'h-bkk', cm: 'padel-cnx', hh: 'padel-sozial', pty: 'prime-padel-pattaya', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
+    var DEF = { th: null, cm: 'padel-cnx', hh: 'padel-sozial', pty: 'prime-padel-pattaya', bkk: 'phrom', gulf: 'prime-padel-samui', phk: 'padel-phuket-blue-tree' };
     var TAGS = {
       th: [['Northern Line', '45.6%', '24%', COL.n], ['Eastern Line', '62.5%', '45.5%', COL.e], ['Southern Line', '40.6%', '61%', COL.s], ['Gulf Ferry', '45%', '73.5%', COL.g]],
       bkk: [['MRT Purple → Nonthaburi', '1%', '1.2%', COL.pur], ['MRT Blue', '2%', '33%', COL.blue], ['Airport Rail Link → Suvarnabhumi', '62.5%', '5%', COL.arl], ['BTS Silom', '13%', '66%', COL.sil], ['BTS Sukhumvit', '85%', '58%', COL.suk]]
@@ -322,8 +322,9 @@
       ensureStage();
       var stops = stopsFor(state.view); curStops = stops; hideTip();
       var clickable = stops.filter(function (s) { return s.kind !== 'tick'; });
-      var sel = clickable.filter(function (s) { return s.id === state.sel; })[0] || clickable.filter(function (s) { return s.id === DEF[state.view]; })[0] || clickable[0];
-      state.sel = sel.id;
+      // the Thailand overview has no default selection: its panel is the country summary (Book a Court Now + region index)
+      var sel = clickable.filter(function (s) { return s.id === state.sel; })[0] || (state.view === 'th' ? null : clickable.filter(function (s) { return s.id === DEF[state.view]; })[0] || clickable[0]);
+      state.sel = sel ? sel.id : null;
       box.dataset.bg = state.view;
       layer.innerHTML = '<svg class="bg" aria-hidden="true" viewBox="0 0 1600 1000" preserveAspectRatio="none">' + BG[state.view] + '</svg>' + extras(state.view) + stops.map(function (s) { return stopHtml(s, sel); }).join('');
       flipOffMap();
@@ -335,10 +336,24 @@
       tabsEl.innerHTML = tabs.map(function (t) { return '<button type="button" class="chip sq" data-view="' + t[0] + '" aria-pressed="' + (state.view === t[0]) + '">' + esc(t[1]) + ' <span class="count">' + t[2] + '</span></button>'; }).join('');
 
       // panel
-      var cards, eyebrow, title, sub = '', stat = '', note = '', open = '', color = sel.color, barText = sel.bar, nav = null, idx = 0;
+      var cards, eyebrow, title, sub = '', stat = '', note = '', open = '', color = sel ? sel.color : INK, barText = sel ? sel.bar : 'Thailand', nav = null, idx = 0;
       var visible = function (pairs) { return pairs.filter(function (p) { return matches(p[0]); }); };
       var filtered = anyFilter();
-      if (sel.kind === 'hub') {
+      if (!sel) {
+        var keys = Object.keys(REG), allCourts = list.reduce(function (a, c) { return a + courtsOf(c.slug); }, 0);
+        eyebrow = 'Thailand'; title = 'Every Court on One Map'; cards = '';
+        stat = plural(list.length, 'Club') + ' · ' + plural(allCourts, 'Court') + ' · ' + plural(keys.length, 'Region');
+        // clubs that take bookings on Setpoint (The Padel Society): js/availability.js fills in today's free courts
+        var sp = list.filter(function (c) { return c.booking && c.booking.setpoint; });
+        if (sp.length) open += '<div class="bn"><div class="bn-h">Book a Court Now</div>' + sp.map(function (c) {
+          return '<div class="bn-row" data-bn-slug="' + esc(c.booking.setpoint) + '"><div class="bn-main"><a href="/clubs/' + esc(c.slug) + '/" data-track="club_open" data-t-club_slug="' + esc(c.slug) + '" data-t-place="home_panel">' + esc(nm(c.slug)) + '</a><span class="bn-city">' + esc(c.city) + '</span><span class="bn-st dim" data-bn-status>Checking today…</span></div>' +
+            '<a class="btn solid sm" href="' + esc(c.booking.url) + '" target="_blank" rel="noopener" data-track="book_click" data-t-club_slug="' + esc(c.slug) + '" data-t-platform="' + esc(c.booking.platform) + '" data-t-place="home_panel">Book</a></div>';
+        }).join('') + '<p class="fine">Live courts from The Padel Society, Thai time. Other clubs book on their own platform; see each club.</p></div>';
+        open += '<div class="ridx"><div class="bn-h">Regions</div>' + keys.map(function (k) {
+          var h = REG[k], n = h.slugs.length, ct = h.slugs.reduce(function (a, s) { return a + courtsOf(s); }, 0);
+          return '<button type="button" class="ridx-row" ' + (h.view ? 'data-open-view="' + h.view + '"' : 'data-id="h-' + k + '"') + '><i style="background:' + h.color + '"></i><span class="ridx-nm">' + esc(h.name) + '</span><span class="ridx-n">' + plural(n, 'Club') + ' · ' + plural(ct, 'Court') + '</span>' + icon('arrow', 16) + '</button>';
+        }).join('') + '</div>';
+      } else if (sel.kind === 'hub') {
         var h = sel.hub; eyebrow = 'Region'; title = h.name; sub = h.th; barText = 'Region';
         stat = plural(sel.count, 'Club') + ' · ' + plural(sel.courts, 'Court');
         if (h.view) open = '<button type="button" class="btn solid block" data-open-view="' + h.view + '">Open the ' + esc(h.view === 'pty' ? 'Pattaya' : h.name) + ' Map</button>';
@@ -367,7 +382,10 @@
         '<div class="body"><div><div class="eyebrow">' + esc(eyebrow) + '</div><h3>' + esc(title) + '</h3>' + (sub ? '<div class="th" lang="th">' + esc(sub) + '</div>' : '') + (stat ? '<div class="stat" style="margin-top:8px">' + esc(stat) + '</div>' : '') + '</div>' +
         open + note + cards + navHtml + '</div>';
       panel.classList.toggle('open', state.user && window.matchMedia('(max-width:760px)').matches);
+      if (!sel && window.ptAvail) window.ptAvail.mountHome(panel);
     }
+    // availability.js is deferred and may land after the first render
+    document.addEventListener('ptavail-ready', function () { if (state.view === 'th' && !state.sel && window.ptAvail) window.ptAvail.mountHome(panel); });
 
     function go(view, id, user) {
       var viewChanged = view !== state.view, prev = state.view;

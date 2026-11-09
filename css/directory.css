@@ -411,3 +411,38 @@ main:focus { outline: none; }
 .pills.rel li { gap: 8px; padding: 0 14px; min-height: 44px; }
 .pills.rel a { text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; min-height: 44px; }
 .pills.rel small { color: var(--text-3); font-size: 13px; }
+
+/* ---- home panel, Thailand view: Book a Court Now + region index ---- */
+.panel .bn, .panel .ridx { border-top: 1px solid var(--fill); padding-top: 12px; }
+.panel .bn-h { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); margin-bottom: 6px; }
+.panel .bn-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--fill); }
+.panel .bn-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.panel .bn-main a { font-weight: 700; color: var(--ink); }
+.panel .bn-city { font-size: 13px; color: var(--text-2); }
+.panel .bn-st { font-size: 13px; font-weight: 600; }
+.panel .bn-st.ok { color: var(--green); }
+.panel .bn-st.dim { color: var(--text-2); font-weight: 500; }
+.panel .btn.sm { min-height: 40px; padding: 0 16px; flex: none; }
+.panel .bn .fine { margin-top: 8px; }
+.panel .ridx-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; border: 0; border-bottom: 1px solid var(--fill); background: transparent; cursor: pointer; font: inherit; text-align: left; padding: 6px 0; color: var(--ink); }
+.panel .ridx-row:last-child { border-bottom: 0; }
+.panel .ridx-row i { width: 12px; height: 12px; border-radius: 50%; flex: none; border: 2px solid #fff; box-shadow: 0 0 0 1.5px var(--ink); }
+.panel .ridx-nm { font-weight: 700; flex: 1; }
+.panel .ridx-n { font-size: 13px; color: var(--text-2); white-space: nowrap; }
+.panel .ridx-row:hover .ridx-nm, .panel .ridx-row:focus-visible .ridx-nm { text-decoration: underline; }
+
+/* ---- club page: live availability from Setpoint ---- */
+.avail .live { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+.avail .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pt-pulse 1.6s ease-in-out infinite; }
+@keyframes pt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .avail .live::before { animation: none; } }
+.avail .days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.avail .days::-webkit-scrollbar { display: none; }
+.avail .days .chip { min-height: 36px; padding: 0 10px; font-size: 13px; flex: none; }
+.avail .days .chip[aria-selected="true"] { background: var(--ink); color: #fff; }
+.avail .court { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid var(--fill); }
+.avail .cn { font-weight: 700; font-size: 15px; }
+.avail .cn small { font-weight: 500; color: var(--text-2); font-size: 12px; margin-left: 6px; }
+.avail .slots { display: flex; flex-wrap: wrap; gap: 6px; }
+.avail .slot { display: inline-flex; align-items: center; min-height: 36px; padding: 0 10px; border: 1.5px solid var(--green); color: var(--green); border-radius: 4px; font-size: 13px; font-weight: 700; text-decoration: none; }
+.avail .slot:hover, .avail .slot:focus-visible { background: var(--green); color: #fff; }
