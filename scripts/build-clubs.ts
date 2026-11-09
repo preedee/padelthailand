@@ -106,6 +106,9 @@ type Club = ReturnType<typeof toClub>;
 const PLATFORM_ICONS: Record<string, string> = JSON.parse(await readFile(ROOT + "data/platforms.json", "utf8"));
 function toClub(r: Row, slug: string, city: string, photos: Photo[], aliases: string[]) {
   const booking = r.booking_platform && safeUrl(r.booking_url) ? { platform: r.booking_platform, url: safeUrl(r.booking_url)!, label: bookLabel(r.booking_platform), ...(PLATFORM_ICONS[r.booking_platform] ? { icon: PLATFORM_ICONS[r.booking_platform] } : {}) } : null;
+  // TPS clubs book through the Setpoint web checkout; its slug is also the facility slug for the public availability API
+  const sp = booking && booking.platform === "tps" ? booking.url.match(/^https:\/\/book\.getsetpoint\.io\/checkout\/([a-z0-9-]+)\/?$/) : null;
+  if (sp) Object.assign(booking!, { setpoint: sp[1] });
   return {
     id: r.place_id, slug, name: r.name, nameTh: r.name_th && r.name_th !== r.name ? r.name_th : "",
     city, province: r.province ?? "", district: r.district ?? "", lat: r.lat, lng: r.lng, address: r.formatted_address ?? "",
