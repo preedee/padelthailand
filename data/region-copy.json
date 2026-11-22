@@ -1,0 +1,11 @@
+{
+ "_note": "Hand-written intro copy for region hub pages, keyed by region name. paragraphs: shown under the page heading. description: meta description; {n} and {courts} are filled from the registry. Facts here (court types, amenities, tournaments) are written by hand and need updating if a club changes.",
+ "Hua Hin": {
+  "description": "Padel in Hua Hin: {n} clubs, {courts} courts. Where to play with kids, take lessons or stay at a resort with a pool, and how to book.",
+  "paragraphs": [
+   "Hua Hin has three padel clubs and 14 courts. Padel Sozial is the only one with indoor courts: six of them, so rain or midday heat won't cancel your game. Padel of Thailand and Hua Hin Padel Center each have four courts, two covered and two outdoor.",
+   "Padel Sozial is a good first stop if you're travelling with family. It has a kids' area, easy parking on Soi 94, bright lights for evening games, and food and drinks on site. It also runs a tournament every month. Padel of Thailand is the one to try if you're new or want lessons: there's a coach for beginner and intermediate players, a regular crowd to play with, and a sauna, steam room and cold plunge for afterwards.",
+   "Hua Hin Padel Center is part of a resort with a pool, so you can stay on site and be steps from the court when you wake up. It has a cafe and runs tournaments too. Opening hours can change, so message the club before you go."
+  ]
+ }
+}

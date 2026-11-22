@@ -46,6 +46,8 @@ type Net = {
 
 const clubs: Club[] = JSON.parse(await readFile(ROOT + "data/clubs-full.json", "utf8")).clubs;
 const net: Net = JSON.parse(await readFile(ROOT + "data/network.json", "utf8"));
+// hand-written region intros (data/region-copy.json): paragraphs under the heading, and an optional meta description
+const regionCopy: Record<string, { description?: string; paragraphs?: string[] }> = JSON.parse(await readFile(ROOT + "data/region-copy.json", "utf8").catch(() => "{}"));
 const bySlug = new Map(clubs.map((c) => [c.slug, c]));
 
 // Tournaments are out of scope for now (decision 2026-11-06): region and club pages show nothing about them.
@@ -204,6 +206,7 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   <div class="page-head"><span class="badge-ink">Region</span><h1 style="margin-top:14px">Padel in ${esc(name)}</h1>
   <p>${esc(intro)}</p><p class="fine">${esc(th)} · Areas: ${esc(areas.join(", "))}</p>
   <p><a class="btn" href="/#map">View on the Network Map</a></p></div>
+  ${regionCopy[name]?.paragraphs?.length ? `<div class="prose" style="max-width:70ch;margin:8px 0 8px">${regionCopy[name]!.paragraphs!.map((x) => `<p>${esc(x)}</p>`).join("")}</div>` : ""}
   ${regionGuide}
   <h2 style="font-size:30px;margin:32px 0 16px">All ${n} Clubs in ${esc(name)}</h2>
   <div class="grid" id="hub-grid">${list.map(clubCard).join("\n")}</div>
@@ -215,7 +218,7 @@ function regionPage(name: string, th: string, slugs: string[]): string {
   <h2 style="font-size:30px;margin:40px 0 12px">Other Regions</h2>
   <p class="fine">${others.map((r) => `<a href="${hubPath(r[0])}">${esc(r[0])} (${r[2].length})</a>`).join(" · ")}</p>
 </main>`;
-  const desc = `${n} padel clubs and ${courts} courts in ${name}, Thailand: indoor and outdoor courts, booking links, hours and directions.`;
+  const desc = regionCopy[name]?.description?.replace("{n}", String(n)).replace("{courts}", String(courts)) ?? `${n} padel clubs and ${courts} courts in ${name}, Thailand: indoor and outdoor courts, booking links, hours and directions.`;
   return shell({ title: `Padel in ${name}: ${n} Clubs and ${courts} ${courts === 1 ? "Court" : "Courts"} | Padel Thailand`, description: desc, path, active: "clubs", body,
     ld: [{ "@context": "https://schema.org", "@type": "CollectionPage", name: `Padel in ${name}`, url: SITE + path, description: desc, dateModified: TODAY_BKK, isPartOf: { "@type": "WebSite", name: "Padel Thailand", url: SITE + "/" } },
       { "@context": "https://schema.org", "@type": "ItemList", name: `Padel clubs in ${name}`, itemListElement: list.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/clubs/${c.slug}/`, name: c.name })) },
