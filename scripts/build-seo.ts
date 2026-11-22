@@ -85,7 +85,6 @@ ${regionLines.join("\n")}
 - Walk times to BTS or MRT stations are straight-line estimates, not measured routes.
 - Prices are shown only when a club has told us; otherwise the page says so.
 - Photos carry a credit line. Club details come from a registry refreshed weekly and checked by hand.
-- The Padel Society (TPS) runs the booking for its own clubs; every club is listed the same way.
 
 ## Contact
 - Instagram: ${SITE_IG}
