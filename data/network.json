@@ -67,7 +67,7 @@
     "sunshine-padel-club",
     "the-padel-co-bangkok",
     "top-padel-bangkok",
-    "vita-padel-ekkamai"
+    "vita-padel-bangkok"
    ]
   },
   "gulf": {
@@ -177,7 +177,9 @@
    "lp": "below",
    "slugs": [
     "sabai-padel-krabi",
-    "highlands-padel"
+    "krabi-pickle-and-padel",
+    "highlands-padel",
+    "loka-padel-club-health-cafe"
    ]
   },
   "bs": {
@@ -272,7 +274,7 @@
    "color": "#6CBE45",
    "clubs": [
     {
-     "slug": "vita-padel-ekkamai",
+     "slug": "vita-padel-bangkok",
      "km": 0.5
     }
    ],
@@ -780,10 +782,24 @@
    "lp": "right"
   },
   {
+   "slug": "krabi-pickle-and-padel",
+   "area": "Krabi",
+   "x": 1140,
+   "y": 530,
+   "lp": "right"
+  },
+  {
    "slug": "highlands-padel",
    "area": "Koh Lanta",
    "x": 1140,
    "y": 720,
+   "lp": "right"
+  },
+  {
+   "slug": "loka-padel-club-health-cafe",
+   "area": "Koh Lanta",
+   "x": 1140,
+   "y": 790,
    "lp": "right"
   }
  ],
