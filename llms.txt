@@ -1,15 +1,15 @@
 # Padel Thailand
 
-> Padel Thailand (padelthailand.com) is an independent directory of padel clubs in Thailand: 66 clubs and 220 courts in 8 regions, with court types, hours, booking links and directions, plus tournaments and events.
+> Padel Thailand (padelthailand.com) is an independent directory of padel clubs in Thailand: 68 clubs and 217 courts in 8 regions, with court types, hours, booking links and directions, plus tournaments and events.
 
 ## Regions
-- [Padel in Bangkok](https://padelthailand.com/regions/bangkok/): 20 clubs, 64 courts
+- [Padel in Bangkok](https://padelthailand.com/regions/bangkok/): 20 clubs, 61 courts
 - [Padel in Samui & Phangan](https://padelthailand.com/regions/samui-phangan-and-tao/): 18 clubs, 49 courts
 - [Padel in Phuket](https://padelthailand.com/regions/phuket/): 13 clubs, 55 courts
 - [Padel in Pattaya & Bangsaen](https://padelthailand.com/regions/pattaya-and-bangsaen/): 5 clubs, 16 courts
 - [Padel in Chiang Mai](https://padelthailand.com/regions/chiang-mai/): 4 clubs, 16 courts
 - [Padel in Hua Hin](https://padelthailand.com/regions/hua-hin/): 3 clubs, 14 courts
-- [Padel in Krabi & Lanta](https://padelthailand.com/regions/krabi-and-lanta/): 2 clubs, 5 courts
+- [Padel in Krabi & Lanta](https://padelthailand.com/regions/krabi-and-lanta/): 4 clubs, 5 courts
 - Padel in Koh Chang: 1 club, 1 court (see the clubs page)
 
 ## Main pages
