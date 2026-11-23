@@ -28,7 +28,7 @@ type Snap = {
 const snap = await readJson<Snap | null>(ROOT, "data/ga-snapshot.json", null);
 const clubs = (await readJson<{ clubs: { slug: string; name: string }[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
 const clubName = new Map(clubs.map((c) => [c.slug, c.name]));
-const head = `<link rel="stylesheet" href="/css/admin.css?v=8">`;
+const head = `<link rel="stylesheet" href="/css/admin.css?v=9">`;
 const write = async (body: string) => {
   const html = shell({ title: "Admin: Visitor Stats | Padel Thailand", description: "Owner tool: visitor statistics.", path: "/admin/stats/", active: "", body, noindex: true, head, scripts: "" });
   await mkdir(ROOT + "admin/stats", { recursive: true });

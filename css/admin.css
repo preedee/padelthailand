@@ -52,7 +52,7 @@
 .pk-ph.is-hidden .pk-pick { cursor: not-allowed; }
 .pk-badge.gone { background: #B3261E; color: #fff; left: 8px; top: 8px; }
 .pk-dirty { font-size: 14px; font-weight: 600; color: var(--text-2); }
-.pk-actions .btn:disabled { opacity: .45; cursor: not-allowed; }
+.pk-actions .btn:disabled, .ct-act .btn:disabled { opacity: .45; cursor: not-allowed; }
 .pk-gh { margin: 14px 0 0; max-width: 70ch; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--surface); padding: 0 14px; }
 .pk-gh > summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
 .pk-gh p { margin: 0 0 12px; color: var(--text-2); font-size: 14px; }
@@ -88,3 +88,15 @@
 .sb-note { flex: 1; min-width: 200px; min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); font: inherit; }
 .sb-empty { color: var(--text-3); padding: 24px 0; }
 .pk-filters { flex-wrap: wrap; }
+
+/* courts page */
+.ct-table th, .ct-table td { text-align: center; } .ct-table th:first-child, .ct-table td:first-child { text-align: left; }
+.ct-region th { background: var(--fill); font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
+.ct-in { width: 72px; min-height: 44px; padding: 0 6px; text-align: center; font: inherit; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); color: inherit; }
+.ct-dirty .ct-in { background: #FFF4CC; } .ct-bad .ct-in { border-color: #B23A2E; background: #FBE3DF; }
+.ct-total { font-weight: 700; }
+.ct-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.ct-state { font-size: 14px; font-weight: 600; min-width: 84px; text-align: right; } .ct-state.ok { color: var(--green); } .ct-state.err { color: #B23A2E; }
+.ct-flag { margin-left: 8px; padding: 1px 8px; font-size: 13px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 99px; background: #CFEFC2; white-space: nowrap; }
+.ct-table [hidden] { display: none !important; }
+.pk-msg.ct-err { color: #B23A2E; }

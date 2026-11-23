@@ -21,8 +21,10 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
 const OUT = "admin/photos/index.html";
 const OUT_HOME = "admin/index.html";
+const OUT_COURTS = "admin/courts/index.html";
+const ADMIN_CSS = `<link rel="stylesheet" href="/css/admin.css?v=9">`;   // bump the number whenever css/admin.css changes
 
-type Club = { id: string; slug: string; name: string; city: string; photos: { url: string }[]; website: string; instagramUrl: string; booking: unknown; courts: { total: number | null }; hours: string[]; phone: string };
+type Club = { id: string; slug: string; name: string; city: string; photos: { url: string }[]; website: string; instagramUrl: string; booking: unknown; courts: { total: number | null; indoor: number | null; covered: number | null; outdoor: number | null }; hours: string[]; phone: string };
 const clubs = (await readJson<{ clubs: Club[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
 const saved = await readJson<Record<string, string>>(ROOT, "data/club-photo-picks.json", {});
 const hiddenSaved = await readJson<string[]>(ROOT, "data/club-photo-hidden.json", []);
@@ -75,7 +77,7 @@ const body = `<main class="wrap pk">
   <script type="application/json" id="pk-seen">${JSON.stringify(seenSaved).replace(/</g, "\\u003c")}</script>
 </main>`;
 
-const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
+const html = shell({ title: "Admin: Top Photos | Padel Thailand", description: "Owner tool: choose the top photo for each club.", path: "/admin/photos/", active: "", body, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-photos.js?v=3" defer></script>` });
 
 // ---------- /admin/: tool cards and the data-health table ----------
 const picks = saved;
@@ -94,6 +96,7 @@ const apiKey = process.env.ADMIN_API_KEY;
 const sbConfig = apiKey ? `<script type="application/json" id="sb-config">${JSON.stringify({ url: SUPABASE_URL, anon: ANON_KEY, key: apiKey }).replace(/</g, "\\u003c")}</script>` : "";
 const tools: { href: string; title: string; text: string; meta: string; id?: string }[] = [
   { href: "/admin/submissions/", title: "Submissions", text: "New club and correction reports from visitors. Mark each one live or rejected.", meta: "Open to see what is waiting", id: "sb-meta" },
+  { href: "/admin/courts/", title: "Courts", text: "Correct a club's indoor, covered and outdoor court counts. Saves straight to the registry, no SQL.", meta: `${ordered.filter((o) => !o.club.courts.total).length} clubs have no court count yet` },
   { href: "/admin/photos/", title: "Top Photos", text: "Choose the photo that comes first on each club page, card and map panel.", meta: `${Object.keys(picks).length} of ${withPhotos} clubs chosen${newClubs ? ` · ${newClubs} ${newClubs === 1 ? "club has" : "clubs have"} new photos to review` : ""}` },
   { href: "/admin/stats/", title: "Visitor Stats", text: "Visitors, most viewed pages, where people come from and what they tap, from Google Analytics.", meta: "Refreshed every morning" },
 ];
@@ -118,9 +121,25 @@ const subBody = `<main class="wrap pk">
   <p class="pk-msg" id="sb-msg" role="status" aria-live="polite"></p>
   <div id="sb-list" class="sb-list"></div>
 </main>`;
-const subHtml = shell({ title: "Admin: Submissions | Padel Thailand", description: "Owner tool: review submissions.", path: "/admin/submissions/", active: "", body: subBody, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-submissions.js?v=1" defer></script>` });
-const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: `<link rel="stylesheet" href="/css/admin.css?v=7">`, scripts: `<script src="/js/admin-home.js?v=2" defer></script>` });
-if (CHECK) { console.log(`check: ${ordered.length} clubs, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
+// Courts: the unlocked page shows each club's live court counts (public view) and saves corrections through three database
+// functions that only answer to the admin key (supabase/0003_admin_courts.sql). The key sits inside the encrypted pages only.
+const courtClubs = ordered.map(({ region, club }) => ({ id: club.id, slug: club.slug, name: club.name, region, total: club.courts.total, indoor: club.courts.indoor, covered: club.courts.covered, outdoor: club.courts.outdoor }));
+const courtsBody = `<main class="wrap pk">
+  <p class="ad-back"><a href="/admin/">← Admin</a></p>
+  <div class="page-head"><span class="badge-ink">Admin · Courts</span><h1 style="margin-top:14px">Edit Club Courts</h1>
+  <p class="pk-help">Type the number of indoor, covered and outdoor courts for a club and press <b>Save</b>. The total is worked out for you. A saved count replaces what Google says until you press <b>Reset To Google</b>. The club pages and region pages pick up changes at the next build: press <b>Publish Now</b> to rebuild straight away (about two minutes).</p></div>
+  ${sbConfig}
+  <script type="application/json" id="ct-clubs">${JSON.stringify(courtClubs).replace(/</g, "\\u003c")}</script>
+  <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-f="all" aria-pressed="true">All Clubs</button><button type="button" class="chip sq" data-f="needs" aria-pressed="false">Needs Counts <span id="ct-needs"></span></button><button type="button" class="chip sq" data-f="set" aria-pressed="false">Set By You <span id="ct-set"></span></button></div>
+    <label class="pk-search"><span class="sr">Search clubs</span><input id="ct-q" type="search" placeholder="Search clubs" autocomplete="off"></label>
+    <div class="pk-actions"><button type="button" class="btn solid" id="ct-publish">Publish Now</button><button type="button" class="btn" id="ct-refresh">Refresh</button></div></div>
+  <p class="pk-msg" id="ct-msg" role="status" aria-live="polite"></p>
+  <div class="ad-table-wrap"><table class="ad-table ct-table"><thead><tr><th scope="col">Club</th><th scope="col">Indoor</th><th scope="col">Covered</th><th scope="col">Outdoor</th><th scope="col">Total</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody id="ct-body"></tbody></table></div>
+</main>`;
+const courtsHtml = shell({ title: "Admin: Courts | Padel Thailand", description: "Owner tool: edit court counts.", path: "/admin/courts/", active: "", body: courtsBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-courts.js?v=1" defer></script>` });
+const subHtml = shell({ title: "Admin: Submissions | Padel Thailand", description: "Owner tool: review submissions.", path: "/admin/submissions/", active: "", body: subBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-submissions.js?v=1" defer></script>` });
+const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-home.js?v=2" defer></script>` });
+if (CHECK) { console.log(`check: ${ordered.length} clubs, courts page ${(courtsHtml.length / 1024) | 0} KB, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }
 await mkdir(ROOT + dirname(OUT), { recursive: true });
 // The pages are published encrypted (scripts/lib/lock.ts). With no ADMIN_PASSWORD the build leaves the published pages as
 // they are rather than ever writing a readable copy.
@@ -130,4 +149,6 @@ await writeFile(ROOT + OUT, await lockPage(html, password));
 await writeFile(ROOT + OUT_HOME, await lockPage(homeHtml, password));
 if (apiKey) { await mkdir(ROOT + "admin/submissions", { recursive: true }); await writeFile(ROOT + "admin/submissions/index.html", await lockPage(subHtml, password)); }
 else console.log("ADMIN_API_KEY is not set: the Submissions page was left unchanged");
+if (apiKey) { await mkdir(ROOT + dirname(OUT_COURTS), { recursive: true }); await writeFile(ROOT + OUT_COURTS, await lockPage(courtsHtml, password)); }
+else console.log("ADMIN_API_KEY is not set: the Courts page was left unchanged");
 console.log(`built (locked) ${OUT_HOME} and ${OUT} (${ordered.length} clubs, ${photoRows.length} photos)`);
