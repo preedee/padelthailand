@@ -11,7 +11,7 @@
   try { cfg = JSON.parse(document.getElementById('sb-config').textContent); } catch (e) { /* shows the error below */ }
   try { clubs = JSON.parse(document.getElementById('ct-clubs').textContent); } catch (e) { /* empty page */ }
   var body = document.getElementById('ct-body'), msg = document.getElementById('ct-msg');
-  var rows = [];   // { club, tr, inputs, total, state, save, reset, flag }
+  var rows = [];   // { club, tr, inputs, total, state, save, reset, google }
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function say(text, bad, href, linkText) {
@@ -55,7 +55,6 @@
     r.save.disabled = r.busy || !dirty || !x.ok;
     r.reset.disabled = r.busy;
     var g = googleOf(r.club.id);
-    r.flag.hidden = !overridden[r.club.id];
     r.reset.hidden = !overridden[r.club.id] || (!!g && noCount(g));   // resetting to nothing would only lose the correction
     googleNote(r, g);
   }
@@ -117,7 +116,6 @@
   function makeRow(c) {
     var r = { club: c, tr: el('tr', 'ct-row'), inputs: {}, busy: false };
     var th = el('th'); th.scope = 'row'; th.appendChild(document.createTextNode(c.name));
-    r.flag = el('span', 'ct-flag', 'Set by you'); r.flag.hidden = true; th.appendChild(r.flag);
     r.google = el('small', 'ct-google'); r.google.hidden = true; th.appendChild(r.google); r.tr.appendChild(th);
     FIELDS.forEach(function (f) {
       var td = el('td'), i = numberInput(c, f); r.inputs[f] = i; i.addEventListener('input', function () { setState(r, ''); paint(r); });

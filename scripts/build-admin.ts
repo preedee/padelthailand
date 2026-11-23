@@ -22,7 +22,7 @@ const CHECK = process.argv.includes("--check");
 const OUT = "admin/photos/index.html";
 const OUT_HOME = "admin/index.html";
 const OUT_COURTS = "admin/courts/index.html";
-const ADMIN_CSS = `<link rel="stylesheet" href="/css/admin.css?v=11">`;   // bump the number whenever css/admin.css changes
+const ADMIN_CSS = `<link rel="stylesheet" href="/css/admin.css?v=12">`;   // bump the number whenever css/admin.css changes
 
 type Club = { id: string; slug: string; name: string; city: string; photos: { url: string }[]; website: string; instagramUrl: string; booking: unknown; courts: { total: number | null; indoor: number | null; covered: number | null; outdoor: number | null }; hours: string[]; phone: string };
 const clubs = (await readJson<{ clubs: Club[] }>(ROOT, "data/clubs-full.json", { clubs: [] })).clubs;
@@ -136,7 +136,7 @@ const courtsBody = `<main class="wrap pk">
   <p class="pk-msg" id="ct-msg" role="status" aria-live="polite"></p>
   <div class="ct-wrap"><table class="ct-table"><thead><tr><th scope="col">Club</th><th scope="col">Indoor</th><th scope="col">Covered</th><th scope="col">Outdoor</th><th scope="col">Total</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody id="ct-body"></tbody></table></div>
 </main>`;
-const courtsHtml = shell({ title: "Admin: Courts | Padel Thailand", description: "Owner tool: edit court counts.", path: "/admin/courts/", active: "", body: courtsBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-courts.js?v=5" defer></script>` });
+const courtsHtml = shell({ title: "Admin: Courts | Padel Thailand", description: "Owner tool: edit court counts.", path: "/admin/courts/", active: "", body: courtsBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-courts.js?v=6" defer></script>` });
 const subHtml = shell({ title: "Admin: Submissions | Padel Thailand", description: "Owner tool: review submissions.", path: "/admin/submissions/", active: "", body: subBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-submissions.js?v=1" defer></script>` });
 const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-home.js?v=2" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, courts page ${(courtsHtml.length / 1024) | 0} KB, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }

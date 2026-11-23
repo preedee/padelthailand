@@ -105,6 +105,5 @@
 .ct-act { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 8px; } .ct-act .btn { white-space: nowrap; }
 .ct-google { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: var(--text-3); }
 .ct-state { font-size: 14px; font-weight: 600; min-width: 84px; text-align: right; } .ct-state.ok { color: var(--green); } .ct-state.err { color: #B23A2E; }
-.ct-flag { margin-left: 8px; padding: 1px 8px; font-size: 13px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 99px; background: #CFEFC2; white-space: nowrap; }
 .ct-table [hidden] { display: none !important; }
 .pk-msg.ct-err { color: #B23A2E; }
