@@ -4,8 +4,8 @@
 -- already prefers them over the scraped values, so nothing else changes. Like 0002, every function answers only when given the
 -- admin key (clubs._admin_ok), so the public key alone can neither read the override list nor change a club.
 
--- which clubs have a hand-set court count right now, and what Google/the scraper says for each (the page shows it, so you can see
--- what Reset To Google would give). The Google numbers are read from the club row itself; a missing column shows as null.
+-- which clubs have a hand-set court count right now, and what the booking platform (the scraper's courts_* columns) says for each (the page
+-- shows it, so you can see what Reset To Booking Data would give). Those numbers are read from the club row itself; a missing column shows as null.
 create or replace function clubs.admin_court_overrides(k text) returns jsonb language plpgsql security definer set search_path = clubs, pg_temp as $$
 begin
   if not clubs._admin_ok(k) then return jsonb_build_object('ok', false, 'error', 'Not allowed.'); end if;
@@ -38,7 +38,7 @@ begin
   return jsonb_build_object('ok', true, 'manual', m, 'google', g);
 end $$;
 
--- drop the hand-set court counts, so the club goes back to what Google and the scraper say (other hand corrections stay)
+-- drop the hand-set court counts, so the club goes back to what the booking platform says (other hand corrections stay)
 create or replace function clubs.admin_clear_courts(k text, pid text) returns jsonb language plpgsql security definer set search_path = clubs, pg_temp as $$
 begin
   if not clubs._admin_ok(k) then return jsonb_build_object('ok', false, 'error', 'Not allowed.'); end if;

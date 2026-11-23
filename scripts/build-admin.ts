@@ -127,7 +127,7 @@ const courtClubs = ordered.map(({ region, club }) => ({ id: club.id, slug: club.
 const courtsBody = `<main class="wrap pk">
   <p class="ad-back"><a href="/admin/">← Admin</a></p>
   <div class="page-head"><span class="badge-ink">Admin · Courts</span><h1 style="margin-top:14px">Edit Club Courts</h1>
-  <p class="pk-help">Type the number of indoor, covered and outdoor courts for a club and press <b>Save</b>. The total is worked out for you. A saved count replaces what Google says until you press <b>Reset To Google</b>. The club pages and region pages pick up changes at the next build: press <b>Publish Now</b> to rebuild straight away (about two minutes).</p></div>
+  <p class="pk-help">Type the number of indoor, covered and outdoor courts for a club and press <b>Save</b>. The total is worked out for you. A saved count replaces what the booking platform (Playtomic or Matchi) says until you press <b>Reset To Booking Data</b>. The club pages and region pages pick up changes at the next build: press <b>Publish Now</b> to rebuild straight away (about two minutes).</p></div>
   ${sbConfig}
   <script type="application/json" id="ct-clubs">${JSON.stringify(courtClubs).replace(/</g, "\\u003c")}</script>
   <div class="pk-bar" style="position:static"><div class="pk-filters" role="group" aria-label="Show"><button type="button" class="chip sq" data-f="all" aria-pressed="true">All Clubs</button><button type="button" class="chip sq" data-f="needs" aria-pressed="false">Needs Counts <span id="ct-needs"></span></button><button type="button" class="chip sq" data-f="set" aria-pressed="false">Set By You <span id="ct-set"></span></button></div>
@@ -136,7 +136,7 @@ const courtsBody = `<main class="wrap pk">
   <p class="pk-msg" id="ct-msg" role="status" aria-live="polite"></p>
   <div class="ct-wrap"><table class="ct-table"><thead><tr><th scope="col">Club</th><th scope="col">Indoor</th><th scope="col">Covered</th><th scope="col">Outdoor</th><th scope="col">Total</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody id="ct-body"></tbody></table></div>
 </main>`;
-const courtsHtml = shell({ title: "Admin: Courts | Padel Thailand", description: "Owner tool: edit court counts.", path: "/admin/courts/", active: "", body: courtsBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-courts.js?v=3" defer></script>` });
+const courtsHtml = shell({ title: "Admin: Courts | Padel Thailand", description: "Owner tool: edit court counts.", path: "/admin/courts/", active: "", body: courtsBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-courts.js?v=5" defer></script>` });
 const subHtml = shell({ title: "Admin: Submissions | Padel Thailand", description: "Owner tool: review submissions.", path: "/admin/submissions/", active: "", body: subBody, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-submissions.js?v=1" defer></script>` });
 const homeHtml = shell({ title: "Admin | Padel Thailand", description: "Owner tools for Padel Thailand.", path: "/admin/", active: "", body: home, noindex: true, head: ADMIN_CSS, scripts: `<script src="/js/admin-home.js?v=2" defer></script>` });
 if (CHECK) { console.log(`check: ${ordered.length} clubs, courts page ${(courtsHtml.length / 1024) | 0} KB, ${withPhotos} with photos, ${photoRows.length} photos, photos page ${(html.length / 1024) | 0} KB, home ${(homeHtml.length / 1024) | 0} KB`); process.exit(0); }

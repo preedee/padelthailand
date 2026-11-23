@@ -54,16 +54,20 @@
     r.tr.classList.toggle('ct-bad', !x.ok);
     r.save.disabled = r.busy || !dirty || !x.ok;
     r.reset.disabled = r.busy;
-    r.reset.hidden = r.flag.hidden = !overridden[r.club.id];
-    googleNote(r);
+    var g = googleOf(r.club.id);
+    r.flag.hidden = !overridden[r.club.id];
+    r.reset.hidden = !overridden[r.club.id] || (!!g && noCount(g));   // resetting to nothing would only lose the correction
+    googleNote(r, g);
   }
-  // what Reset To Google would give, shown under the club name once a correction is saved
-  function googleNote(r) {
-    var g = overridden[r.club.id];
-    r.google.hidden = !g || !('total' in g);
-    if (r.google.hidden) return;
-    r.google.textContent = g.total == null && g.indoor == null && g.covered == null && g.outdoor == null ? 'Google has no court count' :
-      'Google says: ' + (g.indoor || 0) + ' indoor · ' + (g.covered || 0) + ' covered · ' + (g.outdoor || 0) + ' outdoor (' + (g.total == null ? '?' : g.total) + ' total)';
+  // what the booking platform says for a club with a saved correction (null while unknown, e.g. the first version of the database function)
+  function googleOf(id) { var g = overridden[id]; return g && 'total' in g ? g : null; }
+  function noCount(g) { return g.total == null && g.indoor == null && g.covered == null && g.outdoor == null; }
+  // what Reset To Booking Data would give, shown under the club name once a correction is saved
+  function googleNote(r, g) {
+    r.google.hidden = !g;
+    if (!g) return;
+    r.google.textContent = noCount(g) ? 'No booking-platform count' :
+      'Booking data says: ' + (g.indoor || 0) + ' indoor · ' + (g.covered || 0) + ' covered · ' + (g.outdoor || 0) + ' outdoor (' + (g.total == null ? '?' : g.total) + ' total)';
   }
 
   // ---- saving: one call to the database, then the row and the counts show what was saved ----
@@ -87,7 +91,7 @@
   function reset(r) {
     run(r, 'Resetting…', function () { return rpc('admin_clear_courts', { k: cfg.key, pid: r.club.id }); }, function () {
       delete overridden[r.club.id];
-      return fetchLive(r.club.id).then(function () { return r.club.name + ' is back to the Google numbers. Press Publish Now to update the site.'; });
+      return fetchLive(r.club.id).then(function () { return r.club.name + ' is back to the booking-platform numbers. Press Publish Now to update the site.'; });
     }, { ok: 'Reset', err: 'Not reset', verb: 'reset' });
   }
 
@@ -124,7 +128,7 @@
     var act = el('td'), box = el('div', 'ct-act');
     r.state = el('span', 'ct-state'); r.state.setAttribute('role', 'status');
     r.save = el('button', 'btn solid', 'Save'); r.save.type = 'button'; r.save.addEventListener('click', function () { save(r); });
-    r.reset = el('button', 'btn', 'Reset To Google'); r.reset.type = 'button'; r.reset.addEventListener('click', function () { reset(r); });
+    r.reset = el('button', 'btn', 'Reset To Booking Data'); r.reset.type = 'button'; r.reset.addEventListener('click', function () { reset(r); });
     box.appendChild(r.state); box.appendChild(r.save); box.appendChild(r.reset); act.appendChild(box); r.tr.appendChild(act);
     return r;
   }
@@ -170,7 +174,7 @@
       if (res) {
         if (!res.ok) throw new Error(res.error || 'refused');
         if (res.overrides) overridden = res.overrides;
-        else (res.place_ids || []).forEach(function (id) { overridden[id] = {}; });   // the first version of the database function: no Google numbers yet
+        else (res.place_ids || []).forEach(function (id) { overridden[id] = {}; });   // the first version of the database function: no booking-platform numbers yet
       }
       render(); if (res) say('');
     }).catch(function (e) { render(); say('Could not load the live numbers (' + e.message + '). Showing the numbers from the last build.', true); });
