@@ -1,11 +1,20 @@
 {
- "_note": "Hand-written intro copy for region hub pages, keyed by region name. paragraphs: shown under the page heading. description: meta description; {n} and {courts} are filled from the registry. Facts here (court types, amenities, tournaments) are written by hand and need updating if a club changes.",
- "Hua Hin": {
-  "description": "Padel in Hua Hin: {n} clubs, {courts} courts. Where to play with kids, take lessons or stay at a resort with a pool, and how to book.",
-  "paragraphs": [
-   "Hua Hin has three padel clubs and 14 courts. Padel Sozial is the only one with indoor courts: six of them, so rain or midday heat won't cancel your game. Padel of Thailand and Hua Hin Padel Center each have four courts, two covered and two outdoor.",
-   "Padel Sozial is a good first stop if you're travelling with family. It has a kids' area, easy parking on Soi 94, bright lights for evening games, and food and drinks on site. It also runs a tournament every month. Padel of Thailand is the one to try if you're new or want lessons: there's a coach for beginner and intermediate players, a regular crowd to play with, and a sauna, steam room and cold plunge for afterwards.",
-   "Hua Hin Padel Center is part of a resort with a pool, so you can stay on site and be steps from the court when you wake up. It has a cafe and runs tournaments too. Opening hours can change, so message the club before you go."
-  ]
- }
+  "_note": "Hand-written intro copy for region hub pages, keyed by region name. paragraphs: shown under the page heading. description: meta description; {n} and {courts} are filled from the registry. Facts here (court types, amenities, tournaments) are written by hand and need updating if a club changes.",
+  "Hua Hin": {
+    "description": "Padel in Hua Hin: {n} clubs, {courts} courts. Where to play with kids, take lessons or stay at a resort with a pool, and how to book.",
+    "paragraphs": [
+      "Hua Hin has three padel clubs and 14 courts. Padel Sozial is the only one with indoor courts: six of them, so rain or midday heat won't cancel your game. Padel of Thailand and Hua Hin Padel Center each have four courts, two covered and two outdoor.",
+      "Padel Sozial is a good first stop if you're travelling with family. It has a kids' area, easy parking on Soi 94, bright lights for evening games, and food and drinks on site. It also runs a tournament every month. Padel of Thailand is the one to try if you're new or want lessons: there's a coach for beginner and intermediate players, a regular crowd to play with, and a sauna, steam room and cold plunge for afterwards.",
+      "Hua Hin Padel Center is part of a resort with a pool, so you can stay on site and be steps from the court when you wake up. It has a cafe and runs tournaments too. Opening hours can change, so message the club before you go."
+    ]
+  },
+  "Samui & Phangan": {
+    "description": "Padel in Koh Samui, Koh Phangan, and Koh Tao: {n} clubs, {courts} courts.",
+    "paragraphs": [
+      "Koh Samui, Koh Phangan, and Koh Tao have 18 padel clubs and 51 courts between them. Indoor courts with air conditioning don't exist in these tropical islands, as it should be. Book a covered court if rain is coming or if the sun is too strong for your taste. Samui has 13 covered courts at five clubs, and Phangan has 11 covered courts at four clubs.",
+      "On Koh Samui, the clubs cluster around Lamai, Chaweng and Bophut, with others at Maenam, Choeng Mon and the southwest. Padel Tropical in Chaweng has five courts (three covered), plus a pool and restaurant. Prime Padel in Bophut is the biggest, with six courts (four covered), and a bar and kitchen on site. Padel Paradise in Lamai has three covered courts, so a rainy afternoon doesn't cancel your game. Padel Samui in Choeng Mon has 4 courts (2 covered), and Bantai Padel in Maenam has a pool and a beach a short walk away. KOH'S 33 Stadium in Lamai is a multi-sport club with a snack bar and kids' football, and Success Padel and Pilates in Chaweng pairs padel with reformer pilates.",
+      "On Koh Phangan, the clubs are spread across the island, so check the map before you book. Padel & Co in Hin Kong is the largest, with seven courts, four covered. Zen Padel in Sri Thanu has four courts (three covered), a cafe and coaching packages. OXYGEN Village in Wok Tum has covered courts, a cafe and a busy community of regular players.",
+      "Koh Tao has one club, Koh Tao Athletic Club, with two courts and a bar and food menu. Opening hours can change, so message the club before you go."
+    ]
+  }
 }
