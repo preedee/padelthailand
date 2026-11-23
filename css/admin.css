@@ -90,7 +90,12 @@
 .pk-filters { flex-wrap: wrap; }
 
 /* courts page */
-.ct-table th, .ct-table td { text-align: center; } .ct-table th:first-child, .ct-table td:first-child { text-align: left; }
+/* own class names on purpose: ad blockers hide anything called ad-*, which emptied the first version of this table */
+.ct-wrap { overflow-x: auto; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--surface); }
+.ct-table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+.ct-table th, .ct-table td { padding: 8px 10px; border-bottom: 1px solid var(--fill); text-align: center; }
+.ct-table thead th { position: sticky; top: 0; background: var(--ink); color: #fff; font-size: 13px; }
+.ct-table tbody th { font-weight: 600; } .ct-table th:first-child, .ct-table td:first-child { text-align: left; }
 .ct-region th { background: var(--fill); font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
 .ct-in { width: 72px; min-height: 44px; padding: 0 6px; text-align: center; font: inherit; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); color: inherit; }
 .ct-dirty .ct-in { background: #FFF4CC; } .ct-bad .ct-in { border-color: #B23A2E; background: #FBE3DF; }
