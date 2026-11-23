@@ -55,6 +55,15 @@
     r.save.disabled = r.busy || !dirty || !x.ok;
     r.reset.disabled = r.busy;
     r.reset.hidden = r.flag.hidden = !overridden[r.club.id];
+    googleNote(r);
+  }
+  // what Reset To Google would give, shown under the club name once a correction is saved
+  function googleNote(r) {
+    var g = overridden[r.club.id];
+    r.google.hidden = !g || !('total' in g);
+    if (r.google.hidden) return;
+    r.google.textContent = g.total == null && g.indoor == null && g.covered == null && g.outdoor == null ? 'Google has no court count' :
+      'Google says: ' + (g.indoor || 0) + ' indoor · ' + (g.covered || 0) + ' covered · ' + (g.outdoor || 0) + ' outdoor (' + (g.total == null ? '?' : g.total) + ' total)';
   }
 
   // ---- saving: one call to the database, then the row and the counts show what was saved ----
@@ -62,7 +71,7 @@
     r.busy = true; setState(r, busy); paint(r);
     call().then(function (res) {
       if (!res || !res.ok) throw new Error((res && res.error) || 'refused');
-      return done();
+      return done(res);
     }).then(function (note) { fill(r); setState(r, label.ok, 'ok'); say(note); counts(); })
       .catch(function (e) { setState(r, label.err, 'err'); fail('Could not ' + label.verb + ' ' + r.club.name, e); })
       .then(function () { r.busy = false; paint(r); });
@@ -70,8 +79,8 @@
   function save(r) {
     var x = read(r); if (!x.ok) return;
     var i = x.vals.indoor || 0, c = x.vals.covered || 0, o = x.vals.outdoor || 0;
-    run(r, 'Saving…', function () { return rpc('admin_set_courts', { k: cfg.key, pid: r.club.id, n_indoor: i, n_covered: c, n_outdoor: o }); }, function () {
-      live[r.club.id] = { total: i + c + o, indoor: i, covered: c, outdoor: o }; overridden[r.club.id] = true;
+    run(r, 'Saving…', function () { return rpc('admin_set_courts', { k: cfg.key, pid: r.club.id, n_indoor: i, n_covered: c, n_outdoor: o }); }, function (res) {
+      live[r.club.id] = { total: i + c + o, indoor: i, covered: c, outdoor: o }; overridden[r.club.id] = res.google || {};
       return 'Saved ' + r.club.name + '. The club page and region page change after the next build: press Publish Now to do it straight away.';
     }, { ok: 'Saved', err: 'Not saved', verb: 'save' });
   }
@@ -104,7 +113,8 @@
   function makeRow(c) {
     var r = { club: c, tr: el('tr', 'ct-row'), inputs: {}, busy: false };
     var th = el('th'); th.scope = 'row'; th.appendChild(document.createTextNode(c.name));
-    r.flag = el('span', 'ct-flag', 'Set by you'); r.flag.hidden = true; th.appendChild(r.flag); r.tr.appendChild(th);
+    r.flag = el('span', 'ct-flag', 'Set by you'); r.flag.hidden = true; th.appendChild(r.flag);
+    r.google = el('small', 'ct-google'); r.google.hidden = true; th.appendChild(r.google); r.tr.appendChild(th);
     FIELDS.forEach(function (f) {
       var td = el('td'), i = numberInput(c, f); r.inputs[f] = i; i.addEventListener('input', function () { setState(r, ''); paint(r); });
       i.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !r.save.disabled) save(r); });
@@ -157,7 +167,11 @@
     say('Loading…');
     Promise.all([fetchLive(), rpc('admin_court_overrides', { k: cfg.key }).catch(function (e) { if (/HTTP 404/.test(e.message)) { say(SETUP, true); return null; } throw e; })]).then(function (out) {
       var res = out[1]; overridden = {};
-      if (res) { if (!res.ok) throw new Error(res.error || 'refused'); res.place_ids.forEach(function (id) { overridden[id] = true; }); }
+      if (res) {
+        if (!res.ok) throw new Error(res.error || 'refused');
+        if (res.overrides) overridden = res.overrides;
+        else (res.place_ids || []).forEach(function (id) { overridden[id] = {}; });   // the first version of the database function: no Google numbers yet
+      }
       render(); if (res) say('');
     }).catch(function (e) { render(); say('Could not load the live numbers (' + e.message + '). Showing the numbers from the last build.', true); });
   }

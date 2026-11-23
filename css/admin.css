@@ -90,17 +90,20 @@
 .pk-filters { flex-wrap: wrap; }
 
 /* courts page */
-/* own class names on purpose: ad blockers hide anything called ad-*, which emptied the first version of this table */
-.ct-wrap { overflow-x: auto; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--surface); }
-.ct-table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+/* own class names on purpose: ad blockers hide anything called ad-*, which emptied the first version of this table.
+   No overflow on the wrapper on wide screens, so the column labels can stay frozen (sticky) while the page scrolls. */
+.ct-wrap { border: 1.5px solid var(--ink); background: var(--surface); }
+.ct-table { border-collapse: collapse; width: 100%; font-size: 14px; }
 .ct-table th, .ct-table td { padding: 8px 10px; border-bottom: 1px solid var(--fill); text-align: center; }
-.ct-table thead th { position: sticky; top: 0; background: var(--ink); color: #fff; font-size: 13px; }
+.ct-table thead th { position: sticky; top: 0; z-index: 5; background: var(--ink); color: #fff; font-size: 13px; }
 .ct-table tbody th { font-weight: 600; } .ct-table th:first-child, .ct-table td:first-child { text-align: left; }
+@media (max-width: 760px) { .ct-wrap { overflow-x: auto; } .ct-table { min-width: 700px; } }
 .ct-region th { background: var(--fill); font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
 .ct-in { width: 72px; min-height: 44px; padding: 0 6px; text-align: center; font: inherit; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--surface); color: inherit; }
 .ct-dirty .ct-in { background: #FFF4CC; } .ct-bad .ct-in { border-color: #B23A2E; background: #FBE3DF; }
 .ct-total { font-weight: 700; }
-.ct-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.ct-act { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 8px; } .ct-act .btn { white-space: nowrap; }
+.ct-google { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: var(--text-3); }
 .ct-state { font-size: 14px; font-weight: 600; min-width: 84px; text-align: right; } .ct-state.ok { color: var(--green); } .ct-state.err { color: #B23A2E; }
 .ct-flag { margin-left: 8px; padding: 1px 8px; font-size: 13px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 99px; background: #CFEFC2; white-space: nowrap; }
 .ct-table [hidden] { display: none !important; }
