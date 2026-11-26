@@ -13,11 +13,12 @@
  * Run weekly by .github/workflows/clubs-build.yml, after the registry's own weekly refresh.
  * Usage: bun scripts/build-clubs.ts [--check]   (--check builds into memory and prints a summary, writes nothing)
  */
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
 import { ANON_KEY, PHOTO_BASE, SUPABASE_URL } from "./lib/registry.ts";
 import { photoVariants } from "./lib/photos.ts";
+import { isPlaced } from "./lib/regions.ts";
 const SITE = "https://padelthailand.com";
 const ROOT = new URL("..", import.meta.url).pathname;
 const CHECK = process.argv.includes("--check");
@@ -289,7 +290,7 @@ const [slugs, aliases, fixes] = await Promise.all([
 for (const r of rows) { const into = fixes.merge[r.place_id]; if (into) aliases[into] = [...new Set([...(aliases[into] ?? []), r.name])]; }
 
 const taken = new Set(Object.values(slugs));
-const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
+const found: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
   const r = { ...r0, province: fixes.province[r0.place_id] ?? r0.province };
   const city = fixes.city[r.place_id] ?? cityOf(r);
   if (!slugs[r.place_id]) {
@@ -308,7 +309,17 @@ const clubs: Club[] = rows.filter((r) => !fixes.merge[r.place_id]).map((r0) => {
 const manualClubs = await read<Club[]>("data/club-manual.json", []);
 for (const m of manualClubs) if (m.booking && !(m.booking as { icon?: string }).icon && PLATFORM_ICONS[m.booking.platform]) (m.booking as { icon?: string }).icon = PLATFORM_ICONS[m.booking.platform];
 for (const m of manualClubs)
-  if (!clubs.some((c) => c.slug === m.slug || (Math.abs(c.lat - m.lat) < 0.0008 && Math.abs(c.lng - m.lng) < 0.0008))) clubs.push(m);
+  if (!found.some((c) => c.slug === m.slug || (Math.abs(c.lat - m.lat) < 0.0008 && Math.abs(c.lng - m.lng) < 0.0008))) found.push(m);
+// a club with no network placement stays off the site (its slug stays reserved) until data/network.json gets it
+const clubs = found.filter((c) => isPlaced(c.slug));
+const unplaced = found.filter((c) => !isPlaced(c.slug)).map((c) => c.slug);
+if (unplaced.length) {
+  const msg = `${unplaced.length} ${unplaced.length === 1 ? "club" : "clubs"} left off the site, no network placement (add to data/network.json): ${unplaced.join(", ")}`;
+  console.warn(process.env.GITHUB_ACTIONS ? `::warning title=Unplaced clubs::${msg}` : `WARNING: ${msg}`);
+}
+if (clubs.length < 30) throw new Error(`only ${clubs.length} clubs have a network placement; check data/network.json`);
+// the workflow reads this to open, update or close the "unplaced clubs" issue
+if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `unplaced=${unplaced.sort().join(" ")}\n`);
 const sortedSlugs = Object.fromEntries(Object.entries(slugs).sort(([a], [b]) => a.localeCompare(b)));
 
 // The map needs a fraction of each record; the full record only feeds the static pages. One club per line keeps weekly diffs readable.
