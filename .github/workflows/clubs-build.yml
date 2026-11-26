@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: clubs-build
@@ -36,6 +37,7 @@ jobs:
           bun-version: 1.3.12
 
       - name: Build club data
+        id: data
         run: bun scripts/build-clubs.ts --no-pages
 
       - name: Build directory pages (home, clubs, club pages)
@@ -59,3 +61,24 @@ jobs:
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "Club registry refresh $(date -u +%F)"
           git push
+
+      # A club without a place in data/network.json is left off the site and the run still succeeds, so an issue is how
+      # the owner hears about it. One issue at a time: opened or updated when the list changes, closed when it is empty.
+      - name: Report unplaced clubs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNPLACED: ${{ steps.data.outputs.unplaced }}
+        run: |
+          title="Unplaced clubs: add them to data/network.json"
+          num=$(gh issue list --state open --limit 100 --json number,title --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+          if [ -z "$UNPLACED" ]; then
+            if [ -n "$num" ]; then gh issue close "$num" --comment "Every club now has a network placement."; fi
+            exit 0
+          fi
+          body=$(printf '@%s these clubs are left off the site until data/network.json gives each a line position and a region:\n\n' "$GITHUB_REPOSITORY_OWNER"; printf -- '- `%s`\n' $UNPLACED)
+          if [ -z "$num" ]; then
+            gh issue create --title "$title" --body "$body"
+          elif [ "$(gh issue view "$num" --json body --jq .body | tr -d '\r')" != "$body" ]; then
+            gh issue edit "$num" --body "$body"
+            gh issue comment "$num" --body "The list changed: $UNPLACED"
+          fi
