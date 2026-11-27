@@ -438,7 +438,7 @@ function homePage(): string {
 ${homeFoot()}
 </main>`;
   return shell({ title: `Padel in Thailand: ${clubs.length} Clubs and ${totalCourts} Courts on One Map | Padel Thailand`, description: `Padel in Thailand: ${clubs.length} clubs and ${totalCourts} courts on one map, with booking links, indoor and covered courts, hours and directions. Bangkok, Phuket, Samui, Pattaya, Chiang Mai, Hua Hin and more.`, path: "/", active: "map", body,
-    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json">`, scripts: `<script src="/js/network-map.js?v=31"></script><script src="/js/availability.js?v=1" defer></script>`,
+    head: `<link rel="preload" as="fetch" crossorigin href="/data/network.json"><link rel="preload" as="fetch" crossorigin href="/data/clubs.json"><link rel="stylesheet" href="/css/gear.css?v=1">`, scripts: `<script src="/js/network-map.js?v=31"></script><script src="/js/availability.js?v=1" defer></script>`,
     ld: [{ "@context": "https://schema.org", "@type": "Organization", "@id": `${SITE}/#org`, name: "Padel Thailand", url: `${SITE}/`, logo: `${SITE}/img/apple-touch-icon.png`, sameAs: ["https://www.instagram.com/padelthailand/"] },
       { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: "Padel Thailand", url: `${SITE}/`, inLanguage: "en", publisher: { "@id": `${SITE}/#org` } }] });
 }
@@ -456,7 +456,16 @@ function homeFoot(): string {
   const F = guideFacts(clubs);
   return `<section class="wrap section guide" id="guide" aria-labelledby="guide-h"><h2 id="guide-h">New and Opening Soon</h2>
   <p>${F.soon.length ? `${esc(list_(F.soon.map(shortName)))} ${F.soon.length === 1 ? "is" : "are"} listed as opening soon. ` : ""}Run a club that is not on the map, or spotted a change? <a href="/submit/#club">Add a club</a> or <a href="/submit/#correction">report a correction</a>; every report is checked by a person.</p>
-  <p>Courts by region, indoor and covered courts, hours, booking, prices and getting there: <a href="/guide/">the guide to padel in Thailand</a>.</p></section>`;
+  <p>Courts by region, indoor and covered courts, hours, booking, prices and getting there: <a href="/guide/">the guide to padel in Thailand</a>.</p></section>
+<section class="wrap section guide" id="gear" aria-labelledby="gear-h"><h2 id="gear-h">Padel Gear</h2>
+  <div class="gear-grid">
+    <article class="gear-card"><a class="gear-logo" href="https://ojasaan.com/" target="_blank" rel="noopener"><img src="/img/partners/ojasaan.png" width="640" height="254" alt="Ojasaan" loading="lazy" decoding="async"></a>
+      <div class="gear-body"><p>Based on Koh Samui. Sells adidas and LOK padel rackets, plus bags and apparel, and ships across Thailand.</p>
+      <a class="btn solid" href="https://ojasaan.com/shop/category/padel-rackets-1" target="_blank" rel="noopener">Shop adidas and LOK Rackets</a></div></article>
+    <article class="gear-card"><a class="gear-logo dark" href="https://gwonn.com/" target="_blank" rel="noopener"><img src="/img/partners/gwonn.webp" width="803" height="200" alt="GWONN" loading="lazy" decoding="async"></a>
+      <div class="gear-body"><p>A Thai padel brand based in Bangkok. Sells rackets, sportswear, bags and accessories online.</p>
+      <a class="btn solid" href="https://gwonn.com/" target="_blank" rel="noopener">Shop GWONN</a></div></article>
+  </div></section>`;
 }
 
 // the "Padel in Thailand" guide on the home page: the questions people search for, answered from the registry

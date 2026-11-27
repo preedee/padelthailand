@@ -1,0 +1,11 @@
+/* Home "Padel Gear" cards. Builds on css/directory.css tokens. */
+.gear-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; max-width: 880px; margin-top: 16px; }
+.gear-card { display: flex; flex-direction: column; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; box-shadow: var(--shadow-sign); overflow: hidden; }
+.gear-logo { height: 140px; display: flex; align-items: center; justify-content: center; padding: 16px; border-bottom: 1.5px solid var(--ink); background: #fff; }
+.gear-logo.dark { background: #050505; }
+.gear-logo img { max-width: 80%; max-height: 100%; width: auto; height: auto; }
+.gear-logo.dark img { max-height: 56px; }
+.gear-logo:focus-visible { outline: 3px solid var(--ink); outline-offset: -6px; }
+.gear-logo.dark:focus-visible { outline-color: #fff; }
+.gear-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 18px; }
+.gear-body p { flex: 1; margin: 0; }
